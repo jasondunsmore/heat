@@ -15,31 +15,24 @@
 
 import os
 
-import unittest
-import mox
-
-from nose.plugins.attrib import attr
-
 from heat.common import context
 from heat.common import template_format
 from heat.engine.resources import eip
 from heat.engine import parser
+from heat.engine import scheduler
+from heat.tests.common import HeatTestCase
 from heat.tests.v1_1 import fakes
+from heat.tests.utils import setup_dummy_db
 
 
-@attr(tag=['unit', 'resource'])
-@attr(speed='fast')
-class EIPTest(unittest.TestCase):
+class EIPTest(HeatTestCase):
     def setUp(self):
-        self.m = mox.Mox()
+        super(EIPTest, self).setUp()
         self.fc = fakes.FakeClient()
         self.m.StubOutWithMock(eip.ElasticIp, 'nova')
         self.m.StubOutWithMock(eip.ElasticIpAssociation, 'nova')
         self.m.StubOutWithMock(self.fc.servers, 'get')
-
-    def tearDown(self):
-        self.m.UnsetStubs()
-        print "EIPTest teardown complete"
+        setup_dummy_db()
 
     def load_template(self):
         self.path = os.path.dirname(os.path.realpath(__file__)).\
@@ -66,7 +59,7 @@ class EIPTest(unittest.TestCase):
                                  t['Resources'][resource_name],
                                  stack)
         self.assertEqual(None, resource.validate())
-        self.assertEqual(None, resource.create())
+        scheduler.TaskRunner(resource.create)()
         self.assertEqual(eip.ElasticIp.CREATE_COMPLETE, resource.state)
         return resource
 
@@ -75,7 +68,7 @@ class EIPTest(unittest.TestCase):
                                             t['Resources'][resource_name],
                                             stack)
         self.assertEqual(None, resource.validate())
-        self.assertEqual(None, resource.create())
+        scheduler.TaskRunner(resource.create)()
         self.assertEqual(eip.ElasticIpAssociation.CREATE_COMPLETE,
                          resource.state)
         return resource

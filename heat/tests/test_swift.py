@@ -16,27 +16,25 @@
 import os
 import re
 
-import unittest
 import mox
-
-from nose.plugins.attrib import attr
 
 from heat.common import context
 from heat.common import template_format
 from heat.openstack.common.importutils import try_import
 from heat.engine.resources import swift
 from heat.engine import parser
+from heat.engine import scheduler
+from heat.tests.common import HeatTestCase
+from heat.tests.utils import setup_dummy_db
 from heat.tests.utils import skip_if
 
 swiftclient = try_import('swiftclient.client')
 
 
-@attr(tag=['unit', 'resource'])
-@attr(speed='fast')
-class swiftTest(unittest.TestCase):
+class swiftTest(HeatTestCase):
     @skip_if(swiftclient is None, 'unable to import swiftclient')
     def setUp(self):
-        self.m = mox.Mox()
+        super(swiftTest, self).setUp()
         self.m.CreateMock(swiftclient.Connection)
         self.m.StubOutWithMock(swiftclient.Connection, 'put_container')
         self.m.StubOutWithMock(swiftclient.Connection, 'delete_container')
@@ -44,10 +42,7 @@ class swiftTest(unittest.TestCase):
         self.m.StubOutWithMock(swiftclient.Connection, 'get_auth')
 
         self.container_pattern = 'test_stack-test_resource-[0-9a-z]+'
-
-    def tearDown(self):
-        self.m.UnsetStubs()
-        print "swiftTest teardown complete"
+        setup_dummy_db()
 
     def load_template(self):
         self.path = os.path.dirname(os.path.realpath(__file__)).\
@@ -72,7 +67,7 @@ class swiftTest(unittest.TestCase):
             'test_resource',
             t['Resources'][resource_name],
             stack)
-        self.assertEqual(None, resource.create())
+        scheduler.TaskRunner(resource.create)()
         self.assertEqual(swift.SwiftContainer.CREATE_COMPLETE, resource.state)
         return resource
 
@@ -251,12 +246,13 @@ class swiftTest(unittest.TestCase):
         self.m.ReplayAll()
         t = self.load_template()
 
-        properties = t['Resources']['SwiftContainer']['Properties']
-        properties['DeletionPolicy'] = 'Retain'
+        container = t['Resources']['SwiftContainer']
+        container['DeletionPolicy'] = 'Retain'
         stack = self.parse_stack(t)
         resource = self.create_resource(t, stack, 'SwiftContainer')
         # if delete_container is called, mox verify will succeed
         resource.delete()
+        self.assertEqual(resource.DELETE_COMPLETE, resource.state)
 
         try:
             self.m.VerifyAll()

@@ -13,22 +13,17 @@
 #    under the License.
 
 
-import unittest
-import mox
-
-from nose.plugins.attrib import attr
-
 from heat.common import context
 from heat.common import exception
 from heat.common import template_format
 from heat.engine import parser
 from heat.engine.resources import stack as nested_stack
 from heat.common import urlfetch
+from heat.tests.common import HeatTestCase
+from heat.tests.utils import setup_dummy_db
 
 
-@attr(tag=['unit', 'resource'])
-@attr(speed='fast')
-class NestedStackTest(unittest.TestCase):
+class NestedStackTest(HeatTestCase):
     test_template = '''
 HeatTemplateFormatVersion: '2012-12-12'
 Resources:
@@ -48,12 +43,9 @@ Outputs:
 '''
 
     def setUp(self):
-        self.m = mox.Mox()
+        super(NestedStackTest, self).setUp()
         self.m.StubOutWithMock(urlfetch, 'get')
-
-    def tearDown(self):
-        self.m.UnsetStubs()
-        print "NestedStackTest teardown complete"
+        setup_dummy_db()
 
     def create_stack(self, template):
         t = template_format.parse(template)

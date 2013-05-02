@@ -13,32 +13,27 @@
 #    under the License.
 
 
-import unittest
-from nose.plugins.attrib import attr
-import mox
-
 from heat.common import context
 from heat.common import exception
 from heat.engine import parser
 from heat.engine import resource
+from heat.engine import scheduler
 from heat.openstack.common import uuidutils
 
 from heat.tests import generic_resource as generic_rsrc
+from heat.tests.common import HeatTestCase
+from heat.tests.utils import setup_dummy_db
 
 
-@attr(tag=['unit', 'resource'])
-@attr(speed='fast')
-class ResourceTest(unittest.TestCase):
+class ResourceTest(HeatTestCase):
     def setUp(self):
-        self.m = mox.Mox()
+        super(ResourceTest, self).setUp()
+        setup_dummy_db()
         self.stack = parser.Stack(None, 'test_stack', parser.Template({}),
                                   stack_id=uuidutils.generate_uuid())
 
         resource._register_class('GenericResourceType',
                                  generic_rsrc.GenericResource)
-
-    def tearDown(self):
-        self.m.UnsetStubs()
 
     def test_get_class_ok(self):
         cls = resource.get_class('GenericResourceType')
@@ -229,7 +224,7 @@ class ResourceTest(unittest.TestCase):
 
         tmpl = {'Type': 'GenericResourceType', 'Properties': {'Foo': 'abc'}}
         res = generic_rsrc.GenericResource('test_resource', tmpl, self.stack)
-        self.assertEqual(None, res.create())
+        scheduler.TaskRunner(res.create)()
         self.assertEqual(res.CREATE_COMPLETE, res.state)
 
     def test_create_fail_missing_req_prop(self):
@@ -242,7 +237,8 @@ class ResourceTest(unittest.TestCase):
         res = generic_rsrc.GenericResource(rname, tmpl, self.stack)
 
         estr = 'Property error : test_resource: Property Foo not assigned'
-        self.assertRaises(exception.ResourceFailure, res.create)
+        create = scheduler.TaskRunner(res.create)
+        self.assertRaises(exception.ResourceFailure, create)
         self.assertEqual(res.CREATE_FAILED, res.state)
 
     def test_create_fail_prop_typo(self):
@@ -255,7 +251,8 @@ class ResourceTest(unittest.TestCase):
         res = generic_rsrc.GenericResource(rname, tmpl, self.stack)
 
         estr = 'Property error : test_resource: Property Foo not assigned'
-        self.assertRaises(exception.ResourceFailure, res.create)
+        create = scheduler.TaskRunner(res.create)
+        self.assertRaises(exception.ResourceFailure, create)
         self.assertEqual(res.CREATE_FAILED, res.state)
 
     def test_update_ok(self):
@@ -265,7 +262,7 @@ class ResourceTest(unittest.TestCase):
 
         tmpl = {'Type': 'GenericResourceType', 'Properties': {'Foo': 'abc'}}
         res = generic_rsrc.GenericResource('test_resource', tmpl, self.stack)
-        self.assertEqual(None, res.create())
+        scheduler.TaskRunner(res.create)()
         self.assertEqual(res.CREATE_COMPLETE, res.state)
 
         utmpl = {'Type': 'GenericResourceType', 'Properties': {'Foo': 'xyz'}}
@@ -285,7 +282,7 @@ class ResourceTest(unittest.TestCase):
 
         tmpl = {'Type': 'GenericResourceType', 'Properties': {'Foo': 'abc'}}
         res = generic_rsrc.GenericResource('test_resource', tmpl, self.stack)
-        self.assertEqual(None, res.create())
+        scheduler.TaskRunner(res.create)()
         self.assertEqual(res.CREATE_COMPLETE, res.state)
 
         utmpl = {'Type': 'GenericResourceType', 'Properties': {}}
@@ -301,7 +298,7 @@ class ResourceTest(unittest.TestCase):
 
         tmpl = {'Type': 'GenericResourceType', 'Properties': {'Foo': 'abc'}}
         res = generic_rsrc.GenericResource('test_resource', tmpl, self.stack)
-        self.assertEqual(None, res.create())
+        scheduler.TaskRunner(res.create)()
         self.assertEqual(res.CREATE_COMPLETE, res.state)
 
         utmpl = {'Type': 'GenericResourceType', 'Properties': {'Food': 'xyz'}}
@@ -310,15 +307,14 @@ class ResourceTest(unittest.TestCase):
         self.assertEqual(res.UPDATE_FAILED, res.state)
 
 
-@attr(tag=['unit', 'resource'])
-@attr(speed='fast')
-class MetadataTest(unittest.TestCase):
+class MetadataTest(HeatTestCase):
     def setUp(self):
-        self.m = mox.Mox()
+        super(MetadataTest, self).setUp()
         tmpl = {
             'Type': 'Foo',
             'Metadata': {'Test': 'Initial metadata'}
         }
+        setup_dummy_db()
         ctx = context.get_admin_context()
         self.m.StubOutWithMock(ctx, 'username')
         ctx.username = 'metadata_test_user'
@@ -326,11 +322,11 @@ class MetadataTest(unittest.TestCase):
         self.stack.store()
         self.res = generic_rsrc.GenericResource('metadata_resource',
                                                 tmpl, self.stack)
-        self.res.create()
+        scheduler.TaskRunner(self.res.create)()
 
     def tearDown(self):
         self.stack.delete()
-        self.m.UnsetStubs()
+        super(HeatTestCase, self).tearDown()
 
     def test_read_initial(self):
         self.assertEqual(self.res.metadata, {'Test': 'Initial metadata'})

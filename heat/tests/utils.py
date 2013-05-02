@@ -13,21 +13,10 @@
 #    under the License.
 
 
-import nose.plugins.skip as skip
+from testtools import skipIf
 
-
-class skip_test(object):
-    """Decorator that skips a test."""
-    def __init__(self, msg):
-        self.message = msg
-
-    def __call__(self, func):
-        def _skipper(*args, **kw):
-            """Wrapped skipper function."""
-            raise skip.SkipTest(self.message)
-        _skipper.__name__ = func.__name__
-        _skipper.__doc__ = func.__doc__
-        return _skipper
+from heat.db.sqlalchemy.session import get_engine
+from heat.db import migration
 
 
 class skip_if(object):
@@ -39,25 +28,7 @@ class skip_if(object):
     def __call__(self, func):
         def _skipper(*args, **kw):
             """Wrapped skipper function."""
-            if self.condition:
-                raise skip.SkipTest(self.message)
-            func(*args, **kw)
-        _skipper.__name__ = func.__name__
-        _skipper.__doc__ = func.__doc__
-        return _skipper
-
-
-class skip_unless(object):
-    """Decorator that skips a test if condition is not true."""
-    def __init__(self, condition, msg):
-        self.condition = condition
-        self.message = msg
-
-    def __call__(self, func):
-        def _skipper(*args, **kw):
-            """Wrapped skipper function."""
-            if not self.condition:
-                raise skip.SkipTest(self.message)
+            skipIf(self.condition, self.message)
             func(*args, **kw)
         _skipper.__name__ = func.__name__
         _skipper.__doc__ = func.__doc__
@@ -70,13 +41,17 @@ def stack_delete_after(test_fn):
     to ensure tests clean up their stacks regardless of test success/failure
     """
     def wrapped_test(test_cls):
-        print "Running test", test_fn.__name__
         try:
             test_fn(test_cls)
         finally:
             try:
                 test_cls.stack.delete()
             except AttributeError:
-                print "Could not delete stack (already deleted?)"
-        print "Exited", test_fn.__name__
+                pass
     return wrapped_test
+
+
+def setup_dummy_db():
+    migration.db_sync()
+    engine = get_engine()
+    conn = engine.connect()

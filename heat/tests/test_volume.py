@@ -16,25 +16,22 @@
 import os
 
 import eventlet
-import mox
-import unittest
-
-from nose.plugins.attrib import attr
 
 from heat.common import context
 from heat.common import exception
 from heat.common import template_format
 from heat.engine import parser
+from heat.engine import scheduler
 from heat.engine.resources import volume as vol
 from heat.engine import clients
+from heat.tests.common import HeatTestCase
 from heat.tests.v1_1 import fakes
+from heat.tests.utils import setup_dummy_db
 
 
-@attr(tag=['unit', 'resource', 'volume'])
-@attr(speed='fast')
-class VolumeTest(unittest.TestCase):
+class VolumeTest(HeatTestCase):
     def setUp(self):
-        self.m = mox.Mox()
+        super(VolumeTest, self).setUp()
         self.fc = fakes.FakeClient()
         self.m.StubOutWithMock(clients.OpenStackClients, 'cinder')
         self.m.StubOutWithMock(clients.OpenStackClients, 'nova')
@@ -44,10 +41,7 @@ class VolumeTest(unittest.TestCase):
         self.m.StubOutWithMock(self.fc.volumes, 'create_server_volume')
         self.m.StubOutWithMock(self.fc.volumes, 'delete_server_volume')
         self.m.StubOutWithMock(eventlet, 'sleep')
-
-    def tearDown(self):
-        self.m.UnsetStubs()
-        print "VolumeTest teardown complete"
+        setup_dummy_db()
 
     def load_template(self):
         self.path = os.path.dirname(os.path.realpath(__file__)).\
@@ -74,7 +68,7 @@ class VolumeTest(unittest.TestCase):
                               t['Resources'][resource_name],
                               stack)
         self.assertEqual(resource.validate(), None)
-        self.assertEqual(resource.create(), None)
+        scheduler.TaskRunner(resource.create)()
         self.assertEqual(resource.state, vol.Volume.CREATE_COMPLETE)
         return resource
 
@@ -83,7 +77,7 @@ class VolumeTest(unittest.TestCase):
                                         t['Resources'][resource_name],
                                         stack)
         self.assertEqual(resource.validate(), None)
-        self.assertEqual(resource.create(), None)
+        scheduler.TaskRunner(resource.create)()
         self.assertEqual(resource.state, vol.VolumeAttachment.CREATE_COMPLETE)
         return resource
 
@@ -147,7 +141,8 @@ class VolumeTest(unittest.TestCase):
         resource = vol.Volume('DataVolume',
                               t['Resources']['DataVolume'],
                               stack)
-        self.assertRaises(exception.ResourceFailure, resource.create)
+        create = scheduler.TaskRunner(resource.create)
+        self.assertRaises(exception.ResourceFailure, create)
 
         self.m.VerifyAll()
 
@@ -179,12 +174,13 @@ class VolumeTest(unittest.TestCase):
         t = self.load_template()
         stack = self.parse_stack(t, stack_name)
 
-        self.assertEqual(stack['DataVolume'].create(), None)
+        scheduler.TaskRunner(stack['DataVolume'].create)()
         self.assertEqual(fv.status, 'available')
         resource = vol.VolumeAttachment('MountPoint',
                                         t['Resources']['MountPoint'],
                                         stack)
-        self.assertRaises(exception.ResourceFailure, resource.create)
+        create = scheduler.TaskRunner(resource.create)
+        self.assertRaises(exception.ResourceFailure, create)
 
         self.m.VerifyAll()
 
@@ -221,7 +217,7 @@ class VolumeTest(unittest.TestCase):
         t = self.load_template()
         stack = self.parse_stack(t, stack_name)
 
-        self.assertEqual(stack['DataVolume'].create(), None)
+        scheduler.TaskRunner(stack['DataVolume'].create)()
         self.assertEqual(fv.status, 'available')
         resource = self.create_attachment(t, stack, 'MountPoint')
 

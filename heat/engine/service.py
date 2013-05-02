@@ -28,8 +28,8 @@ from heat.common import exception
 from heat.common import identifier
 from heat.engine import parameters
 from heat.engine import parser
+from heat.engine import properties
 from heat.engine import resource
-from heat.engine import resources  # pyflakes_bypass review 23102
 from heat.engine import watchrule
 
 from heat.openstack.common import log as logging
@@ -286,6 +286,14 @@ class EngineService(service.Service):
             if not res.get('Type'):
                 return {'Error':
                         'Every Resources object must contain a Type member.'}
+            ResourceClass = resource.get_class(res['Type'])
+            props = properties.Properties(ResourceClass.properties_schema,
+                                          res.get('Properties', {}))
+            try:
+                ResourceClass.validate_deletion_policy(res)
+                props.validate(with_value=False)
+            except Exception as ex:
+                return {'Error': str(ex)}
 
         tmpl_params = parser.Parameters(None, tmpl)
         format_validate_parameter = lambda p: dict(p.schema)

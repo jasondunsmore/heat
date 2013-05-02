@@ -13,16 +13,13 @@
 #    under the License.
 
 import collections
-import unittest
-import mox
-
-from nose.plugins.attrib import attr
 
 from heat.engine import clients
 from heat.common import context
 from heat.common import template_format
 from heat.engine import parser
-import heat.engine.resources  # pyflakes_bypass review 23102
+from heat.tests.common import HeatTestCase
+from heat.tests.utils import setup_dummy_db
 from heat.tests.v1_1 import fakes
 
 from novaclient.v1_1 import security_groups as nova_sg
@@ -37,9 +34,7 @@ NovaSG = collections.namedtuple('NovaSG',
                                 ]))
 
 
-@attr(tag=['unit', 'resource'])
-@attr(speed='fast')
-class SecurityGroupTest(unittest.TestCase):
+class SecurityGroupTest(HeatTestCase):
 
     test_template_nova = '''
 HeatTemplateFormatVersion: '2012-12-12'
@@ -60,7 +55,7 @@ Resources:
 '''
 
     def setUp(self):
-        self.m = mox.Mox()
+        super(SecurityGroupTest, self).setUp()
         self.fc = fakes.FakeClient()
         self.m.StubOutWithMock(clients.OpenStackClients, 'nova')
         self.m.StubOutWithMock(nova_sgr.SecurityGroupRuleManager, 'create')
@@ -69,9 +64,7 @@ Resources:
         self.m.StubOutWithMock(nova_sg.SecurityGroupManager, 'delete')
         self.m.StubOutWithMock(nova_sg.SecurityGroupManager, 'get')
         self.m.StubOutWithMock(nova_sg.SecurityGroupManager, 'list')
-
-    def tearDown(self):
-        self.m.UnsetStubs()
+        setup_dummy_db()
 
     def create_stack(self, template):
         t = template_format.parse(template)

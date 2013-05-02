@@ -22,6 +22,7 @@ from heat.engine import dependencies
 from heat.common import identifier
 from heat.engine import resource
 from heat.engine import resources
+from heat.engine import scheduler
 from heat.engine import template
 from heat.engine import timestamp
 from heat.engine.parameters import Parameters
@@ -60,6 +61,8 @@ class Stack(object):
 
     created_time = timestamp.Timestamp(db_api.stack_get, 'created_at')
     updated_time = timestamp.Timestamp(db_api.stack_get, 'updated_at')
+
+    _zones = None
 
     def __init__(self, context, stack_name, tmpl, parameters=None,
                  stack_id=None, state=None, state_description='',
@@ -279,7 +282,7 @@ class Stack(object):
                 for res in self:
                     if stack_status != self.CREATE_FAILED:
                         try:
-                            res.create()
+                            scheduler.TaskRunner(res.create)()
                         except exception.ResourceFailure as ex:
                             stack_status = self.CREATE_FAILED
                             reason = 'Resource %s failed with: %s' % (str(res),
@@ -371,7 +374,7 @@ class Stack(object):
                         self.dependencies = self._get_dependencies(
                             self.resources.itervalues())
                         try:
-                            self[res.name].create()
+                            scheduler.TaskRunner(res.create)()
                         except exception.ResourceFailure as ex:
                             logger.error("Failed to add %s : %s" %
                                          (res.name, str(ex)))
@@ -425,7 +428,7 @@ class Stack(object):
                                 self.dependencies = self._get_dependencies(
                                     self.resources.itervalues())
                                 try:
-                                    self[res.name].create()
+                                    scheduler.TaskRunner(res.create)()
                                 except exception.ResourceFailure as ex:
                                     logger.error("Failed to create %s : %s" %
                                                  (res.name, str(ex)))
@@ -548,7 +551,7 @@ class Stack(object):
         for res in deps:
             if not failed:
                 try:
-                    res.create()
+                    scheduler.TaskRunner(res.create)()
                 except exception.ResourceFailure as ex:
                     logger.exception('create')
                     failed = True
@@ -557,14 +560,21 @@ class Stack(object):
         # TODO(asalkeld) if any of this fails we Should
         # restart the whole stack
 
+    def get_availability_zones(self):
+        if self._zones is None:
+            self._zones = [
+                zone.zoneName for zone in
+                self.clients.nova().availability_zones.list(detailed=False)]
+        return self._zones
+
     def resolve_static_data(self, snippet):
-        return resolve_static_data(self.t, self.parameters, snippet)
+        return resolve_static_data(self.t, self, self.parameters, snippet)
 
     def resolve_runtime_data(self, snippet):
         return resolve_runtime_data(self.t, self.resources, snippet)
 
 
-def resolve_static_data(template, parameters, snippet):
+def resolve_static_data(template, stack, parameters, snippet):
     '''
     Resolve static parameters, map lookups, etc. in a template.
 
@@ -572,13 +582,14 @@ def resolve_static_data(template, parameters, snippet):
 
     >>> template = Template(template_format.parse(template_path))
     >>> parameters = Parameters('stack', template, {'KeyName': 'my_key'})
-    >>> resolve_static_data(template, parameters, {'Ref': 'KeyName'})
+    >>> resolve_static_data(template, None, parameters, {'Ref': 'KeyName'})
     'my_key'
     '''
     return transform(snippet,
                      [functools.partial(template.resolve_param_refs,
                                         parameters=parameters),
-                      template.resolve_availability_zones,
+                      functools.partial(template.resolve_availability_zones,
+                                        stack=stack),
                       template.resolve_find_in_map,
                       template.reduce_joins])
 

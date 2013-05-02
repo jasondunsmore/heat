@@ -15,21 +15,20 @@
 
 import os
 
-import unittest
-import mox
-
-from nose.plugins.attrib import attr
-from nose.exc import SkipTest
+from testtools import skipIf
 
 from heat.common import context
 from heat.common import exception
 from heat.common import template_format
 from heat.engine import properties
+from heat.engine import scheduler
 from heat.engine.resources.quantum import net
 from heat.engine.resources.quantum import floatingip
 from heat.engine.resources.quantum import port
 from heat.engine.resources.quantum.quantum import QuantumResource as qr
 from heat.engine import parser
+from heat.tests.common import HeatTestCase
+from heat.tests.utils import setup_dummy_db
 
 
 class FakeQuantum():
@@ -96,16 +95,11 @@ class FakeQuantum():
         }}
 
 
-@attr(tag=['unit', 'resource'])
-@attr(speed='fast')
-class QuantumTest(unittest.TestCase):
+class QuantumTest(HeatTestCase):
     def setUp(self):
-        self.m = mox.Mox()
+        super(QuantumTest, self).setUp()
         self.m.StubOutWithMock(net.Net, 'quantum')
-
-    def tearDown(self):
-        self.m.UnsetStubs()
-        print "QuantumTest teardown complete"
+        setup_dummy_db()
 
     def load_template(self):
         self.path = os.path.dirname(os.path.realpath(__file__)).\
@@ -131,7 +125,7 @@ class QuantumTest(unittest.TestCase):
 
     def create_net(self, t, stack, resource_name):
         resource = net.Net('test_net', t['Resources'][resource_name], stack)
-        self.assertEqual(None, resource.create())
+        scheduler.TaskRunner(resource.create)()
         self.assertEqual(net.Net.CREATE_COMPLETE, resource.state)
         return resource
 
@@ -170,8 +164,7 @@ class QuantumTest(unittest.TestCase):
                           'admin_state_up': False}, props)
 
     def test_net(self):
-        if net.clients.quantumclient is None:
-            raise SkipTest
+        skipIf(net.clients.quantumclient is None, 'quantumclient unavailable')
 
         fq = FakeQuantum()
         net.Net.quantum().MultipleTimes().AndReturn(fq)
@@ -202,17 +195,13 @@ class QuantumTest(unittest.TestCase):
         self.m.VerifyAll()
 
 
-@attr(tag=['unit', 'resource'])
-@attr(speed='fast')
-class QuantumFloatingIPTest(unittest.TestCase):
+class QuantumFloatingIPTest(HeatTestCase):
     def setUp(self):
-        self.m = mox.Mox()
+        super(QuantumFloatingIPTest, self).setUp()
         self.m.StubOutWithMock(floatingip.FloatingIP, 'quantum')
         self.m.StubOutWithMock(floatingip.FloatingIPAssociation, 'quantum')
         self.m.StubOutWithMock(port.Port, 'quantum')
-
-    def tearDown(self):
-        self.m.UnsetStubs()
+        setup_dummy_db()
 
     def load_template(self, name='Quantum'):
         self.path = os.path.dirname(os.path.realpath(__file__)).\
@@ -251,7 +240,7 @@ class QuantumFloatingIPTest(unittest.TestCase):
         stack = self.parse_stack(t)
 
         fip = stack['floating_ip']
-        self.assertEqual(None, fip.create())
+        scheduler.TaskRunner(fip.create)()
         self.assertEqual(floatingip.FloatingIP.CREATE_COMPLETE, fip.state)
         fip.validate()
 
@@ -286,7 +275,7 @@ class QuantumFloatingIPTest(unittest.TestCase):
         stack = self.parse_stack(t)
 
         p = stack['port_floating']
-        self.assertEqual(None, p.create())
+        scheduler.TaskRunner(p.create)()
         self.assertEqual(port.Port.CREATE_COMPLETE, p.state)
         p.validate()
 
@@ -324,15 +313,15 @@ class QuantumFloatingIPTest(unittest.TestCase):
         stack = self.parse_stack(t)
 
         fip = stack['floating_ip']
-        self.assertEqual(None, fip.create())
+        scheduler.TaskRunner(fip.create)()
         self.assertEqual(floatingip.FloatingIP.CREATE_COMPLETE, fip.state)
 
         p = stack['port_floating']
-        self.assertEqual(None, p.create())
+        scheduler.TaskRunner(p.create)()
         self.assertEqual(port.Port.CREATE_COMPLETE, p.state)
 
         fipa = stack['floating_ip_assoc']
-        self.assertEqual(None, fipa.create())
+        scheduler.TaskRunner(fipa.create)()
         self.assertEqual(floatingip.FloatingIPAssociation.CREATE_COMPLETE,
                          fipa.state)
 

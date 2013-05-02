@@ -13,17 +13,15 @@
 #    under the License.
 
 import errno
-import mox
+import fixtures
 import os
 import pkg_resources
 import subprocess
-import unittest
 import stat
 import StringIO
 
-from nose.plugins.attrib import attr
-
 from heat.cloudinit import loguserdata
+from heat.tests.common import HeatTestCase
 
 
 class FakeCiVersion():
@@ -39,18 +37,13 @@ class FakePOpen():
         pass
 
 
-@attr(tag=['unit'])
-@attr(speed='fast')
-class LoguserdataTest(unittest.TestCase):
+class LoguserdataTest(HeatTestCase):
 
     def setUp(self):
-        self.m = mox.Mox()
+        super(LoguserdataTest, self).setUp()
         self.m.StubOutWithMock(pkg_resources, 'get_distribution')
         self.m.StubOutWithMock(subprocess, 'Popen')
         self.m.StubOutWithMock(os, 'chmod')
-
-    def tearDown(self):
-        self.m.UnsetStubs()
 
     def test_ci_version(self):
         # too old versions
@@ -93,7 +86,8 @@ class LoguserdataTest(unittest.TestCase):
         self.m.VerifyAll()
 
     def test_create_log(self):
-        log_name = os.tmpnam()
+        tempdir = self.useFixture(fixtures.TempDir())
+        log_name = os.path.join(tempdir.path, 'test_log')
         with loguserdata.create_log(log_name) as log:
             log.write('testing')
 

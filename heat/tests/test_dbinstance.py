@@ -15,29 +15,24 @@
 
 import os
 
-import unittest
 import mox
-
-from nose.plugins.attrib import attr
 
 from heat.common import context
 from heat.common import exception
 from heat.common import template_format
 from heat.engine import parser
+from heat.engine import scheduler
 from heat.engine.resources import dbinstance as dbi
+from heat.tests.common import HeatTestCase
+from heat.tests.utils import setup_dummy_db
 
 
-@attr(tag=['unit', 'resource'])
-@attr(speed='fast')
-class DBInstanceTest(unittest.TestCase):
+class DBInstanceTest(HeatTestCase):
     def setUp(self):
-        self.m = mox.Mox()
+        super(DBInstanceTest, self).setUp()
+        setup_dummy_db()
         self.m.StubOutWithMock(dbi.DBInstance, 'create_with_template')
         self.m.StubOutWithMock(dbi.DBInstance, 'nested')
-
-    def tearDown(self):
-        self.m.UnsetStubs()
-        print "DBInstanceTest teardown complete"
 
     def load_template(self):
         self.path = os.path.dirname(os.path.realpath(__file__)).\
@@ -65,7 +60,7 @@ class DBInstanceTest(unittest.TestCase):
                                   t['Resources'][resource_name],
                                   stack)
         self.assertEqual(None, resource.validate())
-        self.assertEqual(None, resource.create())
+        scheduler.TaskRunner(resource.create)()
         self.assertEqual(dbi.DBInstance.CREATE_COMPLETE, resource.state)
         return resource
 

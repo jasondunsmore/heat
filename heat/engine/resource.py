@@ -15,7 +15,6 @@
 
 import base64
 from datetime import datetime
-import eventlet
 from eventlet.support import greenlets as greenlet
 
 from heat.engine import event
@@ -319,8 +318,9 @@ class Resource(object):
             create_data = None
             if callable(getattr(self, 'handle_create', None)):
                 create_data = self.handle_create()
+                yield
             while not self.check_active(create_data):
-                eventlet.sleep(1)
+                yield
         except greenlet.GreenletExit:
             # Older versions of greenlet erroneously had GreenletExit inherit
             # from Exception instead of BaseException
@@ -400,7 +400,21 @@ class Resource(object):
     def validate(self):
         logger.info('Validating %s' % str(self))
 
+        self.validate_deletion_policy(self.t)
         return self.properties.validate()
+
+    @staticmethod
+    def validate_deletion_policy(template):
+        deletion_policy = template.get('DeletionPolicy', 'Delete')
+        if deletion_policy not in ('Delete', 'Retain', 'Snapshot'):
+            msg = 'Invalid DeletionPolicy %s' % deletion_policy
+            raise exception.StackValidationFailed(message=msg)
+        elif deletion_policy == 'Snapshot':
+            # Some resources will support it in the future, in which case we
+            # should check for the presence of a handle_snapshot method for
+            # example.
+            msg = 'Snapshot DeletionPolicy not supported'
+            raise exception.StackValidationFailed(message=msg)
 
     def delete(self):
         '''
@@ -420,8 +434,9 @@ class Resource(object):
         try:
             self.state_set(self.DELETE_IN_PROGRESS)
 
-            if callable(getattr(self, 'handle_delete', None)):
-                self.handle_delete()
+            if self.t.get('DeletionPolicy', 'Delete') == 'Delete':
+                if callable(getattr(self, 'handle_delete', None)):
+                    self.handle_delete()
         except Exception as ex:
             logger.exception('Delete %s', str(self))
             failure = exception.ResourceFailure(ex)
