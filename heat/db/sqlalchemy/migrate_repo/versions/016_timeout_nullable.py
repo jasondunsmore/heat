@@ -12,17 +12,21 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-import fixtures
-import logging
-import mox
-import testtools
+from sqlalchemy import *
+from migrate import *
 
 
-class HeatTestCase(testtools.TestCase):
+def upgrade(migrate_engine):
+    meta = MetaData()
+    meta.bind = migrate_engine
 
-    def setUp(self):
-        super(HeatTestCase, self).setUp()
-        self.m = mox.Mox()
-        self.addCleanup(self.m.UnsetStubs)
-        self.useFixture(fixtures.FakeLogger(level=logging.DEBUG))
+    stack = Table('stack', meta, autoload=True)
+    stack.c.timeout.alter(nullable=True)
+
+
+def downgrade(migrate_engine):
+    meta = MetaData()
+    meta.bind = migrate_engine
+
+    stack = Table('stack', meta, autoload=True)
+    stack.c.timeout.alter(nullable=False)
