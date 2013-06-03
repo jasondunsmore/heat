@@ -15,8 +15,62 @@ def read_value(filename):
         return f.read()
 
 class CloudServer(resource.Resource):
-    properties_schema = {
-        'name': {'Type': 'String'}}
+    tags_schema = {'Key': {'Type': 'String',
+                           'Required': True},
+                   'Value': {'Type': 'String',
+                             'Required': True}}
+
+    properties_schema = {'ImageId': {'Type': 'String',
+                                     'Required': True},
+                         'InstanceType': {'Type': 'String',
+                                          'Required': True},
+                         'KeyName': {'Type': 'String'},
+                         'AvailabilityZone': {'Type': 'String'},
+                         'DisableApiTermination': {'Type': 'String',
+                                                   'Implemented': False},
+                         'KernelId': {'Type': 'String',
+                                      'Implemented': False},
+                         'Monitoring': {'Type': 'Boolean',
+                                        'Implemented': False},
+                         'PlacementGroupName': {'Type': 'String',
+                                                'Implemented': False},
+                         'PrivateIpAddress': {'Type': 'String',
+                                              'Implemented': False},
+                         'RamDiskId': {'Type': 'String',
+                                       'Implemented': False},
+                         'SecurityGroups': {'Type': 'List'},
+                         'SecurityGroupIds': {'Type': 'List'},
+                         'NetworkInterfaces': {'Type': 'List'},
+                         'SourceDestCheck': {'Type': 'Boolean',
+                                             'Implemented': False},
+                         'SubnetId': {'Type': 'String'},
+                         'Tags': {'Type': 'List',
+                                  'Schema': {'Type': 'Map',
+                                             'Schema': tags_schema}},
+                         'NovaSchedulerHints': {'Type': 'List',
+                                                'Schema': {
+                                                    'Type': 'Map',
+                                                    'Schema': tags_schema
+                                                }},
+                         'Tenancy': {'Type': 'String',
+                                     'AllowedValues': ['dedicated', 'default'],
+                                     'Implemented': False},
+                         'UserData': {'Type': 'String'},
+                         'Volumes': {'Type': 'List'}}
+
+    # template keys supported for handle_update
+    update_allowed_keys = ('Metadata',)
+
+    _deferred_server_statuses = ['BUILD',
+                                 'HARD_REBOOT',
+                                 'PASSWORD',
+                                 'REBOOT',
+                                 'RESCUE',
+                                 'RESIZE',
+                                 'REVERT_RESIZE',
+                                 'SHUTOFF',
+                                 'SUSPENDED',
+                                 'VERIFY_RESIZE']
 
     def __init__(self, name, json_snippet, stack):
         super(CloudServer, self).__init__(name, json_snippet, stack)
@@ -30,21 +84,18 @@ class CloudServer(resource.Resource):
 
     def handle_create(self):
         """Create a container."""
-        server_name = "testserver2"
-        auth_url = "https://identity.api.rackspacecloud.com/v2.0/"
-        password = read_value("/tmp/.p")
-        tenant = read_value("/tmp/.a")
-        user = read_value("/tmp/.u")
+        flavor = self.properties['InstanceType']
+        
         client = novaclient.Client(
             1.1,
-            user,
-            password,
-            tenant,
-            auth_url=auth_url,
+            self.context.user,
+            self.context.password,
+            self.context.tenant,
+            auth_url=self.context.auth_url,
             region_name="ORD"
         )
         result = client.servers.create(
-            server_name,  # name of server
+            self.name,  # name of server
             "31e1b5ee-ef2f-4f2a-8cbc-9d0ae412231c",  # image
             "2",  # flavor
             config_drive=True  # metadata service alt
