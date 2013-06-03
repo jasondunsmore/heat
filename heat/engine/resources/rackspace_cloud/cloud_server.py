@@ -43,12 +43,32 @@ class CloudServer(resource.Resource):
             auth_url=auth_url,
             region_name="ORD"
         )
+        # TODO: build user_data and make it available via HTTP
+        user_data_url = "http://dunsmor.com/pastebin/1370288963.txt"
         result = client.servers.create(
             server_name,  # name of server
-            "31e1b5ee-ef2f-4f2a-8cbc-9d0ae412231c",  # image
+            "4588a7fc-d199-4d12-98fb-bfe952035e05",  # image
             "2",  # flavor
-            config_drive=True  # metadata service alt
+            config_drive=True,  # metadata service alt
+            files={"/tmp/user-data-url": user_data_url}
         )
+
+        # /etc/init/cloud-init.conf:
+
+        # start on mounted MOUNTPOINT=/ and stopped cloud-init-nonet
+        #
+        # task
+        #
+        # console output
+        #
+        # pre-start script
+        #   user_data_url=$(cat /tmp/user-data-url)
+        #   mkdir -p /var/lib/cloud/seed/nocloud-net
+        #   curl $user_data_url > /var/lib/cloud/nocloud-net/heat/user-data
+        # end script
+        #
+        # exec /usr/bin/cloud-init start
+
         print "ID:", result.id
         print "Root pass:", result.adminPass
 
