@@ -16,6 +16,7 @@
 from heat.common import exception
 from heat.engine import resource
 from heat.engine import parser
+from heat.engine import scheduler
 
 from heat.openstack.common import log as logging
 
@@ -45,7 +46,8 @@ class StackResource(resource.Resource):
 
         return self._nested
 
-    def create_with_template(self, child_template, user_params):
+    def create_with_template(self, child_template, user_params,
+                             timeout_mins=None):
         '''
         Handle the creation of the nested stack from a given JSON template.
         '''
@@ -59,13 +61,23 @@ class StackResource(resource.Resource):
                                     self.physical_resource_name(),
                                     template,
                                     params,
+                                    timeout_mins=timeout_mins,
                                     disable_rollback=True)
 
         nested_id = self._nested.store(self.stack)
         self.resource_id_set(nested_id)
-        self._nested.create()
-        if self._nested.state != self._nested.CREATE_COMPLETE:
-            raise exception.Error(self._nested.state_description)
+
+        stack_creator = scheduler.TaskRunner(self._nested.create_task)
+        stack_creator.start(timeout=self._nested.timeout_secs())
+        return stack_creator
+
+    def check_create_complete(self, stack_creator):
+        done = stack_creator.step()
+        if done:
+            if self._nested.state != self._nested.CREATE_COMPLETE:
+                raise exception.Error(self._nested.state_description)
+
+        return done
 
     def delete_nested(self):
         '''
