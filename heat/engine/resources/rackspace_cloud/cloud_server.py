@@ -9,12 +9,23 @@ import pkgutil
 import os
 from urlparse import urlparse
 from email.mime.multipart import MIMEMultipart
+import BaseHTTPServer
 
 logger = logging.getLogger(__name__)
 
 def read_value(filename):
     with open(filename, 'r') as f:
         return f.read()
+
+class UserDataHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+    def do_GET(self):
+        with open("/tmp/user-data", 'r') as f:
+            userdata = f.read()
+        self.send_response(200)
+        self.send_header("Content-type", type)
+        self.send_header("Content-length", str(len(userdata)))
+        self.end_headers()
+        self.wfile.write(userdata)
 
 class CloudServer(resource.Resource):
     tags_schema = {'Key': {'Type': 'String',
@@ -50,7 +61,7 @@ class CloudServer(resource.Resource):
                                      self.name,
                                      short_id.generate_id())
 
-    def _build_userdata(self, userdata):
+    def _build_userdata(self, raw_userdata):
         if not self.mime_string:
             # Build mime multipart data blob for cloudinit userdata
 
@@ -122,6 +133,9 @@ class CloudServer(resource.Resource):
         user = read_value("/tmp/.u")
         raw_userdata = self.properties['UserData'] or ''
         userdata = self._build_userdata(raw_userdata)
+        with open("/tmp/user-data", 'w') as f:
+            f.write(userdata)
+        userdata_url = "http://198.61.214.201:9000"
         client = novaclient.Client(
             1.1,
             user,
@@ -130,15 +144,14 @@ class CloudServer(resource.Resource):
             auth_url=auth_url,
             region_name="ORD"
         )
-        # TODO: build user_data and make it available via HTTP
-        # TODO: create empty meta_data file
-        user_data_url = "http://dunsmor.com/pastebin/1370288963.txt"
         result = client.servers.create(
             server_name,  # name of server
             "bbeae8f0-353d-423b-8278-b8be9e3aa22b",  # image
             "2",  # flavor
-            files={"/tmp/user-data-url": user_data_url}
+            files={"/tmp/user-data-url": userdata_url}
         )
+        httpd = BaseHTTPServer.HTTPServer(('', 9000), UserDataHandler)
+        httpd.handle_request()
 
         print "ID:", result.id
         print "Root pass:", result.adminPass
