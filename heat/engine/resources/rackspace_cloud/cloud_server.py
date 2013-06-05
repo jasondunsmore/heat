@@ -122,7 +122,6 @@ class CloudServer(resource.Resource):
             server_name,  # name of server
             "82f4a4ee-0266-48f6-a328-0681f893229d",  # image
             "2",  # flavor
-            config_drive=True,  # metadata service alt
             files={"/tmp/user-data-url": user_data_url}
         )
 
