@@ -12,18 +12,33 @@ from email.mime.multipart import MIMEMultipart
 
 logger = logging.getLogger(__name__)
 
-def resource_mapping():
-    return {
-        'Rackspace::CloudServer': CloudServer
-    }
-
 def read_value(filename):
     with open(filename, 'r') as f:
         return f.read()
 
 class CloudServer(resource.Resource):
+    tags_schema = {'Key': {'Type': 'String',
+                           'Required': True},
+                   'Value': {'Type': 'String',
+                             'Required': True}}
     properties_schema = {
-        'name': {'Type': 'String'}}
+        'ImageId': {'Type': 'String', 'Required': True},
+        'UserData': {'Type': 'String'},
+        'KeyName': {'Type': 'String'},
+        'AvailabilityZone': {'Type': 'String'},
+        'SecurityGroups': {'Type': 'List'},
+        'SecurityGroupIds': {'Type': 'List'},
+        'NovaSchedulerHints': {
+            'Type': 'List', 'Schema': {'Type': 'Map', 'Schema': tags_schema}
+        },
+        'Volumes': {'Type': 'List'},
+        'SubnetId': {'Type': 'String'},
+        'NetworkInterfaces': {'Type': 'List'},
+        'InstanceType': {'Type': 'String', 'Required': True},
+        'Tags': {'Type': 'List',
+                 'Schema': {'Type': 'Map',
+                            'Schema': tags_schema}}
+    }
 
     def __init__(self, name, json_snippet, stack):
         super(CloudServer, self).__init__(name, json_snippet, stack)
@@ -100,13 +115,13 @@ class CloudServer(resource.Resource):
 
     def handle_create(self):
         """Create a container."""
-        server_name = "testserver2"
+        server_name = "cloud-init-build-userdata"
         auth_url = "https://identity.api.rackspacecloud.com/v2.0/"
         password = read_value("/tmp/.p")
         tenant = read_value("/tmp/.a")
         user = read_value("/tmp/.u")
-        #raw_userdata = self.properties['UserData'] or ''
-        #userdata = _build_user_data(raw_userdata)
+        raw_userdata = self.properties['UserData'] or ''
+        userdata = self._build_userdata(raw_userdata)
         client = novaclient.Client(
             1.1,
             user,
@@ -120,7 +135,7 @@ class CloudServer(resource.Resource):
         user_data_url = "http://dunsmor.com/pastebin/1370288963.txt"
         result = client.servers.create(
             server_name,  # name of server
-            "82f4a4ee-0266-48f6-a328-0681f893229d",  # image
+            "bbeae8f0-353d-423b-8278-b8be9e3aa22b",  # image
             "2",  # flavor
             files={"/tmp/user-data-url": user_data_url}
         )
@@ -134,3 +149,27 @@ class CloudServer(resource.Resource):
     def handle_update(self):
         raise NotImplementedError
 
+    def FnGetAtt(self, key):
+        res = None
+        if key == 'AvailabilityZone':
+            res = self.properties['AvailabilityZone']
+        elif key == 'PublicIp':
+            res = self._ipaddress()
+        elif key == 'PrivateIp':
+            res = self._ipaddress()
+        elif key == 'PublicDnsName':
+            res = self._ipaddress()
+        elif key == 'PrivateDnsName':
+            res = self._ipaddress()
+        else:
+            raise exception.InvalidTemplateAttribute(resource=self.name,
+                                                     key=key)
+
+        logger.info('%s.GetAtt(%s) == %s' % (self.name, key, res))
+        return unicode(res)
+
+
+def resource_mapping():
+    return {
+        'Rackspace::CloudServer': CloudServer
+    }
