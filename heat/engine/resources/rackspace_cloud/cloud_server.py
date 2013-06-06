@@ -1,7 +1,7 @@
 from heat.engine import resource
 from heat.openstack.common import log as logging
-import pyrax
-from heat.common import short_id
+from novaclient import client as novaclient
+from heat.common import short_id, exception
 import json
 from oslo.config import cfg
 from email.mime.text import MIMEText
@@ -9,6 +9,9 @@ import pkgutil
 import os
 from urlparse import urlparse
 from email.mime.multipart import MIMEMultipart
+import BaseHTTPServer
+from socket import AF_INET, SOCK_STREAM, socket
+import urllib2
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +19,15 @@ def read_value(filename):
     with open(filename, 'r') as f:
         return f.read()
 
+class UserDataHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+    def do_GET(self):
+        with open("/tmp/user-data", 'r') as f:
+            userdata = f.read()
+        self.send_response(200)
+        self.send_header("Content-type", type)
+        self.send_header("Content-length", str(len(userdata)))
+        self.end_headers()
+        self.wfile.write(userdata)
 
 class CloudServer(resource.Resource):
     tags_schema = {'Key': {'Type': 'String',
@@ -114,31 +126,67 @@ class CloudServer(resource.Resource):
 
         return self.mime_string
 
+    def _serve_userdata(self, port):
+        raw_userdata = self.properties['UserData'] or ''
+        userdata = self._build_userdata(raw_userdata)
+        with open("/tmp/user-data", 'w') as f:
+            f.write(userdata)
+        httpd = BaseHTTPServer.HTTPServer(('', port), UserDataHandler)
+        httpd.timeout = 600
+        httpd.handle_request()  # wait for server to fetch userdata
+        httpd.server_close()
+
+    def _find_available_port(self, start, end):
+        port = start
+        s = socket(AF_INET, SOCK_STREAM)
+        while True:
+            result = s.connect_ex(("127.0.0.1", port))
+            if result != 0:  # 0 means the port is open
+                s.close()
+                return port
+            elif port >= end:
+                s.close()
+                raise exception.Error("No open ports between %s and %s"
+                                      % (start, end))
+            else:
+                port += 1
+
     def handle_create(self):
-        """Create a Rackspace Cloud Servers container.
+        """Create a container.
 
         Because Rackspace Cloud Servers do not have the metadata
         service running, we have to transfer the user-data file to the
-        server.
+        server.  This is done via an HTTP call to the Heat server from
+        the Cloud Server, so the ports 9000-9100 must be accessible
+        from the Cloud Server.
 
         """
-        name = "cloud-init-build-userdata-debugging3"
+        auth_url = "https://identity.api.rackspacecloud.com/v2.0/"
+        password = read_value("/tmp/.p")
+        tenant = read_value("/tmp/.a")
+        user = read_value("/tmp/.u")
+        client = novaclient.Client(
+            1.1,
+            user,
+            password,
+            tenant,
+            auth_url=auth_url,
+            region_name="ORD"
+        )
+
+        server_name = "cloud-init-build-userdata-debugging3"
         image = "dd979f2c-2805-422f-af31-ef6b63ef9f5e"
         flavor = "2"
-        files={"/root/.ssh/authorized_keys":
-               "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAxS2c4dVUgt6X+l+Ks1qWhWBODUY"
-               "W3ag1oUyIw5M4WGQlyRJCkxE26yG+schzcEBAIeDTgmycGdpEemKG9QppQmNdp2"
-               "0ykh5ncMzZbHE9f5+hQSotSqFCcjEUlzp4m//06M8wqVNWfJ2zs3xAelfv2iEsQ"
-               "g/t31aVHLF2HbPZLvmxVMj2xtrIUBXogAy9l9HjGGcYRN9eQ5gBBXPwmvP1FRFZ"
-               "ZKx/BL+Ggk9W2G21XN53gpS6HRe6MrgD06nQMe2x5Af0+at+aSxh0bDpuNw3BkS"
-               "hC5OLn7K26GUjJjtStGOzMO3KkzsUUaD0qzO3+g16dSIJfxslnZlhvUjprtHKcQ"
-               "== jason@carbon"}
+        # TODO(jason): Find a better way to obtain public IP address
+        ip = urllib2.urlopen('http://ip.42.pl/raw').read()
+        port = self._find_available_port(9000, 9100)
+        userdata_url = "http://" + ip + ":" + str(port)
+        files={"/tmp/user-data-url": userdata_url}
+        result = client.servers.create(server_name, image, flavor, files=files)
+        self._serve_userdata(port)
 
-        cs_ord = pyrax.connect_to_cloudservers(region="ORD")
-        server = cs_ord.servers.create(name, image, flavor, files=files)
-        complete = pyrax.utils.wait_until(server, "status",
-                                          ["ACTIVE", "ERROR"], attempts=0)
-        import pdb; pdb.set_trace()
+        print "ID:", result.id
+        print "Root pass:", result.adminPass
 
     def handle_delete(self):
         raise NotImplementedError
