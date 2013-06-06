@@ -9,6 +9,9 @@ import pkgutil
 import os
 from urlparse import urlparse
 from email.mime.multipart import MIMEMultipart
+import paramiko
+from Crypto.PublicKey import RSA
+from Crypto.Random import atfork
 
 logger = logging.getLogger(__name__)
 
@@ -125,8 +128,8 @@ class CloudServer(resource.Resource):
         pyrax.set_setting("identity_type", "rackspace")
         pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/rackspace/rs-pyrax-creds.txt")
 
-        name = "cloud-init-build-userdata-debugging3"
-        image = "dd979f2c-2805-422f-af31-ef6b63ef9f5e"
+        name = "cloud-server-vanilla"
+        image = "e4dbdba7-b2a4-4ee5-8e8f-4595b6d694ce"  # Ubuntu 12.04
         flavor = "2"
         files={"/root/.ssh/authorized_keys":
                "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAxS2c4dVUgt6X+l+Ks1qWhWBODUY"
@@ -141,6 +144,25 @@ class CloudServer(resource.Resource):
         server = cs_ord.servers.create(name, image, flavor, files=files)
         complete = pyrax.utils.wait_until(server, "status",
                                           ["ACTIVE", "ERROR"], attempts=0)
+        for public_ip in complete.addresses['public']:
+            if public_ip['version'] == 4:
+                ip = public_ip['addr']
+        atfork()  # Reset the random number generator
+        public_key = RSA.generate(2048)
+        private_key = key.exportKey('PEM')
+        
+        client = paramiko.SSHClient()
+        client.load_system_host_keys()
+        ssh.connect(ip)
+        # TODO: SFTP user-data file
+        script = """#!/bin/bash
+
+apt-get install cloud-init
+# TODO: Install cloud-init data source
+# TODO: Install heat-cfntools
+cloud-init start
+# TODO: Remove key from authorized_keys
+"""
 
     def handle_delete(self):
         raise NotImplementedError
