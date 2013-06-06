@@ -9,9 +9,7 @@ import pkgutil
 import os
 from urlparse import urlparse
 from email.mime.multipart import MIMEMultipart
-import BaseHTTPServer
-from socket import AF_INET, SOCK_STREAM, socket
-import urllib2
+import paramiko
 
 logger = logging.getLogger(__name__)
 
@@ -19,15 +17,6 @@ def read_value(filename):
     with open(filename, 'r') as f:
         return f.read()
 
-class UserDataHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    def do_GET(self):
-        with open("/tmp/user-data", 'r') as f:
-            userdata = f.read()
-        self.send_response(200)
-        self.send_header("Content-type", type)
-        self.send_header("Content-length", str(len(userdata)))
-        self.end_headers()
-        self.wfile.write(userdata)
 
 class CloudServer(resource.Resource):
     tags_schema = {'Key': {'Type': 'String',
@@ -126,30 +115,9 @@ class CloudServer(resource.Resource):
 
         return self.mime_string
 
-    def _serve_userdata(self, port):
-        raw_userdata = self.properties['UserData'] or ''
-        userdata = self._build_userdata(raw_userdata)
-        with open("/tmp/user-data", 'w') as f:
-            f.write(userdata)
-        httpd = BaseHTTPServer.HTTPServer(('', port), UserDataHandler)
-        httpd.timeout = 600
-        httpd.handle_request()  # wait for server to fetch userdata
-        httpd.server_close()
-
-    def _find_available_port(self, start, end):
-        port = start
-        s = socket(AF_INET, SOCK_STREAM)
+    def wait_for_server(self, server):
         while True:
-            result = s.connect_ex(("127.0.0.1", port))
-            if result != 0:  # 0 means the port is open
-                s.close()
-                return port
-            elif port >= end:
-                s.close()
-                raise exception.Error("No open ports between %s and %s"
-                                      % (start, end))
-            else:
-                port += 1
+            client.servers.
 
     def handle_create(self):
         """Create a container.
@@ -177,16 +145,9 @@ class CloudServer(resource.Resource):
         server_name = "cloud-init-build-userdata-debugging3"
         image = "dd979f2c-2805-422f-af31-ef6b63ef9f5e"
         flavor = "2"
-        # TODO(jason): Find a better way to obtain public IP address
-        ip = urllib2.urlopen('http://ip.42.pl/raw').read()
-        port = self._find_available_port(9000, 9100)
-        userdata_url = "http://" + ip + ":" + str(port)
-        files={"/tmp/user-data-url": userdata_url}
-        result = client.servers.create(server_name, image, flavor, files=files)
-        self._serve_userdata(port)
+        files={"/root/.ssh/authorized_keys": "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAxS2c4dVUgt6X+l+Ks1qWhWBODUYW3ag1oUyIw5M4WGQlyRJCkxE26yG+schzcEBAIeDTgmycGdpEemKG9QppQmNdp20ykh5ncMzZbHE9f5+hQSotSqFCcjEUlzp4m//06M8wqVNWfJ2zs3xAelfv2iEsQg/t31aVHLF2HbPZLvmxVMj2xtrIUBXogAy9l9HjGGcYRN9eQ5gBBXPwmvP1FRFZZKx/BL+Ggk9W2G21XN53gpS6HRe6MrgD06nQMe2x5Af0+at+aSxh0bDpuNw3BkShC5OLn7K26GUjJjtStGOzMO3KkzsUUaD0qzO3+g16dSIJfxslnZlhvUjprtHKcQ== jason@carbon"}
+        server = client.servers.create(server_name, image, flavor, files=files)
 
-        print "ID:", result.id
-        print "Root pass:", result.adminPass
 
     def handle_delete(self):
         raise NotImplementedError
