@@ -1,7 +1,7 @@
 from heat.engine import resource
 from heat.openstack.common import log as logging
 from novaclient import client as novaclient
-from heat.common import short_id
+from heat.common import short_id, exception
 import json
 from oslo.config import cfg
 from email.mime.text import MIMEText
@@ -10,6 +10,8 @@ import os
 from urlparse import urlparse
 from email.mime.multipart import MIMEMultipart
 import BaseHTTPServer
+from socket import AF_INET, SOCK_STREAM, socket
+import urllib2
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +63,7 @@ class CloudServer(resource.Resource):
                                      self.name,
                                      short_id.generate_id())
 
-    def _build_userdata(self, raw_userdata):
+    def _build_userdata(self, userdata):
         if not self.mime_string:
             # Build mime multipart data blob for cloudinit userdata
 
@@ -124,18 +126,45 @@ class CloudServer(resource.Resource):
 
         return self.mime_string
 
-    def handle_create(self):
-        """Create a container."""
-        server_name = "cloud-init-build-userdata"
-        auth_url = "https://identity.api.rackspacecloud.com/v2.0/"
-        password = read_value("/tmp/.p")
-        tenant = read_value("/tmp/.a")
-        user = read_value("/tmp/.u")
+    def _serve_userdata(self, port):
         raw_userdata = self.properties['UserData'] or ''
         userdata = self._build_userdata(raw_userdata)
         with open("/tmp/user-data", 'w') as f:
             f.write(userdata)
-        userdata_url = "http://198.61.214.201:9000"
+        httpd = BaseHTTPServer.HTTPServer(('', port), UserDataHandler)
+        httpd.timeout = 600
+        httpd.handle_request()  # wait for server to fetch userdata
+        httpd.server_close()
+
+    def _find_available_port(self, start, end):
+        port = start
+        s = socket(AF_INET, SOCK_STREAM)
+        while True:
+            result = s.connect_ex(("127.0.0.1", port))
+            if result != 0:  # 0 means the port is open
+                s.close()
+                return port
+            elif port >= end:
+                s.close()
+                raise exception.Error("No open ports between %s and %s"
+                                      % (start, end))
+            else:
+                port += 1
+
+    def handle_create(self):
+        """Create a container.
+
+        Because Rackspace Cloud Servers do not have the metadata
+        service running, we have to transfer the user-data file to the
+        server.  This is done via an HTTP call to the Heat server from
+        the Cloud Server, so the ports 9000-9100 must be accessible
+        from the Cloud Server.
+
+        """
+        auth_url = "https://identity.api.rackspacecloud.com/v2.0/"
+        password = read_value("/tmp/.p")
+        tenant = read_value("/tmp/.a")
+        user = read_value("/tmp/.u")
         client = novaclient.Client(
             1.1,
             user,
@@ -144,14 +173,17 @@ class CloudServer(resource.Resource):
             auth_url=auth_url,
             region_name="ORD"
         )
-        result = client.servers.create(
-            server_name,  # name of server
-            "bbeae8f0-353d-423b-8278-b8be9e3aa22b",  # image
-            "2",  # flavor
-            files={"/tmp/user-data-url": userdata_url}
-        )
-        httpd = BaseHTTPServer.HTTPServer(('', 9000), UserDataHandler)
-        httpd.handle_request()
+
+        server_name = "cloud-init-build-userdata-debugging3"
+        image = "dd979f2c-2805-422f-af31-ef6b63ef9f5e"
+        flavor = "2"
+        # TODO(jason): Find a better way to obtain public IP address
+        ip = urllib2.urlopen('http://ip.42.pl/raw').read()
+        port = self._find_available_port(9000, 9100)
+        userdata_url = "http://" + ip + ":" + str(port)
+        files={"/tmp/user-data-url": userdata_url}
+        result = client.servers.create(server_name, image, flavor, files=files)
+        self._serve_userdata(port)
 
         print "ID:", result.id
         print "Root pass:", result.adminPass
@@ -161,25 +193,6 @@ class CloudServer(resource.Resource):
 
     def handle_update(self):
         raise NotImplementedError
-
-    def FnGetAtt(self, key):
-        res = None
-        if key == 'AvailabilityZone':
-            res = self.properties['AvailabilityZone']
-        elif key == 'PublicIp':
-            res = self._ipaddress()
-        elif key == 'PrivateIp':
-            res = self._ipaddress()
-        elif key == 'PublicDnsName':
-            res = self._ipaddress()
-        elif key == 'PrivateDnsName':
-            res = self._ipaddress()
-        else:
-            raise exception.InvalidTemplateAttribute(resource=self.name,
-                                                     key=key)
-
-        logger.info('%s.GetAtt(%s) == %s' % (self.name, key, res))
-        return unicode(res)
 
 
 def resource_mapping():
