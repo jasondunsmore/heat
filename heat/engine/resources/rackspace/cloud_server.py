@@ -123,7 +123,7 @@ class CloudServer(resource.Resource):
 
         """
         pyrax.set_setting("identity_type", "rackspace")
-        pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/rackspace/rs-pyrax-creds.txt", "ORD")
+        pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/rackspace/rs-pyrax-creds.txt")
 
         name = "cloud-init-build-userdata-debugging3"
         image = "dd979f2c-2805-422f-af31-ef6b63ef9f5e"
