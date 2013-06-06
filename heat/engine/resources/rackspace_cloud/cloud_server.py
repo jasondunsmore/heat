@@ -122,9 +122,6 @@ class CloudServer(resource.Resource):
         server.
 
         """
-        pyrax.set_setting("identity_type", "rackspace")
-        pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/rackspace/rs-pyrax-creds.txt", "ORD")
-
         name = "cloud-init-build-userdata-debugging3"
         image = "dd979f2c-2805-422f-af31-ef6b63ef9f5e"
         flavor = "2"
@@ -141,6 +138,7 @@ class CloudServer(resource.Resource):
         server = cs_ord.servers.create(name, image, flavor, files=files)
         complete = pyrax.utils.wait_until(server, "status",
                                           ["ACTIVE", "ERROR"], attempts=0)
+        import pdb; pdb.set_trace()
 
     def handle_delete(self):
         raise NotImplementedError
