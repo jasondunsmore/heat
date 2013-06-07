@@ -1,7 +1,7 @@
 from heat.engine import resource
 from heat.openstack.common import log as logging
 import pyrax
-from heat.common import short_id
+from heat.common import short_id, exception
 import json
 from oslo.config import cfg
 from email.mime.text import MIMEText
@@ -11,13 +11,9 @@ from urlparse import urlparse
 from email.mime.multipart import MIMEMultipart
 import paramiko
 from Crypto.PublicKey import RSA
-from Crypto.Random import atfork
+import tempfile
 
 logger = logging.getLogger(__name__)
-
-def read_value(filename):
-    with open(filename, 'r') as f:
-        return f.read()
 
 
 class CloudServer(resource.Resource):
@@ -128,41 +124,70 @@ class CloudServer(resource.Resource):
         pyrax.set_setting("identity_type", "rackspace")
         pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/rackspace/rs-pyrax-creds.txt")
 
+        #name = self.properties['InstanceType']
         name = "cloud-server-vanilla"
+        #image = self.properties['ImageId']
         image = "e4dbdba7-b2a4-4ee5-8e8f-4595b6d694ce"  # Ubuntu 12.04
+        #flavor = self.properties['InstanceType']
         flavor = "2"
-        files={"/root/.ssh/authorized_keys":
-               "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAxS2c4dVUgt6X+l+Ks1qWhWBODUY"
-               "W3ag1oUyIw5M4WGQlyRJCkxE26yG+schzcEBAIeDTgmycGdpEemKG9QppQmNdp2"
-               "0ykh5ncMzZbHE9f5+hQSotSqFCcjEUlzp4m//06M8wqVNWfJ2zs3xAelfv2iEsQ"
-               "g/t31aVHLF2HbPZLvmxVMj2xtrIUBXogAy9l9HjGGcYRN9eQ5gBBXPwmvP1FRFZ"
-               "ZKx/BL+Ggk9W2G21XN53gpS6HRe6MrgD06nQMe2x5Af0+at+aSxh0bDpuNw3BkS"
-               "hC5OLn7K26GUjJjtStGOzMO3KkzsUUaD0qzO3+g16dSIJfxslnZlhvUjprtHKcQ"
-               "== jason@carbon"}
+        rsa = RSA.generate(1024)
+        private_key = rsa.exportKey()
+        private_key_file = tempfile.NamedTemporaryFile()
+        private_key_file.write(private_key)
 
+        public_key = rsa.publickey().exportKey('OpenSSH')
+        files={"/root/.ssh/authorized_keys": public_key}
+
+        # Create server
         cs_ord = pyrax.connect_to_cloudservers(region="ORD")
         server = cs_ord.servers.create(name, image, flavor, files=files)
         complete = pyrax.utils.wait_until(server, "status",
                                           ["ACTIVE", "ERROR"], attempts=0)
+
+        # Get public IP
         for public_ip in complete.addresses['public']:
             if public_ip['version'] == 4:
                 ip = public_ip['addr']
-        atfork()  # Reset the random number generator
-        public_key = RSA.generate(2048)
-        private_key = key.exportKey('PEM')
-        
-        client = paramiko.SSHClient()
-        client.load_system_host_keys()
-        ssh.connect(ip)
-        # TODO: SFTP user-data file
-        script = """#!/bin/bash
+        if not ip:
+            raise exception.Error('Could not determine public IP of server')
 
-apt-get install cloud-init
-# TODO: Install cloud-init data source
-# TODO: Install heat-cfntools
-cloud-init start
-# TODO: Remove key from authorized_keys
+        # Set up server
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        private_key_file.seek(0)
+        ssh.connect(ip,
+                    username="root",
+                    key_filename=private_key_file.name)
+
+        # SFTP user-data file
+        userdata = self.properties['UserData'] or ''
+        userdata = self._build_userdata(userdata)
+        userdata_file = tempfile.NamedTemporaryFile()
+        userdata_file.write(userdata)
+        private_key_file.seek(0)
+        pkey = paramiko.RSAKey.from_private_key_file(private_key_file.name)
+        transport = paramiko.Transport((ip, 22))
+        transport.connect(hostkey=None, username="root", pkey=pkey)
+        sftp = paramiko.SFTPClient.from_transport(transport)
+        sftp.put(userdata_file.name, "/tmp/userdata")
+
+        # SSH
+        script = """echo "deb http://ppa.launchpad.net/steve-stevebaker/heat-cfntools/ubuntu precise main" >> /etc/apt/sources.list
+gpg --keyserver keyserver.ubuntu.net --recv-keys 6D7D4795
+apt-get update
+apt-get install -y --force-yes cloud-init heat-cfntools
+mkdir -p /var/lib/cloud/seed/nocloud-net
+mv /tmp/userdata /var/lib/cloud/seed/nocloud-net/user-data
+touch /var/lib/cloud/seed/nocloud-net/meta-data
+date >> /var/log/cloud-init.log
+cloud-init start >> /var/log/cloud-init.log
+rm -f /root/.ssh/authorized_keys
 """
+        stdin, stdout, stderr = ssh.exec_command(script)
+
+        private_key_file.close()
+        userdata_file.close()
+        import pdb; pdb.set_trace()
 
     def handle_delete(self):
         raise NotImplementedError
