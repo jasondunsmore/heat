@@ -138,13 +138,26 @@ class CloudServer(resource.Resource):
         userdata_file.seek(0)
         script = """#!/bin/bash -e
 
+# Install cloud-init and heat-cfntools
 echo "deb http://ppa.launchpad.net/steve-stevebaker/heat-cfntools/ubuntu precise main" >> /etc/apt/sources.list
 apt-get update
 apt-get install -y --force-yes cloud-init heat-cfntools
+
+# Configure cloud-init to use nocloud data source instead of EC2
+sed -i 's/cloud_type: auto/cloud_type: nocloud/' /etc/cloud/cloud.cfg
+
+# Fix a bug in cloud-init
+sed -i 's/strip(ds).tolower()/ds.strip().lower()/' /usr/lib/python2.6/dist-packages/cloudinit/__init__.py
+
+# Create data source for cloud-init
 mkdir -p /var/lib/cloud/seed/nocloud-net
 mv /tmp/userdata /var/lib/cloud/seed/nocloud-net/user-data
 touch /var/lib/cloud/seed/nocloud-net/meta-data
-cloud-init start
+
+# Run cloud-init
+cloud-init start >> /var/log/cloud-init.log 2>&1
+
+# Clean up
 #rm -f /root/.ssh/authorized_keys
 """
         script_file = tempfile.NamedTemporaryFile()
