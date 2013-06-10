@@ -96,8 +96,8 @@ class CloudServer(resource.Resource):
     def handle_create(self):
         """Create a Rackspace Cloud Servers container.
 
-        Because Rackspace Cloud Servers do not have the metadata
-        service running, we have to transfer the user-data file to the
+        Rackspace Cloud Servers does not have the metadata service
+        running, so we have to transfer the user-data file to the
         server.
 
         """
