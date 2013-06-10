@@ -7,7 +7,6 @@ from oslo.config import cfg
 from email.mime.text import MIMEText
 import pkgutil
 import os
-from urlparse import urlparse
 from email.mime.multipart import MIMEMultipart
 import paramiko
 from Crypto.PublicKey import RSA
@@ -22,7 +21,7 @@ class CloudServer(resource.Resource):
                    'Value': {'Type': 'String',
                              'Required': True}}
     properties_schema = {
-        'ImageId': {'Type': 'String', 'Required': True},
+        'ImageName': {'Type': 'String', 'Required': True},
         'UserData': {'Type': 'String'},
         'KeyName': {'Type': 'String'},
         'AvailabilityZone': {'Type': 'String'},
@@ -38,6 +37,12 @@ class CloudServer(resource.Resource):
         'Tags': {'Type': 'List',
                  'Schema': {'Type': 'Map',
                             'Schema': tags_schema}}
+    }
+
+    rackspace_images = {
+        "F17": "76856c8b-e56e-4301-b454-c8cd1be22cfb",
+        "U10.04": "d4c7b93d-9f18-45dc-aa7c-3e3b126e3792",
+        "U12.04": "e4dbdba7-b2a4-4ee5-8e8f-4595b6d694ce"
     }
 
     def __init__(self, name, json_snippet, stack):
@@ -96,46 +101,48 @@ class CloudServer(resource.Resource):
         server.
 
         """
+        # Retrieve auth info from file (temporary solution until
+        # Rackspace auth is worked out)
         pyrax.set_setting("identity_type", "rackspace")
         pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/rackspace/rs-pyrax-creds.txt")
 
-        ##name = self.properties['InstanceType']
-        #name = "cloud-server-vanilla"
-        ##image = self.properties['ImageId']
-        #image = "e4dbdba7-b2a4-4ee5-8e8f-4595b6d694ce"  # Ubuntu 12.04
-        ##flavor = self.properties['InstanceType']
-        #flavor = "2"
-        #rsa = RSA.generate(1024)
-        #private_key = rsa.exportKey()
-        with open("/tmp/key", 'r') as f:
-            private_key = f.read()
+        # Retrieve server creation parameters from properties
+        name = self.properties['InstanceType']
+        image_name = self.properties['ImageName']
+        image_id = self.rackspace_images[image_name]
+        flavor = self.properties['InstanceType']
+
+        # Generate one-time-use SSH public/private keypair (public key
+        # will be put on server using personalities)
+        rsa = RSA.generate(1024)
+        private_key = rsa.exportKey()
         private_key_file = tempfile.NamedTemporaryFile()
         private_key_file.write(private_key)
         private_key_file.seek(0)
-        #
-        #public_key = rsa.publickey().exportKey('OpenSSH')
-        #files={"/root/.ssh/authorized_keys": public_key}
+        public_key = rsa.publickey().exportKey('OpenSSH')
+        files={"/root/.ssh/authorized_keys": public_key}
+
+        # Create userdata file
         raw_userdata = self.properties['UserData'] or ''
         userdata = self._build_userdata(raw_userdata)
-
-        # Create server
-        #cs_ord = pyrax.connect_to_cloudservers(region="ORD")
-        #server = cs_ord.servers.create(name, image, flavor, files=files)
-        #complete = pyrax.utils.wait_until(server, "status",
-        #                                  ["ACTIVE", "ERROR"], attempts=0)
-
-        # Get public IP
-        #for public_ip in complete.addresses['public']:
-        #    if public_ip['version'] == 4:
-        #        ip = public_ip['addr']
-        #if not ip:
-        #    raise exception.Error('Could not determine public IP of server')
-        ip = "166.78.190.149"
-
-        # SFTP user-data file
         userdata_file = tempfile.NamedTemporaryFile()
         userdata_file.write(userdata)
         userdata_file.seek(0)
+
+        # Create server
+        cs_ord = pyrax.connect_to_cloudservers(region="ORD")
+        server = cs_ord.servers.create(name, image_id, flavor, files=files)
+        complete = pyrax.utils.wait_until(server, "status",
+                                          ["ACTIVE", "ERROR"], attempts=0)
+
+        # Get public IP
+        for public_ip in complete.addresses['public']:
+            if public_ip['version'] == 4:
+                ip = public_ip['addr']
+        if not ip:
+            raise exception.Error('Could not determine public IP of server')
+
+        # Create config script that will run on server
         f17_script = """#!/bin/bash -e
 
 # Install cloud-init and heat-cfntools
@@ -153,11 +160,13 @@ cloud-init start
 bash /var/lib/cloud/data/cfn-userdata
 
 # Clean up
-#rm -f /root/.ssh/authorized_keys
+rm -f /root/.ssh/authorized_keys
 """
         script_file = tempfile.NamedTemporaryFile()
         script_file.write(f17_script)
         script_file.seek(0)
+
+        # Transfer files to server via SFTP
         pkey = paramiko.RSAKey.from_private_key_file(private_key_file.name)
         transport = paramiko.Transport((ip, 22))
         transport.connect(hostkey=None, username="root", pkey=pkey)
@@ -165,7 +174,7 @@ bash /var/lib/cloud/data/cfn-userdata
         sftp.put(userdata_file.name, "/tmp/userdata")
         sftp.put(script_file.name, "/tmp/script")
 
-        # Set up server via SSH
+        # Connect via SSH and run script
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         private_key_file.seek(0)
@@ -173,12 +182,13 @@ bash /var/lib/cloud/data/cfn-userdata
                     username="root",
                     key_filename=private_key_file.name)
         stdin, stdout, stderr = ssh.exec_command("bash /tmp/script")
+        logger.debug(stdout.read())
+        logger.debug(stderr.read())
 
+        # Clean up temp files
         private_key_file.close()
         userdata_file.close()
         script_file.close()
-        print stdout.read()
-        print stderr.read()
 
     def handle_delete(self):
         raise NotImplementedError
