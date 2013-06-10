@@ -99,70 +99,78 @@ class CloudServer(resource.Resource):
         pyrax.set_setting("identity_type", "rackspace")
         pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/rackspace/rs-pyrax-creds.txt")
 
-        #name = self.properties['InstanceType']
-        name = "cloud-server-vanilla"
-        #image = self.properties['ImageId']
-        image = "e4dbdba7-b2a4-4ee5-8e8f-4595b6d694ce"  # Ubuntu 12.04
-        #flavor = self.properties['InstanceType']
-        flavor = "2"
-        rsa = RSA.generate(1024)
-        private_key = rsa.exportKey()
+        ##name = self.properties['InstanceType']
+        #name = "cloud-server-vanilla"
+        ##image = self.properties['ImageId']
+        #image = "e4dbdba7-b2a4-4ee5-8e8f-4595b6d694ce"  # Ubuntu 12.04
+        ##flavor = self.properties['InstanceType']
+        #flavor = "2"
+        #rsa = RSA.generate(1024)
+        #private_key = rsa.exportKey()
+        private_key = """\
+"""
         private_key_file = tempfile.NamedTemporaryFile()
         private_key_file.write(private_key)
-
-        public_key = rsa.publickey().exportKey('OpenSSH')
-        files={"/root/.ssh/authorized_keys": public_key}
+        private_key_file.seek(0)
+        #
+        #public_key = rsa.publickey().exportKey('OpenSSH')
+        #files={"/root/.ssh/authorized_keys": public_key}
+        raw_userdata = self.properties['UserData'] or ''
+        userdata = self._build_userdata(raw_userdata)
 
         # Create server
-        cs_ord = pyrax.connect_to_cloudservers(region="ORD")
-        server = cs_ord.servers.create(name, image, flavor, files=files)
-        complete = pyrax.utils.wait_until(server, "status",
-                                          ["ACTIVE", "ERROR"], attempts=0)
+        #cs_ord = pyrax.connect_to_cloudservers(region="ORD")
+        #server = cs_ord.servers.create(name, image, flavor, files=files)
+        #complete = pyrax.utils.wait_until(server, "status",
+        #                                  ["ACTIVE", "ERROR"], attempts=0)
 
         # Get public IP
-        for public_ip in complete.addresses['public']:
-            if public_ip['version'] == 4:
-                ip = public_ip['addr']
-        if not ip:
-            raise exception.Error('Could not determine public IP of server')
+        #for public_ip in complete.addresses['public']:
+        #    if public_ip['version'] == 4:
+        #        ip = public_ip['addr']
+        #if not ip:
+        #    raise exception.Error('Could not determine public IP of server')
+        ip = ""
 
-        # Set up server
+        # SFTP user-data file
+        userdata_file = tempfile.NamedTemporaryFile()
+        userdata_file.write(userdata)
+        userdata_file.seek(0)
+        script = """#!/bin/bash -e
+
+echo "deb http://ppa.launchpad.net/steve-stevebaker/heat-cfntools/ubuntu precise main" >> /etc/apt/sources.list
+apt-get update
+apt-get install -y --force-yes cloud-init heat-cfntools
+mkdir -p /var/lib/cloud/seed/nocloud-net
+mv /tmp/userdata /var/lib/cloud/seed/nocloud-net/user-data
+touch /var/lib/cloud/seed/nocloud-net/meta-data
+cloud-init start
+#rm -f /root/.ssh/authorized_keys
+"""
+        script_file = tempfile.NamedTemporaryFile()
+        script_file.write(script)
+        script_file.seek(0)
+        pkey = paramiko.RSAKey.from_private_key_file(private_key_file.name)
+        transport = paramiko.Transport((ip, 22))
+        transport.connect(hostkey=None, username="root", pkey=pkey)
+        sftp = paramiko.SFTPClient.from_transport(transport)
+        sftp.put(userdata_file.name, "/tmp/userdata")
+        sftp.put(script_file.name, "/tmp/script")
+
+        # Set up server via SSH
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         private_key_file.seek(0)
         ssh.connect(ip,
                     username="root",
                     key_filename=private_key_file.name)
-
-        # SFTP user-data file
-        userdata = self.properties['UserData'] or ''
-        userdata = self._build_userdata(userdata)
-        userdata_file = tempfile.NamedTemporaryFile()
-        userdata_file.write(userdata)
-        private_key_file.seek(0)
-        pkey = paramiko.RSAKey.from_private_key_file(private_key_file.name)
-        transport = paramiko.Transport((ip, 22))
-        transport.connect(hostkey=None, username="root", pkey=pkey)
-        sftp = paramiko.SFTPClient.from_transport(transport)
-        sftp.put(userdata_file.name, "/tmp/userdata")
-
-        # SSH
-        script = """echo "deb http://ppa.launchpad.net/steve-stevebaker/heat-cfntools/ubuntu precise main" >> /etc/apt/sources.list
-gpg --keyserver keyserver.ubuntu.net --recv-keys 6D7D4795
-apt-get update
-apt-get install -y --force-yes cloud-init heat-cfntools
-mkdir -p /var/lib/cloud/seed/nocloud-net
-mv /tmp/userdata /var/lib/cloud/seed/nocloud-net/user-data
-touch /var/lib/cloud/seed/nocloud-net/meta-data
-date >> /var/log/cloud-init.log
-cloud-init start >> /var/log/cloud-init.log
-rm -f /root/.ssh/authorized_keys
-"""
-        stdin, stdout, stderr = ssh.exec_command(script)
+        stdin, stdout, stderr = ssh.exec_command("bash /tmp/script")
 
         private_key_file.close()
         userdata_file.close()
-        import pdb; pdb.set_trace()
+        script_file.close()
+        print stdout.read()
+        print stderr.read()
 
     def handle_delete(self):
         raise NotImplementedError
