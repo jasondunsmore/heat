@@ -160,7 +160,7 @@ rm -f /root/.ssh/authorized_keys
         # Get public IP
         for ip in complete.addresses['public']:
             if ip['version'] == 4:
-                public_ip = public_ip['addr']
+                public_ip = ip['addr']
         if not public_ip:
             raise exception.Error('Could not determine public IP of server')
 
