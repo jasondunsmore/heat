@@ -46,7 +46,6 @@ class CloudServer(resource.Resource):
         "U12.04": "e4dbdba7-b2a4-4ee5-8e8f-4595b6d694ce"
     }
 
-    def __init__(self, name, json_snippet, stack):
     f17_script = """#!/bin/bash -e
 
 # Install cloud-init and heat-cfntools
@@ -67,6 +66,7 @@ bash /var/lib/cloud/data/cfn-userdata
 rm -f /root/.ssh/authorized_keys
 """
 
+    def __init__(self, name, json_snippet, stack):
         super(CloudServer, self).__init__(name, json_snippet, stack)
         self.ipaddress = None
         self.mime_string = None
@@ -122,16 +122,17 @@ rm -f /root/.ssh/authorized_keys
         server.
 
         """
-        # Retrieve auth info from file (temporary solution until
-        # Rackspace auth is worked out)
+        # Retrieve auth info from file (temporary solution)
         pyrax.set_setting("identity_type", "rackspace")
         pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/rackspace/rs-pyrax-creds.txt")
 
         # Retrieve server creation parameters from properties
-        name = self.properties['InstanceType']
+        name = self.properties['InstanceName']
         image_name = self.properties['ImageName']
         image_id = self.rackspace_images[image_name]
-        flavor = self.properties['InstanceType']
+        # TODO(jason): Map instance types to RS flavors
+        #flavor = self.properties['InstanceType']
+        flavor = "2"
 
         # Generate one-time-use SSH public/private keypair (public key
         # will be put on server using personalities)
@@ -165,7 +166,7 @@ rm -f /root/.ssh/authorized_keys
 
         # Create a temp file for config script
         script_file = tempfile.NamedTemporaryFile()
-        script_file.write(f17_script)
+        script_file.write(self.f17_script)
         script_file.seek(0)
 
         # Transfer files to server via SFTP
@@ -174,7 +175,7 @@ rm -f /root/.ssh/authorized_keys
         transport.connect(hostkey=None, username="root", pkey=pkey)
         sftp = paramiko.SFTPClient.from_transport(transport)
         sftp.put(userdata_file.name, "/tmp/userdata")
-        sftp.put(script_file.name, "/tmp/script")
+        sftp.put(script_file.name, "/root/heat-script")
 
         # Connect via SSH and run script
         ssh = paramiko.SSHClient()
@@ -183,7 +184,7 @@ rm -f /root/.ssh/authorized_keys
         ssh.connect(ip,
                     username="root",
                     key_filename=private_key_file.name)
-        stdin, stdout, stderr = ssh.exec_command("bash /tmp/script")
+        stdin, stdout, stderr = ssh.exec_command("bash /root/heat-script")
         logger.debug(stdout.read())
         logger.debug(stderr.read())
 
