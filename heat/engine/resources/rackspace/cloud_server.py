@@ -86,8 +86,8 @@ rm -f /root/.ssh/authorized_keys
                                      short_id.generate_id())
 
     def _build_userdata(self, userdata):
+        """Build mime multipart data blob for cloudinit userdata"""
         if not self.mime_string:
-            # Build mime multipart data blob for cloudinit userdata
 
             def make_subpart(content, filename, subtype=None):
                 if subtype is None:
