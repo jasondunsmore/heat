@@ -51,7 +51,8 @@ class CloudServer(resource.Resource):
 
 # Install cloud-init and heat-cfntools
 yum install -y cloud-init python-boto
-curl http://repos.fedorapeople.org/repos/heat/heat-trunk/fedora-17/x86_64/heat-cfntools-1.0-20130118.fc17.noarch.rpm > heat-cfntools.rpm
+curl http://repos.fedorapeople.org/repos/heat/heat-trunk/fedora-17/x86_64/heat\
+-cfntools-1.0-20130118.fc17.noarch.rpm > heat-cfntools.rpm
 rpm -i heat-cfntools.rpm
 
 # Create data source for cloud-init
@@ -75,7 +76,8 @@ rm -f /root/.ssh/authorized_keys
 
         # Retrieve auth info from file (temporary solution)
         pyrax.set_setting("identity_type", "rackspace")
-        pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/rackspace/rs-pyrax-creds.txt")
+        pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/"
+                                  "rackspace/rs-pyrax-creds.txt")
         self.cs = pyrax.connect_to_cloudservers()
 
     def _create_container_name(self, name=None):
@@ -150,7 +152,7 @@ rm -f /root/.ssh/authorized_keys
         rsa = RSA.generate(1024)
         private_key = rsa.exportKey()
         public_key = rsa.publickey().exportKey('OpenSSH')
-        files={"/root/.ssh/authorized_keys": public_key}
+        files = {"/root/.ssh/authorized_keys": public_key}
 
         # Create server
         server = self.cs.servers.create(name, image_id, flavor, files=files)
