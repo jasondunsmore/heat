@@ -72,6 +72,10 @@ rm -f /root/.ssh/authorized_keys
         super(CloudServer, self).__init__(name, json_snippet, stack)
         self.ipaddress = None
         self.mime_string = None
+
+        # Retrieve auth info from file (temporary solution)
+        pyrax.set_setting("identity_type", "rackspace")
+        pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/rackspace/rs-pyrax-creds.txt")
         self.cs = pyrax.connect_to_cloudservers()
 
     def _create_container_name(self, name=None):
@@ -131,10 +135,6 @@ rm -f /root/.ssh/authorized_keys
             temp_file.write(data)
             temp_file.seek(0)
             return temp_file
-
-        # Retrieve auth info from file (temporary solution)
-        pyrax.set_setting("identity_type", "rackspace")
-        pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/rackspace/rs-pyrax-creds.txt")
 
         # Retrieve server creation parameters from properties
         name = self.properties['InstanceName']
