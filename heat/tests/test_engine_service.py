@@ -35,6 +35,7 @@ from heat.engine.resources import instance as instances
 from heat.engine import watchrule
 from heat.openstack.common import threadgroup
 from heat.tests.common import HeatTestCase
+from heat.tests import utils
 from heat.tests.utils import setup_dummy_db
 
 
@@ -93,7 +94,8 @@ def setup_mocks(mocks, stack):
     server_userdata = instance._build_userdata(instance.properties['UserData'])
     mocks.StubOutWithMock(fc.servers, 'create')
     fc.servers.create(image=744, flavor=3, key_name='test',
-                      name='%s.WebServer' % stack.name, security_groups=None,
+                      name=utils.PhysName(stack.name, 'WebServer'),
+                      security_groups=None,
                       userdata=server_userdata, scheduler_hints=None,
                       meta=None, nics=None,
                       availability_zone=None).AndReturn(
@@ -101,7 +103,7 @@ def setup_mocks(mocks, stack):
     return fc
 
 
-def setup_test_stack(stack_name, ctx, create_res=True):
+def setup_stack(stack_name, ctx, create_res=True):
     stack = get_wordpress_stack(stack_name, ctx)
     stack.store()
     if create_res:
@@ -138,7 +140,7 @@ def stack_context(stack_name, create_res=True):
             def create_stack():
                 ctx = getattr(test_case, 'ctx', None)
                 if ctx is not None:
-                    stack = setup_test_stack(stack_name, ctx, create_res)
+                    stack = setup_stack(stack_name, ctx, create_res)
                     setattr(test_case, 'stack', stack)
 
             def delete_stack():

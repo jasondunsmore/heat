@@ -25,6 +25,7 @@ from heat.engine import resource
 from heat.engine import scheduler
 from heat.openstack.common import uuidutils
 from heat.tests.common import HeatTestCase
+from heat.tests import utils
 from heat.tests.utils import setup_dummy_db
 
 
@@ -85,7 +86,7 @@ class instancesTest(HeatTestCase):
         self.m.StubOutWithMock(self.fc.servers, 'create')
         self.fc.servers.create(
             image=1, flavor=1, key_name='test',
-            name='%s.%s' % (stack_name, instance.name),
+            name=utils.PhysName(stack_name, instance.name),
             security_groups=None,
             userdata=server_userdata, scheduler_hints=None,
             meta=None, nics=None, availability_zone=None).AndReturn(
@@ -264,3 +265,10 @@ class instancesTest(HeatTestCase):
             'id4',
             'id5'
         ]))
+
+    def test_instance_without_ip_address(self):
+        return_server = self.fc.servers.list()[3]
+        instance = self._create_test_instance(return_server,
+                                              'test_without_ip_address')
+
+        self.assertEqual(instance.FnGetAtt('PrivateIp'), '0.0.0.0')

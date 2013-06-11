@@ -21,7 +21,6 @@ from heat.common import exception
 from heat.common import config
 from heat.common import template_format
 from heat.engine import clients
-from heat.engine import resource
 from heat.engine import scheduler
 from heat.engine.resources import instance
 from heat.engine.resources import user
@@ -29,6 +28,7 @@ from heat.engine.resources import loadbalancer as lb
 from heat.engine.resources import wait_condition as wc
 from heat.engine.resource import Metadata
 from heat.tests.common import HeatTestCase
+from heat.tests import utils
 from heat.tests.utils import setup_dummy_db
 from heat.tests.utils import parse_stack
 from heat.tests.v1_1 import fakes
@@ -109,11 +109,14 @@ class LoadBalancerTest(HeatTestCase):
         self.m.StubOutWithMock(wc.WaitConditionHandle, 'keystone')
         wc.WaitConditionHandle.keystone().MultipleTimes().AndReturn(self.fkc)
 
+        server_name = utils.PhysName(utils.PhysName('test_stack',
+                                                    'LoadBalancer'),
+                                     'LB_instance')
         clients.OpenStackClients.nova(
             "compute").MultipleTimes().AndReturn(self.fc)
         self.fc.servers.create(
             flavor=2, image=745, key_name='test',
-            meta=None, nics=None, name=u'test_stack.LoadBalancer.LB_instance',
+            meta=None, nics=None, name=server_name,
             scheduler_hints=None, userdata=mox.IgnoreArg(),
             security_groups=None, availability_zone=None).AndReturn(
                 self.fc.servers.list()[1])
@@ -161,7 +164,7 @@ class LoadBalancerTest(HeatTestCase):
                                      s)
             id_list.append(inst.FnGetRefId())
 
-        rsrc.reload(id_list)
+        rsrc.handle_update(rsrc.json_snippet, {}, {'Instances': id_list})
 
         self.assertEqual('4.5.6.7', rsrc.FnGetAtt('DNSName'))
         self.assertEqual('', rsrc.FnGetAtt('SourceSecurityGroupName'))
@@ -172,8 +175,7 @@ class LoadBalancerTest(HeatTestCase):
         except exception.InvalidTemplateAttribute:
             pass
 
-        self.assertRaises(resource.UpdateReplace,
-                          rsrc.handle_update, {}, {}, {})
+        self.assertEqual(None, rsrc.handle_update({}, {}, {}))
 
         self.m.VerifyAll()
 

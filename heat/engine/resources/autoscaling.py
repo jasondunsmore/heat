@@ -74,9 +74,6 @@ class InstanceGroup(resource.Resource):
     update_allowed_keys = ('Properties',)
     update_allowed_properties = ('Size',)
 
-    def __init__(self, name, json_snippet, stack):
-        super(InstanceGroup, self).__init__(name, json_snippet, stack)
-
     def handle_create(self):
         return self.resize(int(self.properties['Size']), raise_on_error=True)
 
@@ -211,7 +208,9 @@ class InstanceGroup(resource.Resource):
                 id_list.append(inst.FnGetRefId())
 
             for lb in self.properties['LoadBalancerNames']:
-                self.stack[lb].reload(id_list)
+                self.stack[lb].json_snippet['Properties']['Instances'] = \
+                    inst_list
+                self.stack[lb].update(self.stack[lb].json_snippet)
 
     def FnGetRefId(self):
         return unicode(self.name)
@@ -263,10 +262,6 @@ class AutoScalingGroup(InstanceGroup, CooldownMixin):
     update_allowed_keys = ('Properties',)
     update_allowed_properties = ('MaxSize', 'MinSize',
                                  'Cooldown', 'DesiredCapacity',)
-
-    def __init__(self, name, json_snippet, stack):
-        super(AutoScalingGroup, self).__init__(name, json_snippet, stack)
-        # resource_id is a list of resources
 
     def handle_create(self):
 
@@ -380,9 +375,6 @@ class LaunchConfiguration(resource.Resource):
                                           'Schema': tags_schema}},
     }
 
-    def __init__(self, name, json_snippet, stack):
-        super(LaunchConfiguration, self).__init__(name, json_snippet, stack)
-
 
 class ScalingPolicy(resource.Resource, CooldownMixin):
     properties_schema = {
@@ -401,9 +393,6 @@ class ScalingPolicy(resource.Resource, CooldownMixin):
     update_allowed_keys = ('Properties',)
     update_allowed_properties = ('ScalingAdjustment', 'AdjustmentType',
                                  'Cooldown',)
-
-    def __init__(self, name, json_snippet, stack):
-        super(ScalingPolicy, self).__init__(name, json_snippet, stack)
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
         # If Properties has changed, update self.properties, so we

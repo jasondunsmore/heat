@@ -15,7 +15,6 @@
 
 import base64
 from datetime import datetime
-from eventlet.support import greenlets as greenlet
 
 from heat.engine import event
 from heat.common import exception
@@ -273,7 +272,10 @@ class Resource(object):
     def _add_dependencies(self, deps, head, fragment):
         if isinstance(fragment, dict):
             for key, value in fragment.items():
-                if key in ('DependsOn', 'Ref'):
+                if key in ('DependsOn', 'Ref', 'Fn::GetAtt'):
+                    if key == 'Fn::GetAtt':
+                        value, head = value
+
                     try:
                         target = self.stack.resources[value]
                     except KeyError:
@@ -282,7 +284,7 @@ class Resource(object):
                             key=head)
                     if key == 'DependsOn' or target.strict_dependency:
                         deps += (self, target)
-                elif key != 'Fn::GetAtt':
+                else:
                     self._add_dependencies(deps, key, value)
         elif isinstance(fragment, list):
             for item in fragment:
@@ -334,14 +336,6 @@ class Resource(object):
                 yield
             while not self.check_create_complete(create_data):
                 yield
-        except greenlet.GreenletExit:
-            # Older versions of greenlet erroneously had GreenletExit inherit
-            # from Exception instead of BaseException
-            with excutils.save_and_reraise_exception():
-                try:
-                    self.state_set(self.CREATE_FAILED, 'Creation aborted')
-                except Exception:
-                    logger.exception('Error marking resource as failed')
         except Exception as ex:
             logger.exception('create %s', str(self))
             failure = exception.ResourceFailure(ex)
@@ -403,7 +397,7 @@ class Resource(object):
             self.state_set(self.UPDATE_COMPLETE)
 
     def physical_resource_name(self):
-        return '%s.%s' % (self.stack.name, self.name)
+        return '%s-%s' % (self.stack.name, self.name)
 
     def validate(self):
         logger.info('Validating %s' % str(self))
