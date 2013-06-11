@@ -21,7 +21,6 @@ class CloudServer(resource.Resource):
                    'Value': {'Type': 'String',
                              'Required': True}}
     properties_schema = {
-        'ImageName': {'Type': 'String', 'Required': True},
         'UserData': {'Type': 'String'},
         'KeyName': {'Type': 'String'},
         'AvailabilityZone': {'Type': 'String'},
@@ -33,7 +32,9 @@ class CloudServer(resource.Resource):
         'Volumes': {'Type': 'List'},
         'SubnetId': {'Type': 'String'},
         'NetworkInterfaces': {'Type': 'List'},
+        'InstanceName': {'Type': 'String', 'Required': True},
         'InstanceType': {'Type': 'String', 'Required': True},
+        'ImageName': {'Type': 'String', 'Required': True},
         'Tags': {'Type': 'List',
                  'Schema': {'Type': 'Map',
                             'Schema': tags_schema}}
