@@ -513,7 +513,6 @@ class EngineService(service.Service):
         # Retrieve the stored credentials & create context
         # Require admin=True to the stack_get to defeat tenant
         # scoping otherwise we fail to retrieve the stack
-        logger.debug("Periodic watcher task for stack %s" % sid)
         admin_context = context.get_admin_context()
         stack = db_api.stack_get(admin_context, sid, admin=True)
         if not stack:
