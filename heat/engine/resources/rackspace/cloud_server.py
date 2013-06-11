@@ -46,6 +46,26 @@ class CloudServer(resource.Resource):
     }
 
     def __init__(self, name, json_snippet, stack):
+    f17_script = """#!/bin/bash -e
+
+# Install cloud-init and heat-cfntools
+yum install -y cloud-init python-boto
+curl http://repos.fedorapeople.org/repos/heat/heat-trunk/fedora-17/x86_64/heat-cfntools-1.0-20130118.fc17.noarch.rpm > heat-cfntools.rpm
+rpm -i heat-cfntools.rpm
+
+# Create data source for cloud-init
+mkdir -p /var/lib/cloud/seed/nocloud-net
+mv /tmp/userdata /var/lib/cloud/seed/nocloud-net/user-data
+touch /var/lib/cloud/seed/nocloud-net/meta-data
+
+# Run cloud-init & cfn-init
+cloud-init start
+bash /var/lib/cloud/data/cfn-userdata
+
+# Clean up
+rm -f /root/.ssh/authorized_keys
+"""
+
         super(CloudServer, self).__init__(name, json_snippet, stack)
         self.ipaddress = None
         self.mime_string = None
@@ -142,26 +162,7 @@ class CloudServer(resource.Resource):
         if not ip:
             raise exception.Error('Could not determine public IP of server')
 
-        # Create config script that will run on server
-        f17_script = """#!/bin/bash -e
-
-# Install cloud-init and heat-cfntools
-yum install -y cloud-init python-boto
-curl http://repos.fedorapeople.org/repos/heat/heat-trunk/fedora-17/x86_64/heat-cfntools-1.0-20130118.fc17.noarch.rpm > heat-cfntools.rpm
-rpm -i heat-cfntools.rpm
-
-# Create data source for cloud-init
-mkdir -p /var/lib/cloud/seed/nocloud-net
-mv /tmp/userdata /var/lib/cloud/seed/nocloud-net/user-data
-touch /var/lib/cloud/seed/nocloud-net/meta-data
-
-# Run cloud-init & cfn-init
-cloud-init start
-bash /var/lib/cloud/data/cfn-userdata
-
-# Clean up
-rm -f /root/.ssh/authorized_keys
-"""
+        # Create a temp file for config script
         script_file = tempfile.NamedTemporaryFile()
         script_file.write(f17_script)
         script_file.seek(0)
