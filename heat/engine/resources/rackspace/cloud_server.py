@@ -149,11 +149,12 @@ rm -f /root/.ssh/authorized_keys
         # Create server
         cs = pyrax.connect_to_cloudservers()
         server = cs.servers.create(name, image_id, flavor, files=files)
-        complete = pyrax.utils.wait_until(server, "status",
-                                          ["ACTIVE", "ERROR"], attempts=0)
+        pyrax.utils.wait_until(server, "status", ["ACTIVE", "ERROR"],
+                               attempts=0)
+        self.resource_id_set(server.id)  # Save resource ID to db
 
         # Get public IP
-        for ip in complete.addresses['public']:
+        for ip in server.addresses['public']:
             if ip['version'] == 4:
                 public_ip = ip['addr']
                 break
@@ -190,10 +191,27 @@ rm -f /root/.ssh/authorized_keys
         logger.debug(stderr.read())
 
     def handle_delete(self):
-        raise NotImplementedError
+        if self.resource_id is None:
+            return
 
-    def handle_update(self):
-        raise NotImplementedError
+        # Retrieve auth info from file (temporary solution)
+        pyrax.set_setting("identity_type", "rackspace")
+        pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/"
+                                  "rackspace/rs-pyrax-creds.txt")
+
+        cs = pyrax.connect_to_cloudservers()
+        try:
+            server = cs.servers.get(self.resource_id)
+        except pyrax.exceptions.ServerNotFound:
+            pass
+        else:
+            server.delete()
+
+        self.resource_id = None
+
+    def handle_update(self, json_snippet, tmpl_diff, prop_diff):
+        if 'Metadata' in tmpl_diff:
+            self.metadata = tmpl_diff.get('Metadata', {})
 
 
 def resource_mapping():
