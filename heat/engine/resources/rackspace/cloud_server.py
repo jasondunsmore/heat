@@ -74,12 +74,6 @@ rm -f /root/.ssh/authorized_keys
         self.ipaddress = None
         self.mime_string = None
 
-        # Retrieve auth info from file (temporary solution)
-        pyrax.set_setting("identity_type", "rackspace")
-        pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/"
-                                  "rackspace/rs-pyrax-creds.txt")
-        self.cs = pyrax.connect_to_cloudservers()
-
     def _create_container_name(self, name=None):
         return name or '%s-%s-%s' % (self.stack.name,
                                      self.name,
@@ -132,11 +126,10 @@ rm -f /root/.ssh/authorized_keys
 
         """
 
-        def create_temp_file(data):
-            temp_file = tempfile.NamedTemporaryFile()
-            temp_file.write(data)
-            temp_file.seek(0)
-            return temp_file
+        # Retrieve auth info from file (temporary solution)
+        pyrax.set_setting("identity_type", "rackspace")
+        pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/"
+                                  "rackspace/rs-pyrax-creds.txt")
 
         # Retrieve server creation parameters from properties
         name = self.properties['InstanceName']
@@ -147,15 +140,15 @@ rm -f /root/.ssh/authorized_keys
         raw_userdata = self.properties['UserData'] or ''
         userdata = self._build_userdata(raw_userdata)
 
-        # Generate one-time-use SSH public/private keypair (public key
-        # will be put on server using personalities)
+        # Generate one-time-use SSH public/private keypair
         rsa = RSA.generate(1024)
         private_key = rsa.exportKey()
         public_key = rsa.publickey().exportKey('OpenSSH')
         files = {"/root/.ssh/authorized_keys": public_key}
 
         # Create server
-        server = self.cs.servers.create(name, image_id, flavor, files=files)
+        cs = pyrax.connect_to_cloudservers()
+        server = cs.servers.create(name, image_id, flavor, files=files)
         complete = pyrax.utils.wait_until(server, "status",
                                           ["ACTIVE", "ERROR"], attempts=0)
 
@@ -163,36 +156,38 @@ rm -f /root/.ssh/authorized_keys
         for ip in complete.addresses['public']:
             if ip['version'] == 4:
                 public_ip = ip['addr']
+                break
         if not public_ip:
             raise exception.Error('Could not determine public IP of server')
 
-        # Create temp files for SFTP
-        userdata_file = create_temp_file(userdata)
-        script_file = create_temp_file(script)
-        private_key_file = create_temp_file(private_key)
+        # Create temp file for private key
+        private_key_file = tempfile.NamedTemporaryFile()
+        private_key_file.write(private_key)
+        private_key_file.seek(0)
 
-        # Transfer files to server via SFTP
+        # Create heat-script and userdata files on server
         pkey = paramiko.RSAKey.from_private_key_file(private_key_file.name)
+        private_key_file.seek(0)
         transport = paramiko.Transport((public_ip, 22))
         transport.connect(hostkey=None, username="root", pkey=pkey)
         sftp = paramiko.SFTPClient.from_transport(transport)
-        sftp.put(userdata_file.name, "/tmp/userdata")
-        sftp.put(script_file.name, "/root/heat-script")
+        remote_userdata = sftp.open("/tmp/userdata", 'w')
+        remote_userdata.write(userdata)
+        remote_userdata.close()
+        remote_script = sftp.open("/root/heat-script", 'w')
+        remote_script.write(script)
+        remote_script.close()
 
         # Connect via SSH and run script
         ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.set_missing_host_key_policy(paramiko.MissingHostKeyPolicy())
         ssh.connect(public_ip,
                     username="root",
                     key_filename=private_key_file.name)
+        private_key_file.close()
         stdin, stdout, stderr = ssh.exec_command("bash /root/heat-script")
         logger.debug(stdout.read())
         logger.debug(stderr.read())
-
-        # Clean up temp files
-        private_key_file.close()
-        userdata_file.close()
-        script_file.close()
 
     def handle_delete(self):
         raise NotImplementedError
