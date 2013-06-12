@@ -25,14 +25,14 @@ from Crypto.PublicKey import RSA
 
 from oslo.config import cfg
 
-from heat.engine import resource
+from heat.engine.resources import instance
 from heat.openstack.common import log as logging
 from heat.common import short_id, exception
 
 logger = logging.getLogger(__name__)
 
 
-class CloudServer(resource.Resource):
+class CloudServer(instance.Instance):
     tags_schema = {
         'Key': {'Type': 'String', 'Required': True},
         'Value': {'Type': 'String', 'Required': True}
@@ -239,16 +239,6 @@ rm -f /root/.ssh/authorized_keys
     def check_create_complete(self, server):
         if server.status in self._deferred_server_statuses:
             return False
-            elif server.status == 'ACTIVE':
-                self._set_ipaddress(server.networks)
-                volume_attach.start()
-                return volume_attach.done()
-            else:
-                raise exception.Error('%s instance[%s] status[%s]' %
-                                      ('nova reported unexpected',
-                                       self.name, server.status))
-        else:
-            return volume_attach.step()
 
     def handle_delete(self):
         if self.resource_id is None:
