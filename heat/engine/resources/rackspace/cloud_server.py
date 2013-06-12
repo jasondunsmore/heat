@@ -236,5 +236,5 @@ rm -f /root/.ssh/authorized_keys
 
 def resource_mapping():
     return {
-        'Rackspace::CloudServer': CloudServer
+        'Rackspace::Cloud::Server': CloudServer
     }
