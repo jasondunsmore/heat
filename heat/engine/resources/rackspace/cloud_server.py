@@ -17,6 +17,7 @@ import pkgutil
 import tempfile
 import paramiko
 import pyrax
+from urlparse import urlparse
 
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -65,19 +66,14 @@ class CloudServer(resource.Resource):
     fedora_script = """#!/bin/bash -e
 
 # Install cloud-init and heat-cfntools
-curl http://repos.fedorapeople.org/repos/openstack/openstack-grizzly/fedora-openstack-grizzly.repo > /etc/yum.repos.d/rdo.repo
-sed -i 's/$releasever/18/' /etc/yum.repos.d/rdo.repo
-yum -y install heat-cfntools
-rm -f /etc/yum.repos.d/rdo.repo
-yum clean all
-
-pip-python install heat-cfntools
 yum install -y cloud-init python-boto python-pip
+pip-python install heat-cfntools
 
 # Create data source for cloud-init
 mkdir -p /var/lib/cloud/seed/nocloud-net
 mv /tmp/userdata /var/lib/cloud/seed/nocloud-net/user-data
 touch /var/lib/cloud/seed/nocloud-net/meta-data
+chmod 600 /var/lib/cloud/seed/nocloud-net/*
 
 # Run cloud-init & cfn-init
 cloud-init start
@@ -85,9 +81,6 @@ bash /var/lib/cloud/data/cfn-userdata
 
 # Clean up
 rm -f /root/.ssh/authorized_keys
-"""
-
-    ubuntu12_script = """
 """
 
     image_scripts = {
@@ -106,8 +99,8 @@ rm -f /root/.ssh/authorized_keys
                                      short_id.generate_id())
 
     def _build_userdata(self, userdata):
-        """Build mime multipart data blob for cloudinit userdata"""
         if not self.mime_string:
+            # Build mime multipart data blob for cloudinit userdata
 
             def make_subpart(content, filename, subtype=None):
                 if subtype is None:
@@ -135,6 +128,31 @@ rm -f /root/.ssh/authorized_keys
             if 'Metadata' in self.t:
                 attachments.append((json.dumps(self.metadata),
                                     'cfn-init-data', 'x-cfninitdata'))
+
+            attachments.append((cfg.CONF.heat_watch_server_url,
+                                'cfn-watch-server', 'x-cfninitdata'))
+
+            attachments.append((cfg.CONF.heat_metadata_server_url,
+                                'cfn-metadata-server', 'x-cfninitdata'))
+
+            # Create a boto config which the cfntools on the host use to know
+            # where the cfn and cw API's are to be accessed
+            cfn_url = urlparse(cfg.CONF.heat_metadata_server_url)
+            cw_url = urlparse(cfg.CONF.heat_watch_server_url)
+            is_secure = cfg.CONF.instance_connection_is_secure
+            vcerts = cfg.CONF.instance_connection_https_validate_certificates
+            boto_cfg = "\n".join(["[Boto]",
+                                  "debug = 0",
+                                  "is_secure = %s" % is_secure,
+                                  "https_validate_certificates = %s" % vcerts,
+                                  "cfn_region_name = heat",
+                                  "cfn_region_endpoint = %s" %
+                                  cfn_url.hostname,
+                                  "cloudwatch_region_name = heat",
+                                  "cloudwatch_region_endpoint = %s" %
+                                  cw_url.hostname])
+            attachments.append((boto_cfg,
+                                'cfn-boto-cfg', 'x-cfninitdata'))
 
             subparts = [make_subpart(*args) for args in attachments]
             mime_blob = MIMEMultipart(_subparts=subparts)
@@ -164,7 +182,7 @@ rm -f /root/.ssh/authorized_keys
         script = self.image_scripts[image_name]
         flavor = self.properties['Flavor']
         raw_userdata = self.properties['UserData'] or ''
-        userdata = self._build_userdata(raw_userdata)
+        self.userdata = self._build_userdata(raw_userdata)
 
         # Generate one-time-use SSH public/private keypair
         rsa = RSA.generate(1024)
@@ -180,6 +198,8 @@ rm -f /root/.ssh/authorized_keys
         self.resource_id_set(server.id)  # Save resource ID to db
 
         # Get public IP
+        if 'public' not in server.addresses:
+            raise exception.Error('Could not determine public IP of server')
         for ip in server.addresses['public']:
             if ip['version'] == 4:
                 public_ip = ip['addr']
@@ -215,6 +235,20 @@ rm -f /root/.ssh/authorized_keys
         stdin, stdout, stderr = ssh.exec_command("bash /root/heat-script")
         logger.debug(stdout.read())
         logger.debug(stderr.read())
+
+    def check_create_complete(self, server):
+        if server.status in self._deferred_server_statuses:
+            return False
+            elif server.status == 'ACTIVE':
+                self._set_ipaddress(server.networks)
+                volume_attach.start()
+                return volume_attach.done()
+            else:
+                raise exception.Error('%s instance[%s] status[%s]' %
+                                      ('nova reported unexpected',
+                                       self.name, server.status))
+        else:
+            return volume_attach.step()
 
     def handle_delete(self):
         if self.resource_id is None:
