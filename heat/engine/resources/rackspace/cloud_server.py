@@ -25,29 +25,13 @@ logger = logging.getLogger(__name__)
 
 
 class CloudServer(instance.Instance):
-    tags_schema = {
-        'Key': {'Type': 'String', 'Required': True},
-        'Value': {'Type': 'String', 'Required': True}
-    }
-
+    """"""
     properties_schema = {
         'UserData': {'Type': 'String'},
-        'KeyName': {'Type': 'String'},
-        'AvailabilityZone': {'Type': 'String'},
-        'SecurityGroups': {'Type': 'List'},
-        'SecurityGroupIds': {'Type': 'List'},
-        'NovaSchedulerHints': {
-            'Type': 'List', 'Schema': {'Type': 'Map', 'Schema': tags_schema}
-        },
-        'Volumes': {'Type': 'List'},
-        'SubnetId': {'Type': 'String'},
-        'NetworkInterfaces': {'Type': 'List'},
         'InstanceName': {'Type': 'String', 'Required': True},
         'Flavor': {'Type': 'String', 'Required': True},
         'ImageName': {'Type': 'String', 'Required': True},
-        'Tags': {'Type': 'List',
-                 'Schema': {'Type': 'Map',
-                            'Schema': tags_schema}}
+        'Personality': {'Type': 'String'}
     }
 
     rackspace_images = {
@@ -79,6 +63,7 @@ rm -f /root/.ssh/authorized_keys
         "F17": fedora_script,
         "F18": fedora_script
     }
+
 
     def handle_create(self):
         """Create a Rackspace Cloud Servers container.
