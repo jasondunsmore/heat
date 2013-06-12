@@ -55,7 +55,7 @@ class CloudServer(instance.Instance):
         "U12.04": "e4dbdba7-b2a4-4ee5-8e8f-4595b6d694ce"
     }
 
-    fedora_script = """#!/bin/bash -e
+    fedora_script = """#!/bin/bash
 
 # Install cloud-init and heat-cfntools
 yum install -y cloud-init python-boto python-pip
@@ -98,22 +98,28 @@ rm -f /root/.ssh/authorized_keys
         name = self.properties['InstanceName']
         image_name = self.properties['ImageName']
         image_id = self.rackspace_images[image_name]
-        script = self.image_scripts[image_name]
+        self.script = self.image_scripts[image_name]
         flavor = self.properties['Flavor']
         raw_userdata = self.properties['UserData'] or ''
         self.userdata = self._build_userdata(raw_userdata)
 
         # Generate one-time-use SSH public/private keypair
         rsa = RSA.generate(1024)
-        private_key = rsa.exportKey()
+        self.private_key = rsa.exportKey()
         public_key = rsa.publickey().exportKey('OpenSSH')
         files = {"/root/.ssh/authorized_keys": public_key}
 
         # Create server
         cs = pyrax.connect_to_cloudservers()
-        server = cs.servers.create(name, image_id, flavor, files=files)
-        pyrax.utils.wait_until(server, "status", ["ACTIVE", "ERROR"],
-                               attempts=0)
+        return cs.servers.create(name, image_id, flavor, files=files)
+
+    def check_create_complete(self, server):
+        server.get()
+        if server.status in self._deferred_server_statuses:
+            return False
+        elif server.status == 'ERROR':
+            raise exception.Error('Server build failed.')
+
         self.resource_id_set(server.id)  # Save resource ID to db
 
         # Get public IP
@@ -128,7 +134,7 @@ rm -f /root/.ssh/authorized_keys
 
         # Create temp file for private key
         private_key_file = tempfile.NamedTemporaryFile()
-        private_key_file.write(private_key)
+        private_key_file.write(self.private_key)
         private_key_file.seek(0)
 
         # Create heat-script and userdata files on server
@@ -140,8 +146,8 @@ rm -f /root/.ssh/authorized_keys
         remote_userdata = sftp.open("/tmp/userdata", 'w')
         remote_userdata.write(self.userdata)
         remote_userdata.close()
-        remote_script = sftp.open("/root/heat-script", 'w')
-        remote_script.write(script)
+        remote_script = sftp.open("/root/heat-script.sh", 'w')
+        remote_script.write(self.script)
         remote_script.close()
 
         # Connect via SSH and run script
@@ -151,13 +157,12 @@ rm -f /root/.ssh/authorized_keys
                     username="root",
                     key_filename=private_key_file.name)
         private_key_file.close()
-        stdin, stdout, stderr = ssh.exec_command("bash /root/heat-script")
+        command = "bash -ex /root/heat-script.sh > /root/heat-script.log 2>&1"
+        stdin, stdout, stderr = ssh.exec_command(command)
         logger.debug(stdout.read())
         logger.debug(stderr.read())
 
-    def check_create_complete(self, server):
-        if server.status in self._deferred_server_statuses:
-            return False
+        return True
 
     def handle_delete(self):
         if self.resource_id is None:

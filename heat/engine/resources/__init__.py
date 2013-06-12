@@ -56,7 +56,9 @@ def initialise():
     config.register_engine_opts()
 
     _register_modules(plugin_loader.load_modules(sys.modules[__name__]))
-    _register_modules(plugin_loader.load_modules(heat.engine.resources.rackspace))
+    _register_modules(
+        plugin_loader.load_modules(heat.engine.resources.rackspace)
+    )
 
     from oslo.config import cfg
 
