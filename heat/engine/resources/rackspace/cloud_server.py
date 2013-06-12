@@ -62,14 +62,11 @@ class CloudServer(resource.Resource):
         "U12.04": "e4dbdba7-b2a4-4ee5-8e8f-4595b6d694ce"
     }
 
-    image_scripts = {
-        "F17": """#!/bin/bash -e
+    fedora_script = """#!/bin/bash -e
 
 # Install cloud-init and heat-cfntools
-yum install -y cloud-init python-boto
-curl http://repos.fedorapeople.org/repos/heat/heat-trunk/fedora-17/x86_64/heat\
--cfntools-1.0-20130118.fc17.noarch.rpm > heat-cfntools.rpm
-rpm -i heat-cfntools.rpm
+yum install -y cloud-init python-boto python-pip
+pip-python install heat-cfntools
 
 # Create data source for cloud-init
 mkdir -p /var/lib/cloud/seed/nocloud-net
@@ -83,6 +80,13 @@ bash /var/lib/cloud/data/cfn-userdata
 # Clean up
 rm -f /root/.ssh/authorized_keys
 """
+
+    ubuntu12_script = """
+"""
+
+    image_scripts = {
+        "F17": fedora_script,
+        "F18": fedora_script
     }
 
     def __init__(self, name, json_snippet, stack):
