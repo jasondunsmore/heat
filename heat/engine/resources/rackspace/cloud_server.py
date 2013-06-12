@@ -65,8 +65,14 @@ class CloudServer(resource.Resource):
     fedora_script = """#!/bin/bash -e
 
 # Install cloud-init and heat-cfntools
-yum install -y cloud-init python-boto python-pip
+curl http://repos.fedorapeople.org/repos/openstack/openstack-grizzly/fedora-openstack-grizzly.repo > /etc/yum.repos.d/rdo.repo
+sed -i 's/$releasever/18/' /etc/yum.repos.d/rdo.repo
+yum -y install heat-cfntools
+rm -f /etc/yum.repos.d/rdo.repo
+yum clean all
+
 pip-python install heat-cfntools
+yum install -y cloud-init python-boto python-pip
 
 # Create data source for cloud-init
 mkdir -p /var/lib/cloud/seed/nocloud-net
