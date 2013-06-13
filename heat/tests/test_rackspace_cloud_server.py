@@ -74,7 +74,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         t['Resources']['WebServer']['Properties']['Flavor'] = '2'
 
         instance = cloud_server.CloudServer('%s_name' % name,
-                                          t['Resources']['WebServer'], stack)
+                                            t['Resources']['WebServer'], stack)
 
         self.m.StubOutWithMock(pyrax, 'set_credential_file')
         pyrax.set_credential_file(mox.IgnoreArg()).AndReturn(True)
@@ -90,7 +90,7 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         self.m.StubOutWithMock(self.fc.servers, 'create')
         self.fc.servers.create(instance_name, image_id, flavor,
-                               files=mox.IgnoreArg())
+                               files=mox.IgnoreArg()).AndReturn(return_server)
         return instance
 
     def _create_test_instance(self, return_server, name):
