@@ -13,6 +13,7 @@
 import copy
 
 import mox
+import pyrax
 
 from heat.tests.v1_1 import fakes
 from heat.common import template_format
@@ -71,26 +72,44 @@ class RackspaceCloudServerTest(HeatTestCase):
         t['Resources']['WebServer']['Properties']['ImageName'] = 'F17'
         t['Resources']['WebServer']['Properties']['InstanceName'] = 'Heat test'
         t['Resources']['WebServer']['Properties']['Flavor'] = '2'
-        server = cloud_server.CloudServer('%s_name' % name,
+
+        instance = cloud_server.CloudServer('%s_name' % name,
                                           t['Resources']['WebServer'], stack)
 
-        self.m.StubOutWithMock(server, 'pyrax')
-        server.pyrax().MultipleTimes().AndReturn(self.fc)
+        self.m.StubOutWithMock(pyrax, 'set_credential_file')
+        pyrax.set_credential_file(mox.IgnoreArg()).AndReturn(True)
+        self.m.StubOutWithMock(pyrax, 'connect_to_cloudservers')
+        pyrax.connect_to_cloudservers().AndReturn(self.fc)
 
-        server.t = server.stack.resolve_runtime_data(server.t)
+        instance.t = instance.stack.resolve_runtime_data(instance.t)
 
-        # need to resolve the template functions
-        server_userdata = server._build_userdata(
-            server.t['Properties']['UserData'])
+        instance_name = t['Resources']['WebServer']['Properties']['InstanceName']
+        image_name = t['Resources']['WebServer']['Properties']['ImageName']
+        image_id = instance.rackspace_images[image_name]
+        flavor = t['Resources']['WebServer']['Properties']['Flavor']
+
         self.m.StubOutWithMock(self.fc.servers, 'create')
-        image_id = 
-        self.fc.servers.create("Heat test", "F17", flavor=1, key_name='test',
-            name=utils.PhysName(stack_name, server.name),
-            security_groups=None,
-            userdata=server_userdata, scheduler_hints=None,
-            meta=None, nics=None, availability_zone=None).AndReturn(
-                return_server)
+        self.fc.servers.create(instance_name, image_id, flavor,
+                               files=mox.IgnoreArg())
+        return instance
 
-        return server
+    def _create_test_instance(self, return_server, name):
+        instance = self._setup_test_instance(return_server, name)
+        self.m.ReplayAll()
+        scheduler.TaskRunner(instance.create)()
+        return instance
 
-    
+    def test_instance_create(self):
+        return_server = self.fc.servers.list()[1]
+        instance = self._create_test_instance(return_server,
+                                              'test_instance_create')
+        # this makes sure the auto increment worked on instance creation
+        self.assertTrue(instance.id > 0)
+
+        expected_ip = return_server.networks['public'][0]
+        self.assertEqual(instance.FnGetAtt('PublicIp'), expected_ip)
+        self.assertEqual(instance.FnGetAtt('PrivateIp'), expected_ip)
+        self.assertEqual(instance.FnGetAtt('PrivateDnsName'), expected_ip)
+        self.assertEqual(instance.FnGetAtt('PrivateDnsName'), expected_ip)
+
+        self.m.VerifyAll()
