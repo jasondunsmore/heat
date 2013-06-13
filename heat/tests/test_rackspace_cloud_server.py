@@ -14,6 +14,7 @@ import copy
 
 import mox
 import pyrax
+import paramiko
 
 from heat.tests.v1_1 import fakes
 from heat.common import template_format
@@ -91,6 +92,13 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.StubOutWithMock(self.fc.servers, 'create')
         self.fc.servers.create(instance_name, image_id, flavor,
                                files=mox.IgnoreArg()).AndReturn(return_server)
+
+        self.m.StubOutWithMock(paramiko, "Transport")
+
+        transport = self.m.CreateMockAnyting()
+        paramiko.Transport((mox.IgnoreArg(), 22)).AndReturn(transport)
+        
+
         return instance
 
     def _create_test_instance(self, return_server, name):
