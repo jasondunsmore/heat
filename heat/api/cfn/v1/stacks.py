@@ -291,7 +291,7 @@ class StackController(object):
             return result
 
         if action not in self.CREATE_OR_UPDATE_ACTION:
-            msg = _("Unexpected action %s" % action)
+            msg = _('Unexpected action %s') % action
             # This should not happen, so return HeatInternalFailureError
             return exception.HeatInternalFailureError(detail=msg)
 
@@ -469,6 +469,12 @@ class StackController(object):
             }
 
             result = api_utils.reformat_dict_keys(keymap, e)
+            action = e[engine_api.EVENT_RES_ACTION]
+            status = e[engine_api.EVENT_RES_STATUS]
+            if action and status:
+                result['ResourceStatus'] = '_'.join((action, status))
+            else:
+                result['ResourceStatus'] = status
             result['ResourceProperties'] = json.dumps(result[
                                                       'ResourceProperties'])
 
