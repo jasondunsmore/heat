@@ -95,14 +95,6 @@ bash /var/lib/cloud/data/cfn-userdata
         cs = pyrax.connect_to_cloudservers()
         server = cs.servers.create(name, image_id, flavor, files=files)
 
-        # Create a new keypair
-        # TODO(jason): Authenticate via Rackspace base class
-        nova = client.Client(self.context.user,
-                             self.context.password,
-                             self.context.tenant,
-                             self.context.auth_url)
-        nova.
-
 
     def check_create_complete(self, server):
         server.get()  # Update server attributes
@@ -173,9 +165,6 @@ bash /var/lib/cloud/data/cfn-userdata
             server.delete()
 
         self.resource_id = None
-
-    def handle_update(self):
-        
 
 
 def resource_mapping():
