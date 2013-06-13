@@ -25,7 +25,7 @@ class RackspaceResource(resource.Resource):
     Common base class for Rackspace Resource Providers
     '''
     properties_schema = {}
-    
+
     def __init__(self, name, json_snippet, stack):
         super(RackspaceResource, self).__init__(name, json_snippet, stack)
         self.pyrax = pyrax
@@ -37,36 +37,36 @@ class RackspaceResource(resource.Resource):
         self._cloud_blockstore = None
 
     def cloud_db(self):
-        '''Rackspace cloud database client.'''      
+        '''Rackspace cloud database client.'''
         if self._cloud_db:
             return self._cloud_db
-        
+
         self.__authenticate()
         self._cloud_db = self.pyrax.cloud_databases
         return self._cloud_db
-    
+
     def cloud_lb(self):
-        '''Rackspace cloud loadbalancer client.'''        
+        '''Rackspace cloud loadbalancer client.'''
         if self._cloud_lb:
             return self._cloud_lb
-        
+
         self.__authenticate()
         self._cloud_lb = self.pyrax.cloud_loadbalancers
         return self._cloud_lb
 
     def cloud_dns(self):
-        '''Rackspace cloud dns client'''        
+        '''Rackspace cloud dns client'''
         if self._cloud_dns:
             return self._cloud_dns
-         
+
         self._cloud_dns = self.pyrax.cloud_dns
         return self._cloud_dns
-   
+
     def nova(self):
         '''Rackspace nova client.'''
         if self._cloud_server:
             return self._cloud_server
-         
+
         self.__authenticate()
         self._cloud_server = self.pyrax.cloudservers
         return self._cloud_server
@@ -75,7 +75,7 @@ class RackspaceResource(resource.Resource):
         '''Rackspace cinder client.'''
         if self._cloud_blockstore:
             return self._cloud_blockstore
-        
+
         self.__authenticate()
         self._cloud_blockstore = self.pyrax.cloud_blockstorage
         return self._cloud_blockstore
@@ -84,7 +84,7 @@ class RackspaceResource(resource.Resource):
         '''Rackspace quantum client.'''
         if self._cloud_nw:
             return self._cloud_nw
-        
+
         self.__authenticate()
         self._cloud_nw = self.pyrax.cloud_networks
         return self._cloud_nw
@@ -95,7 +95,7 @@ class RackspaceResource(resource.Resource):
         cls = self.pyrax.utils.import_class('pyrax.identity.rax_identity.RaxIdentity')
         self.pyrax.identity = cls()
         logger.info("Authenticating with username:%s" % self.context.username)
-        self.pyrax.set_credentials(self.context.username, 
+        self.pyrax.set_credentials(self.context.username,
                                    password=self.context.password)
         logger.info("User %s authenticated successfully."
                     % self.context.username)
