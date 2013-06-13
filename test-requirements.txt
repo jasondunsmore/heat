@@ -13,3 +13,4 @@ paramiko
 python-glanceclient
 sphinx>=1.1.2
 Babel
+pyrax

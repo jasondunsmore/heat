@@ -52,9 +52,6 @@ chmod 600 /var/lib/cloud/seed/nocloud-net/*
 # Run cloud-init & cfn-init
 cloud-init start
 bash /var/lib/cloud/data/cfn-userdata
-
-# Clean up
-rm -f /root/.ssh/authorized_keys
 """
 
     image_scripts = {
@@ -74,7 +71,7 @@ rm -f /root/.ssh/authorized_keys
 
         """
 
-        # Retrieve auth info from file (temporary solution)
+        # TODO(jason): Authenticate via Rackspace base class
         pyrax.set_setting("identity_type", "rackspace")
         pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/"
                                   "rackspace/rs-pyrax-creds.txt")
@@ -88,7 +85,7 @@ rm -f /root/.ssh/authorized_keys
         raw_userdata = self.properties['UserData'] or ''
         self.userdata = self._build_userdata(raw_userdata)
 
-        # Generate one-time-use SSH public/private keypair
+        # Generate SSH public/private keypair
         rsa = RSA.generate(1024)
         self.private_key = rsa.exportKey()
         public_key = rsa.publickey().exportKey('OpenSSH')
@@ -96,7 +93,16 @@ rm -f /root/.ssh/authorized_keys
 
         # Create server
         cs = pyrax.connect_to_cloudservers()
-        return cs.servers.create(name, image_id, flavor, files=files)
+        server = cs.servers.create(name, image_id, flavor, files=files)
+
+        # Create a new keypair
+        # TODO(jason): Authenticate via Rackspace base class
+        nova = client.Client(self.context.user,
+                             self.context.password,
+                             self.context.tenant,
+                             self.context.auth_url)
+        nova.
+
 
     def check_create_complete(self, server):
         server.get()  # Update server attributes
@@ -153,7 +159,7 @@ rm -f /root/.ssh/authorized_keys
         if self.resource_id is None:
             return
 
-        # Retrieve auth info from file (temporary solution)
+        # TODO(jason): Authenticate via Rackspace base class
         pyrax.set_setting("identity_type", "rackspace")
         pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/"
                                   "rackspace/rs-pyrax-creds.txt")
@@ -167,6 +173,9 @@ rm -f /root/.ssh/authorized_keys
             server.delete()
 
         self.resource_id = None
+
+    def handle_update(self):
+        
 
 
 def resource_mapping():

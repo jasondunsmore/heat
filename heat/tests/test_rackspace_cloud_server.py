@@ -64,28 +64,28 @@ class RackspaceCloudServerTest(HeatTestCase):
         stack_name = '%s_stack' % name
         t = template_format.parse(wp_template)
         template = parser.Template(t)
-        params = parser.Parameters(stack_name, template, {'KeyName': 'test'})
+        params = parser.Parameters(stack_name, template, {'Flavor': '2'})
         stack = parser.Stack(None, stack_name, template, params,
                              stack_id=uuidutils.generate_uuid())
 
         t['Resources']['WebServer']['Properties']['ImageName'] = 'F17'
-        t['Resources']['WebServer']['Properties']['InstanceType'] = \
-            '256 MB Server'
+        t['Resources']['WebServer']['Properties']['InstanceName'] = 'Heat test'
+        t['Resources']['WebServer']['Properties']['Flavor'] = '2'
         server = cloud_server.CloudServer('%s_name' % name,
                                           t['Resources']['WebServer'], stack)
 
-        self.m.StubOutWithMock(instance, 'nova')
-        instance.nova().MultipleTimes().AndReturn(self.fc)
+        self.m.StubOutWithMock(server, 'pyrax')
+        server.pyrax().MultipleTimes().AndReturn(self.fc)
 
-        instance.t = instance.stack.resolve_runtime_data(instance.t)
+        server.t = server.stack.resolve_runtime_data(server.t)
 
         # need to resolve the template functions
-        server_userdata = instance._build_userdata(
-            instance.t['Properties']['UserData'])
+        server_userdata = server._build_userdata(
+            server.t['Properties']['UserData'])
         self.m.StubOutWithMock(self.fc.servers, 'create')
-        self.fc.servers.create(
-            image=1, flavor=1, key_name='test',
-            name=utils.PhysName(stack_name, instance.name),
+        image_id = 
+        self.fc.servers.create("Heat test", "F17", flavor=1, key_name='test',
+            name=utils.PhysName(stack_name, server.name),
             security_groups=None,
             userdata=server_userdata, scheduler_hints=None,
             meta=None, nics=None, availability_zone=None).AndReturn(
