@@ -17,13 +17,14 @@ import pyrax
 from Crypto.PublicKey import RSA
 
 from heat.engine.resources import instance
+from heat.engine.resources.rackspace import rackspace_resource
 from heat.openstack.common import log as logging
 from heat.common import exception
 
 logger = logging.getLogger(__name__)
 
 
-class CloudServer(instance.Instance):
+class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
     """"""
     properties_schema = {
         'UserData': {'Type': 'String'},
@@ -71,11 +72,6 @@ bash /var/lib/cloud/data/cfn-userdata
 
         """
 
-        # TODO(jason): Authenticate via Rackspace base class
-        pyrax.set_setting("identity_type", "rackspace")
-        pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/"
-                                  "rackspace/rs-pyrax-creds.txt")
-
         # Retrieve server creation parameters from properties
         name = self.properties['InstanceName']
         image_name = self.properties['ImageName']
@@ -92,8 +88,7 @@ bash /var/lib/cloud/data/cfn-userdata
         files = {"/root/.ssh/authorized_keys": self.public_key}
 
         # Create server
-        cs = pyrax.connect_to_cloudservers()
-        server = cs.servers.create(name, image_id, flavor, files=files)
+        server = self.cloud_server().create(name, image_id, flavor, files=files)
         return server
 
     def check_create_complete(self, server):

@@ -62,8 +62,8 @@ class RackspaceResource(resource.Resource):
         self._cloud_dns = self.pyrax.cloud_dns
         return self._cloud_dns
 
-    def nova(self):
-        '''Rackspace nova client.'''
+    def cloud_server(self):
+        '''Rackspace Cloud Servers client.'''
         if self._cloud_server:
             return self._cloud_server
 
@@ -92,10 +92,14 @@ class RackspaceResource(resource.Resource):
     def __authenticate(self):
         #TODO: currently implemenation shown below authenticates using
         # username and password. Need make it work with auth-token
-        cls = self.pyrax.utils.import_class('pyrax.identity.rax_identity.RaxIdentity')
+        cls = self.pyrax.utils.import_class('pyrax.identity.keystone_identity.KeystoneIdentity')
         self.pyrax.identity = cls()
         logger.info("Authenticating with username:%s" % self.context.username)
-        self.pyrax.set_credentials(self.context.username,
-                                   password=self.context.password)
+        pyrax.set_setting("identity_type", "keystone")
+        pyrax.set_setting("auth_endpoint", self.context.auth_url)
+        pyrax.set_setting("tenant_id", self.context.tenant)
+        pyrax.set_credentials(self.context.user, password=self.context.password)
+        #self.pyrax.set_credentials(self.context.username,
+        #                           password=self.context.password)
         logger.info("User %s authenticated successfully."
                     % self.context.username)
