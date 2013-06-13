@@ -31,7 +31,6 @@ class CloudServer(instance.Instance):
         'InstanceName': {'Type': 'String', 'Required': True},
         'Flavor': {'Type': 'String', 'Required': True},
         'ImageName': {'Type': 'String', 'Required': True}
-        #'Personalities': {'Type': 'List'}
     }
 
     rackspace_images = {
