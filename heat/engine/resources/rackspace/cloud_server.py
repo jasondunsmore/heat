@@ -30,8 +30,8 @@ class CloudServer(instance.Instance):
         'UserData': {'Type': 'String'},
         'InstanceName': {'Type': 'String', 'Required': True},
         'Flavor': {'Type': 'String', 'Required': True},
-        'ImageName': {'Type': 'String', 'Required': True},
-        'Personality': {'Type': 'String'}
+        'ImageName': {'Type': 'String', 'Required': True}
+        #'Personalities': {'Type': 'List'}
     }
 
     rackspace_images = {
@@ -64,6 +64,8 @@ rm -f /root/.ssh/authorized_keys
         "F18": fedora_script
     }
 
+    def validate(self):
+        return self.properties.validate()
 
     def handle_create(self):
         """Create a Rackspace Cloud Servers container.
@@ -99,7 +101,7 @@ rm -f /root/.ssh/authorized_keys
         return cs.servers.create(name, image_id, flavor, files=files)
 
     def check_create_complete(self, server):
-        server.get()
+        server.get()  # Update server attributes
         if server.status in self._deferred_server_statuses:
             return False
         elif server.status == 'ERROR':
@@ -141,7 +143,7 @@ rm -f /root/.ssh/authorized_keys
         ssh.connect(public_ip,
                     username="root",
                     key_filename=private_key_file.name)
-        private_key_file.close()
+        private_key_file.close()  # Delete temp file
         command = "bash -ex /root/heat-script.sh > /root/heat-script.log 2>&1"
         stdin, stdout, stderr = ssh.exec_command(command)
         logger.debug(stdout.read())
