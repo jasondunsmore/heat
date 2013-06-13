@@ -88,13 +88,13 @@ bash /var/lib/cloud/data/cfn-userdata
         # Generate SSH public/private keypair
         rsa = RSA.generate(1024)
         self.private_key = rsa.exportKey()
-        public_key = rsa.publickey().exportKey('OpenSSH')
-        files = {"/root/.ssh/authorized_keys": public_key}
+        self.public_key = rsa.publickey().exportKey('OpenSSH')
+        files = {"/root/.ssh/authorized_keys": self.public_key}
 
         # Create server
         cs = pyrax.connect_to_cloudservers()
         server = cs.servers.create(name, image_id, flavor, files=files)
-
+        return server
 
     def check_create_complete(self, server):
         server.get()  # Update server attributes
