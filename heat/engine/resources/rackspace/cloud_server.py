@@ -27,10 +27,11 @@ logger = logging.getLogger(__name__)
 class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
     """"""
     properties_schema = {
-        'UserData': {'Type': 'String'},
         'InstanceName': {'Type': 'String', 'Required': True},
         'Flavor': {'Type': 'String', 'Required': True},
-        'ImageName': {'Type': 'String', 'Required': True}
+        'ImageName': {'Type': 'String', 'Required': True},
+        'UserData': {'Type': 'String'},
+        'PublicKey': {'Type': 'String'}
     }
 
     rackspace_images = {
@@ -80,12 +81,14 @@ bash /var/lib/cloud/data/cfn-userdata
         flavor = self.properties['Flavor']
         raw_userdata = self.properties['UserData'] or ''
         self.userdata = self._build_userdata(raw_userdata)
+        user_public_key = self.properties['PublicKey'] or ''
 
         # Generate SSH public/private keypair
         rsa = RSA.generate(1024)
         self.private_key = rsa.exportKey()
-        self.public_key = rsa.publickey().exportKey('OpenSSH')
-        files = {"/root/.ssh/authorized_keys": self.public_key}
+        public_key = rsa.publickey().exportKey('OpenSSH')
+        public_keys = public_key + "\n" + user_public_key
+        files = {"/root/.ssh/authorized_keys": public_keys}
 
         # Create server
         server = self.cloud_server().create(name, image_id, flavor, files=files)
