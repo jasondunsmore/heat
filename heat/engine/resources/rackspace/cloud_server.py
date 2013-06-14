@@ -160,7 +160,7 @@ bash /var/lib/cloud/data/cfn-userdata
 
         self.resource_id = None
 
-    def handle_update(self):
+    def handle_update(self, json_snippet, tmpl_diff, prop_diff):
         print "************************************************************"
         print "Running handle_update()"
         print "************************************************************"
