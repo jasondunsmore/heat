@@ -11,6 +11,7 @@
 #    under the License.
 
 import copy
+import logger
 
 import mox
 import pyrax
@@ -77,8 +78,13 @@ class RackspaceCloudServerTest(HeatTestCase):
         instance = cloud_server.CloudServer('%s_name' % name,
                                             t['Resources']['WebServer'], stack)
 
-        self.m.StubOutWithMock(pyrax, 'set_credential_file')
-        pyrax.set_credential_file(mox.IgnoreArg()).AndReturn(True)
+        self.m.StubOutWithMock(logger, 'info')
+        logger.info(mox.IgnoreArg())
+        self.m.StubOutWithMock(pyrax, 'set_setting')
+        pyrax.set_setting(mox.IgnoreArg(), mox.IgnoreArg()).MultipleTimes()\
+                                                           .AndReturn(True)
+        self.m.StubOutWithMock(pyrax, 'set_credentials')
+        pyrax.set_credentials(mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(True)
         self.m.StubOutWithMock(pyrax, 'connect_to_cloudservers')
         pyrax.connect_to_cloudservers().AndReturn(self.fc)
 
@@ -95,9 +101,9 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         self.m.StubOutWithMock(paramiko, "Transport")
 
-        transport = self.m.CreateMockAnyting()
+        transport = self.m.CreateMockAnything()
         paramiko.Transport((mox.IgnoreArg(), 22)).AndReturn(transport)
-        
+
 
         return instance
 
