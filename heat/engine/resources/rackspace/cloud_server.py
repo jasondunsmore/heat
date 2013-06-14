@@ -54,7 +54,7 @@ chmod 600 /var/lib/cloud/seed/nocloud-net/*
 
 # Run cloud-init & cfn-init
 cloud-init start
-bash /var/lib/cloud/data/cfn-userdata
+bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 """
 
     image_scripts = {
@@ -62,8 +62,54 @@ bash /var/lib/cloud/data/cfn-userdata
         "F18": fedora_script
     }
 
+    # template keys supported for handle_update, note trailing comma
+    # is required for a single item to get a tuple not a string
+    update_allowed_keys = ('Metadata', 'Properties')
+    update_allowed_properties = ('Flavor',)
+
     def validate(self):
         return self.properties.validate()
+
+    def _public_ip(self, addresses):
+        error_message = 'Could not determine public IP of server'
+        if 'public' not in addresses:
+            raise exception.Error(error_message)
+        for ip in addresses['public']:
+            if ip['version'] == 4:
+                return ip['addr']
+        raise exception.Error(error_message)
+
+    def _create_temp_file(self, data):
+        temp_file = tempfile.NamedTemporaryFile()
+        temp_file.write(data)
+        temp_file.seek(0)
+
+    def _run_ssh_command(self, server, command):
+        private_key_file = self._create_temp_file(self.private_key)
+        ssh = paramiko.SSHClient()
+        public_ip = self._public_ip(server.addresses)
+        ssh.set_missing_host_key_policy(paramiko.MissingHostKeyPolicy())
+        ssh.connect(public_ip,
+                    username="root",
+                    key_filename=private_key_file.name)
+        private_key_file.close()  # Delete temp file
+        stdin, stdout, stderr = ssh.exec_command(command)
+        logger.debug(stdout.read())
+        logger.debug(stderr.read())
+        private_key_file.close()
+
+    def _sftp_files(self, server, files):
+        private_key_file = self._create_temp_file(self.private_key)
+        pkey = paramiko.RSAKey.from_private_key_file(private_key_file.name)
+        public_ip = self._public_ip(server.addresses)
+        transport = paramiko.Transport((public_ip, 22))
+        transport.connect(hostkey=None, username="root", pkey=pkey)
+        sftp = paramiko.SFTPClient.from_transport(transport)
+        for remote_file in files:
+            remote_file = sftp.open(remote_file['path'], 'w')
+            remote_file.write(remote_file['data'])
+            remote_file.close()
+        private_key_file.close()
 
     def handle_create(self):
         """Create a Rackspace Cloud Servers container.
@@ -104,45 +150,16 @@ bash /var/lib/cloud/data/cfn-userdata
         elif server.status == 'ERROR':
             raise exception.Error('Server build failed.')
 
-        # Get public IP
-        if 'public' not in server.addresses:
-            raise exception.Error('Could not determine public IP of server')
-        for ip in server.addresses['public']:
-            if ip['version'] == 4:
-                public_ip = ip['addr']
-                break
-        if not public_ip:
-            raise exception.Error('Could not determine public IP of server')
-
-        # Create temp file for private key
-        private_key_file = tempfile.NamedTemporaryFile()
-        private_key_file.write(self.private_key)
-        private_key_file.seek(0)
-
         # Create heat-script and userdata files on server
-        pkey = paramiko.RSAKey.from_private_key_file(private_key_file.name)
-        private_key_file.seek(0)
-        transport = paramiko.Transport((public_ip, 22))
-        transport.connect(hostkey=None, username="root", pkey=pkey)
-        sftp = paramiko.SFTPClient.from_transport(transport)
-        remote_userdata = sftp.open("/tmp/userdata", 'w')
-        remote_userdata.write(self.userdata)
-        remote_userdata.close()
-        remote_script = sftp.open("/root/heat-script.sh", 'w')
-        remote_script.write(self.script)
-        remote_script.close()
+        files = [
+            {'path': "/tmp/userdata", 'data': self.userdata},
+            {'path': "/root/heat-script.sh", 'data': self.script}
+        ]
+        self._sftp_files(server, files)
 
         # Connect via SSH and run script
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.MissingHostKeyPolicy())
-        ssh.connect(public_ip,
-                    username="root",
-                    key_filename=private_key_file.name)
-        private_key_file.close()  # Delete temp file
         command = "bash -ex /root/heat-script.sh > /root/heat-script.log 2>&1"
-        stdin, stdout, stderr = ssh.exec_command(command)
-        logger.debug(stdout.read())
-        logger.debug(stderr.read())
+        self._run_ssh_command(command)
 
         return True
 
@@ -152,7 +169,7 @@ bash /var/lib/cloud/data/cfn-userdata
 
         client = self.cloud_server().servers
         try:
-            server = client.servers.get(self.resource_id)
+            server = client.get(self.resource_id)
         except pyrax.exceptions.ServerNotFound:
             pass
         else:
@@ -161,16 +178,37 @@ bash /var/lib/cloud/data/cfn-userdata
         self.resource_id = None
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
-        print "************************************************************"
-        print "Running handle_update()"
-        print "************************************************************"
         import pdb; pdb.set_trace()
+
         client = self.cloud_server().servers
-        server = client.servers.get(self.resource_id)
-        db = db_api.resource_get(self.context, self.resource_id)
+        server = client.get(self.resource_id)
+
+        if 'Metadata' in tmpl_diff:
+            resource = db_api.resource_get_by_physical_resource_id(
+                self.context, self.resource_id)
+            self.private_key = resource.private_key
+
+            files = [{'path': "/var/cache/heat-cfntools/last_metadata",
+                      'data': json_snippet['Metadata']}]
+            self._sftp_files(server, files)
+
+            command = "bash -x /var/lib/cloud/data/cfn-userdata > "
+            "/root/cfn-userdata.log 2>&1"
+            self._run_ssh_command(server, command)
+
+        if 'Flavor' in prop_diff:
+            server.resize(json_snippet['Properties']['Flavor'])
+            new_server = server.get(server.id)
+            if new_server.status == "CONFIRM_RESIZE":
+                server.confirm_resize()
+            else:
+                server.revert_resize()
+                raise exception.Error("Could not resize instance, reverting.")
+
+        return True
+
 
 def resource_mapping():
     return {
         'Rackspace::Cloud::Server': CloudServer
     }
-

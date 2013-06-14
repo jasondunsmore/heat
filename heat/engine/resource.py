@@ -211,7 +211,7 @@ class Resource(object):
 
     def update_template_diff(self, json_snippet=None):
         '''
-        Returns the difference between json_template and self.t
+        Returns the difference between json_snippet and self.t
         If something has been removed in json_snippet which exists
         in self.t we set it to None.  If any keys have changed which
         are not in update_allowed_keys, raises UpdateReplace if the
