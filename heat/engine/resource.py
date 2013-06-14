@@ -484,6 +484,15 @@ class Resource(object):
             except Exception as ex:
                 logger.warn('db error %s' % str(ex))
 
+    def resource_private_key_set(self, private_key):
+        self.private_key = private_key
+        if self.id is not None:
+            try:
+                rs = db_api.resource_get(self.context, self.id)
+                rs.update_and_save({'private_key': self.private_key})
+            except Exception as ex:
+                logger.warn('db error %s' % str(ex))
+
     def _store(self):
         '''Create the resource in the database.'''
         try:

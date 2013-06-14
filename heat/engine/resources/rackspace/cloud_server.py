@@ -20,6 +20,7 @@ from heat.engine.resources import instance
 from heat.engine.resources.rackspace import rackspace_resource
 from heat.openstack.common import log as logging
 from heat.common import exception
+from heat.db import api as db_api
 
 logger = logging.getLogger(__name__)
 
@@ -85,14 +86,15 @@ bash /var/lib/cloud/data/cfn-userdata
 
         # Generate SSH public/private keypair
         rsa = RSA.generate(1024)
-        self.private_key = rsa.exportKey()
+        private_key = rsa.exportKey()
         public_key = rsa.publickey().exportKey('OpenSSH')
         public_keys = public_key + "\n" + user_public_key
         files = {"/root/.ssh/authorized_keys": public_keys}
-
         # Create server
         client = self.cloud_server().servers
         server = client.create(name, image_id, flavor, files=files)
+        self.resource_id_set(server.id)  # Save resource ID to db
+        self.resource_private_key_set(private_key)  # Save private key to db
         return server
 
     def check_create_complete(self, server):
@@ -101,8 +103,6 @@ bash /var/lib/cloud/data/cfn-userdata
             return False
         elif server.status == 'ERROR':
             raise exception.Error('Server build failed.')
-
-        self.resource_id_set(server.id)  # Save resource ID to db
 
         # Get public IP
         if 'public' not in server.addresses:
@@ -150,14 +150,9 @@ bash /var/lib/cloud/data/cfn-userdata
         if self.resource_id is None:
             return
 
-        # TODO(jason): Authenticate via Rackspace base class
-        pyrax.set_setting("identity_type", "rackspace")
-        pyrax.set_credential_file("/opt/stack/heat/heat/engine/resources/"
-                                  "rackspace/rs-pyrax-creds.txt")
-
-        cs = pyrax.connect_to_cloudservers()
+        client = self.cloud_server().servers
         try:
-            server = cs.servers.get(self.resource_id)
+            server = client.servers.get(self.resource_id)
         except pyrax.exceptions.ServerNotFound:
             pass
         else:
@@ -165,8 +160,17 @@ bash /var/lib/cloud/data/cfn-userdata
 
         self.resource_id = None
 
+    def handle_update(self):
+        print "************************************************************"
+        print "Running handle_update()"
+        print "************************************************************"
+        import pdb; pdb.set_trace()
+        client = self.cloud_server().servers
+        server = client.servers.get(self.resource_id)
+        db = db_api.resource_get(self.context, self.resource_id)
 
 def resource_mapping():
     return {
         'Rackspace::Cloud::Server': CloudServer
     }
+

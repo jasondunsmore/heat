@@ -217,6 +217,7 @@ class Resource(BASE, HeatBase):
     nova_instance = Column('nova_instance', String)
     state_description = Column('state_description', String)
     # odd name as "metadata" is reserved
+    private_key = Column(String)
     rsrc_metadata = Column('rsrc_metadata', Json)
 
     stack_id = Column(String, ForeignKey('stack.id'), nullable=False)
