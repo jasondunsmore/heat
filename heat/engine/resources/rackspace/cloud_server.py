@@ -91,7 +91,8 @@ bash /var/lib/cloud/data/cfn-userdata
         files = {"/root/.ssh/authorized_keys": public_keys}
 
         # Create server
-        server = self.cloud_server().create(name, image_id, flavor, files=files)
+        client = self.cloud_server().servers
+        server = client.create(name, image_id, flavor, files=files)
         return server
 
     def check_create_complete(self, server):

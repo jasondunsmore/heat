@@ -68,7 +68,7 @@ class RackspaceResource(resource.Resource):
             return self._cloud_server
 
         self.__authenticate()
-        self._cloud_server = self.pyrax.cloudservers
+        self._cloud_server = self.pyrax.connect_to_cloudservers()
         return self._cloud_server
 
     def cinder(self):
