@@ -14,6 +14,7 @@
 #    under the License.
 
 import pyrax
+
 from heat.engine import resource
 from heat.openstack.common import log as logging
 
@@ -35,71 +36,58 @@ class RackspaceResource(resource.Resource):
         self._cloud_server = None
         self._cloud_nw = None
         self._cloud_blockstore = None
+        self.__authenticate()
 
     def cloud_db(self):
         '''Rackspace cloud database client.'''
-        if self._cloud_db:
-            return self._cloud_db
+        if not self._cloud_db:
+            self._cloud_db = self.pyrax.cloud_databases
 
-        self.__authenticate()
-        self._cloud_db = self.pyrax.cloud_databases
         return self._cloud_db
 
     def cloud_lb(self):
         '''Rackspace cloud loadbalancer client.'''
-        if self._cloud_lb:
-            return self._cloud_lb
+        if not self._cloud_lb:
+            self._cloud_lb = self.pyrax.cloud_loadbalancers
 
-        self.__authenticate()
-        self._cloud_lb = self.pyrax.cloud_loadbalancers
         return self._cloud_lb
 
     def cloud_dns(self):
         '''Rackspace cloud dns client'''
-        if self._cloud_dns:
-            return self._cloud_dns
+        if not self._cloud_dns:
+            self._cloud_dns = self.pyrax.cloud_dns
 
-        self._cloud_dns = self.pyrax.cloud_dns
         return self._cloud_dns
 
-    def cloud_server(self):
-        '''Rackspace Cloud Servers client.'''
-        if self._cloud_server:
-            return self._cloud_server
+    def nova(self):
+        '''Rackspace cloudservers client.'''
+        if not self._cloud_server:
+            self._cloud_server = self.pyrax.connect_to_cloudservers()
 
-        self.__authenticate()
-        self._cloud_server = self.pyrax.connect_to_cloudservers()
         return self._cloud_server
 
     def cinder(self):
         '''Rackspace cinder client.'''
-        if self._cloud_blockstore:
-            return self._cloud_blockstore
+        if not self._cloud_blockstore:
+            self._cloud_blockstore = self.pyrax.cloud_blockstorage
 
-        self.__authenticate()
-        self._cloud_blockstore = self.pyrax.cloud_blockstorage
         return self._cloud_blockstore
 
     def quantum(self):
         '''Rackspace quantum client.'''
-        if self._cloud_nw:
-            return self._cloud_nw
+        if not self._cloud_nw:
+            self._cloud_nw = self.pyrax.cloud_networks
 
-        self.__authenticate()
-        self._cloud_nw = self.pyrax.cloud_networks
         return self._cloud_nw
 
     def __authenticate(self):
-        #TODO: currently implemenation shown below authenticates using
+        #TODO: current implemenation shown below authenticates using
         # username and password. Need make it work with auth-token
-        cls = self.pyrax.utils.import_class('pyrax.identity.keystone_identity.KeystoneIdentity')
-        self.pyrax.identity = cls()
-        logger.info("Authenticating with username:%s" % self.context.username)
         pyrax.set_setting("identity_type", "keystone")
         pyrax.set_setting("auth_endpoint", self.context.auth_url)
         pyrax.set_setting("tenant_id", self.context.tenant)
-        pyrax.set_credentials(self.context.user, password=self.context.password)
-        #self.pyrax.set_credentials(self.context.username,
-        #                           password=self.context.password)
+        logger.info("Authenticating with username:%s" % self.context.username)
+        pyrax.set_credentials(self.context.username,
+                              password=self.context.password)
         logger.info("User %s authenticated successfully."
                     % self.context.username)
