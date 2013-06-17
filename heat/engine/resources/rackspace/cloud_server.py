@@ -192,7 +192,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             self.private_key = self.resource_private_key_get()
 
             files = [{'path': "/var/cache/heat-cfntools/last_metadata",
-                      'data': json_snippet['Metadata']}]
+                      'data': str(json_snippet['Metadata'])}]
             self._sftp_files(server, files)
 
             command = "bash -x /var/lib/cloud/data/cfn-userdata > "
