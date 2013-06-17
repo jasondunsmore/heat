@@ -13,6 +13,7 @@
 import tempfile
 import time
 
+import json
 import paramiko
 import pyrax
 from Crypto.PublicKey import RSA
@@ -190,9 +191,10 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         if 'Metadata' in tmpl_diff:
             self.private_key = self.resource_private_key_get()
+            metadata = json.dumps(json_snippet['Metadata'])
 
             files = [{'path': "/var/cache/heat-cfntools/last_metadata",
-                      'data': str(json_snippet['Metadata'])}]
+                      'data': metadata}]
             self._sftp_files(server, files)
 
             command = "bash -x /var/lib/cloud/data/cfn-userdata > "
@@ -216,7 +218,16 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                 logger.info("Could not resize instance, reverting...")
                 server.get()
 
-                #while server.status == "VERIFY_RESIZE":
+                # The server stays in "REVERT_RESIZE" status while reverting
+                # TODO(jason): Make this asynchronous
+                while server.status == "REVERT_RESIZE":
+                    time.sleep(5)
+                    server.get()
+
+                if server.status == "ACTIVE":  # Successful revert
+                    logger.info("Successfully resized instance.")
+                else:  # "ERROR" or other status
+                    raise exception.Error("Unable to revert resized instance.")
 
         return True
 
