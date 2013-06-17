@@ -139,8 +139,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         # Create server
         client = self.cloud_server().servers
         server = client.create(name, image_id, flavor, files=files)
-        self.resource_id_set(server.id)  # Save resource ID to db
-        self.resource_private_key_set(private_key)  # Save private key to db
+
+        # Save resource ID and private key to db
+        self.resource_id_set(server.id)
+        self.resource_private_key_set(private_key)
+
         return server
 
     def check_create_complete(self, server):
@@ -184,9 +187,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         server = client.get(self.resource_id)
 
         if 'Metadata' in tmpl_diff:
-            resource = db_api.resource_get_by_physical_resource_id(
-                self.context, self.resource_id)
-            self.private_key = resource.private_key
+            self.private_key = self.resource_private_key_get()
 
             files = [{'path': "/var/cache/heat-cfntools/last_metadata",
                       'data': json_snippet['Metadata']}]

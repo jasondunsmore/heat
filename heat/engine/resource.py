@@ -17,10 +17,9 @@ import base64
 from datetime import datetime
 
 from heat.engine import event
-from heat.common import exception
 from heat.openstack.common import excutils
 from heat.db import api as db_api
-from heat.common import identifier
+from heat.common import exception, identifier, crypt
 from heat.engine import timestamp
 from heat.engine.properties import Properties
 
@@ -486,12 +485,22 @@ class Resource(object):
 
     def resource_private_key_set(self, private_key):
         self.private_key = private_key
+        encrypted_private_key = crypt.encrypt(self.private_key)
         if self.id is not None:
             try:
                 rs = db_api.resource_get(self.context, self.id)
-                rs.update_and_save({'private_key': self.private_key})
+                rs.update_and_save({'private_key': encrypted_private_key})
             except Exception as ex:
                 logger.warn('db error %s' % str(ex))
+
+    def resource_private_key_get(self):
+        if self.id is not None:
+            try:
+                rs = db_api.resource_get(self.context, self.id)
+            except Exception as ex:
+                logger.warn('db error %s' % str(ex))
+            private_key = crypt.decrypt(rs.private_key)
+            return private_key
 
     def _store(self):
         '''Create the resource in the database.'''
