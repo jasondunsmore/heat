@@ -197,8 +197,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                       'data': metadata}]
             self._sftp_files(server, files)
 
-            command = "bash -x /var/lib/cloud/data/cfn-userdata > "
-            "/root/cfn-userdata.log 2>&1"
+            command = "bash -x /var/lib/cloud/data/cfn-userdata > " + \
+                      "/root/cfn-userdata.log 2>&1"
             self._run_ssh_command(server, command)
 
         if 'Flavor' in prop_diff:
