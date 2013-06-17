@@ -11,16 +11,16 @@
 #    under the License.
 
 import tempfile
+import time
+
 import paramiko
 import pyrax
-
 from Crypto.PublicKey import RSA
 
 from heat.engine.resources import instance
 from heat.engine.resources.rackspace import rackspace_resource
 from heat.openstack.common import log as logging
 from heat.common import exception
-from heat.db import api as db_api
 
 logger = logging.getLogger(__name__)
 
@@ -201,12 +201,22 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         if 'Flavor' in prop_diff:
             server.resize(json_snippet['Properties']['Flavor'])
-            new_server = server.get(server.id)
-            if new_server.status == "CONFIRM_RESIZE":
+            server.get()
+
+            # The server stays in "RESIZE" status while resizing
+            # TODO(jason): Make this asynchronous
+            while server.status == "RESIZE":
+                time.sleep(5)
+                server.get()
+
+            if server.status == "VERIFY_RESIZE":  # Successful resize
                 server.confirm_resize()
-            else:
+            else:  # Status will go back to "ACTIVE" upon error
                 server.revert_resize()
-                raise exception.Error("Could not resize instance, reverting.")
+                logger.info("Could not resize instance, reverting...")
+                server.get()
+
+                #while server.status == "VERIFY_RESIZE":
 
         return True
 
