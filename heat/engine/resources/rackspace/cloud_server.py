@@ -71,14 +71,21 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     def validate(self):
         return self.properties.validate()
 
-    def _public_ip(self, addresses):
+    def _get_ip(self, ip_type):
+        server = self.nova().servers.get(self.resource_id)
         error_message = 'Could not determine public IP of server'
-        if 'public' not in addresses:
+        if ip_type not in server.addresses:
             raise exception.Error(error_message)
-        for ip in addresses['public']:
+        for ip in server.addresses[ip_type]:
             if ip['version'] == 4:
                 return ip['addr']
         raise exception.Error(error_message)
+
+    def _public_ip(self):
+        return self._get_ip('public')
+
+    def _private_ip(self):
+        return self._get_ip('private')
 
     def _create_temp_file(self, data):
         temp_file = tempfile.NamedTemporaryFile()
@@ -89,7 +96,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     def _run_ssh_command(self, server, command):
         private_key_file = self._create_temp_file(self.private_key)
         ssh = paramiko.SSHClient()
-        public_ip = self._public_ip(server.addresses)
+        public_ip = self._public_ip()
         ssh.set_missing_host_key_policy(paramiko.MissingHostKeyPolicy())
         ssh.connect(public_ip,
                     username="root",
@@ -103,7 +110,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     def _sftp_files(self, server, files):
         private_key_file = self._create_temp_file(self.private_key)
         pkey = paramiko.RSAKey.from_private_key_file(private_key_file.name)
-        public_ip = self._public_ip(server.addresses)
+        public_ip = self._public_ip()
         transport = paramiko.Transport((public_ip, 22))
         transport.connect(hostkey=None, username="root", pkey=pkey)
         sftp = paramiko.SFTPClient.from_transport(transport)
@@ -230,6 +237,18 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                     raise exception.Error("Unable to revert resized instance.")
 
         return True
+
+    def FnGetAtt(self, key):
+        res = None
+        if key == 'PublicIp':
+            res = self._public_ip()
+        elif key == 'PrivateIp':
+            res = self._private_ip()
+        else:
+            raise exception.InvalidTemplateAttribute(resource=self.name,
+                                                     key=key)
+        logger.info('%s.GetAtt(%s) == %s' % (self.name, key, res))
+        return unicode(res)
 
 
 def resource_mapping():

@@ -82,8 +82,8 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         instance = cloud_server.CloudServer('%s_name' % name,
                                             t['Resources']['WebServer'], stack)
-        self.m.StubOutWithMock(logger, 'info')
-        logger.info(mox.IgnoreArg())
+        #self.m.StubOutWithMock(logger, 'info')
+        #logger.info(mox.IgnoreArg())
 
         instance.t = instance.stack.resolve_runtime_data(instance.t)
 
@@ -98,9 +98,20 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         # SSH
         self.m.StubOutWithMock(paramiko, "SSHClient")
-        fake_ssh = self.m.CreateMockAnything()
-        ssh = paramiko.SSHClient().AndReturn(fake_ssh)
-        ssh.connect(mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg())
+        self.m.StubOutWithMock(paramiko, "MissingHostKeyPolicy")
+        ssh = self.m.CreateMockAnything()
+        paramiko.SSHClient().AndReturn(ssh)
+        paramiko.MissingHostKeyPolicy()
+        ssh.set_missing_host_key_policy(None)
+        ssh.connect(mox.IgnoreArg(),
+                    key_filename=mox.IgnoreArg(),
+                    username='root')
+        stdin = self.m.CreateMockAnything()
+        stdout = self.m.CreateMockAnything()
+        stderr = self.m.CreateMockAnything()
+        stdout.read().AndReturn("stdout")
+        stderr.read().AndReturn("stderr")
+        ssh.exec_command(mox.IgnoreArg()).AndReturn((stdin, stdout, stderr))
 
         # SFTP
         self.m.StubOutWithMock(paramiko, "Transport")
@@ -108,14 +119,19 @@ class RackspaceCloudServerTest(HeatTestCase):
         paramiko.Transport((mox.IgnoreArg(), 22)).AndReturn(transport)
         transport.connect(hostkey=None, username="root", pkey=mox.IgnoreArg())
         sftp = self.m.CreateMockAnything()
+        self.m.StubOutWithMock(paramiko, "SFTPClient")
         paramiko.SFTPClient.from_transport(transport).AndReturn(sftp)
         sftp_file = self.m.CreateMockAnything()
         sftp.open(mox.IgnoreArg(), 'w').AndReturn(sftp_file)
-        sftp_file.write(mox.IgnoreArg()).AndReturn(True)
-        sftp_file.close().AndReturn(True)
+        sftp_file.write(mox.IgnoreArg())
+        sftp_file.close()
+        sftp_file = self.m.CreateMockAnything()
+        sftp.open(mox.IgnoreArg(), 'w').AndReturn(sftp_file)
+        sftp_file.write(mox.IgnoreArg())
+        sftp_file.close()
 
         self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
-        rackspace_resource.RackspaceResource.nova().AndReturn(self.fc)
+        rackspace_resource.RackspaceResource.nova().MultipleTimes().AndReturn(self.fc)
 
         return instance
 
@@ -133,11 +149,10 @@ class RackspaceCloudServerTest(HeatTestCase):
         # this makes sure the auto increment worked on instance creation
         self.assertTrue(instance.id > 0)
 
-        expected_ip = return_server.networks['public'][0]
-        self.assertEqual(instance.FnGetAtt('PublicIp'), expected_ip)
-        self.assertEqual(instance.FnGetAtt('PrivateIp'), expected_ip)
-        self.assertEqual(instance.FnGetAtt('PrivateDnsName'), expected_ip)
-        self.assertEqual(instance.FnGetAtt('PrivateDnsName'), expected_ip)
+        expected_public_ip = return_server.networks['public'][0]
+        expected_private_ip = return_server.networks['private'][0]
+        self.assertEqual(instance.FnGetAtt('PublicIp'), expected_public_ip)
+        self.assertEqual(instance.FnGetAtt('PrivateIp'), expected_private_ip)
 
         self.m.VerifyAll()
 
