@@ -11,12 +11,12 @@
 #    under the License.
 
 import copy
-import logger
 
 import mox
 import pyrax
 import paramiko
 
+from heat.openstack.common import log as logging
 from heat.tests.v1_1 import fakes
 from heat.common import template_format
 from heat.engine import parser
@@ -28,6 +28,7 @@ from heat.tests import utils
 from heat.tests.utils import setup_dummy_db
 from heat.engine.resources.rackspace import cloud_server
 
+logger = logging.getLogger(__name__)
 
 wp_template = '''
 {
@@ -63,13 +64,17 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.fc = fakes.FakeClient()
         setup_dummy_db()
 
-    def _setup_test_instance(self, return_server, name):
-        stack_name = '%s_stack' % name
+    def _setup_test_stack(self, stack_name):
         t = template_format.parse(wp_template)
         template = parser.Template(t)
         params = parser.Parameters(stack_name, template, {'Flavor': '2'})
         stack = parser.Stack(None, stack_name, template, params,
                              stack_id=uuidutils.generate_uuid())
+        return (t, stack)
+
+    def _setup_test_instance(self, return_server, name):
+        stack_name = '%s_stack' % name
+        (t, stack) = self._setup_test_stack(stack_name)
 
         t['Resources']['WebServer']['Properties']['ImageName'] = 'F17'
         t['Resources']['WebServer']['Properties']['InstanceName'] = 'Heat test'
@@ -127,3 +132,4 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.assertEqual(instance.FnGetAtt('PrivateDnsName'), expected_ip)
 
         self.m.VerifyAll()
+

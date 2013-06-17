@@ -83,6 +83,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         temp_file = tempfile.NamedTemporaryFile()
         temp_file.write(data)
         temp_file.seek(0)
+        return temp_file
 
     def _run_ssh_command(self, server, command):
         private_key_file = self._create_temp_file(self.private_key)
@@ -106,9 +107,9 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         transport.connect(hostkey=None, username="root", pkey=pkey)
         sftp = paramiko.SFTPClient.from_transport(transport)
         for remote_file in files:
-            remote_file = sftp.open(remote_file['path'], 'w')
-            remote_file.write(remote_file['data'])
-            remote_file.close()
+            sftp_file = sftp.open(remote_file['path'], 'w')
+            sftp_file.write(remote_file['data'])
+            sftp_file.close()
         private_key_file.close()
 
     def handle_create(self):
@@ -136,6 +137,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         public_key = rsa.publickey().exportKey('OpenSSH')
         public_keys = public_key + "\n" + user_public_key
         files = {"/root/.ssh/authorized_keys": public_keys}
+
         # Create server
         client = self.cloud_server().servers
         server = client.create(name, image_id, flavor, files=files)
@@ -162,7 +164,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         # Connect via SSH and run script
         command = "bash -ex /root/heat-script.sh > /root/heat-script.log 2>&1"
-        self._run_ssh_command(command)
+        self._run_ssh_command(server, command)
 
         return True
 
