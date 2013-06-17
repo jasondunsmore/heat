@@ -26,7 +26,7 @@ from heat.openstack.common import uuidutils
 from heat.tests.common import HeatTestCase
 from heat.tests import utils
 from heat.tests.utils import setup_dummy_db
-from heat.engine.resources.rackspace import cloud_server
+from heat.engine.resources.rackspace import cloud_server, rackspace_resource
 
 logger = logging.getLogger(__name__)
 
@@ -82,16 +82,8 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         instance = cloud_server.CloudServer('%s_name' % name,
                                             t['Resources']['WebServer'], stack)
-
         self.m.StubOutWithMock(logger, 'info')
         logger.info(mox.IgnoreArg())
-        self.m.StubOutWithMock(pyrax, 'set_setting')
-        pyrax.set_setting(mox.IgnoreArg(), mox.IgnoreArg()).MultipleTimes()\
-                                                           .AndReturn(True)
-        self.m.StubOutWithMock(pyrax, 'set_credentials')
-        pyrax.set_credentials(mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(True)
-        self.m.StubOutWithMock(pyrax, 'connect_to_cloudservers')
-        pyrax.connect_to_cloudservers().AndReturn(self.fc)
 
         instance.t = instance.stack.resolve_runtime_data(instance.t)
 
@@ -104,16 +96,32 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.fc.servers.create(instance_name, image_id, flavor,
                                files=mox.IgnoreArg()).AndReturn(return_server)
 
-        self.m.StubOutWithMock(paramiko, "Transport")
+        # SSH
+        self.m.StubOutWithMock(paramiko, "SSHClient")
+        fake_ssh = self.m.CreateMockAnything()
+        ssh = paramiko.SSHClient().AndReturn(fake_ssh)
+        ssh.connect(mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg())
 
+        # SFTP
+        self.m.StubOutWithMock(paramiko, "Transport")
         transport = self.m.CreateMockAnything()
         paramiko.Transport((mox.IgnoreArg(), 22)).AndReturn(transport)
+        transport.connect(hostkey=None, username="root", pkey=mox.IgnoreArg())
+        sftp = self.m.CreateMockAnything()
+        paramiko.SFTPClient.from_transport(transport).AndReturn(sftp)
+        sftp_file = self.m.CreateMockAnything()
+        sftp.open(mox.IgnoreArg(), 'w').AndReturn(sftp_file)
+        sftp_file.write(mox.IgnoreArg()).AndReturn(True)
+        sftp_file.close().AndReturn(True)
 
+        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
+        rackspace_resource.RackspaceResource.nova().AndReturn(self.fc)
 
         return instance
 
     def _create_test_instance(self, return_server, name):
         instance = self._setup_test_instance(return_server, name)
+
         self.m.ReplayAll()
         scheduler.TaskRunner(instance.create)()
         return instance
