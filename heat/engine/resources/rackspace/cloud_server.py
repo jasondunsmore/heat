@@ -140,7 +140,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         files = {"/root/.ssh/authorized_keys": public_keys}
 
         # Create server
-        client = self.cloud_server().servers
+        client = self.nova().servers
         server = client.create(name, image_id, flavor, files=files)
 
         # Save resource ID and private key to db
@@ -150,6 +150,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         return server
 
     def check_create_complete(self, server):
+        """Check if server creation is complete and handle server configs."""
         server.get()  # Update server attributes
         if server.status in self._deferred_server_statuses:
             return False
@@ -173,7 +174,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         if self.resource_id is None:
             return
 
-        client = self.cloud_server().servers
+        client = self.nova().servers
         try:
             server = client.get(self.resource_id)
         except pyrax.exceptions.ServerNotFound:
@@ -184,9 +185,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         self.resource_id = None
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
-        import pdb; pdb.set_trace()
 
-        client = self.cloud_server().servers
+        client = self.nova().servers
         server = client.get(self.resource_id)
 
         if 'Metadata' in tmpl_diff:
