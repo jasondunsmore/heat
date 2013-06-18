@@ -18,7 +18,7 @@ import paramiko
 
 from heat.openstack.common import log as logging
 from heat.tests.v1_1 import fakes
-from heat.common import template_format
+from heat.common import template_format, exception
 from heat.engine import parser
 from heat.engine import resource
 from heat.engine import scheduler
@@ -72,11 +72,12 @@ class RackspaceCloudServerTest(HeatTestCase):
                              stack_id=uuidutils.generate_uuid())
         return (t, stack)
 
-    def _setup_test_instance(self, return_server, name):
+    def _setup_test_instance(self, return_server, name, image_name=None):
         stack_name = '%s_stack' % name
         (t, stack) = self._setup_test_stack(stack_name)
 
-        t['Resources']['WebServer']['Properties']['ImageName'] = 'F17'
+        t['Resources']['WebServer']['Properties']['ImageName'] = \
+            image_name or 'F17'
         t['Resources']['WebServer']['Properties']['InstanceName'] = 'Heat test'
         t['Resources']['WebServer']['Properties']['Flavor'] = '2'
 
@@ -88,7 +89,6 @@ class RackspaceCloudServerTest(HeatTestCase):
         instance.t = instance.stack.resolve_runtime_data(instance.t)
 
         instance_name = t['Resources']['WebServer']['Properties']['InstanceName']
-        image_name = t['Resources']['WebServer']['Properties']['ImageName']
         image_id = instance.rackspace_images[image_name]
         flavor = t['Resources']['WebServer']['Properties']['Flavor']
 
@@ -158,3 +158,23 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         self.m.VerifyAll()
 
+    def test_instance_create_with_image_name(self):
+        return_server = self.fc.servers.list()[1]
+        instance = self._setup_test_instance(return_server,
+                                             'test_instance_create_image_id',
+                                             image_name='F18')
+
+        self.m.ReplayAll()
+        scheduler.TaskRunner(instance.create)()
+
+        # this makes sure the auto increment worked on instance creation
+        self.assertTrue(instance.id > 0)
+
+        expected_public = return_server.networks['public'][0]
+        expected_private = return_server.networks['private'][0]
+        self.assertEqual(instance.FnGetAtt('PublicIp'), expected_public)
+        self.assertEqual(instance.FnGetAtt('PrivateIp'), expected_private)
+        self.assertEqual(instance.FnGetAtt('PublicDnsName'), expected_public)
+        self.assertEqual(instance.FnGetAtt('PrivateDnsName'), expected_public)
+
+        self.m.VerifyAll()

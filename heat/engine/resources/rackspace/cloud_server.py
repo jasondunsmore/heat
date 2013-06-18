@@ -38,6 +38,7 @@ class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
 
     rackspace_images = {
         "F17": "76856c8b-e56e-4301-b454-c8cd1be22cfb",
+        "F18": "89e9ce4a-1261-49c3-8a35-17224411659d",
         "U12.04": "e4dbdba7-b2a4-4ee5-8e8f-4595b6d694ce"
     }
 
