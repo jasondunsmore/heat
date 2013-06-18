@@ -141,6 +141,24 @@ class RackspaceCloudServerTest(HeatTestCase):
         scheduler.TaskRunner(instance.create)()
         return instance
 
+    def _update_test_instance(self, return_server, name):
+        instance = self._setup_test_instance(return_server, name)
+
+        # SFTP
+        transport = self.m.CreateMockAnything()
+        paramiko.Transport((mox.IgnoreArg(), 22))
+        transport.connect(hostkey=None, username="root", pkey=mox.IgnoreArg())
+        sftp = self.m.CreateMockAnything()
+        paramiko.SFTPClient.from_transport(transport).AndReturn(sftp)
+        sftp_file = self.m.CreateMockAnything()
+        sftp.open(mox.IgnoreArg(), 'w').AndReturn(sftp_file)
+        sftp_file.write(mox.IgnoreArg())
+        sftp_file.close()
+        sftp_file = self.m.CreateMockAnything()
+        sftp.open(mox.IgnoreArg(), 'w').AndReturn(sftp_file)
+        sftp_file.write(mox.IgnoreArg())
+        sftp_file.close()
+
     def test_instance_create(self):
         return_server = self.fc.servers.list()[1]
         instance = self._create_test_instance(return_server,
@@ -222,7 +240,9 @@ class RackspaceCloudServerTest(HeatTestCase):
         return_server = self.fc.servers.list()[1]
         instance = self._create_test_instance(return_server,
                                               'test_instance_update')
-
+        self.m.UnsetStubs()
+        self._update_test_instance(return_server, 'test_instance_update')
+        self.m.ReplayAll()
         update_template = copy.deepcopy(instance.t)
         update_template['Metadata'] = {'test': 123}
         self.assertEqual(None, instance.update(update_template))

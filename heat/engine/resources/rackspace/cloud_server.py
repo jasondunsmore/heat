@@ -211,10 +211,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         if 'Metadata' in tmpl_diff:
             self.private_key = self.resource_private_key_get()
-            metadata = json.dumps(json_snippet['Metadata'])
+            self.metadata = json_snippet['Metadata']
+            metadata_string = json.dumps(self.metadata)
 
             files = [{'path': "/var/cache/heat-cfntools/last_metadata",
-                      'data': metadata}]
+                      'data': metadata_string}]
             self._sftp_files(server, files)
 
             command = "bash -x /var/lib/cloud/data/cfn-userdata > " + \
