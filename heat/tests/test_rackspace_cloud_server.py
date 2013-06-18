@@ -281,7 +281,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.ReplayAll()
 
         scheduler.TaskRunner(instance.create)()
-        self.assertEqual(instance.state, instance.CREATE_COMPLETE)
+        self.assertEqual(instance.state, (instance.CREATE, instance.COMPLETE))
 
     def test_instance_status_hard_reboot(self):
         self._test_instance_status_not_build_active('HARD_REBOOT')
