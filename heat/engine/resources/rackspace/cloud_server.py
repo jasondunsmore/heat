@@ -69,9 +69,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     update_allowed_keys = ('Metadata', 'Properties')
     update_allowed_properties = ('Flavor',)
 
-    def validate(self):
-        return self.properties.validate()
-
     def _get_ip(self, ip_type):
         server = self.nova().servers.get(self.resource_id)
         error_message = 'Could not determine public IP of server'
@@ -121,6 +118,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             sftp_file.close()
         private_key_file.close()
 
+    def validate(self):
+        image_name = self.properties['ImageName']
+        if image_name not in self.rackspace_images:
+            raise exception.ImageNotFound
+
     def handle_create(self):
         """Create a Rackspace Cloud Servers container.
 
@@ -129,12 +131,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         server and then trigger cloud-init.
 
         """
+        self.validate()
 
         # Retrieve server creation parameters from properties
         name = self.properties['InstanceName']
         image_name = self.properties['ImageName']
-        if image_name not in self.rackspace_images:
-            raise exception.ImageNotFound
         image_id = self.rackspace_images[image_name]
         self.script = self.image_scripts[image_name]
         flavor = self.properties['Flavor']
