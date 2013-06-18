@@ -42,6 +42,8 @@ class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
         "U12.04": "e4dbdba7-b2a4-4ee5-8e8f-4595b6d694ce"
     }
 
+    rackspace_flavors = ["2", "3", "4", "5", "6", "7", "8"]
+
     fedora_script = """#!/bin/bash
 
 # Install cloud-init and heat-cfntools
@@ -123,6 +125,10 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         if image_name not in self.rackspace_images:
             raise exception.ImageNotFound
 
+        flavor = self.properties['Flavor']
+        if flavor not in self.rackspace_flavors:
+            raise exception.FlavorMissing
+
     def handle_create(self):
         """Create a Rackspace Cloud Servers container.
 
@@ -182,6 +188,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         return True
 
     def handle_delete(self):
+        self.validate()
+
         if self.resource_id is None:
             return
 
@@ -196,6 +204,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         self.resource_id = None
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
+        self.validate()
 
         client = self.nova().servers
         server = client.get(self.resource_id)

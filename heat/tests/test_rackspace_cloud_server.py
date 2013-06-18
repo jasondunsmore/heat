@@ -192,6 +192,19 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         self.m.VerifyAll()
 
+    def test_instance_create_flavor_err(self):
+        stack_name = 'test_instance_create_flavor_err_stack'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        # create an instance with non exist image name
+        t['Resources']['WebServer']['Properties']['Flavor'] = '1'
+        instance = cloud_server.CloudServer('instance_create_flavor_err',
+                                            t['Resources']['WebServer'], stack)
+
+        self.assertRaises(exception.FlavorMissing, instance.handle_create)
+
+        self.m.VerifyAll()
+
     def test_instance_create_duplicate_image_name_err(self):
         stack_name = 'test_instance_create_image_name_err_stack'
         (t, stack) = self._setup_test_stack(stack_name)
@@ -210,28 +223,6 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.ReplayAll()
 
         self.assertRaises(exception.NoUniqueImageFound, instance.handle_create)
-
-        self.m.VerifyAll()
-
-    def test_instance_create_image_id_err(self):
-        stack_name = 'test_instance_create_image_id_err_stack'
-        (t, stack) = self._setup_test_stack(stack_name)
-
-        # create an instance with non exist image Id
-        t['Resources']['WebServer']['Properties']['ImageId'] = '1'
-        instance = cloud_server.CloudServer('instance_create_image_err',
-                                      t['Resources']['WebServer'], stack)
-
-        self.m.StubOutWithMock(instance, 'nova')
-        instance.nova().MultipleTimes().AndReturn(self.fc)
-        self.m.StubOutWithMock(uuidutils, "is_uuid_like")
-        uuidutils.is_uuid_like('1').AndReturn(True)
-        self.m.StubOutWithMock(self.fc.client, "get_images_1")
-        self.fc.client.get_images_1().AndRaise(
-            instances.clients.novaclient.exceptions.NotFound(404))
-        self.m.ReplayAll()
-
-        self.assertRaises(exception.ImageNotFound, instance.handle_create)
 
         self.m.VerifyAll()
 
