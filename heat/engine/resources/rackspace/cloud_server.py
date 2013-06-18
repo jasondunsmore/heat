@@ -11,7 +11,6 @@
 #    under the License.
 
 import tempfile
-import time
 
 import json
 import paramiko
