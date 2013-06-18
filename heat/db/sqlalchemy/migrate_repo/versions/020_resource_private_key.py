@@ -10,21 +10,20 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from sqlalchemy import *
-from migrate import *
+import sqlalchemy
 
 
 def upgrade(migrate_engine):
-    meta = MetaData()
+    meta = sqlalchemy.MetaData()
     meta.bind = migrate_engine
 
-    event = Table('resource', meta, autoload=True)
-    Column('private_key', Text).create(event)
+    event = sqlalchemy.Table('resource', meta, autoload=True)
+    sqlalchemy.Column('private_key', sqlalchemy.Text).create(event)
 
 
 def downgrade(migrate_engine):
-    meta = MetaData()
+    meta = sqlalchemy.MetaData()
     meta.bind = migrate_engine
 
-    event = Table('resource', meta, autoload=True)
+    event = sqlalchemy.Table('resource', meta, autoload=True)
     event.c.resource_status.delete(name='private_key')
