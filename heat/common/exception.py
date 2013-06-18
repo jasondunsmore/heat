@@ -265,3 +265,9 @@ class ResourceFailure(OpenstackException):
         exc_type = type(exception).__name__
         super(ResourceFailure, self).__init__(exc_type=exc_type,
                                               message=str(exception))
+
+class RevertFailed(OpenstackException):
+    message = _("Unable to revert resize of %(image_name).")
+
+class IpNotFound(OpenstackException):
+    message = _("Could not determine public IP of %(image_name).")

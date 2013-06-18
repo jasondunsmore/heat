@@ -74,13 +74,12 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     def _get_ip(self, ip_type):
         server = self.nova().servers.get(self.resource_id)
-        error_message = 'Could not determine public IP of server'
         if ip_type not in server.addresses:
-            raise exception.Error(error_message)
+            raise exception.IpNotFound
         for ip in server.addresses[ip_type]:
             if ip['version'] == 4:
                 return ip['addr']
-        raise exception.Error(error_message)
+        raise exception.IpNotFound
 
     def _public_ip(self):
         return self._get_ip('public')
@@ -273,7 +272,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                 if self._revert_server(server):
                     logger.info("Successfully resized instance.")
                 else:
-                    raise exception.Error("Unable to revert resized instance.")
+                    raise exception.RevertFailed
 
         return True
 
