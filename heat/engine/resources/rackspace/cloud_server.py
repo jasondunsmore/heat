@@ -227,9 +227,13 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                 continue
             elif server.status == "VERIFY_RESIZE":
                 server.confirm_resize()
-                return True
+                logger.info("Successfully resized instance.")
+                break
             else:  # Status will go back to "ACTIVE" upon error
-                return False
+                logger.info("Could not resize instance, reverting...")
+                revert = scheduler.TaskRunner(self._revert_server(server))
+                revert(wait_time=0.2)
+                break
 
     def _revert_server(self, server):
         server.revert()
@@ -240,9 +244,9 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             if server.status == "REVERT_RESIZE":
                 continue
             elif server.status == "ACTIVE":  # Successful revert
-                return True
+                break
             else:  # "ERROR" or other status
-                return False
+                raise exception.RevertFailed
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
         self.validate()
@@ -264,15 +268,9 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             self._run_ssh_command(server, command)
 
         if 'Flavor' in prop_diff:
-            new_flavor = json_snippet['Properties']['Flavor']
-            if self._resize_server(server, new_flavor):
-                logger.info("Successfully resized server.")
-            else:
-                logger.info("Could not resize instance, reverting...")
-                if self._revert_server(server):
-                    logger.info("Successfully resized instance.")
-                else:
-                    raise exception.RevertFailed
+            flavor = json_snippet['Properties']['Flavor']
+            resize = scheduler.TaskRunner(self._resize_server(server, flavor))
+            resize(wait_time=1.0)
 
         return True
 
