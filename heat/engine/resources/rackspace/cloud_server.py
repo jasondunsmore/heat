@@ -18,10 +18,11 @@ import paramiko
 import pyrax
 from Crypto.PublicKey import RSA
 
+from heat.common import exception
+from heat.openstack.common import log as logging
+from heat.engine import scheduler
 from heat.engine.resources import instance
 from heat.engine.resources.rackspace import rackspace_resource
-from heat.openstack.common import log as logging
-from heat.common import exception
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +200,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         except pyrax.exceptions.ServerNotFound:
             pass
         else:
-            server.delete()
+            delete = scheduler.TaskRunner(self._delete_server, server)
+            delete(wait_time=0.2)
 
         self.resource_id = None
 
