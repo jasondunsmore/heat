@@ -205,6 +205,46 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         self.resource_id = None
 
+    def _delete_server(self, server):
+        '''
+        Return a co-routine that deletes the server and waits for it to
+        disappear from Nova.
+        '''
+        server.delete()
+        while True:
+            yield
+            try:
+                server.get()
+            except pyrax.exceptions.ServerNotFound:
+                break
+
+    def _resize_server(self, server, flavor):
+        server.resize(flavor)
+        while True:
+            yield
+            server.get()
+            # The server stays in "RESIZE" status while resizing
+            if server.status == "RESIZE":
+                continue
+            elif server.status == "VERIFY_RESIZE":
+                server.confirm_resize()
+                return True
+            else:  # Status will go back to "ACTIVE" upon error
+                return False
+
+    def _revert_server(self, server):
+        server.revert()
+        while True:
+            yield
+            server.get()
+            # The server stays in "REVERT_RESIZE" status while reverting
+            if server.status == "REVERT_RESIZE":
+                continue
+            elif server.status == "ACTIVE":  # Successful revert
+                return True
+            else:  # "ERROR" or other status
+                return False
+
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
         self.validate()
 
@@ -225,31 +265,14 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             self._run_ssh_command(server, command)
 
         if 'Flavor' in prop_diff:
-            server.resize(json_snippet['Properties']['Flavor'])
-            server.get()
-
-            # The server stays in "RESIZE" status while resizing
-            # TODO(jason): Make this asynchronous
-            while server.status == "RESIZE":
-                time.sleep(5)
-                server.get()
-
-            if server.status == "VERIFY_RESIZE":  # Successful resize
-                server.confirm_resize()
-            else:  # Status will go back to "ACTIVE" upon error
-                server.revert_resize()
+            new_flavor = json_snippet['Properties']['Flavor']
+            if self._resize_server(server, new_flavor):
+                logger.info("Successfully resized server.")
+            else:
                 logger.info("Could not resize instance, reverting...")
-                server.get()
-
-                # The server stays in "REVERT_RESIZE" status while reverting
-                # TODO(jason): Make this asynchronous
-                while server.status == "REVERT_RESIZE":
-                    time.sleep(5)
-                    server.get()
-
-                if server.status == "ACTIVE":  # Successful revert
+                if self._revert_server(server):
                     logger.info("Successfully resized instance.")
-                else:  # "ERROR" or other status
+                else:
                     raise exception.Error("Unable to revert resized instance.")
 
         return True
