@@ -193,9 +193,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         if self.resource_id is None:
             return
 
-        client = self.nova().servers
         try:
-            server = client.get(self.resource_id)
+            server = self.nova().servers.get(self.resource_id)
         except pyrax.exceptions.ServerNotFound:
             pass
         else:
