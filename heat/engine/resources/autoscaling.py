@@ -119,8 +119,8 @@ class InstanceGroup(resource.Resource):
             template, which causes problems for event handling since we can't
             look up the resources via parser.Stack
             '''
-            def state_set(self, new_state, reason="state changed"):
-                self._store_or_update(new_state, reason)
+            def state_set(self, action, status, reason="state changed"):
+                self._store_or_update(action, status, reason)
 
         conf = self.properties['LaunchConfigurationName']
         instance_definition = self.stack.t['Resources'][conf]
@@ -210,7 +210,9 @@ class InstanceGroup(resource.Resource):
             for lb in self.properties['LoadBalancerNames']:
                 self.stack[lb].json_snippet['Properties']['Instances'] = \
                     inst_list
-                self.stack[lb].update(self.stack[lb].json_snippet)
+                resolved_snippet = self.stack.resolve_static_data(
+                    self.stack[lb].json_snippet)
+                self.stack[lb].update(resolved_snippet)
 
     def FnGetRefId(self):
         return unicode(self.name)

@@ -212,10 +212,11 @@ class Resource(BASE, HeatBase):
     __tablename__ = 'resource'
 
     id = Column(String, primary_key=True, default=uuidutils.generate_uuid)
-    state = Column('state', String)
+    action = Column('action', String)
+    status = Column('status', String)
     name = Column('name', String, nullable=False)
     nova_instance = Column('nova_instance', String)
-    state_description = Column('state_description', String)
+    status_reason = Column('status_reason', String)
     # odd name as "metadata" is reserved
     private_key = Column('private_key', String)
     rsrc_metadata = Column('rsrc_metadata', Json)
