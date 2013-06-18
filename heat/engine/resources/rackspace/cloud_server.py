@@ -244,6 +244,10 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             res = self._public_ip()
         elif key == 'PrivateIp':
             res = self._private_ip()
+        elif key == 'PublicDnsName':
+            res = self._public_ip()
+        elif key == 'PrivateDnsName':
+            res = self._public_ip()
         else:
             raise exception.InvalidTemplateAttribute(resource=self.name,
                                                      key=key)

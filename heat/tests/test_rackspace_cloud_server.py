@@ -149,10 +149,12 @@ class RackspaceCloudServerTest(HeatTestCase):
         # this makes sure the auto increment worked on instance creation
         self.assertTrue(instance.id > 0)
 
-        expected_public_ip = return_server.networks['public'][0]
-        expected_private_ip = return_server.networks['private'][0]
-        self.assertEqual(instance.FnGetAtt('PublicIp'), expected_public_ip)
-        self.assertEqual(instance.FnGetAtt('PrivateIp'), expected_private_ip)
+        expected_public = return_server.networks['public'][0]
+        expected_private = return_server.networks['private'][0]
+        self.assertEqual(instance.FnGetAtt('PublicIp'), expected_public)
+        self.assertEqual(instance.FnGetAtt('PrivateIp'), expected_private)
+        self.assertEqual(instance.FnGetAtt('PublicDnsName'), expected_public)
+        self.assertEqual(instance.FnGetAtt('PrivateDnsName'), expected_public)
 
         self.m.VerifyAll()
 
