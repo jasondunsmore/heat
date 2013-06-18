@@ -72,12 +72,11 @@ class RackspaceCloudServerTest(HeatTestCase):
                              stack_id=uuidutils.generate_uuid())
         return (t, stack)
 
-    def _setup_test_instance(self, return_server, name, image_name=None):
+    def _setup_test_instance(self, return_server, name, image_name="F17"):
         stack_name = '%s_stack' % name
         (t, stack) = self._setup_test_stack(stack_name)
 
-        t['Resources']['WebServer']['Properties']['ImageName'] = \
-            image_name or 'F17'
+        t['Resources']['WebServer']['Properties']['ImageName'] = image_name
         t['Resources']['WebServer']['Properties']['InstanceName'] = 'Heat test'
         t['Resources']['WebServer']['Properties']['Flavor'] = '2'
 
@@ -205,47 +204,6 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         self.m.VerifyAll()
 
-    def test_instance_create_duplicate_image_name_err(self):
-        stack_name = 'test_instance_create_image_name_err_stack'
-        (t, stack) = self._setup_test_stack(stack_name)
-
-        # create an instance with a non unique image name
-        t['Resources']['WebServer']['Properties']['ImageId'] = 'CentOS 5.2'
-        instance = cloud_server.CloudServer('instance_create_image_err',
-                                      t['Resources']['WebServer'], stack)
-
-        self.m.StubOutWithMock(instance, 'nova')
-        instance.nova().MultipleTimes().AndReturn(self.fc)
-        self.m.StubOutWithMock(self.fc.client, "get_images_detail")
-        self.fc.client.get_images_detail().AndReturn((
-            200, {'images': [{'id': 1, 'name': 'CentOS 5.2'},
-                             {'id': 4, 'name': 'CentOS 5.2'}]}))
-        self.m.ReplayAll()
-
-        self.assertRaises(exception.NoUniqueImageFound, instance.handle_create)
-
-        self.m.VerifyAll()
-
-    def test_instance_validate(self):
-        stack_name = 'test_instance_validate_stack'
-        (t, stack) = self._setup_test_stack(stack_name)
-
-        # create an instance with non exist image Id
-        t['Resources']['WebServer']['Properties']['ImageId'] = '1'
-        instance = cloud_server.CloudServer('instance_create_image_err',
-                                      t['Resources']['WebServer'], stack)
-
-        self.m.StubOutWithMock(instance, 'nova')
-        instance.nova().MultipleTimes().AndReturn(self.fc)
-
-        self.m.StubOutWithMock(uuidutils, "is_uuid_like")
-        uuidutils.is_uuid_like('1').AndReturn(True)
-        self.m.ReplayAll()
-
-        self.assertEqual(instance.validate(), None)
-
-        self.m.VerifyAll()
-
     def test_instance_create_delete(self):
         return_server = self.fc.servers.list()[1]
         instance = self._create_test_instance(return_server,
@@ -255,14 +213,9 @@ class RackspaceCloudServerTest(HeatTestCase):
         # this makes sure the auto increment worked on instance creation
         self.assertTrue(instance.id > 0)
 
-        self.m.StubOutWithMock(self.fc.client, 'get_servers_1234')
-        get = self.fc.client.get_servers_1234
-        get().AndRaise(instances.clients.novaclient.exceptions.NotFound(404))
-        mox.Replay(get)
-
         instance.delete()
         self.assertTrue(instance.resource_id is None)
-        self.assertEqual(instance.state, instance.DELETE_COMPLETE)
+        self.assertEqual(instance.state, (instance.DELETE, instance.COMPLETE))
         self.m.VerifyAll()
 
     def test_instance_update_metadata(self):
