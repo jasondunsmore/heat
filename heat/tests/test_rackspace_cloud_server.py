@@ -264,7 +264,7 @@ class RackspaceCloudServerTest(HeatTestCase):
                                               'test_instance_update')
 
         update_template = copy.deepcopy(instance.t)
-        update_template['Properties']['KeyName'] = 'mustreplace'
+        update_template['Properties']['UserData'] = 'mustreplace'
         self.assertRaises(resource.UpdateReplace,
                           instance.update, update_template)
 
@@ -333,46 +333,6 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.ReplayAll()
 
         scheduler.TaskRunner(instance.create)()
-        self.assertEqual(instance.state, instance.CREATE_COMPLETE)
+        self.assertEqual(instance.state, (instance.CREATE, instance.COMPLETE))
 
         self.m.VerifyAll()
-
-    def test_build_nics(self):
-        return_server = self.fc.servers.list()[1]
-        instance = self._create_test_instance(return_server,
-                                              'test_build_nics')
-
-        self.assertEqual(None, instance._build_nics([]))
-        self.assertEqual(None, instance._build_nics(None))
-        self.assertEqual([
-            {'port-id': 'id3'}, {'port-id': 'id1'}, {'port-id': 'id2'}],
-            instance._build_nics([
-                'id3', 'id1', 'id2']))
-        self.assertEqual([
-            {'port-id': 'id1'},
-            {'port-id': 'id2'},
-            {'port-id': 'id3'}], instance._build_nics([
-                {'NetworkInterfaceId': 'id3', 'DeviceIndex': '3'},
-                {'NetworkInterfaceId': 'id1', 'DeviceIndex': '1'},
-                {'NetworkInterfaceId': 'id2', 'DeviceIndex': 2},
-            ]))
-        self.assertEqual([
-            {'port-id': 'id1'},
-            {'port-id': 'id2'},
-            {'port-id': 'id3'},
-            {'port-id': 'id4'},
-            {'port-id': 'id5'}
-        ], instance._build_nics([
-            {'NetworkInterfaceId': 'id3', 'DeviceIndex': '3'},
-            {'NetworkInterfaceId': 'id1', 'DeviceIndex': '1'},
-            {'NetworkInterfaceId': 'id2', 'DeviceIndex': 2},
-            'id4',
-            'id5'
-        ]))
-
-    def test_instance_without_ip_address(self):
-        return_server = self.fc.servers.list()[3]
-        instance = self._create_test_instance(return_server,
-                                              'test_without_ip_address')
-
-        self.assertEqual(instance.FnGetAtt('PrivateIp'), '0.0.0.0')
