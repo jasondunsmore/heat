@@ -134,10 +134,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         name = self.properties['InstanceName']
         image_name = self.properties['ImageName']
         if image_name not in self.rackspace_images:
-            raise exception.ImageNotFound("Image \"%s\" not found.  Valid "
-                                          "images include:\n%s"
-                                          % (image_name,
-                                             self.rackspace_images.keys()))
+            raise exception.ImageNotFound
         image_id = self.rackspace_images[image_name]
         self.script = self.image_scripts[image_name]
         flavor = self.properties['Flavor']

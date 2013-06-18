@@ -184,13 +184,9 @@ class RackspaceCloudServerTest(HeatTestCase):
         (t, stack) = self._setup_test_stack(stack_name)
 
         # create an instance with non exist image name
-        t['Resources']['WebServer']['Properties']['ImageId'] = 'Slackware'
+        t['Resources']['WebServer']['Properties']['ImageName'] = 'Slackware'
         instance = cloud_server.CloudServer('instance_create_image_err',
                                             t['Resources']['WebServer'], stack)
-
-        self.m.StubOutWithMock(instance, 'nova')
-        instance.nova().MultipleTimes().AndReturn(self.fc)
-        self.m.ReplayAll()
 
         self.assertRaises(exception.ImageNotFound, instance.handle_create)
 
@@ -202,7 +198,7 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         # create an instance with a non unique image name
         t['Resources']['WebServer']['Properties']['ImageId'] = 'CentOS 5.2'
-        instance = instances.Instance('instance_create_image_err',
+        instance = cloud_server.CloudServer('instance_create_image_err',
                                       t['Resources']['WebServer'], stack)
 
         self.m.StubOutWithMock(instance, 'nova')
@@ -223,7 +219,7 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         # create an instance with non exist image Id
         t['Resources']['WebServer']['Properties']['ImageId'] = '1'
-        instance = instances.Instance('instance_create_image_err',
+        instance = cloud_server.CloudServer('instance_create_image_err',
                                       t['Resources']['WebServer'], stack)
 
         self.m.StubOutWithMock(instance, 'nova')
@@ -245,7 +241,7 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         # create an instance with non exist image Id
         t['Resources']['WebServer']['Properties']['ImageId'] = '1'
-        instance = instances.Instance('instance_create_image_err',
+        instance = cloud_server.CloudServer('instance_create_image_err',
                                       t['Resources']['WebServer'], stack)
 
         self.m.StubOutWithMock(instance, 'nova')
