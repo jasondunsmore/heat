@@ -201,11 +201,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             {'path': "/tmp/userdata", 'data': self.userdata},
             {'path': "/root/heat-script.sh", 'data': self.script}
         ]
-        self._sftp_files(server, files)
+        self._sftp_files(files)
 
         # Connect via SSH and run script
         command = "bash -ex /root/heat-script.sh > /root/heat-script.log 2>&1"
-        self._run_ssh_command(server, command)
+        self._run_ssh_command(command)
 
         return True
 
@@ -288,11 +288,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
             files = [{'path': "/var/cache/heat-cfntools/last_metadata",
                       'data': metadata_string}]
-            self._sftp_files(server, files)
+            self._sftp_files(files)
 
             command = "bash -x /var/lib/cloud/data/cfn-userdata > " + \
                       "/root/cfn-userdata.log 2>&1"
-            self._run_ssh_command(server, command)
+            self._run_ssh_command(command)
 
         if 'Flavor' in prop_diff:
             flavor = json_snippet['Properties']['Flavor']
