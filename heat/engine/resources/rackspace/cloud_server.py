@@ -74,9 +74,9 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server.
 
-        Arguments:
-        ip_type -- The type of IP to retrieve, either "Public" or "Private".
-
+        :param ip_type: type of IP to retrieve, either "Public" or "Private"
+        :returns: IP of Cloud Server
+        :rtype: string
         """
         server = self.nova().servers.get(self.resource_id)
         if ip_type not in server.addresses:
@@ -97,9 +97,9 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     def _create_temp_file(self, data):
         """Return a temporary file containing the data passed in.
 
-        Arguments:
-        data -- A string containing data to be put in temporary file.
-
+        :param data: a string containing data to be put in temporary file
+        :returns: temporary file
+        :rtype: NamedTemporaryFile
         """
         temp_file = tempfile.NamedTemporaryFile()
         temp_file.write(data)
@@ -109,9 +109,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     def _run_ssh_command(self, command):
         """Run a shell command on the Cloud Server via SSH.
 
-        Arguments:
-        command -- A string containing the command to run.
-
+        :param command: a string containing the command to run
         """
         private_key_file = self._create_temp_file(self.private_key)
         ssh = paramiko.SSHClient()
@@ -129,9 +127,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     def _sftp_files(self, files):
         """Transfer files to the Cloud Server via SFTP.
 
-        Arguments:
-        files -- A list containing one dictionary per file, each
-                 containing a 'path' and 'data' value.
+        :param files: a list containing one dictionary per file, each
+                      containing a 'path' and 'data' value
         """
         private_key_file = self._create_temp_file(self.private_key)
         pkey = paramiko.RSAKey.from_private_key_file(private_key_file.name)
@@ -161,7 +158,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         Rackspace Cloud Servers does not have the metadata service
         running, so we have to transfer the user-data file to the
         server and then trigger cloud-init.
-
         """
         self.validate()
 
@@ -279,7 +275,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         If the Cloud Server's Metadata or Flavor changed, update the
         Cloud Server.  If any other parameters changed, re-create the
         Cloud Server with the new parameters.
-
         """
         self.validate()
 
