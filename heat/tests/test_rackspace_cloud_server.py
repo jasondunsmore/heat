@@ -13,7 +13,6 @@
 import copy
 
 import mox
-import pyrax
 import paramiko
 
 from heat.openstack.common import log as logging
@@ -24,7 +23,6 @@ from heat.engine import resource
 from heat.engine import scheduler
 from heat.openstack.common import uuidutils
 from heat.tests.common import HeatTestCase
-from heat.tests import utils
 from heat.tests.utils import setup_dummy_db
 from heat.engine.resources.rackspace import cloud_server, rackspace_resource
 from heat.engine import environment
@@ -73,29 +71,7 @@ class RackspaceCloudServerTest(HeatTestCase):
                              stack_id=uuidutils.generate_uuid())
         return (t, stack)
 
-    def _setup_test_instance(self, return_server, name, image_name="F17"):
-        stack_name = '%s_stack' % name
-        (t, stack) = self._setup_test_stack(stack_name)
-
-        t['Resources']['WebServer']['Properties']['ImageName'] = image_name
-        t['Resources']['WebServer']['Properties']['InstanceName'] = 'Heat test'
-        t['Resources']['WebServer']['Properties']['Flavor'] = '2'
-
-        instance = cloud_server.CloudServer('%s_name' % name,
-                                            t['Resources']['WebServer'], stack)
-        #self.m.StubOutWithMock(logger, 'info')
-        #logger.info(mox.IgnoreArg())
-
-        instance.t = instance.stack.resolve_runtime_data(instance.t)
-
-        instance_name = t['Resources']['WebServer']['Properties']['InstanceName']
-        image_id = instance.rackspace_images[image_name]
-        flavor = t['Resources']['WebServer']['Properties']['Flavor']
-
-        self.m.StubOutWithMock(self.fc.servers, 'create')
-        self.fc.servers.create(instance_name, image_id, flavor,
-                               files=mox.IgnoreArg()).AndReturn(return_server)
-
+    def _mock_ssh_sftp(self):
         # SSH
         self.m.StubOutWithMock(paramiko, "SSHClient")
         self.m.StubOutWithMock(paramiko, "MissingHostKeyPolicy")
@@ -130,6 +106,30 @@ class RackspaceCloudServerTest(HeatTestCase):
         sftp_file.write(mox.IgnoreArg())
         sftp_file.close()
 
+    def _setup_test_instance(self, return_server, name, image_name="F17"):
+        stack_name = '%s_stack' % name
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        t['Resources']['WebServer']['Properties']['ImageName'] = image_name
+        t['Resources']['WebServer']['Properties']['InstanceName'] = 'Heat test'
+        t['Resources']['WebServer']['Properties']['Flavor'] = '2'
+
+        instance = cloud_server.CloudServer('%s_name' % name,
+                                            t['Resources']['WebServer'], stack)
+        #self.m.StubOutWithMock(logger, 'info')
+        #logger.info(mox.IgnoreArg())
+
+        instance.t = instance.stack.resolve_runtime_data(instance.t)
+
+        instance_name = t['Resources']['WebServer']['Properties']['InstanceName']
+        image_id = instance.rackspace_images[image_name]
+        flavor = t['Resources']['WebServer']['Properties']['Flavor']
+
+        self.m.StubOutWithMock(self.fc.servers, 'create')
+        self.fc.servers.create(instance_name, image_id, flavor,
+                               files=mox.IgnoreArg()).AndReturn(return_server)
+
+        self._mock_ssh_sftp()
         self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
         rackspace_resource.RackspaceResource.nova().MultipleTimes().AndReturn(self.fc)
 
@@ -234,7 +234,7 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         self.m.StubOutWithMock(self.fc.client, 'get_servers_1234')
         get = self.fc.client.get_servers_1234
-        get().AndRaise(pyrax.exceptions.ServerNotFound(404))
+        get().AndRaise(exception.ServerNotFound)
         mox.Replay(get)
 
         instance.delete()
@@ -247,6 +247,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         instance = self._create_test_instance(return_server,
                                               'test_instance_update')
         self.m.UnsetStubs()
+        self._mock_ssh_sftp()
         self._update_test_instance(return_server, 'test_instance_update')
         self.m.ReplayAll()
         update_template = copy.deepcopy(instance.t)
