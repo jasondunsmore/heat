@@ -39,7 +39,7 @@ wp_template = '''
       "Type" : "String",
       "Default" : "2",
       "AllowedValues" : [ "2", "3", "4", "5", "6", "7", "8" ],
-      "ConstraintDescription" : "must be a valid Rackspace Cloud Server flavor."
+      "ConstraintDescription" : "must be a valid Rackspace Cloud Server flavor"
     },
   },
   "Resources" : {
@@ -121,7 +121,8 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         instance.t = instance.stack.resolve_runtime_data(instance.t)
 
-        instance_name = t['Resources']['WebServer']['Properties']['InstanceName']
+        instance_name = \
+            t['Resources']['WebServer']['Properties']['InstanceName']
         image_id = instance.rackspace_images[image_name]
         flavor = t['Resources']['WebServer']['Properties']['Flavor']
 
@@ -131,7 +132,8 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         self._mock_ssh_sftp()
         self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
-        rackspace_resource.RackspaceResource.nova().MultipleTimes().AndReturn(self.fc)
+        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
+                                                   .AndReturn(self.fc)
 
         return instance
 

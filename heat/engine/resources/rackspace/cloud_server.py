@@ -14,7 +14,6 @@ import tempfile
 
 import json
 import paramiko
-import pyrax
 from Crypto.PublicKey import RSA
 
 from heat.common import exception
