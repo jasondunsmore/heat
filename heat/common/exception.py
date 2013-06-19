@@ -269,5 +269,10 @@ class ResourceFailure(OpenstackException):
 class RevertFailed(OpenstackException):
     message = _("Unable to revert resize of %(image_name).")
 
+
 class IpNotFound(OpenstackException):
     message = _("Could not determine public IP of %(image_name).")
+
+
+class ServerBuildFailed(OpenstackException):
+    message = _("Build of server %(image_name) failed.")

@@ -194,7 +194,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         if server.status in self._deferred_server_statuses:
             return False
         elif server.status == 'ERROR':
-            raise exception.Error('Server build failed.')
+            raise exception.ServerBuildFailed
 
         # Create heat-script and userdata files on server
         files = [
