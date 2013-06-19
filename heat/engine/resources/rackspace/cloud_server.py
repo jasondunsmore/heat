@@ -218,7 +218,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         try:
             server = self.nova().servers.get(self.resource_id)
-        except pyrax.exceptions.ServerNotFound:
+        except exception.ServerNotFound:
             pass
         else:
             delete = scheduler.TaskRunner(self._delete_server, server)
@@ -233,7 +233,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             yield
             try:
                 server.get()
-            except pyrax.exceptions.ServerNotFound:
+            except exception.ServerNotFound:
                 break
 
     def _resize_server(self, server, flavor):
