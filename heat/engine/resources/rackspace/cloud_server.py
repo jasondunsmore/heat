@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
-    """"""
+    """Resource for Rackspace Cloud Servers."""
     properties_schema = {
         'InstanceName': {'Type': 'String', 'Required': True},
         'Flavor': {'Type': 'String', 'Required': True},
@@ -76,6 +76,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         Arguments:
         ip_type -- The type of IP to retrieve, either "Public" or "Private".
+
         """
         server = self.nova().servers.get(self.resource_id)
         if ip_type not in server.addresses:
@@ -94,12 +95,24 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         return self._get_ip('private')
 
     def _create_temp_file(self, data):
+        """Return a temporary file containing the data passed in.
+
+        Arguments:
+        data -- A string containing data to be put in temporary file.
+
+        """
         temp_file = tempfile.NamedTemporaryFile()
         temp_file.write(data)
         temp_file.seek(0)
         return temp_file
 
-    def _run_ssh_command(self, server, command):
+    def _run_ssh_command(self, command):
+        """Run a shell command on the Cloud Server via SSH.
+
+        Arguments:
+        command -- A string containing the command to run.
+
+        """
         private_key_file = self._create_temp_file(self.private_key)
         ssh = paramiko.SSHClient()
         public_ip = self._public_ip()
@@ -113,7 +126,13 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         logger.debug(stderr.read())
         private_key_file.close()
 
-    def _sftp_files(self, server, files):
+    def _sftp_files(self, files):
+        """Transfer files to the Cloud Server via SFTP.
+
+        Arguments:
+        files -- A list containing one dictionary per file, each
+                 containing a 'path' and 'data' value.
+        """
         private_key_file = self._create_temp_file(self.private_key)
         pkey = paramiko.RSAKey.from_private_key_file(private_key_file.name)
         public_ip = self._public_ip()
@@ -127,6 +146,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         private_key_file.close()
 
     def validate(self):
+        """Validate the user-parameters."""
         image_name = self.properties['ImageName']
         if image_name not in self.rackspace_images:
             raise exception.ImageNotFound
@@ -160,11 +180,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         private_key = rsa.exportKey()
         public_key = rsa.publickey().exportKey('OpenSSH')
         public_keys = public_key + "\n" + user_public_key
-        files = {"/root/.ssh/authorized_keys": public_keys}
+        personality_files = {"/root/.ssh/authorized_keys": public_keys}
 
         # Create server
         client = self.nova().servers
-        server = client.create(name, image_id, flavor, files=files)
+        server = client.create(name, image_id, flavor, files=personality_files)
 
         # Save resource ID and private key to db
         self.resource_id_set(server.id)
@@ -194,6 +214,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         return True
 
     def handle_delete(self):
+        """Delete the Cloud Server."""
         self.validate()
 
         if self.resource_id is None:
