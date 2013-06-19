@@ -229,7 +229,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                 break
             else:  # Status will go back to "ACTIVE" upon error
                 logger.info("Could not resize instance, reverting...")
-                revert = scheduler.TaskRunner(self._revert_server(server))
+                revert = scheduler.TaskRunner(self._revert_server, server)
                 revert(wait_time=0.2)
                 break
 
@@ -267,7 +267,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         if 'Flavor' in prop_diff:
             flavor = json_snippet['Properties']['Flavor']
-            resize = scheduler.TaskRunner(self._resize_server(server, flavor))
+            resize = scheduler.TaskRunner(self._resize_server, server, flavor)
             resize(wait_time=1.0)
 
         return True
