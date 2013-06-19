@@ -72,6 +72,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     update_allowed_properties = ('Flavor',)
 
     def _get_ip(self, ip_type):
+        """Return the IP of the Cloud Server.
+
+        Arguments:
+        ip_type -- The type of IP to retrieve, either "Public" or "Private".
+        """
         server = self.nova().servers.get(self.resource_id)
         if ip_type not in server.addresses:
             raise exception.IpNotFound
@@ -81,9 +86,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         raise exception.IpNotFound
 
     def _public_ip(self):
+        """Return the public IP of the Cloud Server."""
         return self._get_ip('public')
 
     def _private_ip(self):
+        """Return the private IP of the Cloud Server."""
         return self._get_ip('private')
 
     def _create_temp_file(self, data):
@@ -203,10 +210,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         self.resource_id = None
 
     def _delete_server(self, server):
-        '''
-        Return a co-routine that deletes the server and waits for it to
-        disappear from Nova.
-        '''
+        """Returns a coroutine that deletes the Cloud Server."""
         server.delete()
         while True:
             yield
@@ -216,6 +220,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                 break
 
     def _resize_server(self, server, flavor):
+        """Returns a coroutine that resizes the Cloud Server"""
         server.resize(flavor)
         while True:
             yield
@@ -234,6 +239,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                 break
 
     def _revert_server(self, server):
+        """Returns a coroutine that reverts a failed Cloud Server resize."""
         server.revert()
         while True:
             yield
@@ -247,6 +253,13 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                 raise exception.RevertFailed
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
+        """Try to update a Cloud Server's parameters.
+
+        If the Cloud Server's Metadata or Flavor changed, update the
+        Cloud Server.  If any other parameters changed, re-create the
+        Cloud Server with the new parameters.
+
+        """
         self.validate()
 
         client = self.nova().servers
@@ -273,7 +286,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         return True
 
     def FnGetAtt(self, key):
-        """"""
+        """Return the method that provides a given template attribute."""
         attribute_function = {
             'PublicIp': self._public_ip(),
             'PrivateIp': self._private_ip(),
