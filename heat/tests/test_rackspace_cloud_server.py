@@ -210,6 +210,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.VerifyAll()
 
     def test_instance_create_flavor_err(self):
+        """validate() should throw an if the Flavor is invalid"""
         stack_name = 'test_instance_create_flavor_err_stack'
         (t, stack) = self._setup_test_stack(stack_name)
 
@@ -221,6 +222,13 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.assertRaises(exception.FlavorMissing, instance.handle_create)
 
         self.m.VerifyAll()
+
+    def test_instance_create_no_ip_err(self):
+        return_server = self.fc.servers.list()[3]
+        instance = self._create_test_instance(return_server,
+                                              'test_without_ip_address')
+
+        self.assertEqual(instance.FnGetAtt('PrivateIp'), exception.IpNotFound)
 
     def test_instance_create_delete(self):
         return_server = self.fc.servers.list()[1]
