@@ -36,6 +36,7 @@ class RackspaceResource(resource.Resource):
         self._cloud_server = None
         self._cloud_nw = None
         self._cloud_blockstore = None
+        self._authenticated = False
 
     def cloud_db(self):
         '''Rackspace cloud database client.'''
@@ -54,7 +55,7 @@ class RackspaceResource(resource.Resource):
         return self._cloud_lb
 
     def cloud_dns(self):
-        '''Rackspace cloud dns client'''
+        '''Rackspace cloud dns client.'''
         if not self._cloud_dns:
             self.__authenticate()
             self._cloud_dns = self.pyrax.cloud_dns
@@ -65,7 +66,7 @@ class RackspaceResource(resource.Resource):
         '''Rackspace cloudservers client.'''
         if not self._cloud_server:
             self.__authenticate()
-            self._cloud_server = self.pyrax.connect_to_cloudservers()
+            self._cloud_server = self.pyrax.cloudservers
 
         return self._cloud_server
 
@@ -86,13 +87,16 @@ class RackspaceResource(resource.Resource):
         return self._cloud_nw
 
     def __authenticate(self):
-        #TODO: current implemenation shown below authenticates using
+        # current implemenation shown below authenticates using
         # username and password. Need make it work with auth-token
-        pyrax.set_setting("identity_type", "keystone")
-        pyrax.set_setting("auth_endpoint", self.context.auth_url)
-        pyrax.set_setting("tenant_id", self.context.tenant)
-        logger.info("Authenticating with username:%s" % self.context.username)
-        pyrax.set_credentials(self.context.username,
-                              password=self.context.password)
-        logger.info("User %s authenticated successfully."
-                    % self.context.username)
+        if not self._authenticated:
+            pyrax.set_setting("identity_type", "keystone")
+            pyrax.set_setting("auth_endpoint", self.context.auth_url)
+            pyrax.set_setting("tenant_id", self.context.tenant)
+            logger.info("Authenticating with username:%s" %
+                        self.context.username)
+            pyrax.set_credentials(self.context.username,
+                                  password=self.context.password)
+            logger.info("User %s authenticated successfully."
+                        % self.context.username)
+            self._authenticated = True
