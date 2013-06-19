@@ -273,20 +273,19 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         return True
 
     def FnGetAtt(self, key):
-        res = None
-        if key == 'PublicIp':
-            res = self._public_ip()
-        elif key == 'PrivateIp':
-            res = self._private_ip()
-        elif key == 'PublicDnsName':
-            res = self._public_ip()
-        elif key == 'PrivateDnsName':
-            res = self._public_ip()
-        else:
+        """"""
+        attribute_function = {
+            'PublicIp': self._public_ip(),
+            'PrivateIp': self._private_ip(),
+            'PublicDnsName': self._public_ip(),
+            'PrivateDnsName': self._public_ip()
+        }
+        if key not in attribute_function:
             raise exception.InvalidTemplateAttribute(resource=self.name,
                                                      key=key)
-        logger.info('%s.GetAtt(%s) == %s' % (self.name, key, res))
-        return unicode(res)
+        function = attribute_function[key]
+        logger.info('%s.GetAtt(%s) == %s' % (self.name, key, function))
+        return unicode(function)
 
 
 def resource_mapping():
