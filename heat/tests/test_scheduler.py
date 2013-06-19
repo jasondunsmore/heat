@@ -166,19 +166,9 @@ class DependencyTaskGroupTest(mox.MoxTestBase):
     def _dep_test(self, *edges):
         dummy = DummyTask(getattr(self, 'steps', 3))
 
-        class TaskMaker(object):
-            def __init__(self, name):
-                self.name = name
-
-            def __repr__(self):
-                return 'Dummy task "%s"' % self.name
-
-            def __call__(self, *args, **kwargs):
-                return dummy(self.name, *args, **kwargs)
-
         deps = dependencies.Dependencies(edges)
 
-        tg = scheduler.DependencyTaskGroup(deps, TaskMaker)
+        tg = scheduler.DependencyTaskGroup(deps, dummy)
 
         self.mox.StubOutWithMock(dummy, 'do_step')
 
@@ -593,6 +583,45 @@ class TaskTest(mox.MoxTestBase):
         self.assertTrue(runner.step())
 
         self.mox.VerifyAll()
+
+
+class DescriptionTest(mox.MoxTestBase):
+    def test_func(self):
+        def f():
+            pass
+
+        self.assertEqual(scheduler.task_description(f), 'f')
+
+    def test_lambda(self):
+        l = lambda: None
+
+        self.assertEqual(scheduler.task_description(l), '<lambda>')
+
+    def test_method(self):
+        class C(object):
+            def __str__(self):
+                return 'C "o"'
+
+            def __repr__(self):
+                return 'o'
+
+            def m(self):
+                pass
+
+        self.assertEqual(scheduler.task_description(C().m), 'm from C "o"')
+
+    def test_object(self):
+        class C(object):
+            def __str__(self):
+                return 'C "o"'
+
+            def __repr__(self):
+                return 'o'
+
+            def __call__(self):
+                pass
+
+        self.assertEqual(scheduler.task_description(C()), 'o')
 
 
 class WrapperTaskTest(mox.MoxTestBase):
