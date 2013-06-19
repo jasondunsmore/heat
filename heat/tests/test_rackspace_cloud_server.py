@@ -27,6 +27,7 @@ from heat.tests.common import HeatTestCase
 from heat.tests import utils
 from heat.tests.utils import setup_dummy_db
 from heat.engine.resources.rackspace import cloud_server, rackspace_resource
+from heat.engine import environment
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +68,8 @@ class RackspaceCloudServerTest(HeatTestCase):
     def _setup_test_stack(self, stack_name):
         t = template_format.parse(wp_template)
         template = parser.Template(t)
-        params = parser.Parameters(stack_name, template, {'Flavor': '2'})
-        stack = parser.Stack(None, stack_name, template, params,
+        stack = parser.Stack(None, stack_name, template,
+                             environment.Environment({'Flavor': '2'}),
                              stack_id=uuidutils.generate_uuid())
         return (t, stack)
 
@@ -142,7 +143,6 @@ class RackspaceCloudServerTest(HeatTestCase):
         return instance
 
     def _update_test_instance(self, return_server, name):
-        instance = self._setup_test_instance(return_server, name)
 
         # SFTP
         transport = self.m.CreateMockAnything()
@@ -222,13 +222,6 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.assertRaises(exception.FlavorMissing, instance.handle_create)
 
         self.m.VerifyAll()
-
-    def test_instance_create_no_ip_err(self):
-        return_server = self.fc.servers.list()[3]
-        instance = self._create_test_instance(return_server,
-                                              'test_without_ip_address')
-
-        self.assertEqual(instance.FnGetAtt('PrivateIp'), exception.IpNotFound)
 
     def test_instance_create_delete(self):
         return_server = self.fc.servers.list()[1]
