@@ -106,7 +106,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         sftp_file.write(mox.IgnoreArg())
         sftp_file.close()
 
-    def _setup_test_instance(self, return_server, name, image_name="F17"):
+    def _setup_test_cs(self, return_server, name, image_name="F17"):
         stack_name = '%s_stack' % name
         (t, stack) = self._setup_test_stack(stack_name)
 
@@ -114,20 +114,19 @@ class RackspaceCloudServerTest(HeatTestCase):
         t['Resources']['WebServer']['Properties']['InstanceName'] = 'Heat test'
         t['Resources']['WebServer']['Properties']['Flavor'] = '2'
 
-        instance = cloud_server.CloudServer('%s_name' % name,
-                                            t['Resources']['WebServer'], stack)
+        cs = cloud_server.CloudServer('%s_name' % name,
+                                      t['Resources']['WebServer'], stack)
         #self.m.StubOutWithMock(logger, 'info')
         #logger.info(mox.IgnoreArg())
 
-        instance.t = instance.stack.resolve_runtime_data(instance.t)
+        cs.t = cs.stack.resolve_runtime_data(cs.t)
 
-        instance_name = \
-            t['Resources']['WebServer']['Properties']['InstanceName']
-        image_id = instance.rackspace_images[image_name]
+        cs_name = t['Resources']['WebServer']['Properties']['InstanceName']
+        image_id = cs.rackspace_images[image_name]
         flavor = t['Resources']['WebServer']['Properties']['Flavor']
 
         self.m.StubOutWithMock(self.fc.servers, 'create')
-        self.fc.servers.create(instance_name, image_id, flavor,
+        self.fc.servers.create(cs_name, image_id, flavor,
                                files=mox.IgnoreArg()).AndReturn(return_server)
 
         self._mock_ssh_sftp()
@@ -135,185 +134,177 @@ class RackspaceCloudServerTest(HeatTestCase):
         rackspace_resource.RackspaceResource.nova().MultipleTimes()\
                                                    .AndReturn(self.fc)
 
-        return instance
+        return cs
 
-    def _create_test_instance(self, return_server, name):
-        instance = self._setup_test_instance(return_server, name)
+    def _create_test_cs(self, return_server, name):
+        cs = self._setup_test_cs(return_server, name)
 
         self.m.ReplayAll()
-        scheduler.TaskRunner(instance.create)()
-        return instance
+        scheduler.TaskRunner(cs.create)()
+        return cs
 
-    def _update_test_instance(self, return_server, name):
+    def _update_test_cs(self, return_server, name):
         self._mock_ssh_sftp()
         self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
         rackspace_resource.RackspaceResource.nova().MultipleTimes()\
                                                    .AndReturn(self.fc)
 
-    def test_instance_create(self):
+    def test_cs_create(self):
         return_server = self.fc.servers.list()[1]
-        instance = self._create_test_instance(return_server,
-                                              'test_instance_create')
-        # this makes sure the auto increment worked on instance creation
-        self.assertTrue(instance.id > 0)
+        cs = self._create_test_cs(return_server, 'test_cs_create')
+        # this makes sure the auto increment worked on cloud server creation
+        self.assertTrue(cs.id > 0)
 
         expected_public = return_server.networks['public'][0]
         expected_private = return_server.networks['private'][0]
-        self.assertEqual(instance.FnGetAtt('PublicIp'), expected_public)
-        self.assertEqual(instance.FnGetAtt('PrivateIp'), expected_private)
-        self.assertEqual(instance.FnGetAtt('PublicDnsName'), expected_public)
-        self.assertEqual(instance.FnGetAtt('PrivateDnsName'), expected_public)
+        self.assertEqual(cs.FnGetAtt('PublicIp'), expected_public)
+        self.assertEqual(cs.FnGetAtt('PrivateIp'), expected_private)
+        self.assertEqual(cs.FnGetAtt('PublicDnsName'), expected_public)
+        self.assertEqual(cs.FnGetAtt('PrivateDnsName'), expected_public)
 
         self.m.VerifyAll()
 
-    def test_instance_create_with_image_name(self):
+    def test_cs_create_with_image_name(self):
         return_server = self.fc.servers.list()[1]
-        instance = self._setup_test_instance(return_server,
-                                             'test_instance_create_image_id',
-                                             image_name='F18')
+        cs = self._setup_test_cs(return_server, 'test_cs_create_image_id',
+                                 image_name='F18')
 
         self.m.ReplayAll()
-        scheduler.TaskRunner(instance.create)()
+        scheduler.TaskRunner(cs.create)()
 
-        # this makes sure the auto increment worked on instance creation
-        self.assertTrue(instance.id > 0)
+        # this makes sure the auto increment worked on cloud server creation
+        self.assertTrue(cs.id > 0)
 
         expected_public = return_server.networks['public'][0]
         expected_private = return_server.networks['private'][0]
-        self.assertEqual(instance.FnGetAtt('PublicIp'), expected_public)
-        self.assertEqual(instance.FnGetAtt('PrivateIp'), expected_private)
-        self.assertEqual(instance.FnGetAtt('PublicDnsName'), expected_public)
-        self.assertEqual(instance.FnGetAtt('PrivateDnsName'), expected_public)
+        self.assertEqual(cs.FnGetAtt('PublicIp'), expected_public)
+        self.assertEqual(cs.FnGetAtt('PrivateIp'), expected_private)
+        self.assertEqual(cs.FnGetAtt('PublicDnsName'), expected_public)
+        self.assertEqual(cs.FnGetAtt('PrivateDnsName'), expected_public)
 
         self.m.VerifyAll()
 
-    def test_instance_create_image_name_err(self):
-        stack_name = 'test_instance_create_image_name_err_stack'
+    def test_cs_create_image_name_err(self):
+        stack_name = 'test_cs_create_image_name_err_stack'
         (t, stack) = self._setup_test_stack(stack_name)
 
-        # create an instance with non exist image name
+        # create a cloud server with non exist image name
         t['Resources']['WebServer']['Properties']['ImageName'] = 'Slackware'
-        instance = cloud_server.CloudServer('instance_create_image_err',
-                                            t['Resources']['WebServer'], stack)
+        cs = cloud_server.CloudServer('cs_create_image_err',
+                                      t['Resources']['WebServer'], stack)
 
-        self.assertRaises(exception.ImageNotFound, instance.handle_create)
+        self.assertRaises(exception.ImageNotFound, cs.handle_create)
 
         self.m.VerifyAll()
 
-    def test_instance_create_flavor_err(self):
+    def test_cs_create_flavor_err(self):
         """validate() should throw an if the Flavor is invalid"""
-        stack_name = 'test_instance_create_flavor_err_stack'
+        stack_name = 'test_cs_create_flavor_err_stack'
         (t, stack) = self._setup_test_stack(stack_name)
 
-        # create an instance with non exist image name
+        # create a cloud server with non exist image name
         t['Resources']['WebServer']['Properties']['Flavor'] = '1'
-        instance = cloud_server.CloudServer('instance_create_flavor_err',
-                                            t['Resources']['WebServer'], stack)
+        cs = cloud_server.CloudServer('cs_create_flavor_err',
+                                      t['Resources']['WebServer'], stack)
 
-        self.assertRaises(exception.FlavorMissing, instance.handle_create)
+        self.assertRaises(exception.FlavorMissing, cs.handle_create)
 
         self.m.VerifyAll()
 
-    def test_instance_create_delete(self):
+    def test_cs_create_delete(self):
         return_server = self.fc.servers.list()[1]
-        instance = self._create_test_instance(return_server,
-                                              'test_instance_create_delete')
-        instance.resource_id = 1234
+        cs = self._create_test_cs(return_server,
+                                  'test_cs_create_delete')
+        cs.resource_id = 1234
 
-        # this makes sure the auto increment worked on instance creation
-        self.assertTrue(instance.id > 0)
+        # this makes sure the auto increment worked on cloud server creation
+        self.assertTrue(cs.id > 0)
 
         self.m.StubOutWithMock(self.fc.client, 'get_servers_1234')
         get = self.fc.client.get_servers_1234
         get().AndRaise(exception.ServerNotFound)
         mox.Replay(get)
 
-        instance.delete()
-        self.assertTrue(instance.resource_id is None)
-        self.assertEqual(instance.state, (instance.DELETE, instance.COMPLETE))
+        cs.delete()
+        self.assertTrue(cs.resource_id is None)
+        self.assertEqual(cs.state, (cs.DELETE, cs.COMPLETE))
         self.m.VerifyAll()
 
-    def test_instance_update_metadata(self):
+    def test_cs_update_metadata(self):
         return_server = self.fc.servers.list()[1]
-        instance = self._create_test_instance(return_server,
-                                              'test_instance_update')
+        cs = self._create_test_cs(return_server, 'test_cs_update')
         self.m.UnsetStubs()
-        self._update_test_instance(return_server, 'test_instance_update')
+        self._update_test_cs(return_server, 'test_cs_update')
         self.m.ReplayAll()
-        update_template = copy.deepcopy(instance.t)
+        update_template = copy.deepcopy(cs.t)
         update_template['Metadata'] = {'test': 123}
-        self.assertEqual(None, instance.update(update_template))
-        self.assertEqual(instance.metadata, {'test': 123})
+        self.assertEqual(None, cs.update(update_template))
+        self.assertEqual(cs.metadata, {'test': 123})
 
-    def test_instance_update_replace(self):
+    def test_cs_update_replace(self):
         return_server = self.fc.servers.list()[1]
-        instance = self._create_test_instance(return_server,
-                                              'test_instance_update')
+        cs = self._create_test_cs(return_server, 'test_cs_update')
 
-        update_template = copy.deepcopy(instance.t)
+        update_template = copy.deepcopy(cs.t)
         update_template['Notallowed'] = {'test': 123}
-        self.assertRaises(resource.UpdateReplace,
-                          instance.update, update_template)
+        self.assertRaises(resource.UpdateReplace, cs.update, update_template)
 
-    def test_instance_update_properties(self):
+    def test_cs_update_properties(self):
         return_server = self.fc.servers.list()[1]
-        instance = self._create_test_instance(return_server,
-                                              'test_instance_update')
+        cs = self._create_test_cs(return_server, 'test_cs_update')
 
-        update_template = copy.deepcopy(instance.t)
+        update_template = copy.deepcopy(cs.t)
         update_template['Properties']['UserData'] = 'mustreplace'
         self.assertRaises(resource.UpdateReplace,
-                          instance.update, update_template)
+                          cs.update, update_template)
 
-    def test_instance_status_build(self):
+    def test_cs_status_build(self):
         return_server = self.fc.servers.list()[0]
-        instance = self._setup_test_instance(return_server,
-                                             'test_instance_status_build')
-        instance.resource_id = 1234
+        cs = self._setup_test_cs(return_server, 'test_cs_status_build')
+        cs.resource_id = 1234
 
-        # Bind fake get method which Instance.check_create_complete will call
+        # Bind fake get method which Cs.check_create_complete will call
         def activate_status(server):
             server.status = 'ACTIVE'
         return_server.get = activate_status.__get__(return_server)
         self.m.ReplayAll()
 
-        scheduler.TaskRunner(instance.create)()
-        self.assertEqual(instance.state, (instance.CREATE, instance.COMPLETE))
+        scheduler.TaskRunner(cs.create)()
+        self.assertEqual(cs.state, (cs.CREATE, cs.COMPLETE))
 
-    def test_instance_status_hard_reboot(self):
-        self._test_instance_status_not_build_active('HARD_REBOOT')
+    def test_cs_status_hard_reboot(self):
+        self._test_cs_status_not_build_active('HARD_REBOOT')
 
-    def test_instance_status_password(self):
-        self._test_instance_status_not_build_active('PASSWORD')
+    def test_cs_status_password(self):
+        self._test_cs_status_not_build_active('PASSWORD')
 
-    def test_instance_status_reboot(self):
-        self._test_instance_status_not_build_active('REBOOT')
+    def test_cs_status_reboot(self):
+        self._test_cs_status_not_build_active('REBOOT')
 
-    def test_instance_status_rescue(self):
-        self._test_instance_status_not_build_active('RESCUE')
+    def test_cs_status_rescue(self):
+        self._test_cs_status_not_build_active('RESCUE')
 
-    def test_instance_status_resize(self):
-        self._test_instance_status_not_build_active('RESIZE')
+    def test_cs_status_resize(self):
+        self._test_cs_status_not_build_active('RESIZE')
 
-    def test_instance_status_revert_resize(self):
-        self._test_instance_status_not_build_active('REVERT_RESIZE')
+    def test_cs_status_revert_resize(self):
+        self._test_cs_status_not_build_active('REVERT_RESIZE')
 
-    def test_instance_status_shutoff(self):
-        self._test_instance_status_not_build_active('SHUTOFF')
+    def test_cs_status_shutoff(self):
+        self._test_cs_status_not_build_active('SHUTOFF')
 
-    def test_instance_status_suspended(self):
-        self._test_instance_status_not_build_active('SUSPENDED')
+    def test_cs_status_suspended(self):
+        self._test_cs_status_not_build_active('SUSPENDED')
 
-    def test_instance_status_verify_resize(self):
-        self._test_instance_status_not_build_active('VERIFY_RESIZE')
+    def test_cs_status_verify_resize(self):
+        self._test_cs_status_not_build_active('VERIFY_RESIZE')
 
-    def _test_instance_status_not_build_active(self, uncommon_status):
+    def _test_cs_status_not_build_active(self, uncommon_status):
         return_server = self.fc.servers.list()[0]
-        instance = self._setup_test_instance(return_server,
-                                             'test_instance_status_build')
-        instance.resource_id = 1234
+        cs = self._setup_test_cs(return_server, 'test_cs_status_build')
+        cs.resource_id = 1234
 
-        # Bind fake get method which Instance.check_create_complete will call
+        # Bind fake get method which Cs.check_create_complete will call
         def activate_status(server):
             if hasattr(server, '_test_check_iterations'):
                 server._test_check_iterations += 1
@@ -329,7 +320,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         scheduler.TaskRunner._sleep(mox.IsA(int)).AndReturn(None)
         self.m.ReplayAll()
 
-        scheduler.TaskRunner(instance.create)()
-        self.assertEqual(instance.state, (instance.CREATE, instance.COMPLETE))
+        scheduler.TaskRunner(cs.create)()
+        self.assertEqual(cs.state, (cs.CREATE, cs.COMPLETE))
 
         self.m.VerifyAll()
