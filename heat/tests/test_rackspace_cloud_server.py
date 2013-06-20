@@ -129,7 +129,6 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.fc.servers.create(cs_name, image_id, flavor,
                                files=mox.IgnoreArg()).AndReturn(return_server)
 
-        self._mock_ssh_sftp()
         self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
         rackspace_resource.RackspaceResource.nova().MultipleTimes()\
                                                    .AndReturn(self.fc)
@@ -323,4 +322,64 @@ class RackspaceCloudServerTest(HeatTestCase):
         scheduler.TaskRunner(cs.create)()
         self.assertEqual(cs.state, (cs.CREATE, cs.COMPLETE))
 
+        self.m.VerifyAll()
+
+    def test_cs_get_ip_err1(self):
+        return_server = self.fc.servers.list()[0]
+        stack_name = 'test_cs_get_ip_err'
+        (t, stack) = self._setup_test_stack(stack_name)
+        cs_name = 'cs_create_image_err',
+        self.m.StubOutWithMock(self.fc.servers, 'get')
+        self.fc.servers.create(cs_name, mox.IgnoreArg(), mox.IgnoreArg(),
+                               files=mox.IgnoreArg()).AndReturn(return_server)
+        self._mock_ssh_sftp()
+        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
+        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
+                                                   .AndReturn(self.fc)
+
+        self.m.ReplayAll()
+        cs = cloud_server.CloudServer(cs_name, t['Resources']['WebServer'],
+                                      stack)
+
+        import ipdb; ipdb.set_trace()
+        cs.addresses = {'public': [{'version': 4, 'addr': '4.5.6.7'}, {'version': 4, 'addr': '5.6.9.8'}], 'private': [{'version': 4, 'addr': '10.13.12.13'}]}
+
+        cs._get_ip('public')
+        self.m.VerifyAll()
+
+    def _mock_get_ip(self, cs):
+        self.m.UnsetStubs()
+        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
+        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
+                                                   .AndReturn(self.fc)
+        self.m.StubOutWithMock(self.fc.servers, 'get')
+        self.fc.servers.get(cs.id).AndReturn(cs)
+        self.m.ReplayAll()
+
+    def test_cs_get_ip(self):
+        return_server = self.fc.servers.list()[3]
+        stack_name = 'test_cs_get_ip_err'
+        (t, stack) = self._setup_test_stack(stack_name)
+        cs = cloud_server.CloudServer('cs_create_image_err',
+                                      t['Resources']['WebServer'],
+                                      stack)
+        cs.addresses = {
+            'public': [{'version': 4, 'addr': '4.5.6.7'},
+                       {'version': 6, 'addr': 'fake:ip::6'}],
+            'private': [{'version': 4, 'addr': '10.13.12.13'}]
+        }
+        self._mock_get_ip(cs)
+
+        self.assertEqual(cs._public_ip(), '4.5.6.7')
+        self._mock_get_ip(cs)
+        self.assertEqual(cs._private_ip(), '10.13.12.13')
+
+        cs.addresses = {
+            'public': [],
+            'private': []
+        }
+        self._mock_get_ip(cs)
+        self.assertRaises(exception.IpNotFound, cs._public_ip)
+        self._mock_get_ip(cs)
+        self.assertRaises(exception.IpNotFound, cs._private_ip)
         self.m.VerifyAll()
