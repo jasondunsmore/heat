@@ -15,6 +15,7 @@ import tempfile
 import json
 import paramiko
 from Crypto.PublicKey import RSA
+import novaclient
 
 from heat.common import exception
 from heat.openstack.common import log as logging
@@ -217,7 +218,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         try:
             server = self.nova().servers.get(self.resource_id)
-        except exception.ServerNotFound:
+        except novaclient.exceptions.NotFound:
             pass
         else:
             delete = scheduler.TaskRunner(self._delete_server, server)
@@ -232,7 +233,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             yield
             try:
                 server.get()
-            except exception.ServerNotFound:
+            except novaclient.exceptions.NotFound:
                 break
 
     def _resize_server(self, server, flavor):
@@ -241,6 +242,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         while True:
             yield
             server.get()
+            logger.debug("resize server.status == %s" % server.status)
             # The server stays in "RESIZE" status while resizing
             if server.status == "RESIZE":
                 continue
@@ -256,10 +258,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     def _revert_server(self, server):
         """Returns a coroutine that reverts a failed Cloud Server resize."""
-        server.revert()
+        server.revert_resize()
         while True:
             yield
             server.get()
+            logger.debug("revert server.status == %s" % server.status)
             # The server stays in "REVERT_RESIZE" status while reverting
             if server.status == "REVERT_RESIZE":
                 continue

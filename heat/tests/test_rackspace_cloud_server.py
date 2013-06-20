@@ -14,6 +14,7 @@ import copy
 
 import mox
 import paramiko
+import novaclient
 
 from heat.openstack.common import log as logging
 from heat.tests.v1_1 import fakes
@@ -220,7 +221,7 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         self.m.StubOutWithMock(self.fc.client, 'get_servers_1234')
         get = self.fc.client.get_servers_1234
-        get().AndRaise(exception.ServerNotFound)
+        get().AndRaise(novaclient.exceptions.NotFound)
         mox.Replay(get)
 
         cs.delete()

@@ -281,7 +281,3 @@ class IpNotFound(OpenstackException):
 
 class ServerBuildFailed(OpenstackException):
     message = _("Build of server %(image_name) failed.")
-
-
-class ServerNotFound(OpenstackException):
-    message = _("Server %(image_name) not found.")
