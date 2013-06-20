@@ -276,9 +276,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         Cloud Server with the new parameters.
         """
         self.validate()
-
-        client = self.nova().servers
-        server = client.get(self.resource_id)
+        server = self.nova().servers.get(self.resource_id)
 
         if 'Metadata' in tmpl_diff:
             self.private_key = self.resource_private_key_get()

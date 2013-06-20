@@ -145,21 +145,10 @@ class RackspaceCloudServerTest(HeatTestCase):
         return instance
 
     def _update_test_instance(self, return_server, name):
-
-        # SFTP
-        transport = self.m.CreateMockAnything()
-        paramiko.Transport((mox.IgnoreArg(), 22))
-        transport.connect(hostkey=None, username="root", pkey=mox.IgnoreArg())
-        sftp = self.m.CreateMockAnything()
-        paramiko.SFTPClient.from_transport(transport).AndReturn(sftp)
-        sftp_file = self.m.CreateMockAnything()
-        sftp.open(mox.IgnoreArg(), 'w').AndReturn(sftp_file)
-        sftp_file.write(mox.IgnoreArg())
-        sftp_file.close()
-        sftp_file = self.m.CreateMockAnything()
-        sftp.open(mox.IgnoreArg(), 'w').AndReturn(sftp_file)
-        sftp_file.write(mox.IgnoreArg())
-        sftp_file.close()
+        self._mock_ssh_sftp()
+        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
+        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
+                                                   .AndReturn(self.fc)
 
     def test_instance_create(self):
         return_server = self.fc.servers.list()[1]
@@ -249,7 +238,6 @@ class RackspaceCloudServerTest(HeatTestCase):
         instance = self._create_test_instance(return_server,
                                               'test_instance_update')
         self.m.UnsetStubs()
-        self._mock_ssh_sftp()
         self._update_test_instance(return_server, 'test_instance_update')
         self.m.ReplayAll()
         update_template = copy.deepcopy(instance.t)
