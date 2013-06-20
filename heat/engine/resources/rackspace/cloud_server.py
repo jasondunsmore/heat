@@ -216,54 +216,54 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             return
 
         try:
-            self.server = self.nova().servers.get(self.resource_id)
+            server = self.nova().servers.get(self.resource_id)
         except exception.ServerNotFound:
             pass
         else:
-            delete = scheduler.TaskRunner(self._delete_server)
+            delete = scheduler.TaskRunner(self._delete_server, server)
             delete(wait_time=0.2)
 
         self.resource_id = None
 
-    def _delete_server(self):
+    def _delete_server(self, server):
         """Returns a coroutine that deletes the Cloud Server."""
-        self.server.delete()
+        server.delete()
         while True:
             yield
             try:
-                self.server.get()
+                server.get()
             except exception.ServerNotFound:
                 break
 
-    def _resize_server(self, flavor):
+    def _resize_server(self, server, flavor):
         """Returns a coroutine that resizes the Cloud Server"""
-        self.server.resize(flavor)
+        server.resize(flavor)
         while True:
             yield
-            self.server.get()
+            server.get()
             # The server stays in "RESIZE" status while resizing
-            if self.server.status == "RESIZE":
+            if server.status == "RESIZE":
                 continue
-            elif self.server.status == "VERIFY_RESIZE":
-                self.server.confirm_resize()
+            elif server.status == "VERIFY_RESIZE":
+                server.confirm_resize()
                 logger.info("Successfully resized instance.")
                 break
             else:  # Status will go back to "ACTIVE" upon error
                 logger.info("Could not resize instance, reverting...")
-                revert = scheduler.TaskRunner(self._revert_server)
+                revert = scheduler.TaskRunner(self._revert_server, server)
                 revert(wait_time=0.2)
                 break
 
-    def _revert_server(self):
+    def _revert_server(self, server):
         """Returns a coroutine that reverts a failed Cloud Server resize."""
-        self.server.revert()
+        server.revert()
         while True:
             yield
-            self.server.get()
+            server.get()
             # The server stays in "REVERT_RESIZE" status while reverting
-            if self.server.status == "REVERT_RESIZE":
+            if server.status == "REVERT_RESIZE":
                 continue
-            elif self.server.status == "ACTIVE":  # Successful revert
+            elif server.status == "ACTIVE":  # Successful revert
                 break
             else:  # "ERROR" or other status
                 raise exception.RevertFailed
@@ -276,7 +276,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         Cloud Server with the new parameters.
         """
         self.validate()
-        self.server = self.nova().servers.get(self.resource_id)
+        server = self.nova().servers.get(self.resource_id)
 
         if 'Metadata' in tmpl_diff:
             self.private_key = self.resource_private_key_get()
@@ -292,10 +292,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             self._run_ssh_command(command)
 
         if 'Flavor' in prop_diff:
-            self.flavor = json_snippet['Properties']['Flavor']
-            resize = scheduler.TaskRunner(self._resize_server,
-                                          self.server,
-                                          self.flavor)
+            flavor = json_snippet['Properties']['Flavor']
+            resize = scheduler.TaskRunner(self._resize_server, server, flavor)
             resize(wait_time=1.0)
 
         return True
