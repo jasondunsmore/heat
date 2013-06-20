@@ -316,7 +316,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         return unicode(function)
 
 
-def resource_mapping():
-    return {
-        'Rackspace::Cloud::Server': CloudServer
-    }
+if rackspace_resource.PYRAX_INSTALLED:
+    def resource_mapping():
+        return {
+            'Rackspace::Cloud::Server': CloudServer
+        }
