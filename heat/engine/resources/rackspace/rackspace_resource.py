@@ -13,7 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import pyrax
+PYRAX_INSTALLED = True
+try:
+    import pyrax
+except ImportError:
+    PYRAX_INSTALLED = False
 
 from heat.engine import resource
 from heat.openstack.common import log as logging
@@ -29,7 +33,8 @@ class RackspaceResource(resource.Resource):
 
     def __init__(self, name, json_snippet, stack):
         super(RackspaceResource, self).__init__(name, json_snippet, stack)
-        self.pyrax = pyrax
+        if PYRAX_INSTALLED:
+            self.pyrax = pyrax
         self._cloud_db = None
         self._cloud_dns = None
         self._cloud_lb = None
