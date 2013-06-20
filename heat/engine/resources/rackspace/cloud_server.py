@@ -292,8 +292,10 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             self._run_ssh_command(command)
 
         if 'Flavor' in prop_diff:
-            flavor = json_snippet['Properties']['Flavor']
-            resize = scheduler.TaskRunner(self._resize_server, server, flavor)
+            self.flavor = json_snippet['Properties']['Flavor']
+            resize = scheduler.TaskRunner(self._resize_server,
+                                          server,
+                                          self.flavor)
             resize(wait_time=1.0)
 
         return True

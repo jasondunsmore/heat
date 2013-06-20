@@ -116,9 +116,6 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         cs = cloud_server.CloudServer('%s_name' % name,
                                       t['Resources']['WebServer'], stack)
-        #self.m.StubOutWithMock(logger, 'info')
-        #logger.info(mox.IgnoreArg())
-
         cs.t = cs.stack.resolve_runtime_data(cs.t)
 
         cs_name = t['Resources']['WebServer']['Properties']['InstanceName']
@@ -232,14 +229,33 @@ class RackspaceCloudServerTest(HeatTestCase):
 
     def test_cs_update_metadata(self):
         return_server = self.fc.servers.list()[1]
-        cs = self._create_test_cs(return_server, 'test_cs_update')
+        cs = self._create_test_cs(return_server, 'test_cs_metadata_update')
         self.m.UnsetStubs()
-        self._update_test_cs(return_server, 'test_cs_update')
+        self._update_test_cs(return_server, 'test_cs_metadata_update')
         self.m.ReplayAll()
         update_template = copy.deepcopy(cs.t)
         update_template['Metadata'] = {'test': 123}
         self.assertEqual(None, cs.update(update_template))
         self.assertEqual(cs.metadata, {'test': 123})
+
+    def test_cs_update_flavor(self):
+        return_server = self.fc.servers.list()[1]
+        cs = self._create_test_cs(return_server, 'test_cs_flavor_update')
+        update_template = copy.deepcopy(cs.t)
+        update_template['Properties']['Flavor'] = '5'
+        self.m.UnsetStubs()
+        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
+        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
+                                                   .AndReturn(self.fc)
+        self.m.StubOutWithMock(scheduler, 'TaskRunner')
+        self.m.StubOutWithMock(scheduler.TaskRunner, '__call__')
+        fake_task = self.m.CreateMockAnything()
+        scheduler.TaskRunner(mox.IgnoreArg(), mox.IgnoreArg(),mox.IgnoreArg())\
+                 .AndReturn(fake_task)
+        fake_task(wait_time=mox.IgnoreArg())
+        self.m.ReplayAll()
+        self.assertEqual(None, cs.update(update_template))
+        self.assertEqual(cs.flavor, '5')
 
     def test_cs_update_replace(self):
         return_server = self.fc.servers.list()[1]
