@@ -178,7 +178,8 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.assertEqual(cs.FnGetAtt('PrivateIp'), expected_private)
         self.assertEqual(cs.FnGetAtt('PublicDnsName'), expected_public)
         self.assertEqual(cs.FnGetAtt('PrivateDnsName'), expected_public)
-
+        self.assertRaises(exception.InvalidTemplateAttribute,
+                          cs.FnGetAtt, 'foo')
         self.m.VerifyAll()
 
     def test_cs_create_image_name_err(self):
@@ -250,8 +251,9 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.StubOutWithMock(scheduler, 'TaskRunner')
         self.m.StubOutWithMock(scheduler.TaskRunner, '__call__')
         fake_task = self.m.CreateMockAnything()
-        scheduler.TaskRunner(mox.IgnoreArg(), mox.IgnoreArg(),mox.IgnoreArg())\
-                 .AndReturn(fake_task)
+        scheduler.TaskRunner(mox.IgnoreArg(),
+                             mox.IgnoreArg(),
+                             mox.IgnoreArg()).AndReturn(fake_task)
         fake_task(wait_time=mox.IgnoreArg())
         self.m.ReplayAll()
         self.assertEqual(None, cs.update(update_template))
@@ -279,7 +281,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         cs = self._setup_test_cs(return_server, 'test_cs_status_build')
         cs.resource_id = 1234
 
-        # Bind fake get method which Cs.check_create_complete will call
+        # Bind fake get method which cs.check_create_complete will call
         def activate_status(server):
             server.status = 'ACTIVE'
         return_server.get = activate_status.__get__(return_server)
@@ -320,7 +322,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         cs = self._setup_test_cs(return_server, 'test_cs_status_build')
         cs.resource_id = 1234
 
-        # Bind fake get method which Cs.check_create_complete will call
+        # Bind fake get method which cs.check_create_complete will call
         def activate_status(server):
             if hasattr(server, '_test_check_iterations'):
                 server._test_check_iterations += 1
@@ -351,7 +353,6 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.ReplayAll()
 
     def test_cs_get_ip(self):
-        return_server = self.fc.servers.list()[3]
         stack_name = 'test_cs_get_ip_err'
         (t, stack) = self._setup_test_stack(stack_name)
         cs = cloud_server.CloudServer('cs_create_image_err',
