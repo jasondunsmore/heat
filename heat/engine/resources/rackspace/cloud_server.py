@@ -69,7 +69,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     # template keys supported for handle_update, note trailing comma
     # is required for a single item to get a tuple not a string
     update_allowed_keys = ('Metadata', 'Properties')
-    update_allowed_properties = ('Flavor',)
+    update_allowed_properties = ('Flavor', 'InstanceName')
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server.
@@ -300,6 +300,14 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                                           server,
                                           self.flavor)
             resize(wait_time=1.0)
+
+        # If InstanceName is the only update, fail update
+        if prop_diff.keys() == ['InstanceName'] and \
+           tmpl_diff.keys() == ['Properties']:
+            raise exception.Error("Cloud Server rename not supported.")
+        # Other updates were successful, so don't cause update to fail
+        elif 'InstanceName' in prop_diff:
+            logger.info("Cloud Server rename not supported.")
 
         return True
 
