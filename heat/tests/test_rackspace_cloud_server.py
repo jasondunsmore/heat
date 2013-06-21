@@ -216,12 +216,12 @@ class RackspaceCloudServerTest(HeatTestCase):
                                   'test_cs_create_delete')
         cs.resource_id = 1234
 
-        # this makes sure the auto increment worked on cloud server creation
+        # this makes sure the auto-increment worked on cloud server creation
         self.assertTrue(cs.id > 0)
 
         self.m.StubOutWithMock(self.fc.client, 'get_servers_1234')
         get = self.fc.client.get_servers_1234
-        get().AndRaise(novaclient.exceptions.NotFound)
+        get().AndRaise(novaclient.exceptions.NotFound(404))
         mox.Replay(get)
 
         cs.delete()
