@@ -14,6 +14,7 @@
 #    under the License.
 from heat.openstack.common import log as logging
 
+
 logger = logging.getLogger(__name__)
 
 
