@@ -79,7 +79,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         image_name = self.properties['ImageName']
         if image_name not in self.image_scripts.keys():
-            raise exception.ScriptNotFound(image_name=image_name)
+            raise ScriptNotFound(image_name=image_name)
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server.
@@ -161,12 +161,12 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         running, so we have to transfer the user-data file to the
         server and then trigger cloud-init.
         """
+        self.validate()
         # Retrieve server creation parameters from properties
-        import pdb; pdb.set_trace()
         server_name = self.properties['ServerName']
         image_name = self.properties['ImageName']
         image_id = self._get_image_id(image_name)
-        flavor = self.properties['Flavor']
+        self.flavor = self.properties['Flavor']
         self.script = self.image_scripts[image_name]
         raw_userdata = self.properties['UserData'] or ''
         self.userdata = self._build_userdata(raw_userdata)
@@ -183,7 +183,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         client = self.nova().servers
         server = client.create(server_name,
                                image_id,
-                               flavor,
+                               self.flavor,
                                files=personality_files)
 
         # Save resource ID and private key to db
@@ -198,7 +198,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         if server.status in self._deferred_server_statuses:
             return False
         elif server.status == 'ERROR':
-            raise exception.ServerBuildFailed
+            raise exception.ServerBuildFailed(image_name=server.name)
 
         # Create heat-script and userdata files on server
         files = [
@@ -215,6 +215,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     def handle_delete(self):
         """Delete the Cloud Server."""
+        self.validate()
         if self.resource_id is None:
             return
 
@@ -271,7 +272,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             elif server.status == "ACTIVE":  # Successful revert
                 break
             else:  # "ERROR" or other status
-                raise exception.RevertFailed
+                raise exception.RevertFailed(image_name=server.name)
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
         """Try to update a Cloud Server's parameters.
@@ -280,6 +281,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         Cloud Server.  If any other parameters changed, re-create the
         Cloud Server with the new parameters.
         """
+        self.validate()
         server = self.nova().servers.get(self.resource_id)
 
         if 'Metadata' in tmpl_diff:
@@ -296,10 +298,10 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             self._run_ssh_command(command)
 
         if 'Flavor' in prop_diff:
-            flavor = json_snippet['Properties']['Flavor']
+            self.flavor = json_snippet['Properties']['Flavor']
             resize = scheduler.TaskRunner(self._resize_server,
                                           server,
-                                          flavor)
+                                          self.flavor)
             resize(wait_time=1.0)
 
         # If ServerName is the only update, fail update

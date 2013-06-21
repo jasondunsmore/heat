@@ -218,8 +218,16 @@ class FlavorMissing(OpenstackException):
     message = _("The Flavor ID (%(flavor_id)s) could not be found.")
 
 
+class NotSupported(OpenstackException):
+    message = _("%(feature) is not supported")
+
+
 class ImageNotFound(OpenstackException):
-    message = _("The Image (%(image_name)s) could not be found.")
+    message = _("The image (%(image_name)s) could not be found.")
+
+
+class IpNotFound(OpenstackException):
+    message = _("Cloud not determine the %(ip_type) IP of %(image_name).")
 
 
 class NoUniqueImageFound(OpenstackException):
@@ -273,10 +281,6 @@ class ResourceFailure(OpenstackException):
 
 class RevertFailed(OpenstackException):
     message = _("Unable to revert resize of %(image_name).")
-
-
-class IpNotFound(OpenstackException):
-    message = _("Could not determine public IP of %(image_name).")
 
 
 class ServerBuildFailed(OpenstackException):

@@ -48,7 +48,7 @@ wp_template = '''
       "Type": "Rackspace::Cloud::Server",
       "Properties": {
         "ImageName"      : "F17",
-        "InstanceName"   : "Heat test",
+        "ServerName"     : "Heat test",
         "Flavor"         : "2",
         "UserData"       : "wordpress"
       }
@@ -107,25 +107,28 @@ class RackspaceCloudServerTest(HeatTestCase):
         sftp_file.write(mox.IgnoreArg())
         sftp_file.close()
 
-    def _setup_test_cs(self, return_server, name, image_name="F17"):
+    def _setup_test_cs(self, return_server, name):
         stack_name = '%s_stack' % name
         (t, stack) = self._setup_test_stack(stack_name)
 
-        t['Resources']['WebServer']['Properties']['ImageName'] = image_name
-        t['Resources']['WebServer']['Properties']['InstanceName'] = 'Heat test'
+        image_id = "1234"
+        server_name = "Heat test"
+        t['Resources']['WebServer']['Properties']['ServerName'] = server_name
+        cs_name = 'Fedora 17 (Beefy Miracle)'
+        t['Resources']['WebServer']['Properties']['ImageName'] = cs_name
         t['Resources']['WebServer']['Properties']['Flavor'] = '2'
 
         cs = cloud_server.CloudServer('%s_name' % name,
                                       t['Resources']['WebServer'], stack)
         cs.t = cs.stack.resolve_runtime_data(cs.t)
 
-        cs_name = t['Resources']['WebServer']['Properties']['InstanceName']
-        image_id = cs.rackspace_images[image_name]
         flavor = t['Resources']['WebServer']['Properties']['Flavor']
 
         self.m.StubOutWithMock(self.fc.servers, 'create')
-        self.fc.servers.create(cs_name, image_id, flavor,
+        self.fc.servers.create(server_name, image_id, flavor,
                                files=mox.IgnoreArg()).AndReturn(return_server)
+        self.m.StubOutWithMock(cs, '_get_image_id')
+        cs._get_image_id(mox.IgnoreArg()).AndReturn('1234')
 
         self._mock_ssh_sftp()
         self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
@@ -164,8 +167,7 @@ class RackspaceCloudServerTest(HeatTestCase):
 
     def test_cs_create_with_image_name(self):
         return_server = self.fc.servers.list()[1]
-        cs = self._setup_test_cs(return_server, 'test_cs_create_image_id',
-                                 image_name='F18')
+        cs = self._setup_test_cs(return_server, 'test_cs_create_image_id')
 
         self.m.ReplayAll()
         scheduler.TaskRunner(cs.create)()
@@ -192,7 +194,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         cs = cloud_server.CloudServer('cs_create_image_err',
                                       t['Resources']['WebServer'], stack)
 
-        self.assertRaises(exception.ImageNotFound, cs.handle_create)
+        self.assertRaises(cloud_server.ScriptNotFound, cs.handle_create)
 
         self.m.VerifyAll()
 
