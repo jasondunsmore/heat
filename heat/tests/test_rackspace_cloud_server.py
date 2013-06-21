@@ -25,7 +25,8 @@ from heat.engine import scheduler
 from heat.openstack.common import uuidutils
 from heat.tests.common import HeatTestCase
 from heat.tests.utils import setup_dummy_db
-from heat.engine.resources.rackspace import cloud_server, rackspace_resource
+from heat.engine.resources.rackspace import cloud_server
+from heat.engine.resources.rackspace import rackspace_resource
 from heat.engine import environment
 
 logger = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ wp_template = '''
     "WebServer": {
       "Type": "Rackspace::Cloud::Server",
       "Properties": {
-        "ImageName"      : "F17",
+        "ImageName"      : "Fedora 17 (Beefy Miracle)",
         "ServerName"     : "Heat test",
         "Flavor"         : "2",
         "UserData"       : "wordpress"
@@ -63,6 +64,11 @@ class RackspaceCloudServerTest(HeatTestCase):
         super(RackspaceCloudServerTest, self).setUp()
         self.fc = fakes.FakeClient()
         setup_dummy_db()
+        # Test environment may not have pyrax client library installed and if
+        # pyrax is not installed resource class would not be registered.
+        # So register resource provider class explicitly for unit testing.
+        resource._register_class("Rackspace::Cloud::Server",
+                                 cloud_server.CloudServer)
 
     def _setup_test_stack(self, stack_name):
         t = template_format.parse(wp_template)

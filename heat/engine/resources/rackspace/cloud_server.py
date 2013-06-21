@@ -15,7 +15,7 @@ import tempfile
 import json
 import paramiko
 from Crypto.PublicKey import RSA
-import novaclient
+import novaclient.exceptions as novaexception
 
 from heat.common import exception
 from heat.openstack.common import log as logging
@@ -72,7 +72,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     update_allowed_properties = ('Flavor', 'ServerName')
 
     def validate(self):
-        """Validate user parameters"""
+        """Validate user parameters."""
         flavor = self.properties['Flavor']
         if flavor not in self.rackspace_flavors:
             raise exception.FlavorMissing(flavor=flavor)
@@ -221,7 +221,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         try:
             server = self.nova().servers.get(self.resource_id)
-        except novaclient.exceptions.NotFound:
+        except novaexception.NotFound:
             pass
         else:
             delete = scheduler.TaskRunner(self._delete_server, server)
@@ -236,11 +236,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             yield
             try:
                 server.get()
-            except novaclient.exceptions.NotFound:
+            except novaexception.NotFound:
                 break
 
     def _resize_server(self, server, flavor):
-        """Returns a coroutine that resizes the Cloud Server"""
+        """Returns a coroutine that resizes the Cloud Server."""
         server.resize(flavor)
         while True:
             yield

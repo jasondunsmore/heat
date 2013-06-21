@@ -279,6 +279,7 @@ class ResourceFailure(OpenstackException):
         super(ResourceFailure, self).__init__(exc_type=exc_type,
                                               message=str(exception))
 
+
 class RevertFailed(OpenstackException):
     message = _("Unable to revert resize of %(image_name).")
 
