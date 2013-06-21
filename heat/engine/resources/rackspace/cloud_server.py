@@ -19,6 +19,8 @@ import novaclient
 
 from heat.common import exception
 from heat.openstack.common import log as logging
+from heat.openstack.common.exception import OpenstackException
+from heat.openstack.common.gettextutils import _
 from heat.engine import scheduler
 from heat.engine.resources import instance
 from heat.engine.resources.rackspace import rackspace_resource
@@ -26,20 +28,18 @@ from heat.engine.resources.rackspace import rackspace_resource
 logger = logging.getLogger(__name__)
 
 
+class ScriptNotFound(OpenstackException):
+    message = _("No script exists for image %(image_name).")
+
+
 class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
     """Resource for Rackspace Cloud Servers."""
     properties_schema = {
-        'InstanceName': {'Type': 'String', 'Required': True},
+        'ServerName': {'Type': 'String', 'Required': True},
         'Flavor': {'Type': 'String', 'Required': True},
         'ImageName': {'Type': 'String', 'Required': True},
         'UserData': {'Type': 'String'},
         'PublicKey': {'Type': 'String'}
-    }
-
-    rackspace_images = {
-        "F17": "76856c8b-e56e-4301-b454-c8cd1be22cfb",
-        "F18": "89e9ce4a-1261-49c3-8a35-17224411659d",
-        "U12.04": "e4dbdba7-b2a4-4ee5-8e8f-4595b6d694ce"
     }
 
     rackspace_flavors = ["2", "3", "4", "5", "6", "7", "8"]
@@ -62,14 +62,24 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 """
 
     image_scripts = {
-        "F17": fedora_script,
-        "F18": fedora_script
+        "Fedora 17 (Beefy Miracle)": fedora_script,
+        "Fedora 18 (Spherical Cow)": fedora_script
     }
 
     # template keys supported for handle_update, note trailing comma
     # is required for a single item to get a tuple not a string
     update_allowed_keys = ('Metadata', 'Properties')
-    update_allowed_properties = ('Flavor', 'InstanceName')
+    update_allowed_properties = ('Flavor', 'ServerName')
+
+    def validate(self):
+        """Validate user parameters"""
+        flavor = self.properties['Flavor']
+        if flavor not in self.rackspace_flavors:
+            raise exception.FlavorMissing(flavor=flavor)
+
+        image_name = self.properties['ImageName']
+        if image_name not in self.image_scripts.keys():
+            raise exception.ScriptNotFound(image_name=image_name)
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server.
@@ -80,11 +90,13 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         """
         server = self.nova().servers.get(self.resource_id)
         if ip_type not in server.addresses:
-            raise exception.IpNotFound
+            raise exception.IpNotFound(ip_type=ip_type,
+                                       image_name=self.properties['ImageName'])
         for ip in server.addresses[ip_type]:
             if ip['version'] == 4:
                 return ip['addr']
-        raise exception.IpNotFound
+        raise exception.IpNotFound(ip_type=ip_type,
+                                   image_name=self.properties['ImageName'])
 
     def _public_ip(self):
         """Return the public IP of the Cloud Server."""
@@ -142,16 +154,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             sftp_file.close()
         private_key_file.close()
 
-    def validate(self):
-        """Validate the user-parameters."""
-        image_name = self.properties['ImageName']
-        if image_name not in self.rackspace_images:
-            raise exception.ImageNotFound
-
-        flavor = self.properties['Flavor']
-        if flavor not in self.rackspace_flavors:
-            raise exception.FlavorMissing
-
     def handle_create(self):
         """Create a Rackspace Cloud Servers container.
 
@@ -159,14 +161,13 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         running, so we have to transfer the user-data file to the
         server and then trigger cloud-init.
         """
-        self.validate()
-
         # Retrieve server creation parameters from properties
-        name = self.properties['InstanceName']
+        import pdb; pdb.set_trace()
+        server_name = self.properties['ServerName']
         image_name = self.properties['ImageName']
-        image_id = self.rackspace_images[image_name]
-        self.script = self.image_scripts[image_name]
+        image_id = self._get_image_id(image_name)
         flavor = self.properties['Flavor']
+        self.script = self.image_scripts[image_name]
         raw_userdata = self.properties['UserData'] or ''
         self.userdata = self._build_userdata(raw_userdata)
         user_public_key = self.properties['PublicKey'] or ''
@@ -180,7 +181,10 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         # Create server
         client = self.nova().servers
-        server = client.create(name, image_id, flavor, files=personality_files)
+        server = client.create(server_name,
+                               image_id,
+                               flavor,
+                               files=personality_files)
 
         # Save resource ID and private key to db
         self.resource_id_set(server.id)
@@ -211,8 +215,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     def handle_delete(self):
         """Delete the Cloud Server."""
-        self.validate()
-
         if self.resource_id is None:
             return
 
@@ -278,7 +280,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         Cloud Server.  If any other parameters changed, re-create the
         Cloud Server with the new parameters.
         """
-        self.validate()
         server = self.nova().servers.get(self.resource_id)
 
         if 'Metadata' in tmpl_diff:
@@ -295,23 +296,23 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             self._run_ssh_command(command)
 
         if 'Flavor' in prop_diff:
-            self.flavor = json_snippet['Properties']['Flavor']
+            flavor = json_snippet['Properties']['Flavor']
             resize = scheduler.TaskRunner(self._resize_server,
                                           server,
-                                          self.flavor)
+                                          flavor)
             resize(wait_time=1.0)
 
-        # If InstanceName is the only update, fail update
-        if prop_diff.keys() == ['InstanceName'] and \
+        # If ServerName is the only update, fail update
+        if prop_diff.keys() == ['ServerName'] and \
            tmpl_diff.keys() == ['Properties']:
-            raise exception.Error("Cloud Server rename not supported.")
+            raise exception.NotSupported(feature="Cloud Server rename")
         # Other updates were successful, so don't cause update to fail
-        elif 'InstanceName' in prop_diff:
+        elif 'ServerName' in prop_diff:
             logger.info("Cloud Server rename not supported.")
 
         return True
 
-    def FnGetAtt(self, key):
+    def _resolve_attribute(self, key):
         """Return the method that provides a given template attribute."""
         attribute_function = {
             'PublicIp': self._public_ip(),
