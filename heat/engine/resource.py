@@ -529,9 +529,7 @@ class Resource(object):
         if self.id is not None:
             try:
                 rs = db_api.resource_get(self.context, self.id)
-                metadata = rs.rsrc_metadata['private_key']
-                metadata['private_key'] = encrypted_private_key
-                rs.update_and_save({'rsrc_metadata': metadata})
+                rs.update_and_save({'private_key': encrypted_private_key})
             except Exception as ex:
                 logger.warn('db error %s' % str(ex))
 
@@ -541,7 +539,7 @@ class Resource(object):
                 rs = db_api.resource_get(self.context, self.id)
             except Exception as ex:
                 logger.warn('db error %s' % str(ex))
-            private_key = crypt.decrypt(rs.rsrc_metadata['private_key'])
+            private_key = crypt.decrypt(rs.private_key)
             return private_key
 
     def _store(self):
