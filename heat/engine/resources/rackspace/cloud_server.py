@@ -180,7 +180,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         # Generate SSH public/private keypair
         rsa = RSA.generate(1024)
-        private_key = rsa.exportKey()
+        self.private_key = rsa.exportKey()
         public_key = rsa.publickey().exportKey('OpenSSH')
         public_keys = public_key + "\n" + user_public_key
         personality_files = {"/root/.ssh/authorized_keys": public_keys}
@@ -194,7 +194,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         # Save resource ID and private key to db
         self.resource_id_set(server.id)
-        self.resource_private_key_set(private_key)
+        self.resource_private_key_set(self.private_key)
 
         return server
 
