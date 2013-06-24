@@ -71,11 +71,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         """Validate user parameters."""
         flavor = self.properties['Flavor']
         if flavor not in self.rackspace_flavors:
-            return {'Error': "Flavor \"%s\" not found." % flavor}
+            return {'Error': "Flavor not found."}
 
         image_name = self.properties['ImageName']
         if image_name not in self.image_scripts.keys():
-            return {'Error': "Script for image %s not found." % image_name}
+            return {'Error': "Script for image not found."}
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server.

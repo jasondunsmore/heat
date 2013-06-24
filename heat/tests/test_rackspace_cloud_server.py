@@ -200,7 +200,8 @@ class RackspaceCloudServerTest(HeatTestCase):
         cs = cloud_server.CloudServer('cs_create_image_err',
                                       t['Resources']['WebServer'], stack)
 
-        self.assertRaises(cloud_server.ScriptNotFound, cs.validate)
+        self.assertEqual({'Error': "Script for image not found."},
+                         cs.validate())
 
         self.m.VerifyAll()
 
@@ -214,7 +215,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         cs = cloud_server.CloudServer('cs_create_flavor_err',
                                       t['Resources']['WebServer'], stack)
 
-        self.assertRaises(exception.FlavorMissing, cs.validate)
+        self.assertEqual({'Error': "Flavor not found."}, cs.validate())
 
         self.m.VerifyAll()
 
