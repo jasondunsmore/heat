@@ -164,12 +164,10 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         expected_public = return_server.networks['public'][0]
         expected_private = return_server.networks['private'][0]
-        self.assertEqual(cs._resolve_attribute('PublicIp'), expected_public)
-        self.assertEqual(cs._resolve_attribute('PrivateIp'), expected_private)
-        self.assertEqual(cs._resolve_attribute('PublicDnsName'),
-                         expected_public)
-        self.assertEqual(cs._resolve_attribute('PrivateDnsName'),
-                         expected_public)
+        self.assertEqual(cs.FnGetAtt('PublicIp'), expected_public)
+        self.assertEqual(cs.FnGetAtt('PrivateIp'), expected_private)
+        self.assertEqual(cs.FnGetAtt('PublicDnsName'), expected_public)
+        self.assertEqual(cs.FnGetAtt('PrivateDnsName'), expected_public)
 
         self.m.VerifyAll()
 
@@ -185,14 +183,12 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         expected_public = return_server.networks['public'][0]
         expected_private = return_server.networks['private'][0]
-        self.assertEqual(cs._resolve_attribute('PublicIp'), expected_public)
-        self.assertEqual(cs._resolve_attribute('PrivateIp'), expected_private)
-        self.assertEqual(cs._resolve_attribute('PublicDnsName'),
-                         expected_public)
-        self.assertEqual(cs._resolve_attribute('PrivateDnsName'),
-                         expected_public)
+        self.assertEqual(cs.FnGetAtt('PublicIp'), expected_public)
+        self.assertEqual(cs.FnGetAtt('PrivateIp'), expected_private)
+        self.assertEqual(cs.FnGetAtt('PublicDnsName'), expected_public)
+        self.assertEqual(cs.FnGetAtt('PrivateDnsName'), expected_public)
         self.assertRaises(exception.InvalidTemplateAttribute,
-                          cs._resolve_attribute, 'foo')
+                          cs.FnGetAtt, 'foo')
         self.m.VerifyAll()
 
     def test_cs_create_image_name_err(self):
