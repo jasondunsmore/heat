@@ -99,11 +99,17 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     def _public_ip(self):
         """Return the public IP of the Cloud Server."""
-        return self._get_ip('public')
+        try:
+            return self._get_ip('public')
+        except exception.IpNotFound as ex:
+            raise exception.ServerBuildFailed(message=ex.strerror)
 
     def _private_ip(self):
         """Return the private IP of the Cloud Server."""
-        return self._get_ip('private')
+        try:
+            return self._get_ip('private')
+        except exception.IpNotFound as ex:
+            logger.info(ex.strerror)
 
     def _create_temp_file(self, data):
         """Return a temporary file containing the data passed in.

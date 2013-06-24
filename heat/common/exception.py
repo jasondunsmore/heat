@@ -218,16 +218,8 @@ class FlavorMissing(OpenstackException):
     message = _("The Flavor ID (%(flavor_id)s) could not be found.")
 
 
-class NotSupported(OpenstackException):
-    message = _("%(feature) is not supported")
-
-
 class ImageNotFound(OpenstackException):
-    message = _("The image (%(image_name)s) could not be found.")
-
-
-class IpNotFound(OpenstackException):
-    message = _("Cloud not determine the %(ip_type) IP of %(image_name).")
+    message = _("The Image (%(image_name)s) could not be found.")
 
 
 class NoUniqueImageFound(OpenstackException):
@@ -278,6 +270,14 @@ class ResourceFailure(OpenstackException):
         exc_type = type(exception).__name__
         super(ResourceFailure, self).__init__(exc_type=exc_type,
                                               message=str(exception))
+
+
+class NotSupported(OpenstackException):
+    message = _("%(feature) is not supported")
+
+
+class IpNotFound(OpenstackException):
+    message = _("Cloud not determine the %(ip_type) IP of %(image_name).")
 
 
 class RevertFailed(OpenstackException):

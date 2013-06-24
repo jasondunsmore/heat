@@ -385,6 +385,4 @@ class RackspaceCloudServerTest(HeatTestCase):
         }
         self._mock_get_ip(cs)
         self.assertRaises(exception.IpNotFound, cs._public_ip)
-        self._mock_get_ip(cs)
-        self.assertRaises(exception.IpNotFound, cs._private_ip)
         self.m.VerifyAll()
