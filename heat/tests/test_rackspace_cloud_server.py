@@ -200,7 +200,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         cs = cloud_server.CloudServer('cs_create_image_err',
                                       t['Resources']['WebServer'], stack)
 
-        self.assertRaises(cloud_server.ScriptNotFound, cs.handle_create)
+        self.assertRaises(cloud_server.ScriptNotFound, cs.validate)
 
         self.m.VerifyAll()
 
@@ -214,7 +214,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         cs = cloud_server.CloudServer('cs_create_flavor_err',
                                       t['Resources']['WebServer'], stack)
 
-        self.assertRaises(exception.FlavorMissing, cs.handle_create)
+        self.assertRaises(exception.FlavorMissing, cs.validate)
 
         self.m.VerifyAll()
 
@@ -383,5 +383,5 @@ class RackspaceCloudServerTest(HeatTestCase):
             'private': []
         }
         self._mock_get_ip(cs)
-        self.assertRaises(exception.IpNotFound, cs._public_ip)
+        self.assertRaises(exception.ServerBuildFailed, cs._public_ip)
         self.m.VerifyAll()
