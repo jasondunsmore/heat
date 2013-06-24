@@ -28,10 +28,6 @@ from heat.engine.resources.rackspace import rackspace_resource
 logger = logging.getLogger(__name__)
 
 
-class ScriptNotFound(OpenstackException):
-    message = _("No script exists for image %(image_name)s.")
-
-
 class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
     """Resource for Rackspace Cloud Servers."""
     properties_schema = {
@@ -75,11 +71,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         """Validate user parameters."""
         flavor = self.properties['Flavor']
         if flavor not in self.rackspace_flavors:
-            raise exception.FlavorMissing(flavor=flavor)
+            return {'Error': "Flavor \"%s\" not found." % flavor}
 
         image_name = self.properties['ImageName']
         if image_name not in self.image_scripts.keys():
-            raise ScriptNotFound(image_name=image_name)
+            return {'Error': "Script for image %s not found." % image_name}
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server.
