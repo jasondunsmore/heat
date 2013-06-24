@@ -206,7 +206,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.VerifyAll()
 
     def test_cs_create_flavor_err(self):
-        """validate() should throw an if the Flavor is invalid"""
+        """validate() should throw an if the Flavor is invalid."""
         stack_name = 'test_cs_create_flavor_err_stack'
         (t, stack) = self._setup_test_stack(stack_name)
 

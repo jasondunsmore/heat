@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 class ScriptNotFound(OpenstackException):
-    message = _("No script exists for image %(image_name).")
+    message = _("No script exists for image %(image_name)s.")
 
 
 class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
