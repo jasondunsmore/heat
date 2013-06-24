@@ -18,7 +18,8 @@ import novaclient
 
 from heat.openstack.common import log as logging
 from heat.tests.v1_1 import fakes
-from heat.common import template_format, exception
+from heat.common import template_format
+from heat.common import exception
 from heat.engine import parser
 from heat.engine import resource
 from heat.engine import scheduler

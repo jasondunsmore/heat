@@ -12,7 +12,6 @@
 
 import tempfile
 
-import json
 import paramiko
 from Crypto.PublicKey import RSA
 import novaclient.exceptions as novaexception
@@ -68,7 +67,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     # template keys supported for handle_update, note trailing comma
     # is required for a single item to get a tuple not a string
-    update_allowed_keys = ('Metadata', 'Properties')
+    update_allowed_keys = ('Properties')
     update_allowed_properties = ('Flavor', 'ServerName')
 
     def validate(self):
@@ -174,7 +173,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         # Generate SSH public/private keypair
         rsa = RSA.generate(1024)
-        private_key = rsa.exportKey()
+        self.private_key = rsa.exportKey()
         public_key = rsa.publickey().exportKey('OpenSSH')
         public_keys = public_key + "\n" + user_public_key
         personality_files = {"/root/.ssh/authorized_keys": public_keys}
@@ -185,10 +184,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                                image_id,
                                self.flavor,
                                files=personality_files)
-
-        # Save resource ID and private key to db
-        self.resource_id_set(server.id)
-        self.resource_private_key_set(private_key)
+        self.resource_id_set(server.id)  # Save resource ID to db
 
         return server
 
@@ -283,19 +279,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         """
         self.validate()
         server = self.nova().servers.get(self.resource_id)
-
-        if 'Metadata' in tmpl_diff:
-            self.private_key = self.resource_private_key_get()
-            self.metadata = json_snippet['Metadata']
-            metadata_string = json.dumps(self.metadata)
-
-            files = [{'path': "/var/cache/heat-cfntools/last_metadata",
-                      'data': metadata_string}]
-            self._sftp_files(files)
-
-            command = "bash -x /var/lib/cloud/data/cfn-userdata > " + \
-                      "/root/cfn-userdata.log 2>&1"
-            self._run_ssh_command(command)
 
         if 'Flavor' in prop_diff:
             self.flavor = json_snippet['Properties']['Flavor']
