@@ -527,18 +527,12 @@ class Resource(object):
         self.private_key = private_key
         encrypted_private_key = crypt.encrypt(self.private_key)
         if self.id is not None:
-            try:
-                rs = db_api.resource_get(self.context, self.id)
-                rs.update_and_save({'private_key': encrypted_private_key})
-            except Exception as ex:
-                logger.warn('db error %s' % str(ex))
+            rs = db_api.resource_get(self.context, self.id)
+            rs.update_and_save({'private_key': encrypted_private_key})
 
     def resource_private_key_get(self):
         if self.id is not None:
-            try:
-                rs = db_api.resource_get(self.context, self.id)
-            except Exception as ex:
-                logger.warn('db error %s' % str(ex))
+            rs = db_api.resource_get(self.context, self.id)
             private_key = crypt.decrypt(rs.private_key)
             return private_key
 

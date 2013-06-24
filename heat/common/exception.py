@@ -273,11 +273,11 @@ class ResourceFailure(OpenstackException):
 
 
 class NotSupported(OpenstackException):
-    message = _("%(feature)s is not supported")
+    message = _("%(feature)s is not supported.")
 
 
 class IpNotFound(OpenstackException):
-    message = _("Cloud not determine the %(ip_type)s IP of %(image_name)s.")
+    message = _("Could not determine the %(ip_type)s IP of %(image_name)s.")
 
 
 class RevertFailed(OpenstackException):

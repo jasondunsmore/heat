@@ -167,7 +167,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         running, so we have to transfer the user-data file to the
         server and then trigger cloud-init.
         """
-        self.validate()
         # Retrieve server creation parameters from properties
         server_name = self.properties['ServerName']
         image_name = self.properties['ImageName']
@@ -221,7 +220,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     def handle_delete(self):
         """Delete the Cloud Server."""
-        self.validate()
         if self.resource_id is None:
             return
 
@@ -287,7 +285,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         Cloud Server.  If any other parameters changed, re-create the
         Cloud Server with the new parameters.
         """
-        self.validate()
         server = self.nova().servers.get(self.resource_id)
 
         if 'Metadata' in tmpl_diff:
