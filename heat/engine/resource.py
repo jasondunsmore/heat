@@ -19,9 +19,7 @@ from datetime import datetime
 from heat.engine import event
 from heat.openstack.common import excutils
 from heat.db import api as db_api
-from heat.common import exception
-from heat.common import identifier
-from heat.common import short_id
+from heat.common import exception, identifier, crypt, short_id
 from heat.engine import timestamp
 # import class to avoid name collisions and ugly aliasing
 from heat.engine.attributes import Attributes
@@ -524,6 +522,27 @@ class Resource(object):
                 rs.update_and_save({'nova_instance': self.resource_id})
             except Exception as ex:
                 logger.warn('db error %s' % str(ex))
+
+    def resource_private_key_set(self, private_key):
+        self.private_key = private_key
+        encrypted_private_key = crypt.encrypt(self.private_key)
+        if self.id is not None:
+            try:
+                rs = db_api.resource_get(self.context, self.id)
+                metadata = rs.rsrc_metadata['private_key']
+                metadata['private_key'] = encrypted_private_key
+                rs.update_and_save({'rsrc_metadata': metadata})
+            except Exception as ex:
+                logger.warn('db error %s' % str(ex))
+
+    def resource_private_key_get(self):
+        if self.id is not None:
+            try:
+                rs = db_api.resource_get(self.context, self.id)
+            except Exception as ex:
+                logger.warn('db error %s' % str(ex))
+            private_key = crypt.decrypt(rs.rsrc_metadata['private_key'])
+            return private_key
 
     def _store(self):
         '''Create the resource in the database.'''
