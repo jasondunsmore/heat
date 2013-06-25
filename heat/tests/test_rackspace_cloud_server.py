@@ -62,14 +62,15 @@ wp_template = '''
 
 class RackspaceCloudServerTest(HeatTestCase):
     def setUp(self):
+        logger.debug("Running RackspaceCloudServerTest...")
         super(RackspaceCloudServerTest, self).setUp()
         self.fc = fakes.FakeClient()
         setup_dummy_db()
         # Test environment may not have pyrax client library installed and if
         # pyrax is not installed resource class would not be registered.
         # So register resource provider class explicitly for unit testing.
-        #resource._register_class("Rackspace::Cloud::Server",
-        #                         cloud_server.CloudServer)
+        resource._register_class("Rackspace::Cloud::Server",
+                                 cloud_server.CloudServer)
 
     def _setup_test_stack(self, stack_name):
         t = template_format.parse(wp_template)
