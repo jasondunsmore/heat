@@ -62,7 +62,6 @@ wp_template = '''
 
 class RackspaceCloudServerTest(HeatTestCase):
     def setUp(self):
-        logger.debug("Running RackspaceCloudServerTest...")
         super(RackspaceCloudServerTest, self).setUp()
         self.fc = fakes.FakeClient()
         setup_dummy_db()
