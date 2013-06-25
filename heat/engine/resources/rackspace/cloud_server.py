@@ -19,8 +19,6 @@ import novaclient.exceptions as novaexception
 
 from heat.common import exception
 from heat.openstack.common import log as logging
-from heat.openstack.common.exception import OpenstackException
-from heat.openstack.common.gettextutils import _
 from heat.engine import scheduler
 from heat.engine.resources import instance
 from heat.engine.resources.rackspace import rackspace_resource
@@ -330,8 +328,12 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         return unicode(function)
 
 
-if rackspace_resource.PYRAX_INSTALLED:
-    def resource_mapping():
+# pyrax module is required to work with Rackspace cloud server provider.
+# If it is not installed, don't register cloud server provider
+def resource_mapping():
+    if rackspace_resource.PYRAX_INSTALLED:
         return {
             'Rackspace::Cloud::Server': CloudServer
         }
+    else:
+        return {}

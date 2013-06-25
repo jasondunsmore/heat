@@ -19,7 +19,10 @@ from datetime import datetime
 from heat.engine import event
 from heat.openstack.common import excutils
 from heat.db import api as db_api
-from heat.common import exception, identifier, crypt, short_id
+from heat.common import exception
+from heat.common import identifier
+from heat.common import crypt
+from heat.common import short_id
 from heat.engine import timestamp
 # import class to avoid name collisions and ugly aliasing
 from heat.engine.attributes import Attributes
