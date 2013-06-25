@@ -18,7 +18,8 @@ import novaclient
 
 from heat.openstack.common import log as logging
 from heat.tests.v1_1 import fakes
-from heat.common import template_format, exception
+from heat.common import template_format
+from heat.common import exception
 from heat.engine import parser
 from heat.engine import resource
 from heat.engine import scheduler
@@ -67,8 +68,8 @@ class RackspaceCloudServerTest(HeatTestCase):
         # Test environment may not have pyrax client library installed and if
         # pyrax is not installed resource class would not be registered.
         # So register resource provider class explicitly for unit testing.
-        resource._register_class("Rackspace::Cloud::Server",
-                                 cloud_server.CloudServer)
+        #resource._register_class("Rackspace::Cloud::Server",
+        #                         cloud_server.CloudServer)
 
     def _setup_test_stack(self, stack_name):
         t = template_format.parse(wp_template)
