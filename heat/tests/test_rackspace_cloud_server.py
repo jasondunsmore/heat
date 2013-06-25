@@ -140,7 +140,6 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
         rackspace_resource.RackspaceResource.nova().MultipleTimes()\
                                                    .AndReturn(self.fc)
-
         return cs
 
     def _create_test_cs(self, return_server, name):
