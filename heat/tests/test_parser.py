@@ -135,6 +135,22 @@ class TemplateTest(HeatTestCase):
         self.assertEqual(empty[template.RESOURCES], {})
         self.assertEqual(empty[template.OUTPUTS], {})
 
+    def test_invalid_template(self):
+        scanner_error = '''
+1
+Mappings:
+  ValidMapping:
+    TestKey: TestValue
+'''
+        parser_error = '''
+Mappings:
+  ValidMapping:
+    TestKey: {TestKey1: "Value1" TestKey2: "Value2"}
+'''
+
+        self.assertRaises(ValueError, template_format.parse, scanner_error)
+        self.assertRaises(ValueError, template_format.parse, parser_error)
+
     def test_invalid_section(self):
         tmpl = parser.Template({'Foo': ['Bar']})
         try:
@@ -581,6 +597,70 @@ class StackTest(HeatTestCase):
                          (parser.Stack.DELETE, parser.Stack.COMPLETE))
 
     @stack_delete_after
+    def test_suspend(self):
+        self.m.ReplayAll()
+        tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType'}}}
+        self.stack = parser.Stack(self.ctx, 'suspend_test',
+                                  parser.Template(tmpl))
+        stack_id = self.stack.store()
+        self.stack.create()
+        self.assertEqual(self.stack.state,
+                         (self.stack.CREATE, self.stack.COMPLETE))
+
+        self.stack.suspend()
+
+        self.assertEqual(self.stack.state,
+                         (self.stack.SUSPEND, self.stack.COMPLETE))
+        self.m.VerifyAll()
+
+    @stack_delete_after
+    def test_suspend_fail(self):
+        tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType'}}}
+        self.m.StubOutWithMock(generic_rsrc.GenericResource, 'handle_suspend')
+        exc = exception.ResourceFailure(Exception('foo'))
+        generic_rsrc.GenericResource.handle_suspend().AndRaise(exc)
+        self.m.ReplayAll()
+
+        self.stack = parser.Stack(self.ctx, 'suspend_test_fail',
+                                  parser.Template(tmpl))
+
+        stack_id = self.stack.store()
+        self.stack.create()
+        self.assertEqual(self.stack.state,
+                         (self.stack.CREATE, self.stack.COMPLETE))
+
+        self.stack.suspend()
+
+        self.assertEqual(self.stack.state,
+                         (self.stack.SUSPEND, self.stack.FAILED))
+        self.assertEqual(self.stack.status_reason,
+                         'Resource failed: Exception: foo')
+        self.m.VerifyAll()
+
+    @stack_delete_after
+    def test_suspend_timeout(self):
+        tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType'}}}
+        self.m.StubOutWithMock(generic_rsrc.GenericResource, 'handle_suspend')
+        exc = scheduler.Timeout('foo', 0)
+        generic_rsrc.GenericResource.handle_suspend().AndRaise(exc)
+        self.m.ReplayAll()
+
+        self.stack = parser.Stack(self.ctx, 'suspend_test_fail_timeout',
+                                  parser.Template(tmpl))
+
+        stack_id = self.stack.store()
+        self.stack.create()
+        self.assertEqual(self.stack.state,
+                         (self.stack.CREATE, self.stack.COMPLETE))
+
+        self.stack.suspend()
+
+        self.assertEqual(self.stack.state,
+                         (self.stack.SUSPEND, self.stack.FAILED))
+        self.assertEqual(self.stack.status_reason, 'Suspend timed out')
+        self.m.VerifyAll()
+
+    @stack_delete_after
     def test_delete_rollback(self):
         self.stack = parser.Stack(self.ctx, 'delete_rollback_test',
                                   parser.Template({}), disable_rollback=False)
@@ -651,6 +731,10 @@ class StackTest(HeatTestCase):
     def test_update_add(self):
         tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType'}}}
 
+        self.m.StubOutWithMock(scheduler.TaskRunner, '_sleep')
+        scheduler.TaskRunner._sleep(mox.IsA(int)).MultipleTimes()
+        mox.Replay(scheduler.TaskRunner._sleep)
+
         self.stack = parser.Stack(self.ctx, 'update_test_stack',
                                   template.Template(tmpl))
         self.stack.store()
@@ -674,6 +758,10 @@ class StackTest(HeatTestCase):
                 'AResource': {'Type': 'GenericResourceType'},
                 'BResource': {'Type': 'GenericResourceType'}}}
 
+        self.m.StubOutWithMock(scheduler.TaskRunner, '_sleep')
+        scheduler.TaskRunner._sleep(mox.IsA(int)).MultipleTimes()
+        mox.Replay(scheduler.TaskRunner._sleep)
+
         self.stack = parser.Stack(self.ctx, 'update_test_stack',
                                   template.Template(tmpl))
         self.stack.store()
@@ -694,6 +782,10 @@ class StackTest(HeatTestCase):
     def test_update_description(self):
         tmpl = {'Description': 'ATemplate',
                 'Resources': {'AResource': {'Type': 'GenericResourceType'}}}
+
+        self.m.StubOutWithMock(scheduler.TaskRunner, '_sleep')
+        scheduler.TaskRunner._sleep(mox.IsA(int)).MultipleTimes()
+        mox.Replay(scheduler.TaskRunner._sleep)
 
         self.stack = parser.Stack(self.ctx, 'update_test_stack',
                                   template.Template(tmpl))
@@ -720,6 +812,10 @@ class StackTest(HeatTestCase):
 
         tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType',
                                             'Properties': {'Foo': 'abc'}}}}
+
+        self.m.StubOutWithMock(scheduler.TaskRunner, '_sleep')
+        scheduler.TaskRunner._sleep(mox.IsA(int)).MultipleTimes()
+        mox.Replay(scheduler.TaskRunner._sleep)
 
         self.stack = parser.Stack(self.ctx, 'update_test_stack',
                                   template.Template(tmpl))
@@ -753,6 +849,10 @@ class StackTest(HeatTestCase):
 
         tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType',
                                             'Properties': {'Foo': 'abc'}}}}
+
+        self.m.StubOutWithMock(scheduler.TaskRunner, '_sleep')
+        scheduler.TaskRunner._sleep(mox.IsA(int)).MultipleTimes()
+        mox.Replay(scheduler.TaskRunner._sleep)
 
         self.stack = parser.Stack(self.ctx, 'update_test_stack',
                                   template.Template(tmpl),
@@ -795,6 +895,10 @@ class StackTest(HeatTestCase):
         tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType',
                                             'Properties': {'Foo': 'abc'}}}}
 
+        self.m.StubOutWithMock(scheduler.TaskRunner, '_sleep')
+        scheduler.TaskRunner._sleep(mox.IsA(int)).MultipleTimes()
+        mox.Replay(scheduler.TaskRunner._sleep)
+
         self.stack = parser.Stack(self.ctx, 'update_test_stack',
                                   template.Template(tmpl),
                                   disable_rollback=True)
@@ -835,6 +939,10 @@ class StackTest(HeatTestCase):
         tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType',
                                             'Properties': {'Foo': 'abc'}}}}
 
+        self.m.StubOutWithMock(scheduler.TaskRunner, '_sleep')
+        scheduler.TaskRunner._sleep(mox.IsA(int)).MultipleTimes()
+        mox.Replay(scheduler.TaskRunner._sleep)
+
         self.stack = parser.Stack(self.ctx, 'update_test_stack',
                                   template.Template(tmpl),
                                   disable_rollback=True)
@@ -866,6 +974,9 @@ class StackTest(HeatTestCase):
     @stack_delete_after
     def test_update_add_failed_create(self):
         tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType'}}}
+
+        self.m.StubOutWithMock(scheduler.TaskRunner, '_sleep')
+        mox.Replay(scheduler.TaskRunner._sleep)
 
         self.stack = parser.Stack(self.ctx, 'update_test_stack',
                                   template.Template(tmpl))
@@ -904,6 +1015,10 @@ class StackTest(HeatTestCase):
 
         tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType',
                                             'Properties': {'Foo': 'abc'}}}}
+
+        self.m.StubOutWithMock(scheduler.TaskRunner, '_sleep')
+        scheduler.TaskRunner._sleep(mox.IsA(int)).MultipleTimes()
+        mox.Replay(scheduler.TaskRunner._sleep)
 
         self.stack = parser.Stack(self.ctx, 'update_test_stack',
                                   template.Template(tmpl),
@@ -945,6 +1060,10 @@ class StackTest(HeatTestCase):
         tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType',
                                             'Properties': {'Foo': 'abc'}}}}
 
+        self.m.StubOutWithMock(scheduler.TaskRunner, '_sleep')
+        scheduler.TaskRunner._sleep(mox.IsA(int)).MultipleTimes()
+        mox.Replay(scheduler.TaskRunner._sleep)
+
         self.stack = parser.Stack(self.ctx, 'update_test_stack',
                                   template.Template(tmpl),
                                   disable_rollback=False)
@@ -979,6 +1098,10 @@ class StackTest(HeatTestCase):
     def test_update_rollback_add(self):
         tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType'}}}
 
+        self.m.StubOutWithMock(scheduler.TaskRunner, '_sleep')
+        scheduler.TaskRunner._sleep(mox.IsA(int)).MultipleTimes()
+        mox.Replay(scheduler.TaskRunner._sleep)
+
         self.stack = parser.Stack(self.ctx, 'update_test_stack',
                                   template.Template(tmpl),
                                   disable_rollback=False)
@@ -1011,6 +1134,10 @@ class StackTest(HeatTestCase):
         tmpl = {'Resources': {
                 'AResource': {'Type': 'GenericResourceType'},
                 'BResource': {'Type': 'GenericResourceType'}}}
+
+        self.m.StubOutWithMock(scheduler.TaskRunner, '_sleep')
+        scheduler.TaskRunner._sleep(mox.IsA(int)).MultipleTimes()
+        mox.Replay(scheduler.TaskRunner._sleep)
 
         self.stack = parser.Stack(self.ctx, 'update_test_stack',
                                   template.Template(tmpl),
@@ -1066,7 +1193,7 @@ class StackTest(HeatTestCase):
                                   template.Template(tmpl))
 
         self.m.StubOutWithMock(scheduler.TaskRunner, '_sleep')
-        scheduler.TaskRunner._sleep(mox.IsA(int)).AndReturn(None)
+        scheduler.TaskRunner._sleep(mox.IsA(int)).MultipleTimes()
         self.m.ReplayAll()
 
         self.stack.store()
@@ -1126,7 +1253,7 @@ class StackTest(HeatTestCase):
                                   disable_rollback=False)
 
         self.m.StubOutWithMock(scheduler.TaskRunner, '_sleep')
-        scheduler.TaskRunner._sleep(mox.IsA(int)).AndReturn(None)
+        scheduler.TaskRunner._sleep(mox.IsA(int)).MultipleTimes()
         self.m.ReplayAll()
 
         self.stack.store()
@@ -1175,17 +1302,27 @@ class StackTest(HeatTestCase):
         check that rollback still works with dynamic metadata
         this test fails the second instance
         '''
+
+        class ResourceTypeA(generic_rsrc.GenericResource):
+            count = 0
+
+            def handle_create(self):
+                ResourceTypeA.count += 1
+                self.resource_id_set('%s%d' % (self.name, self.count))
+
+        resource._register_class('ResourceTypeA', ResourceTypeA)
+
         # patch in a dummy property schema for GenericResource
         dummy_schema = {'Foo': {'Type': 'String'}}
         generic_rsrc.GenericResource.properties_schema = dummy_schema
         tmpl = {'Resources': {
-                'AResource': {'Type': 'GenericResourceType',
+                'AResource': {'Type': 'ResourceTypeA',
                               'Properties': {'Foo': 'abc'}},
                 'BResource': {'Type': 'GenericResourceType',
                               'Properties': {
                               'Foo': {'Ref': 'AResource'}}}}}
         tmpl2 = {'Resources': {
-                 'AResource': {'Type': 'GenericResourceType',
+                 'AResource': {'Type': 'ResourceTypeA',
                                'Properties': {'Foo': 'smelly'}},
                  'BResource': {'Type': 'GenericResourceType',
                                'Properties': {
@@ -1196,7 +1333,7 @@ class StackTest(HeatTestCase):
                                   disable_rollback=False)
 
         self.m.StubOutWithMock(scheduler.TaskRunner, '_sleep')
-        scheduler.TaskRunner._sleep(mox.IsA(int)).AndReturn(None)
+        scheduler.TaskRunner._sleep(mox.IsA(int)).MultipleTimes()
         self.m.ReplayAll()
 
         self.stack.store()
@@ -1207,57 +1344,23 @@ class StackTest(HeatTestCase):
                          (parser.Stack.CREATE, parser.Stack.COMPLETE))
         self.assertEqual(self.stack['AResource'].properties['Foo'], 'abc')
         self.assertEqual(self.stack['BResource'].properties['Foo'],
-                         'AResource')
+                         'AResource1')
 
-        self.m.StubOutWithMock(generic_rsrc.GenericResource, 'FnGetRefId')
         self.m.StubOutWithMock(generic_rsrc.GenericResource, 'handle_create')
 
         # Calls to GenericResource.handle_update will raise
         # resource.UpdateReplace because we've not specified the modified
         # key/property in update_allowed_keys/update_allowed_properties
 
-        generic_rsrc.GenericResource.FnGetRefId().AndReturn(
-            'AResource')
-        generic_rsrc.GenericResource.FnGetRefId().AndReturn(
-            'inst-007')
-        # self.state_set(self.UPDATE, self.IN_PROGRESS)
-        generic_rsrc.GenericResource.FnGetRefId().AndReturn(
-            'inst-007')
-        # self.state_set(self.DELETE, self.IN_PROGRESS)
-        generic_rsrc.GenericResource.FnGetRefId().AndReturn(
-            'inst-007')
-        # self.state_set(self.DELETE, self.COMPLETE)
-        generic_rsrc.GenericResource.FnGetRefId().AndReturn(
-            'inst-007')
-        # self.properties.validate()
-        generic_rsrc.GenericResource.FnGetRefId().AndReturn(
-            'inst-007')
-        # self.state_set(self.CREATE, self.IN_PROGRESS)
-        generic_rsrc.GenericResource.FnGetRefId().AndReturn(
-            'inst-007')
-
         # mock to make the replace fail when creating the second
         # replacement resource
-        generic_rsrc.GenericResource.handle_create().AndReturn(None)
         generic_rsrc.GenericResource.handle_create().AndRaise(Exception)
 
         # Calls to GenericResource.handle_update will raise
         # resource.UpdateReplace because we've not specified the modified
         # key/property in update_allowed_keys/update_allowed_properties
 
-        # self.state_set(self.DELETE, self.IN_PROGRESS)
-        generic_rsrc.GenericResource.FnGetRefId().AndReturn(
-            'inst-007')
-        # self.state_set(self.DELETE, self.IN_PROGRESS)
-        generic_rsrc.GenericResource.FnGetRefId().AndReturn(
-            'inst-007')
-
         generic_rsrc.GenericResource.handle_create().AndReturn(None)
-        generic_rsrc.GenericResource.handle_create().AndReturn(None)
-
-        # reverting to AResource
-        generic_rsrc.GenericResource.FnGetRefId().MultipleTimes().AndReturn(
-            'AResource')
 
         self.m.ReplayAll()
 
@@ -1268,6 +1371,8 @@ class StackTest(HeatTestCase):
         self.assertEqual(self.stack.state,
                          (parser.Stack.ROLLBACK, parser.Stack.COMPLETE))
         self.assertEqual(self.stack['AResource'].properties['Foo'], 'abc')
+        self.assertEqual(self.stack['BResource'].properties['Foo'],
+                         'AResource3')
 
         self.m.VerifyAll()
 
