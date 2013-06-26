@@ -36,8 +36,6 @@ class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
         'PublicKey': {'Type': 'String'}
     }
 
-    rackspace_flavors = ["2", "3", "4", "5", "6", "7", "8"]
-
     fedora_script = """#!/bin/bash
 
 # Install cloud-init and heat-cfntools
@@ -68,12 +66,15 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     def validate(self):
         """Validate user parameters."""
         flavor = self.properties['Flavor']
-        if flavor not in self.rackspace_flavors:
+        if flavor not in self._flavors():
             return {'Error': "Flavor not found."}
 
         image_name = self.properties['ImageName']
         if image_name not in self.image_scripts.keys():
             return {'Error': "Script for image not found."}
+
+    def _flavors(self):
+        return [flavor.id for flavor in self.nova().flavors.list()]
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server.
