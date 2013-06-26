@@ -17,13 +17,13 @@ def upgrade(migrate_engine):
     meta = sqlalchemy.MetaData()
     meta.bind = migrate_engine
 
-    event = sqlalchemy.Table('resource', meta, autoload=True)
-    sqlalchemy.Column('private_key', sqlalchemy.Text).create(event)
+    resource = sqlalchemy.Table('resource', meta, autoload=True)
+    sqlalchemy.Column('private_key', sqlalchemy.Text).create(resource)
 
 
 def downgrade(migrate_engine):
     meta = sqlalchemy.MetaData()
     meta.bind = migrate_engine
 
-    event = sqlalchemy.Table('resource', meta, autoload=True)
-    event.c.resource_status.delete(name='private_key')
+    resource = sqlalchemy.Table('resource', meta, autoload=True)
+    resource.c.resource_status.delete(name='private_key')
