@@ -74,7 +74,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         image_name = self.properties['ImageName']
         if image_name not in self.image_scripts.keys():
-            return {'Error': "Script for image not found."}
+            return {'Error': "Image %s not supported." % image_name}
 
     def _flavors(self):
         """Fetch flavors from the API or cache."""
