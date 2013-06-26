@@ -134,7 +134,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         stdin, stdout, stderr = ssh.exec_command(command)
         logger.debug(stdout.read())
         logger.debug(stderr.read())
-        private_key_file.close()
 
     def _sftp_files(self, files):
         """Transfer files to the Cloud Server via SFTP.
