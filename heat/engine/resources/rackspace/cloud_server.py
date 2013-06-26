@@ -11,6 +11,7 @@
 #    under the License.
 
 import tempfile
+import time
 
 import json
 import paramiko
@@ -58,6 +59,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         "Fedora 18 (Spherical Cow)": fedora_script
     }
 
+    flavors = None
+
     # template keys supported for handle_update, note trailing comma
     # is required for a single item to get a tuple not a string
     update_allowed_keys = ('Metadata', 'Properties')
@@ -66,7 +69,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     def validate(self):
         """Validate user parameters."""
         flavor = self.properties['Flavor']
-        if flavor not in self._flavors():
+        if flavor not in self._flavors()[0]:
             return {'Error': "Flavor not found."}
 
         image_name = self.properties['ImageName']
@@ -74,7 +77,18 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             return {'Error': "Script for image not found."}
 
     def _flavors(self):
-        return [flavor.id for flavor in self.nova().flavors.list()]
+        """Fetch flavors from the API or cache."""
+        def get_flavors():
+            return [flavor.id for flavor in self.nova().flavors.list()]
+        time_now = time.time()
+        if self.__class__.flavors:
+            last_update = self.__class__.flavors[1]
+            six_hours = 216000
+            if (time_now - last_update) > six_hours:
+                self.__class__.flavors = (get_flavors(), time_now)
+        else:
+            self.__class__.flavors = (get_flavors(), time_now)
+        return self.__class__.flavors
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server.
