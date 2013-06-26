@@ -72,6 +72,22 @@ class RackspaceCloudServerTest(HeatTestCase):
         resource._register_class("Rackspace::Cloud::Server",
                                  cloud_server.CloudServer)
 
+        f2 = self.m.CreateMockAnything()
+        f2.id = '2'
+        f3 = self.m.CreateMockAnything()
+        f3.id = '3'
+        f4 = self.m.CreateMockAnything()
+        f4.id = '4'
+        f5 = self.m.CreateMockAnything()
+        f5.id = '5'
+        f6 = self.m.CreateMockAnything()
+        f6.id = '6'
+        f7 = self.m.CreateMockAnything()
+        f7.id = '7'
+        f8 = self.m.CreateMockAnything()
+        f8.id = '8'
+        self.flavors = [f2, f3, f4, f5, f6, f7, f8]
+
     def _setup_test_stack(self, stack_name):
         t = template_format.parse(wp_template)
         template = parser.Template(t)
@@ -135,13 +151,15 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.StubOutWithMock(self.fc.servers, 'create')
         self.fc.servers.create(server_name, image_id, flavor,
                                files=mox.IgnoreArg()).AndReturn(return_server)
+
+        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
+        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
+                                                   .AndReturn(self.fc)
+
         self.m.StubOutWithMock(cs, '_get_image_id')
         cs._get_image_id(mox.IgnoreArg()).AndReturn('1234')
 
         self._mock_ssh_sftp()
-        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
-        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
-                                                   .AndReturn(self.fc)
         return cs
 
     def _create_test_cs(self, return_server, name):
@@ -198,6 +216,13 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         # create a cloud server with non exist image name
         t['Resources']['WebServer']['Properties']['ImageName'] = 'Slackware'
+
+        # Mock _flavors()
+        self.m.StubOutWithMock(cloud_server.CloudServer, "_flavors")
+        flavors = (['2', '3', '4', '5', '6', '7', '8'], 100000000)
+        cloud_server.CloudServer._flavors().AndReturn(flavors)
+        self.m.ReplayAll()
+
         cs = cloud_server.CloudServer('cs_create_image_err',
                                       t['Resources']['WebServer'], stack)
 
@@ -213,6 +238,13 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         # create a cloud server with non exist image name
         t['Resources']['WebServer']['Properties']['Flavor'] = '1'
+
+        # Mock _flavors()
+        self.m.StubOutWithMock(cloud_server.CloudServer, "_flavors")
+        flavors = (['2', '3', '4', '5', '6', '7', '8'], 100000000)
+        cloud_server.CloudServer._flavors().AndReturn(flavors)
+        self.m.ReplayAll()
+
         cs = cloud_server.CloudServer('cs_create_flavor_err',
                                       t['Resources']['WebServer'], stack)
 
@@ -388,39 +420,40 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.assertRaises(exception.ServerBuildFailed, cs._public_ip)
         self.m.VerifyAll()
 
-    def _mock_get_flavors(self, flavors, time_now):
-        self.m.UnsetStubs()
-        self.m.StubOutWithMock(time, 'time')
-        time.time().AndReturn(time_now)
-        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
-        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
-                                                   .AndReturn(self.fc)
-        self.m.StubOutWithMock(self.fc.flavors, 'list')
-        self.fc.flavors.list().MultipleTimes().AndReturn(flavors)
-        self.m.ReplayAll()
-
     def test_flavors(self):
         stack_name = 'test_cs_flavors'
         (t, stack) = self._setup_test_stack(stack_name)
         cs = cloud_server.CloudServer('cs_create_image_err',
                                       t['Resources']['WebServer'],
                                       stack)
-        f2 = self.m.CreateMockAnything()
-        f2.id = '2'
-        f3 = self.m.CreateMockAnything()
-        f3.id = '3'
-        f4 = self.m.CreateMockAnything()
-        f4.id = '4'
-        f5 = self.m.CreateMockAnything()
-        f5.id = '5'
-        f6 = self.m.CreateMockAnything()
-        f6.id = '6'
-        f7 = self.m.CreateMockAnything()
-        f7.id = '7'
-        f8 = self.m.CreateMockAnything()
-        f8.id = '8'
-        flavors = [f2, f3, f4, f5, f6, f7, f8]
-        time_now = 10000000.000
-        self._mock_get_flavors(flavors, time_now)
+
+        time_now = 1372272065.579054
+        last_update = 1372272064.579054
+        cs.__class__.flavors = (['2', '3', '4', '5', '6', '7', '8'],
+                                last_update)
+        self.m.StubOutWithMock(time, 'time')
+        time.time().AndReturn(time_now)
+        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
+        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
+                                                   .AndReturn(self.fc)
+        self.m.StubOutWithMock(self.fc.flavors, 'list')
+        self.fc.flavors.list().MultipleTimes().AndReturn(self.flavors)
+        self.m.ReplayAll()
+        self.assertEqual(cs._flavors(),
+                         (['2', '3', '4', '5', '6', '7', '8'], last_update))
+
+        self.m.UnsetStubs()
+        time_now = 1372272065.579054
+        last_update = 1272272066.579054
+        cs.__class__.flavors = (['2', '3', '4', '5', '6', '7', '8'],
+                                last_update)
+        self.m.StubOutWithMock(time, 'time')
+        time.time().AndReturn(time_now)
+        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
+        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
+                                                   .AndReturn(self.fc)
+        self.m.StubOutWithMock(self.fc.flavors, 'list')
+        self.fc.flavors.list().MultipleTimes().AndReturn(self.flavors)
+        self.m.ReplayAll()
         self.assertEqual(cs._flavors(),
                          (['2', '3', '4', '5', '6', '7', '8'], time_now))
