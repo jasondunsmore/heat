@@ -107,34 +107,23 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         except exception.IpNotFound as ex:
             logger.info(ex.message)
 
-    def _create_temp_file(self, data):
-        """Return a temporary file containing the data passed in.
-
-        :param data: a string containing data to be put in temporary file
-        :returns: temporary file
-        :rtype: NamedTemporaryFile
-        """
-        temp_file = tempfile.NamedTemporaryFile()
-        temp_file.write(data)
-        temp_file.seek(0)
-        return temp_file
-
     def _run_ssh_command(self, command):
         """Run a shell command on the Cloud Server via SSH.
 
         :param command: a string containing the command to run
         """
-        private_key_file = self._create_temp_file(self.private_key)
-        ssh = paramiko.SSHClient()
-        public_ip = self._public_ip()
-        ssh.set_missing_host_key_policy(paramiko.MissingHostKeyPolicy())
-        ssh.connect(public_ip,
-                    username="root",
-                    key_filename=private_key_file.name)
-        private_key_file.close()  # Delete temp file
-        stdin, stdout, stderr = ssh.exec_command(command)
-        logger.debug(stdout.read())
-        logger.debug(stderr.read())
+        with tempfile.NamedTemporaryFile() as private_key_file:
+            private_key_file.write(self.private_key)
+            private_key_file.seek(0)
+            ssh = paramiko.SSHClient()
+            public_ip = self._public_ip()
+            ssh.set_missing_host_key_policy(paramiko.MissingHostKeyPolicy())
+            ssh.connect(public_ip,
+                        username="root",
+                        key_filename=private_key_file.name)
+            stdin, stdout, stderr = ssh.exec_command(command)
+            logger.debug(stdout.read())
+            logger.debug(stderr.read())
 
     def _sftp_files(self, files):
         """Transfer files to the Cloud Server via SFTP.
@@ -142,17 +131,18 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         :param files: a list containing one dictionary per file, each
                       containing a 'path' and 'data' value
         """
-        private_key_file = self._create_temp_file(self.private_key)
-        pkey = paramiko.RSAKey.from_private_key_file(private_key_file.name)
-        public_ip = self._public_ip()
-        transport = paramiko.Transport((public_ip, 22))
-        transport.connect(hostkey=None, username="root", pkey=pkey)
-        sftp = paramiko.SFTPClient.from_transport(transport)
-        for remote_file in files:
-            sftp_file = sftp.open(remote_file['path'], 'w')
-            sftp_file.write(remote_file['data'])
-            sftp_file.close()
-        private_key_file.close()
+        with tempfile.NamedTemporaryFile() as private_key_file:
+            private_key_file.write(self.private_key)
+            private_key_file.seek(0)
+            pkey = paramiko.RSAKey.from_private_key_file(private_key_file.name)
+            public_ip = self._public_ip()
+            transport = paramiko.Transport((public_ip, 22))
+            transport.connect(hostkey=None, username="root", pkey=pkey)
+            sftp = paramiko.SFTPClient.from_transport(transport)
+            for remote_file in files:
+                sftp_file = sftp.open(remote_file['path'], 'w')
+                sftp_file.write(remote_file['data'])
+                sftp_file.close()
 
     def handle_create(self):
         """Create a Rackspace Cloud Servers container.
