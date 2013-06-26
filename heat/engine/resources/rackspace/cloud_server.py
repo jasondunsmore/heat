@@ -97,28 +97,28 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         :returns: IP of Cloud Server
         :rtype: string
         """
+        def ip_not_found():
+            exc = exception.Error("Could not determine the %s IP of %s." %
+                                  (ip_type, self.properties['ImageName']))
+            raise exception.ResourceFailure(exc)
+
         server = self.nova().servers.get(self.resource_id)
         if ip_type not in server.addresses:
-            raise exception.IpNotFound(ip_type=ip_type,
-                                       image_name=self.properties['ImageName'])
+            ip_not_found()
         for ip in server.addresses[ip_type]:
             if ip['version'] == 4:
                 return ip['addr']
-        raise exception.IpNotFound(ip_type=ip_type,
-                                   image_name=self.properties['ImageName'])
+        ip_not_found()
 
     def _public_ip(self):
         """Return the public IP of the Cloud Server."""
-        try:
-            return self._get_ip('public')
-        except exception.IpNotFound as ex:
-            raise exception.ServerBuildFailed(message=ex.message)
+        return self._get_ip('public')
 
     def _private_ip(self):
         """Return the private IP of the Cloud Server."""
         try:
             return self._get_ip('private')
-        except exception.IpNotFound as ex:
+        except exception.ResourceFailure as ex:
             logger.info(ex.message)
 
     def _run_ssh_command(self, command):
@@ -201,7 +201,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         if server.status in self._deferred_server_statuses:
             return False
         elif server.status == 'ERROR':
-            raise exception.ServerBuildFailed(image_name=server.name)
+            exc = exception.Error("Build of server %s failed." % server.name)
+            raise exception.ResourceFailure(exc)
 
         # Create heat-script and userdata files on server
         files = [
@@ -274,7 +275,9 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             elif server.status == "ACTIVE":  # Successful revert
                 break
             else:  # "ERROR" or other status
-                raise exception.RevertFailed(image_name=server.name)
+                exc = exception.Error("Unable to revert resize of %s." %
+                                      server.name)
+                raise exception.ResourceFailure(exc)
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
         """Try to update a Cloud Server's parameters.

@@ -226,7 +226,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         cs = cloud_server.CloudServer('cs_create_image_err',
                                       t['Resources']['WebServer'], stack)
 
-        self.assertEqual({'Error': "Script for image not found."},
+        self.assertEqual({'Error': "Image %s not supported." % 'Slackware'},
                          cs.validate())
 
         self.m.VerifyAll()
@@ -417,7 +417,7 @@ class RackspaceCloudServerTest(HeatTestCase):
             'private': []
         }
         self._mock_get_ip(cs)
-        self.assertRaises(exception.ServerBuildFailed, cs._public_ip)
+        self.assertRaises(exception.ResourceFailure, cs._public_ip)
         self.m.VerifyAll()
 
     def test_flavors(self):

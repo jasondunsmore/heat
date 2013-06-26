@@ -274,15 +274,3 @@ class ResourceFailure(OpenstackException):
 
 class NotSupported(OpenstackException):
     message = _("%(feature)s is not supported.")
-
-
-class IpNotFound(OpenstackException):
-    message = _("Could not determine the %(ip_type)s IP of %(image_name)s.")
-
-
-class RevertFailed(OpenstackException):
-    message = _("Unable to revert resize of %(image_name)s.")
-
-
-class ServerBuildFailed(OpenstackException):
-    message = _("Build of server %(image_name)s failed.")
