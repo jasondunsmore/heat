@@ -333,10 +333,10 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         if key not in attribute_function:
             raise exception.InvalidTemplateAttribute(resource=self.name,
                                                      key=key)
-        function = attribute_function[key] or ""
+        function = attribute_function[key]
         logger.info('%s._resolve_attribute(%s) == %s'
                     % (self.name, key, function))
-        return unicode(function)
+        return unicode(function) or ""
 
 
 # pyrax module is required to work with Rackspace cloud server provider.
