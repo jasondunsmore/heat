@@ -71,18 +71,19 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     update_allowed_keys = ('Metadata', 'Properties')
     update_allowed_properties = ('Flavor', 'ServerName')
 
-    def validate(self):
-        """Validate user parameters."""
-        flavor = self.properties['Flavor']
-        if flavor not in self._flavors()[0]:
-            return {'Error': "Flavor not found."}
-
-        image_name = self.properties['ImageName']
-        self.image_id = self._get_image_id(image_name)
+    def __init__(self, name, json_snippet, stack):
+        super(CloudServer, self).__init__(name, json_snippet, stack)
+        self.image_name = self.properties['ImageName']
+        self.image_id = self._get_image_id(self.image_name)
         os_distro = self.nova().images.get(self.image_id).metadata['os_distro']
         self.script = self.image_scripts[os_distro]
+
+    def validate(self):
+        """Validate user parameters."""
+        if self.properties['Flavor'] not in self._flavors()[0]:
+            return {'Error': "Flavor not found."}
         if not self.script:
-            return {'Error': "Image %s not supported." % image_name}
+            return {'Error': "Image %s not supported." % self.image_name}
 
     def _flavors(self):
         """Fetch flavors from the API or cache."""
@@ -205,6 +206,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         if server.status in self._deferred_server_statuses:
             return False
         elif server.status == 'ERROR':
+            delete = scheduler.TaskRunner(self._delete_server, server)
+            delete(wait_time=0.2)
             exc = exception.Error("Build of server %s failed." % server.name)
             raise exception.ResourceFailure(exc)
 
