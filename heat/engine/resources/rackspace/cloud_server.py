@@ -55,8 +55,13 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 """
 
     image_scripts = {
-        "Fedora 17 (Beefy Miracle)": fedora_script,
-        "Fedora 18 (Spherical Cow)": fedora_script
+        'arch': None,
+        'centos': None,
+        'debian': None,
+        'fedora': fedora_script,
+        'opensuse': None,
+        'rhel': None,
+        'ubuntu': None
     }
 
     flavors = None
@@ -73,7 +78,10 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             return {'Error': "Flavor not found."}
 
         image_name = self.properties['ImageName']
-        if image_name not in self.image_scripts.keys():
+        self.image_id = self._get_image_id(image_name)
+        os_distro = self.nova().images.get(self.image_id).metadata['os_distro']
+        self.script = self.image_scripts[os_distro]
+        if not self.script:
             return {'Error': "Image %s not supported." % image_name}
 
     def _flavors(self):
@@ -166,11 +174,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         server and then trigger cloud-init.
         """
         # Retrieve server creation parameters from properties
-        server_name = self.properties['ServerName']
-        image_name = self.properties['ImageName']
-        image_id = self._get_image_id(image_name)
         self.flavor = self.properties['Flavor']
-        self.script = self.image_scripts[image_name]
         raw_userdata = self.properties['UserData'] or ''
         self.userdata = self._build_userdata(raw_userdata)
         user_public_key = self.properties['PublicKey'] or ''
@@ -184,8 +188,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         # Create server
         client = self.nova().servers
-        server = client.create(server_name,
-                               image_id,
+        server = client.create(self.properties['ServerName'],
+                               self.image_id,
                                self.flavor,
                                files=personality_files)
 
