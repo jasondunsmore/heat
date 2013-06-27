@@ -91,6 +91,19 @@ class RackspaceCloudServerTest(HeatTestCase):
     def _setup_test_stack(self, stack_name):
         t = template_format.parse(wp_template)
         template = parser.Template(t)
+        image = self.fc.images.list()[1]
+        image.metadata = {}
+        image.metadata['os_distro'] = "fedora"
+
+        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
+        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
+                                                   .AndReturn(self.fc)
+        self.m.StubOutWithMock(self.fc.images, "get")
+        self.fc.images.get(mox.IgnoreArg()).AndReturn(image)
+        self.m.StubOutWithMock(cloud_server.CloudServer, '_get_image_id')
+        cloud_server.CloudServer._get_image_id(mox.IgnoreArg()).AndReturn('1')
+        self.m.ReplayAll()
+
         stack = parser.Stack(None, stack_name, template,
                              environment.Environment({'Flavor': '2'}),
                              stack_id=uuidutils.generate_uuid())

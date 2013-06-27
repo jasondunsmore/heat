@@ -73,7 +73,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     def __init__(self, name, json_snippet, stack):
         super(CloudServer, self).__init__(name, json_snippet, stack)
-        self.image_name = self.properties['ImageName']
+        self.image_name = json_snippet['Properties']['ImageName']
         self.image_id = self._get_image_id(self.image_name)
         os_distro = self.nova().images.get(self.image_id).metadata['os_distro']
         self.script = self.image_scripts[os_distro]
