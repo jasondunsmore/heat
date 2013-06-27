@@ -91,24 +91,25 @@ class RackspaceCloudServerTest(HeatTestCase):
     def _setup_test_stack(self, stack_name):
         t = template_format.parse(wp_template)
         template = parser.Template(t)
-        image = self.fc.images.list()[1]
-        image.metadata = {}
-        image.metadata['os_distro'] = "fedora"
+        image1 = self.fc.images.list()[0]
 
         self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
         rackspace_resource.RackspaceResource.nova().AndReturn(self.fc)
         self.m.StubOutWithMock(self.fc.images, "get")
-        self.fc.images.get(mox.IgnoreArg()).AndReturn(image)
+        self.fc.images.get(mox.IgnoreArg()).AndReturn(image1)
         self.m.StubOutWithMock(cloud_server.CloudServer, '_get_image_id')
         cloud_server.CloudServer._get_image_id(mox.IgnoreArg())\
-                                .AndReturn(image.id)
-        self.m.UnsetStubs()
+                                .AndReturn(image1.id)
+
+        image1 = self.fc.images.list()[0]
+        image1.metadata = {}
+        image1.metadata['os_distro'] = "fedora"
 
         self.m.StubOutWithMock(self.fc.images, 'get')
-        self.fc.client.get(mox.IgnoreArg()).AndReturn(image)
+        self.fc.client.get(mox.IgnoreArg()).AndReturn(image1)
 
-        self.m.StubOutWithMock(image, "metadata")
-        image.metadata.__getitem__('os_distro').AndReturn('fedora')
+        self.m.StubOutWithMock(image1, "metadata")
+        image1.metadata.__getitem__('os_distro').AndReturn('fedora')
         self.m.ReplayAll()
 
         stack = parser.Stack(None, stack_name, template,
