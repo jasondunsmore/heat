@@ -96,12 +96,19 @@ class RackspaceCloudServerTest(HeatTestCase):
         image.metadata['os_distro'] = "fedora"
 
         self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
-        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
-                                                   .AndReturn(self.fc)
+        rackspace_resource.RackspaceResource.nova().AndReturn(self.fc)
         self.m.StubOutWithMock(self.fc.images, "get")
         self.fc.images.get(mox.IgnoreArg()).AndReturn(image)
         self.m.StubOutWithMock(cloud_server.CloudServer, '_get_image_id')
-        cloud_server.CloudServer._get_image_id(mox.IgnoreArg()).AndReturn('1')
+        cloud_server.CloudServer._get_image_id(mox.IgnoreArg())\
+                                .AndReturn(image.id)
+        self.m.UnsetStubs()
+
+        self.m.StubOutWithMock(self.fc.images, 'get')
+        self.fc.client.get(mox.IgnoreArg()).AndReturn(image)
+
+        self.m.StubOutWithMock(image, "metadata")
+        image.metadata.__getitem__('os_distro').AndReturn('fedora')
         self.m.ReplayAll()
 
         stack = parser.Stack(None, stack_name, template,
