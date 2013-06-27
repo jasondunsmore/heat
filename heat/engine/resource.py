@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 _resource_classes = {}
+_template_class = None
 
 
 def get_types():
@@ -46,7 +47,11 @@ def get_class(resource_type, resource_name=None, environment=None):
     if environment:
         resource_type = environment.get_resource_type(resource_type,
                                                       resource_name)
-    cls = _resource_classes.get(resource_type)
+
+    if resource_type.endswith(('.yaml', '.template')):
+        cls = _template_class
+    else:
+        cls = _resource_classes.get(resource_type)
     if cls is None:
         msg = "Unknown resource Type : %s" % resource_type
         raise exception.StackValidationFailed(message=msg)
@@ -61,6 +66,12 @@ def _register_class(resource_type, resource_class):
                        resource_type)
 
     _resource_classes[resource_type] = resource_class
+
+
+def register_template_class(cls):
+    global _template_class
+    if _template_class is None:
+        _template_class = cls
 
 
 class UpdateReplace(Exception):
