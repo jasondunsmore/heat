@@ -163,7 +163,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         images_mock = self.m.CreateMockAnything()
         rackspace_resource.RackspaceResource.nova().AndReturn(nova_mock)
         nova_mock.images = images_mock
-        #fake_image.metadata = {'os_distro': 'fedora'}
+        fake_image.metadata = {'os_distro': 'fedora'}
         #self.m.StubOutWithMock(fake_image, "metadata")
         #fake_image.metadata.__getitem__('os_distro').AndReturn('fedora')
         images_mock.get(fake_image.id).AndReturn(fake_image)
