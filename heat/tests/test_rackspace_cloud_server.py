@@ -153,21 +153,20 @@ class RackspaceCloudServerTest(HeatTestCase):
                                files=mox.IgnoreArg()).AndReturn(return_server)
 
         self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
-        rackspace_resource.RackspaceResource.nova().AndReturn(self.fc)
-
+        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
+                                                   .AndReturn(self.fc)
         self.m.StubOutWithMock(cs, '_get_image_id')
         cs._get_image_id(mox.IgnoreArg()).AndReturn('1')
 
         fake_image = self.fc.images.list()[0]
-        fake_image.metadata = {'os_distro': 'fedora'}
         nova_mock = self.m.CreateMockAnything()
         images_mock = self.m.CreateMockAnything()
         rackspace_resource.RackspaceResource.nova().AndReturn(nova_mock)
         nova_mock.images = images_mock
-        images_mock.get(mox.IgnoreArg()).AndReturn(fake_image)
-
-        self.m.StubOutWithMock(self.fc.client, 'get_images_1')
-        self.fc.client.get_images_1()
+        #fake_image.metadata = {'os_distro': 'fedora'}
+        #self.m.StubOutWithMock(fake_image, "metadata")
+        #fake_image.metadata.__getitem__('os_distro').AndReturn('fedora')
+        images_mock.get(fake_image.id).AndReturn(fake_image)
 
         self._mock_ssh_sftp()
         return cs
