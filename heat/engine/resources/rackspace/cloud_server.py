@@ -76,6 +76,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         self._image = None
         self._server = None
         self._image_id = None
+        self._admin_pass = None
 
     @property
     def script(self):
@@ -113,6 +114,10 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         else:
             self.__class__._flavors = (get_flavors(), time_now)
         return self.__class__._flavors[0]
+
+    @property
+    def admin_pass(self):
+        return self._admin_pass
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server.
@@ -213,6 +218,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                                self.image_id,
                                flavor,
                                files=personality_files)
+        self._admin_pass = server.adminPass
 
         # Save resource ID and private key to db
         self.resource_id_set(server.id)
@@ -351,7 +357,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             'PublicIp': self.public_ip,
             'PrivateIp': self.private_ip,
             'PublicDnsName': self.public_ip,
-            'PrivateDnsName': self.public_ip
+            'PrivateDnsName': self.public_ip,
+            'AdminPass': self.admin_pass
         }
         if key not in attribute_function:
             raise exception.InvalidTemplateAttribute(resource=self.name,
