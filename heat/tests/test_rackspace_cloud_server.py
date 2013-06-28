@@ -159,13 +159,9 @@ class RackspaceCloudServerTest(HeatTestCase):
         cs._get_image_id(mox.IgnoreArg()).AndReturn('1')
 
         fake_image = self.fc.images.list()[0]
-        #rackspace_resource.RackspaceResource.nova().images.get(mox.IgnoreArg()).AndReturn(fake_image)
-        rs_class_mock = self.m.CreateMockAnything()
-        rackspace_resource.RackspaceResource.__call__(mox.IgnoreArg(),
-                                                      mox.IgnoreArg(),
-                                                      mox.IgnoreArg())\
-                                            .AndReturn(rs_class_mock)
-        rs_class_mock.nova().images.list().AndReturn(fake_image)
+        images_mock = self.m.CreateMockAnything()
+        rackspace_resource.RackspaceResource.nova().images = images_mock
+        images_mock.get(mox.IgnoreArg()).AndReturn(fake_image)
 
         self.m.StubOutWithMock(self.fc.client, 'get_images_1')
         self.fc.client.get_images_1()
