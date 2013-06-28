@@ -64,7 +64,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         'ubuntu': None
     }
 
-    flavors = None
+    _flavors = None
 
     # template keys supported for handle_update, note trailing comma
     # is required for a single item to get a tuple not a string
@@ -74,43 +74,45 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     def __init__(self, name, json_snippet, stack):
         super(CloudServer, self).__init__(name, json_snippet, stack)
         self.image = None
-        self.server = None
+        self._server = None
+        self._image_id = None
 
-    def validate(self):
-        """Validate user parameters."""
-        if self.properties['Flavor'] not in self._flavors()[0]:
-            return {'Error': "Flavor not found."}
-        if not self._get_script():
-            return {'Error': "Image %s not supported." % self.image_name}
-
-    def _get_script(self):
+    @property
+    def script(self):
         """Returns the config script for the Cloud Server image."""
         if not self.image:
-            self.image_name = self.properties.data['ImageName']
-            self.image_id = self._get_image_id(self.image_name)
             self.image = self.nova().images.get(self.image_id)
         os_distro = self.image.metadata['os_distro']
         return self.image_scripts[os_distro]
 
-    def _get_server(self):
+    @property
+    def image_id(self):
+        if not self._image_id:
+            image_name = self.properties.data['ImageName']
+            self._image_id = self._get_image_id(image_name)
+        return self._image_id
+
+    @property
+    def server(self):
         """Returns the Cloud Server object."""
         if not self.server:
             self.server = self.nova().servers.get(self.resource_id)
         return self.server
 
-    def _flavors(self):
+    @property
+    def flavors(self):
         """Fetch flavors from the API or cache."""
         def get_flavors():
             return [flavor.id for flavor in self.nova().flavors.list()]
         time_now = time.time()
-        if self.__class__.flavors:
-            last_update = self.__class__.flavors[1]
+        if self.__class__._flavors:
+            last_update = self.__class__._flavors[1]
             six_hours = 216000
             if (time_now - last_update) > six_hours:
-                self.__class__.flavors = (get_flavors(), time_now)
+                self.__class__._flavors = (get_flavors(), time_now)
         else:
-            self.__class__.flavors = (get_flavors(), time_now)
-        return self.__class__.flavors
+            self.__class__._flavors = (get_flavors(), time_now)
+        return self.__class__._flavors
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server.
@@ -124,24 +126,32 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                                   (ip_type, self.properties['ImageName']))
             raise exception.ResourceFailure(exc)
 
-        server = self._get_server()
-        if ip_type not in server.addresses:
+        if ip_type not in self.server.addresses:
             ip_not_found()
-        for ip in server.addresses[ip_type]:
+        for ip in self.server.addresses[ip_type]:
             if ip['version'] == 4:
                 return ip['addr']
         ip_not_found()
 
-    def _public_ip(self):
+    @property
+    def public_ip(self):
         """Return the public IP of the Cloud Server."""
         return self._get_ip('public')
 
-    def _private_ip(self):
+    @property
+    def private_ip(self):
         """Return the private IP of the Cloud Server."""
         try:
             return self._get_ip('private')
         except exception.ResourceFailure as ex:
             logger.info(ex.message)
+
+    def validate(self):
+        """Validate user parameters."""
+        if self.properties['Flavor'] not in self._flavors()[0]:
+            return {'Error': "Flavor not found."}
+        if not self.script:
+            return {'Error': "Image %s not supported." % self.image_name}
 
     def _run_ssh_command(self, command):
         """Run a shell command on the Cloud Server via SSH.
@@ -188,9 +198,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         server and then trigger cloud-init.
         """
         # Retrieve server creation parameters from properties
-        self.flavor = self.properties['Flavor']
-        raw_userdata = self.properties['UserData'] or ''
-        self.userdata = self._build_userdata(raw_userdata)
+        flavor = self.properties['Flavor']
         user_public_key = self.properties['PublicKey'] or ''
 
         # Generate SSH public/private keypair
@@ -204,7 +212,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         client = self.nova().servers
         server = client.create(self.properties['ServerName'],
                                self.image_id,
-                               self.flavor,
+                               flavor,
                                files=personality_files)
 
         # Save resource ID and private key to db
@@ -225,9 +233,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             raise exception.ResourceFailure(exc)
 
         # Create heat-script and userdata files on server
+        raw_userdata = self.properties['UserData'] or ''
+        userdata = self._build_userdata(raw_userdata)
         files = [
-            {'path': "/tmp/userdata", 'data': self.userdata},
-            {'path': "/root/heat-script.sh", 'data': self._get_script()}
+            {'path': "/tmp/userdata", 'data': userdata},
+            {'path': "/root/heat-script.sh", 'data': self.script}
         ]
         self._sftp_files(files)
 
@@ -243,7 +253,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             return
 
         try:
-            server = self._get_server
+            server = self.nova().servers.get(self.resource_id)
         except novaexception.NotFound:
             pass
         else:
@@ -306,8 +316,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         Cloud Server.  If any other parameters changed, re-create the
         Cloud Server with the new parameters.
         """
-        server = self._get_server()
-
         if 'Metadata' in tmpl_diff:
             self.private_key = self.resource_private_key_get()
             self.metadata = json_snippet['Metadata']
@@ -324,7 +332,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         if 'Flavor' in prop_diff:
             self.flavor = json_snippet['Properties']['Flavor']
             resize = scheduler.TaskRunner(self._resize_server,
-                                          server,
+                                          self.server,
                                           self.flavor)
             resize(wait_time=1.0)
 
