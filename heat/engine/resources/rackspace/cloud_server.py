@@ -37,6 +37,16 @@ class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
         'PublicKey': {'Type': 'String'}
     }
 
+    attributes_schema = {'AdminPass': 'The root password.',
+                         'PrivateDnsName': ('Private DNS name of the specified'
+                                            ' instance.'),
+                         'PublicDnsName': ('Public DNS name of the specified '
+                                           'instance.'),
+                         'PrivateIp': ('Private IP address of the specified '
+                                       'instance.'),
+                         'PublicIp': ('Public IP address of the specified '
+                                      'instance.')}
+
     fedora_script = """#!/bin/bash
 
 # Install cloud-init and heat-cfntools
@@ -76,7 +86,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         self._image = None
         self._server = None
         self._image_id = None
-        self._admin_pass = None
+        self.admin_pass = None
 
     @property
     def script(self):
@@ -114,10 +124,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         else:
             self.__class__._flavors = (get_flavors(), time_now)
         return self.__class__._flavors[0]
-
-    @property
-    def admin_pass(self):
-        return self._admin_pass
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server.
@@ -218,7 +224,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                                self.image_id,
                                flavor,
                                files=personality_files)
-        self._admin_pass = server.adminPass
+        self.admin_pass = server.adminPass
 
         # Save resource ID and private key to db
         self.resource_id_set(server.id)
