@@ -224,7 +224,6 @@ class RackspaceCloudServerTest(HeatTestCase):
         # Mock flavors
         self.m.StubOutWithMock(cloud_server.CloudServer, "flavors")
         cloud_server.CloudServer.flavors.__contains__('2').AndReturn(True)
-        cloud_server.CloudServer. = None
         cloud_server.CloudServer.script = None
         self.m.ReplayAll()
 
