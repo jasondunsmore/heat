@@ -159,8 +159,11 @@ class RackspaceCloudServerTest(HeatTestCase):
         cs._get_image_id(mox.IgnoreArg()).AndReturn('1')
 
         fake_image = self.fc.images.list()[0]
+        fake_image.metadata = {'os_distro': 'fedora'}
+        nova_mock = self.m.CreateMockAnything()
         images_mock = self.m.CreateMockAnything()
-        rackspace_resource.RackspaceResource.nova().images = images_mock
+        rackspace_resource.RackspaceResource.nova().AndReturn(nova_mock)
+        nova_mock.images = images_mock
         images_mock.get(mox.IgnoreArg()).AndReturn(fake_image)
 
         self.m.StubOutWithMock(self.fc.client, 'get_images_1')
