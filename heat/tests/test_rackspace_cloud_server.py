@@ -135,7 +135,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         stack_name = '%s_stack' % name
         (t, stack) = self._setup_test_stack(stack_name)
 
-        image_id = "1234"
+        image_id = "1"
         server_name = "Heat test"
         t['Resources']['WebServer']['Properties']['ServerName'] = server_name
         cs_name = 'Fedora 17 (Beefy Miracle)'
@@ -151,12 +151,24 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.StubOutWithMock(self.fc.servers, 'create')
         self.fc.servers.create(server_name, image_id, flavor,
                                files=mox.IgnoreArg()).AndReturn(return_server)
+
         self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
-        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
-                                                   .AndReturn(self.fc)
+        rackspace_resource.RackspaceResource.nova().AndReturn(self.fc)
 
         self.m.StubOutWithMock(cs, '_get_image_id')
-        cs._get_image_id(mox.IgnoreArg()).AndReturn('1234')
+        cs._get_image_id(mox.IgnoreArg()).AndReturn('1')
+
+        fake_image = self.fc.images.list()[0]
+        #rackspace_resource.RackspaceResource.nova().images.get(mox.IgnoreArg()).AndReturn(fake_image)
+        rs_class_mock = self.m.CreateMockAnything()
+        rackspace_resource.RackspaceResource.__call__(mox.IgnoreArg(),
+                                                      mox.IgnoreArg(),
+                                                      mox.IgnoreArg())\
+                                            .AndReturn(rs_class_mock)
+        rs_class_mock.nova().images.list().AndReturn(fake_image)
+
+        self.m.StubOutWithMock(self.fc.client, 'get_images_1')
+        self.fc.client.get_images_1()
 
         self._mock_ssh_sftp()
         return cs
