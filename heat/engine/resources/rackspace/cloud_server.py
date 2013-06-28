@@ -163,9 +163,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             private_key_file.write(self.private_key)
             private_key_file.seek(0)
             ssh = paramiko.SSHClient()
-            public_ip = self._public_ip()
             ssh.set_missing_host_key_policy(paramiko.MissingHostKeyPolicy())
-            ssh.connect(public_ip,
+            ssh.connect(self.public_ip,
                         username="root",
                         key_filename=private_key_file.name)
             stdin, stdout, stderr = ssh.exec_command(command)
@@ -182,8 +181,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             private_key_file.write(self.private_key)
             private_key_file.seek(0)
             pkey = paramiko.RSAKey.from_private_key_file(private_key_file.name)
-            public_ip = self._public_ip()
-            transport = paramiko.Transport((public_ip, 22))
+            transport = paramiko.Transport((self.public_ip, 22))
             transport.connect(hostkey=None, username="root", pkey=pkey)
             sftp = paramiko.SFTPClient.from_transport(transport)
             for remote_file in files:
@@ -350,10 +348,10 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     def _resolve_attribute(self, key):
         """Return the method that provides a given template attribute."""
         attribute_function = {
-            'PublicIp': self._public_ip(),
-            'PrivateIp': self._private_ip(),
-            'PublicDnsName': self._public_ip(),
-            'PrivateDnsName': self._public_ip()
+            'PublicIp': self.public_ip,
+            'PrivateIp': self.private_ip,
+            'PublicDnsName': self.public_ip,
+            'PrivateDnsName': self.public_ip
         }
         if key not in attribute_function:
             raise exception.InvalidTemplateAttribute(resource=self.name,
