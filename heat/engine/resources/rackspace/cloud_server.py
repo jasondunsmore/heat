@@ -148,7 +148,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     def validate(self):
         """Validate user parameters."""
-        import pdb; pdb.set_trace()
         if self.properties['Flavor'] not in self.flavors:
             return {'Error': "Flavor not found."}
         if not self.script:
