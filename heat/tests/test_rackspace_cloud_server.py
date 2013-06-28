@@ -91,20 +91,25 @@ class RackspaceCloudServerTest(HeatTestCase):
     def _setup_test_stack(self, stack_name):
         t = template_format.parse(wp_template)
         template = parser.Template(t)
-        image1 = self.fc.images.list()[0]
-        image1.metadata = {}
-        image1.metadata['os_distro'] = "fedora"
 
         self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
-        rackspace_resource.RackspaceResource.nova().AndReturn(self.fc)
-        self.m.StubOutWithMock(cloud_server.CloudServer, '_get_image_id')
-        cloud_server.CloudServer._get_image_id(mox.IgnoreArg())\
-                                .AndReturn(image1.id)
-        self.m.StubOutWithMock(self.fc.images, 'get')
-        self.fc.client.get(mox.IgnoreArg()).AndReturn(image1)
+        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
+                                                   .AndReturn(self.fc)
 
-        self.m.StubOutWithMock(image1, "metadata")
-        image1.metadata.__getitem__('os_distro').AndReturn('fedora')
+        self.m.StubOutWithMock(cloud_server.CloudServer, '_get_image_id')
+        cloud_server.CloudServer._get_image_id(mox.IgnoreArg()).AndReturn('1')
+
+        # self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
+        # rackspace_resource.RackspaceResource.nova().AndReturn(self.fc)
+        # self.m.StubOutWithMock(cloud_server.CloudServer, '_get_image_id')
+        # cloud_server.CloudServer._get_image_id(mox.IgnoreArg())\
+        #                         .AndReturn(image1.id)
+
+        image = self.m.CreateMockAnything()
+        image.metadata = {'os_distro': 'fedora'}
+        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, 'nova')
+        rackspace_resource.RackspaceResource.nova().images.get(mox.IgnoreArg()).AndReturn(image)
+        #image.metadata.__getitem__('os_distro').AndReturn('fedora')
         self.m.ReplayAll()
 
         stack = parser.Stack(None, stack_name, template,
@@ -167,13 +172,6 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.StubOutWithMock(self.fc.servers, 'create')
         self.fc.servers.create(server_name, image_id, flavor,
                                files=mox.IgnoreArg()).AndReturn(return_server)
-
-        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
-        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
-                                                   .AndReturn(self.fc)
-
-        self.m.StubOutWithMock(cs, '_get_image_id')
-        cs._get_image_id(mox.IgnoreArg()).AndReturn('1234')
 
         self._mock_ssh_sftp()
         return cs
