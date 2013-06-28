@@ -73,16 +73,16 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     def __init__(self, name, json_snippet, stack):
         super(CloudServer, self).__init__(name, json_snippet, stack)
-        self.image = None
+        self._image = None
         self._server = None
         self._image_id = None
 
     @property
     def script(self):
         """Returns the config script for the Cloud Server image."""
-        if not self.image:
-            self.image = self.nova().images.get(self.image_id)
-        os_distro = self.image.metadata['os_distro']
+        if not self._image:
+            self._image = self.nova().images.get(self.image_id)
+        os_distro = self._image.metadata['os_distro']
         return self.image_scripts[os_distro]
 
     @property
@@ -112,7 +112,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                 self.__class__._flavors = (get_flavors(), time_now)
         else:
             self.__class__._flavors = (get_flavors(), time_now)
-        return self.__class__._flavors
+        return self.__class__._flavors[0]
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server.
@@ -148,7 +148,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     def validate(self):
         """Validate user parameters."""
-        if self.properties['Flavor'] not in self._flavors()[0]:
+        import pdb; pdb.set_trace()
+        if self.properties['Flavor'] not in self.flavors:
             return {'Error': "Flavor not found."}
         if not self.script:
             return {'Error': "Image %s not supported." % self.image_name}
