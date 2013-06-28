@@ -221,10 +221,11 @@ class RackspaceCloudServerTest(HeatTestCase):
         # create a cloud server with non exist image name
         t['Resources']['WebServer']['Properties']['ImageName'] = 'Slackware'
 
-        # Mock _flavors()
-        self.m.StubOutWithMock(cloud_server.CloudServer, "_flavors")
-        flavors = (['2', '3', '4', '5', '6', '7', '8'], 100000000)
-        cloud_server.CloudServer._flavors().AndReturn(flavors)
+        # Mock flavors
+        self.m.StubOutWithMock(cloud_server.CloudServer, "flavors")
+        cloud_server.CloudServer.flavors.__contains__('2').AndReturn(True)
+        cloud_server.CloudServer. = None
+        cloud_server.CloudServer.script = None
         self.m.ReplayAll()
 
         cs = cloud_server.CloudServer('cs_create_image_err',
@@ -261,7 +262,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         cs = self._create_test_cs(return_server,
                                   'test_cs_create_delete')
         cs.resource_id = 1234
-
+        
         # this makes sure the auto-increment worked on cloud server creation
         self.assertTrue(cs.id > 0)
 

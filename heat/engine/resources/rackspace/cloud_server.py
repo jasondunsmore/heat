@@ -88,7 +88,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     @property
     def image_id(self):
         if not self._image_id:
-            image_name = self.properties.data['ImageName']
+            image_name = self.properties['ImageName']
             self._image_id = self._get_image_id(image_name)
         return self._image_id
 
@@ -151,7 +151,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         if self.properties['Flavor'] not in self.flavors:
             return {'Error': "Flavor not found."}
         if not self.script:
-            return {'Error': "Image %s not supported." % self.image_name}
+            return {'Error': "Image %s not supported." %
+                    self.properties['ImageName']}
 
     def _run_ssh_command(self, command):
         """Run a shell command on the Cloud Server via SSH.
