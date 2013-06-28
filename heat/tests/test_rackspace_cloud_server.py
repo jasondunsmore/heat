@@ -151,6 +151,12 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.StubOutWithMock(self.fc.servers, 'create')
         self.fc.servers.create(server_name, image_id, flavor,
                                files=mox.IgnoreArg()).AndReturn(return_server)
+        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
+        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
+                                                   .AndReturn(self.fc)
+
+        self.m.StubOutWithMock(cs, '_get_image_id')
+        cs._get_image_id(mox.IgnoreArg()).AndReturn('1234')
 
         self._mock_ssh_sftp()
         return cs
@@ -379,7 +385,7 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         self.m.VerifyAll()
 
-    def _mock_get_ip(self, cs):
+    def _mock_get_server(self, cs):
         self.m.UnsetStubs()
         self.m.StubOutWithMock(cloud_server.CloudServer, "_get_server")
         cloud_server.CloudServer._get_server().AndReturn(cs)
@@ -396,17 +402,16 @@ class RackspaceCloudServerTest(HeatTestCase):
                        {'version': 6, 'addr': 'fake:ip::6'}],
             'private': [{'version': 4, 'addr': '10.13.12.13'}]
         }
-        self._mock_get_ip(cs)
-
+        self._mock_get_server(cs)
         self.assertEqual(cs._public_ip(), '4.5.6.7')
-        self._mock_get_ip(cs)
+        self._mock_get_server(cs)
         self.assertEqual(cs._private_ip(), '10.13.12.13')
 
         cs.addresses = {
             'public': [],
             'private': []
         }
-        self._mock_get_ip(cs)
+        self._mock_get_server(cs)
         self.assertRaises(exception.ResourceFailure, cs._public_ip)
         self.m.VerifyAll()
 
