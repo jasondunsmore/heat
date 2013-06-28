@@ -95,9 +95,9 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     @property
     def server(self):
         """Returns the Cloud Server object."""
-        if not self.server:
-            self.server = self.nova().servers.get(self.resource_id)
-        return self.server
+        if not self._server:
+            self._server = self.nova().servers.get(self.resource_id)
+        return self._server
 
     @property
     def flavors(self):
