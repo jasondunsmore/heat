@@ -88,6 +88,9 @@ class RackspaceCloudServerTest(HeatTestCase):
         f8.id = '8'
         self.flavors = [f2, f3, f4, f5, f6, f7, f8]
 
+    # def tearDown(self):
+    #     self.cs = None
+
     def _setup_test_stack(self, stack_name):
         t = template_format.parse(wp_template)
         template = parser.Template(t)
@@ -243,7 +246,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         # create a cloud server with non exist image name
         t['Resources']['WebServer']['Properties']['Flavor'] = '1'
 
-        # Mock _flavors()
+        # Mock flavors
         self.m.StubOutWithMock(cloud_server.CloudServer, "_flavors")
         flavors = (['2', '3', '4', '5', '6', '7', '8'], 100000000)
         cloud_server.CloudServer._flavors().AndReturn(flavors)
@@ -261,7 +264,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         cs = self._create_test_cs(return_server,
                                   'test_cs_create_delete')
         cs.resource_id = 1234
-        
+
         # this makes sure the auto-increment worked on cloud server creation
         self.assertTrue(cs.id > 0)
 
@@ -429,31 +432,25 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         time_now = 1372272065.579054
         last_update = 1372272064.579054
-        cs.__class__.flavors = (['2', '3', '4', '5', '6', '7', '8'],
-                                last_update)
         self.m.StubOutWithMock(time, 'time')
         time.time().AndReturn(time_now)
-        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
-        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
-                                                   .AndReturn(self.fc)
-        self.m.StubOutWithMock(self.fc.flavors, 'list')
-        self.fc.flavors.list().MultipleTimes().AndReturn(self.flavors)
+        self.m.StubOutWithMock(cloud_server.CloudServer, "flavors")
+        cs.__class__._flavors = (['2', '3', '4', '5', '6', '7', '8'],
+                                 last_update)
+        cloud_server.CloudServer.flavors.__contains__('2').AndReturn(True)
         self.m.ReplayAll()
-        self.assertEqual(cs._flavors(),
+        self.assertEqual(cs.__class__._flavors,
                          (['2', '3', '4', '5', '6', '7', '8'], last_update))
 
         self.m.UnsetStubs()
         time_now = 1372272065.579054
-        last_update = 1272272066.579054
-        cs.__class__.flavors = (['2', '3', '4', '5', '6', '7', '8'],
-                                last_update)
+        last_update = 1272272065.579054
+        cs.__class__._flavors = (['2', '3', '4', '5', '6', '7', '8'],
+                                 last_update)
         self.m.StubOutWithMock(time, 'time')
         time.time().AndReturn(time_now)
-        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
-        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
-                                                   .AndReturn(self.fc)
-        self.m.StubOutWithMock(self.fc.flavors, 'list')
-        self.fc.flavors.list().MultipleTimes().AndReturn(self.flavors)
+        self.m.StubOutWithMock(cloud_server.CloudServer, "flavors")
+        cloud_server.CloudServer.flavors.__contains__('2').AndReturn(True)
         self.m.ReplayAll()
-        self.assertEqual(cs._flavors(),
+        self.assertEqual(cs.__class__._flavors,
                          (['2', '3', '4', '5', '6', '7', '8'], time_now))
