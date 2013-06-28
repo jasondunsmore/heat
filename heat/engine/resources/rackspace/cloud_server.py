@@ -73,18 +73,30 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     def __init__(self, name, json_snippet, stack):
         super(CloudServer, self).__init__(name, json_snippet, stack)
-        self.image_name = self.properties.data['ImageName']
-        self.image_id = self._get_image_id(self.image_name)
-        image = self.nova().images.get(self.image_id)
-        os_distro = image.metadata['os_distro']
-        self.script = self.image_scripts[os_distro]
+        self.image = None
+        self.server = None
 
     def validate(self):
         """Validate user parameters."""
         if self.properties['Flavor'] not in self._flavors()[0]:
             return {'Error': "Flavor not found."}
-        if not self.script:
+        if not self._get_script():
             return {'Error': "Image %s not supported." % self.image_name}
+
+    def _get_script(self):
+        """Returns the config script for the Cloud Server image."""
+        if not self.image:
+            self.image_name = self.properties.data['ImageName']
+            self.image_id = self._get_image_id(self.image_name)
+            self.image = self.nova().images.get(self.image_id)
+        os_distro = self.image.metadata['os_distro']
+        return self.image_scripts[os_distro]
+
+    def _get_server(self):
+        """Returns the Cloud Server object."""
+        if not self.server:
+            self.server = self.nova().servers.get(self.resource_id)
+        return self.server
 
     def _flavors(self):
         """Fetch flavors from the API or cache."""
@@ -112,7 +124,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                                   (ip_type, self.properties['ImageName']))
             raise exception.ResourceFailure(exc)
 
-        server = self.nova().servers.get(self.resource_id)
+        server = self._get_server()
         if ip_type not in server.addresses:
             ip_not_found()
         for ip in server.addresses[ip_type]:
@@ -215,7 +227,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         # Create heat-script and userdata files on server
         files = [
             {'path': "/tmp/userdata", 'data': self.userdata},
-            {'path': "/root/heat-script.sh", 'data': self.script}
+            {'path': "/root/heat-script.sh", 'data': self._get_script()}
         ]
         self._sftp_files(files)
 
@@ -231,7 +243,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             return
 
         try:
-            server = self.nova().servers.get(self.resource_id)
+            server = self._get_server
         except novaexception.NotFound:
             pass
         else:
@@ -294,7 +306,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         Cloud Server.  If any other parameters changed, re-create the
         Cloud Server with the new parameters.
         """
-        server = self.nova().servers.get(self.resource_id)
+        server = self._get_server()
 
         if 'Metadata' in tmpl_diff:
             self.private_key = self.resource_private_key_get()
