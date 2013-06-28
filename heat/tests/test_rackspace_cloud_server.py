@@ -381,11 +381,8 @@ class RackspaceCloudServerTest(HeatTestCase):
 
     def _mock_get_ip(self, cs):
         self.m.UnsetStubs()
-        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
-        rackspace_resource.RackspaceResource.nova().MultipleTimes()\
-                                                   .AndReturn(self.fc)
-        self.m.StubOutWithMock(self.fc.servers, 'get')
-        self.fc.servers.get(cs.id).AndReturn(cs)
+        self.m.StubOutWithMock(cloud_server.CloudServer, "_get_server")
+        cloud_server.CloudServer._get_server().AndReturn(cs)
         self.m.ReplayAll()
 
     def test_cs_get_ip(self):
