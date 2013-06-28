@@ -40,7 +40,7 @@ class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
     fedora_script = """#!/bin/bash
 
 # Install cloud-init and heat-cfntools
-yum install -y cloud-init python-boto python-pip
+yum install -y cloud-init python-boto python-pip gcc python-devel
 pip-python install heat-cfntools
 
 # Create data source for cloud-init
