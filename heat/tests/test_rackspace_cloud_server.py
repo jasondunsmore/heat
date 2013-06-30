@@ -138,7 +138,6 @@ class RackspaceCloudServerTest(HeatTestCase):
         stack_name = '%s_stack' % name
         (t, stack) = self._setup_test_stack(stack_name)
 
-        image_id = "1"
         server_name = "Heat test"
         t['Resources']['WebServer']['Properties']['ServerName'] = server_name
         cs_name = 'Fedora 17 (Beefy Miracle)'
@@ -152,20 +151,19 @@ class RackspaceCloudServerTest(HeatTestCase):
         flavor = t['Resources']['WebServer']['Properties']['Flavor']
 
         self.m.StubOutWithMock(self.fc.servers, 'create')
-        self.fc.servers.create(server_name, image_id, flavor,
+        self.fc.servers.create(server_name, "1", flavor,
                                files=mox.IgnoreArg()).AndReturn(return_server)
         return_server.adminPass = "foobar"
+
+        self.m.StubOutWithMock(cloud_server.CloudServer, 'image_id')
+        cloud_server.CloudServer.image_id = "1"
+
+        self.m.StubOutWithMock(cloud_server.CloudServer, 'script')
+        cloud_server.CloudServer.script = "foobar"
 
         self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
         rackspace_resource.RackspaceResource.nova().MultipleTimes()\
                                                    .AndReturn(self.fc)
-        self.m.StubOutWithMock(cs, '_get_image_id')
-        cs._get_image_id(mox.IgnoreArg()).AndReturn('1')
-
-        self.m.StubOutWithMock(self.fc.client, "get_images_detail")
-        self.fc.client.get_images_detail().AndReturn((
-            200, {'images': [{'id': 1, 'name': 'CentOS 5.2',
-                              'metadata': {'os_distro': 'fedora'}}]}))
 
         self._mock_ssh_sftp()
         return cs
