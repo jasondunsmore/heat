@@ -392,6 +392,12 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         self.m.VerifyAll()
 
+    def mock_get_ip(self, cs):
+        self.m.UnsetStubs()
+        self.m.StubOutWithMock(cloud_server.CloudServer, "server")
+        cloud_server.CloudServer.server = cs
+        self.m.ReplayAll()
+
     def test_cs_get_ip(self):
         stack_name = 'test_cs_get_ip_err'
         (t, stack) = self._setup_test_stack(stack_name)
@@ -403,24 +409,17 @@ class RackspaceCloudServerTest(HeatTestCase):
                        {'version': 6, 'addr': 'fake:ip::6'}],
             'private': [{'version': 4, 'addr': '10.13.12.13'}]
         }
-        self.m.StubOutWithMock(cloud_server.CloudServer, "server")
-        cloud_server.CloudServer.server = cs
-        self.m.ReplayAll()
+        self.mock_get_ip(cs)
         self.assertEqual(cs.public_ip, '4.5.6.7')
-        self.m.UnsetStubs()
-        cloud_server.CloudServer.server = cs
-        self.m.ReplayAll()
+        self.mock_get_ip(cs)
         self.assertEqual(cs.private_ip, '10.13.12.13')
 
         cs.addresses = {
             'public': [],
             'private': []
         }
-        self.m.UnsetStubs()
-        cloud_server.CloudServer.server = cs
-        self.m.ReplayAll()
+        self.mock_get_ip(cs)
         self.assertRaises(exception.ResourceFailure, cs._get_ip, 'public')
-        self.m.VerifyAll()
 
     def test_flavors(self):
         stack_name = 'test_cs_flavors'
