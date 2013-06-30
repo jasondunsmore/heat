@@ -364,7 +364,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             'PrivateIp': self.private_ip,
             'PublicDnsName': self.public_ip,
             'PrivateDnsName': self.public_ip,
-            'AdminPass': self.admin_pass
+            'AdminPass': self.admin_pass  # only available right after create
         }
         if key not in attribute_function:
             raise exception.InvalidTemplateAttribute(resource=self.name,

@@ -154,6 +154,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.StubOutWithMock(self.fc.servers, 'create')
         self.fc.servers.create(server_name, image_id, flavor,
                                files=mox.IgnoreArg()).AndReturn(return_server)
+        return_server.adminPass = "foobar"
 
         self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
         rackspace_resource.RackspaceResource.nova().MultipleTimes()\
