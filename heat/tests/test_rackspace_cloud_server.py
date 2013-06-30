@@ -247,8 +247,8 @@ class RackspaceCloudServerTest(HeatTestCase):
 
         # Mock flavors
         self.m.StubOutWithMock(cloud_server.CloudServer, "flavors")
-        flavors = (['2', '3', '4', '5', '6', '7', '8'], 100000000)
-        cloud_server.CloudServer._flavors().AndReturn(flavors)
+        flavors = ['2', '3', '4', '5', '6', '7', '8']
+        cloud_server.CloudServer.flavors = flavors
         self.m.ReplayAll()
 
         cs = cloud_server.CloudServer('cs_create_flavor_err',
