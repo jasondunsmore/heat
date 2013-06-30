@@ -247,7 +247,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         t['Resources']['WebServer']['Properties']['Flavor'] = '1'
 
         # Mock flavors
-        self.m.StubOutWithMock(cloud_server.CloudServer, "_flavors")
+        self.m.StubOutWithMock(cloud_server.CloudServer, "flavors")
         flavors = (['2', '3', '4', '5', '6', '7', '8'], 100000000)
         cloud_server.CloudServer._flavors().AndReturn(flavors)
         self.m.ReplayAll()
@@ -434,13 +434,13 @@ class RackspaceCloudServerTest(HeatTestCase):
         last_update = 1372272064.579054
         self.m.StubOutWithMock(time, 'time')
         time.time().AndReturn(time_now)
-        self.m.StubOutWithMock(cloud_server.CloudServer, "flavors")
         cs.__class__._flavors = (['2', '3', '4', '5', '6', '7', '8'],
                                  last_update)
-        cloud_server.CloudServer.flavors.__contains__('2').AndReturn(True)
+        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
+        rackspace_resource.RackspaceResource.nova().AndReturn(self.fc)
         self.m.ReplayAll()
-        self.assertEqual(cs.__class__._flavors,
-                         (['2', '3', '4', '5', '6', '7', '8'], last_update))
+        cs.flavors
+        self.assertEqual(cs.__class__._flavors[1], last_update)
 
         self.m.UnsetStubs()
         time_now = 1372272065.579054
@@ -449,8 +449,9 @@ class RackspaceCloudServerTest(HeatTestCase):
                                  last_update)
         self.m.StubOutWithMock(time, 'time')
         time.time().AndReturn(time_now)
-        self.m.StubOutWithMock(cloud_server.CloudServer, "flavors")
-        cloud_server.CloudServer.flavors.__contains__('2').AndReturn(True)
+        self.m.StubOutWithMock(rackspace_resource.RackspaceResource, "nova")
+        rackspace_resource.RackspaceResource.nova().AndReturn(self.fc)
         self.m.ReplayAll()
-        self.assertEqual(cs.__class__._flavors,
-                         (['2', '3', '4', '5', '6', '7', '8'], time_now))
+        cs.flavors
+        self.assertEqual(cs.__class__._flavors[1], time_now)
+
