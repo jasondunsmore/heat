@@ -14,9 +14,10 @@
 #    under the License.
 
 import routes
-import gettext
 
-gettext.install('heat', unicode=1)
+from heat.openstack.common import gettextutils
+
+gettextutils.install('heat')
 
 from heat.api.openstack.v1 import stacks
 from heat.api.openstack.v1 import resources
@@ -62,6 +63,10 @@ class API(wsgi.Router):
                                  "/stacks",
                                  action="create",
                                  conditions={'method': 'POST'})
+            stack_mapper.connect("stack_detail",
+                                 "/stacks/detail",
+                                 action="detail",
+                                 conditions={'method': 'GET'})
 
             # Stack data
             stack_mapper.connect("stack_lookup",
