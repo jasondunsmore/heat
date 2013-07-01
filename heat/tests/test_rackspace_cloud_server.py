@@ -88,9 +88,6 @@ class RackspaceCloudServerTest(HeatTestCase):
         f8.id = '8'
         self.flavors = [f2, f3, f4, f5, f6, f7, f8]
 
-    # def tearDown(self):
-    #     self.cs = None
-
     def _setup_test_stack(self, stack_name):
         t = template_format.parse(wp_template)
         template = parser.Template(t)
@@ -452,4 +449,3 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.ReplayAll()
         cs.flavors
         self.assertEqual(cs.__class__._flavors[1], time_now)
-
