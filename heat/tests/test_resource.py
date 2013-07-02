@@ -13,7 +13,6 @@
 #    under the License.
 
 import itertools
-import datetime
 from eventlet.support import greenlets as greenlet
 
 from heat.common import context
