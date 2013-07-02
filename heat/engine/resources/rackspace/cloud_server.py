@@ -75,6 +75,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     }
 
     _flavors = None
+    _image_map = {}
 
     # template keys supported for handle_update, note trailing comma
     # is required for a single item to get a tuple not a string
@@ -97,13 +98,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         return self.image_scripts[os_distro]
 
     @property
-    def image_id(self):
-        if not self._image_id:
-            image_name = self.properties['ImageName']
-            self._image_id = self._get_image_id(image_name)
-        return self._image_id
-
-    @property
     def server(self):
         """Returns the Cloud Server object."""
         if not self._server:
@@ -111,19 +105,34 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         return self._server
 
     @property
+    def image_id(self):
+        def get_image_id():
+            image_name = self.properties['ImageName']
+            return self._get_image_id(image_name)
+        self._image_id = self._get_property(self._image_id, get_image_id)
+        image_name = self.properties['ImageName']
+        self.__class__._image_map[image_name] = 
+        return self._image_id[0]
+
+    @property
     def flavors(self):
         """Fetch flavors from the API or cache."""
         def get_flavors():
             return [flavor.id for flavor in self.nova().flavors.list()]
+        self.__class__._flavors = self._get_property(self.__class__._flavors,
+                                                     get_flavors)
+        return self.__class__._flavors[0]
+
+    def _get_property(self, prop, get_fun):
         time_now = time.time()
-        if self.__class__._flavors:
-            last_update = self.__class__._flavors[1]
+        if prop:
+            last_update = prop[1]
             six_hours = 216000
             if (time_now - last_update) > six_hours:
-                self.__class__._flavors = (get_flavors(), time_now)
+                prop = (get_fun(), time_now)
         else:
-            self.__class__._flavors = (get_flavors(), time_now)
-        return self.__class__._flavors[0]
+            prop = (get_fun(), time_now)
+        return prop
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server.
