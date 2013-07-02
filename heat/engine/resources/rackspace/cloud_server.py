@@ -105,7 +105,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     @property
     def image_id(self):
-        import pdb; pdb.set_trace()
         image_name = self.properties['ImageName']
         if image_name in self.__class__._image_id_map:
             return self.__class__._image_id_map[image_name]
@@ -119,7 +118,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         if self.image_id in self.__class__._distro_map:
             return self.__class__._distro_map[self.image_id]
         else:
-            distro = self.nova().images.get(self.image_id)
+            image = self.nova().images.get(self.image_id)
+            distro = image.metadata['os_distro']
             self.__class__._distro_map[self.image_id] = distro
             return distro
 
