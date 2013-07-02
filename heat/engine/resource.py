@@ -553,20 +553,22 @@ class Resource(object):
             except Exception as ex:
                 logger.warn('db error %s' % str(ex))
 
-    def resource_private_key_set(self, private_key):
+    def private_key_set(self, private_key):
         self.private_key = private_key
-        salted_private_key = self.id + self.private_key
+        salt = self.created_time.strftime("%s")
+        salted_private_key = salt + self.private_key
         encrypted_salted_private_key = crypt.encrypt(salted_private_key)
         if self.id is not None:
             rs = db_api.resource_get(self.context, self.id)
             rs.update_and_save({'private_key': encrypted_salted_private_key})
 
-    def resource_private_key_get(self):
+    def private_key_get(self):
         if self.id is not None:
+            salt = self.created_time.strftime("%s")
             rs = db_api.resource_get(self.context, self.id)
             encrypted_salted_private_key = rs.private_key
             salted_private_key = crypt.decrypt(encrypted_salted_private_key)
-            private_key = salted_private_key.lstrip(self.id)
+            private_key = salted_private_key.lstrip(salt)
             return private_key
 
     def _store(self):

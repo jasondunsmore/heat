@@ -246,7 +246,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
         # Save resource ID and private key to db
         self.resource_id_set(server.id)
-        self.resource_private_key_set(self.private_key)
+        self.private_key_set(self.private_key)
 
         return server
 
@@ -350,7 +350,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         Cloud Server with the new parameters.
         """
         if 'Metadata' in tmpl_diff:
-            self.private_key = self.resource_private_key_get()
+            self.private_key = self.private_key_get()
             self.metadata = json_snippet['Metadata']
             metadata_string = json.dumps(self.metadata)
 
