@@ -75,7 +75,9 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     }
 
     _flavors = None
-    _image_map = {}
+    _image_id_map = {}
+    _distro_map = {}
+    _server_map = {}
 
     # template keys supported for handle_update, note trailing comma
     # is required for a single item to get a tuple not a string
@@ -84,34 +86,42 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     def __init__(self, name, json_snippet, stack):
         super(CloudServer, self).__init__(name, json_snippet, stack)
-        self._image = None
-        self._server = None
         self.admin_pass = None
 
     @property
     def script(self):
         """Returns the config script for the Cloud Server image."""
-        if not self._image:
-            self._image = self.nova().images.get(self.image_id)
-        os_distro = self._image.metadata['os_distro']
-        return self.image_scripts[os_distro]
+        return self.image_scripts[self.distro]
 
     @property
     def server(self):
         """Returns the Cloud Server object."""
-        if not self._server:
-            self._server = self.nova().servers.get(self.resource_id)
-        return self._server
+        if self.resource_id in self.__class__._server_map:
+            return self.__class__._server_map[self.resource_id]
+        else:
+            server = self.nova().servers.get(self.resource_id)
+            self.__class__._server_map[self.resource_id] = server
+            return server
 
     @property
     def image_id(self):
+        import pdb; pdb.set_trace()
         image_name = self.properties['ImageName']
-        if image_name in self.__class__._image_map:
-            return self.__class__._image_map[image_name]
+        if image_name in self.__class__._image_id_map:
+            return self.__class__._image_id_map[image_name]
         else:
             image_id = self._get_image_id(image_name)
-            self.__class__._image_map[image_name] = image_id
+            self.__class__._image_id_map[image_name] = image_id
             return image_id
+
+    @property
+    def distro(self):
+        if self.image_id in self.__class__._distro_map:
+            return self.__class__._distro_map[self.image_id]
+        else:
+            distro = self.nova().images.get(self.image_id)
+            self.__class__._distro_map[self.image_id] = distro
+            return distro
 
     @property
     def flavors(self):
