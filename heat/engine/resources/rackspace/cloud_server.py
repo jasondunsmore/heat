@@ -298,6 +298,10 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             yield
             try:
                 server.get()
+                if server.status == "ERROR":
+                    exc = exception.Error("Deletion of server %s failed." %
+                                          server.name)
+                    raise exception.ResourceFailure(exc)
             except novaexception.NotFound:
                 break
 
