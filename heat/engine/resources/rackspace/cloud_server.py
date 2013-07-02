@@ -86,7 +86,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         super(CloudServer, self).__init__(name, json_snippet, stack)
         self._image = None
         self._server = None
-        self._image_id = None
         self.admin_pass = None
 
     @property
@@ -106,13 +105,13 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     @property
     def image_id(self):
-        def get_image_id():
-            image_name = self.properties['ImageName']
-            return self._get_image_id(image_name)
-        self._image_id = self._get_property(self._image_id, get_image_id)
         image_name = self.properties['ImageName']
-        self.__class__._image_map[image_name] = 
-        return self._image_id[0]
+        if image_name in self.__class__._image_map:
+            return self.__class__._image_map[image_name]
+        else:
+            image_id = self._get_image_id(image_name)
+            self.__class__._image_map[image_name] = image_id
+            return image_id
 
     @property
     def flavors(self):
