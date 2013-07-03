@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
     """Resource for Rackspace Cloud Servers."""
+
     properties_schema = {
         'ServerName': {'Type': 'String', 'Required': True},
         'Flavor': {'Type': 'String', 'Required': True},
@@ -37,8 +38,7 @@ class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
         'PublicKey': {'Type': 'String'}
     }
 
-    attributes_schema = {'AdminPass': 'The root password.',
-                         'PrivateDnsName': ('Private DNS name of the specified'
+    attributes_schema = {'PrivateDnsName': ('Private DNS name of the specified'
                                             ' instance.'),
                          'PublicDnsName': ('Public DNS name of the specified '
                                            'instance.'),
@@ -64,6 +64,7 @@ cloud-init start
 bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 """
 
+    # List of supported Linux distros and their corresponding config scripts
     image_scripts = {
         'arch': None,
         'centos': None,
@@ -74,28 +75,20 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         'ubuntu': None
     }
 
+    # Cache data retrieved from APIs in class attributes
     _flavors = None
     _image_id_map = {}
     _distro_map = {}
     _server_map = {}
 
-    # template keys supported for handle_update, note trailing comma
-    # is required for a single item to get a tuple not a string
+    # Template keys supported for handle_update.  Properties not
+    # listed here trigger an UpdateReplace
     update_allowed_keys = ('Metadata', 'Properties')
     update_allowed_properties = ('Flavor', 'ServerName')
 
-    def __init__(self, name, json_snippet, stack):
-        super(CloudServer, self).__init__(name, json_snippet, stack)
-        self.admin_pass = None
-
-    @property
-    def script(self):
-        """Returns the config script for the Cloud Server image."""
-        return self.image_scripts[self.distro]
-
     @property
     def server(self):
-        """Returns the Cloud Server object."""
+        """Get the Cloud Server object."""
         if self.resource_id in self.__class__._server_map:
             return self.__class__._server_map[self.resource_id]
         else:
@@ -105,6 +98,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     @property
     def image_id(self):
+        """Get the image ID corresponding to the ImageName property."""
         image_name = self.properties['ImageName']
         if image_name in self.__class__._image_id_map:
             return self.__class__._image_id_map[image_name]
@@ -115,6 +109,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 
     @property
     def distro(self):
+        """Get the Linux distribution for this server."""
         if self.image_id in self.__class__._distro_map:
             return self.__class__._distro_map[self.image_id]
         else:
@@ -124,32 +119,27 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             return distro
 
     @property
+    def script(self):
+        """Get the config script for the Cloud Server image."""
+        return self.image_scripts[self.distro]
+
+    @property
     def flavors(self):
-        """Fetch flavors from the API or cache."""
+        """Get the flavors from the API or cache (updated every 6 hours)."""
         def get_flavors():
             return [flavor.id for flavor in self.nova().flavors.list()]
-        self.__class__._flavors = self._get_property(self.__class__._flavors,
-                                                     get_flavors)
-        return self.__class__._flavors[0]
-
-    def _get_property(self, prop, get_fun):
         time_now = time.time()
-        if prop:
-            last_update = prop[1]
+        if self.__class__._flavors:
+            last_update = self.__class__._flavors[1]
             six_hours = 216000
             if (time_now - last_update) > six_hours:
-                prop = (get_fun(), time_now)
+                self.__class__._flavors = (get_flavors(), time_now)
         else:
-            prop = (get_fun(), time_now)
-        return prop
+            self.__class__._flavors = (get_flavors(), time_now)
+        return self.__class__._flavors[0]
 
     def _get_ip(self, ip_type):
-        """Return the IP of the Cloud Server.
-
-        :param ip_type: type of IP to retrieve, either "Public" or "Private"
-        :returns: IP of Cloud Server
-        :rtype: string
-        """
+        """Return the IP of the Cloud Server."""
         def ip_not_found():
             exc = exception.Error("Could not determine the %s IP of %s." %
                                   (ip_type, self.properties['ImageName']))
@@ -184,10 +174,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                     self.properties['ImageName']}
 
     def _run_ssh_command(self, command):
-        """Run a shell command on the Cloud Server via SSH.
-
-        :param command: a string containing the command to run
-        """
+        """Run a shell command on the Cloud Server via SSH."""
         with tempfile.NamedTemporaryFile() as private_key_file:
             private_key_file.write(self.private_key)
             private_key_file.seek(0)
@@ -201,11 +188,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             logger.debug(stderr.read())
 
     def _sftp_files(self, files):
-        """Transfer files to the Cloud Server via SFTP.
-
-        :param files: a list containing one dictionary per file, each
-                      containing a 'path' and 'data' value
-        """
+        """Transfer files to the Cloud Server via SFTP."""
         with tempfile.NamedTemporaryFile() as private_key_file:
             private_key_file.write(self.private_key)
             private_key_file.seek(0)
@@ -242,7 +225,6 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                                self.image_id,
                                flavor,
                                files=personality_files)
-        self.admin_pass = server.adminPass
 
         # Save resource ID to db
         self.resource_id_set(server.id)
@@ -291,7 +273,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         self.resource_id = None
 
     def _delete_server(self, server):
-        """Returns a coroutine that deletes the Cloud Server."""
+        """Return a coroutine that deletes the Cloud Server."""
         server.delete()
         while True:
             yield
@@ -305,7 +287,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                 break
 
     def _resize_server(self, server, flavor):
-        """Returns a coroutine that resizes the Cloud Server."""
+        """Return a coroutine that resizes the Cloud Server."""
         server.resize(flavor)
         while True:
             yield
@@ -325,7 +307,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
                 break
 
     def _revert_server(self, server):
-        """Returns a coroutine that reverts a failed Cloud Server resize."""
+        """Return a coroutine that reverts a failed Cloud Server resize."""
         server.revert_resize()
         while True:
             yield
@@ -383,8 +365,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             'PublicIp': self.public_ip,
             'PrivateIp': self.private_ip,
             'PublicDnsName': self.public_ip,
-            'PrivateDnsName': self.public_ip,
-            'AdminPass': self.admin_pass  # only available right after create
+            'PrivateDnsName': self.public_ip
         }
         if key not in attribute_function:
             raise exception.InvalidTemplateAttribute(resource=self.name,
