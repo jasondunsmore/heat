@@ -569,10 +569,10 @@ class Resource(object):
     @private_key.setter
     def private_key(self, private_key):
         self._private_key = private_key
-        salt = self.created_time.strftime("%s")
-        salted_private_key = salt + self.private_key
-        encrypted_salted_private_key = crypt.encrypt(salted_private_key)
         if self.id is not None:
+            salt = self.created_time.strftime("%s")
+            salted_private_key = salt + self.private_key
+            encrypted_salted_private_key = crypt.encrypt(salted_private_key)
             rs = db_api.resource_get(self.context, self.id)
             rs.update_and_save({'private_key': encrypted_salted_private_key})
 

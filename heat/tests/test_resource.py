@@ -529,10 +529,10 @@ class ResourceTest(HeatTestCase):
         # This gives the fake resource an id and created_time attribute
         res._store_or_update(res.CREATE, res.IN_PROGRESS, 'test_store')
 
-        res.private_key_set("fake private key")
+        res.private_key = "fake private key"
         encrypted_key = db_api.resource_get(res.context, res.id).private_key
         self.assertNotEqual(encrypted_key, "fake private key")
-        unencrypted_key = res.private_key_get()
+        unencrypted_key = res.private_key
         self.assertEqual(unencrypted_key, "fake private key")
 
 
