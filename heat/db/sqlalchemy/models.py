@@ -227,6 +227,7 @@ class Resource(BASE, HeatBase):
     name = sqlalchemy.Column('name', sqlalchemy.String, nullable=False)
     nova_instance = sqlalchemy.Column('nova_instance', sqlalchemy.String)
     status_reason = sqlalchemy.Column('status_reason', sqlalchemy.String)
+    resource_data = sqlalchemy.Column('private_key', Json)
     # odd name as "metadata" is reserved
     rsrc_metadata = sqlalchemy.Column('rsrc_metadata', Json)
 
