@@ -17,9 +17,9 @@ import base64
 from datetime import datetime
 
 from heat.engine import event
+from heat.common import exception
 from heat.openstack.common import excutils
 from heat.db import api as db_api
-from heat.common import exception
 from heat.common import identifier
 from heat.common import short_id
 from heat.engine import timestamp
