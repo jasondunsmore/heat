@@ -163,7 +163,6 @@ class Resource(object):
         self.name = name
         self.json_snippet = json_snippet
         self.t = stack.resolve_static_data(json_snippet)
-        self._private_key = None
         self.properties = Properties(self.properties_schema,
                                      self.t.get('Properties', {}),
                                      self.stack.resolve_runtime_data,

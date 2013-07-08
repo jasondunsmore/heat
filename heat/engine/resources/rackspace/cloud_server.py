@@ -88,6 +88,10 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     update_allowed_keys = ('Metadata', 'Properties')
     update_allowed_properties = ('Flavor', 'ServerName')
 
+    def __init__(self, name, json_snippet, stack):
+        super(CloudServer, self).__init__(name, json_snippet, stack)
+        self._private_key = None
+
     @property
     def server(self):
         """Get the Cloud Server object."""
