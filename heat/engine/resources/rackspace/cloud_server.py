@@ -151,7 +151,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
             return self._private_key
         if self.id is not None:
             rs = db_api.resource_get(self.context, self.id)
-            encrypted_private_key = rs.private_key
+            encrypted_private_key = rs.resource_data['private_key']
             if not encrypted_private_key:
                 return None
             private_key = crypt.decrypt(encrypted_private_key)
@@ -165,7 +165,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         if self.id is not None:
             encrypted_private_key = crypt.encrypt(private_key)
             rs = db_api.resource_get(self.context, self.id)
-            rs.update_and_save({'private_key': encrypted_private_key})
+            rs.update_and_save({'resource_data':
+                                {'private_key': encrypted_private_key}})
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server."""
