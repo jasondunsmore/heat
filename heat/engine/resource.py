@@ -21,7 +21,6 @@ from heat.openstack.common import excutils
 from heat.db import api as db_api
 from heat.common import exception
 from heat.common import identifier
-from heat.common import crypt
 from heat.common import short_id
 from heat.engine import timestamp
 # import class to avoid name collisions and ugly aliasing
@@ -553,29 +552,6 @@ class Resource(object):
                 rs.update_and_save({'nova_instance': self.resource_id})
             except Exception as ex:
                 logger.warn('db error %s' % str(ex))
-
-    @property
-    def private_key(self):
-        """Return the private SSH key for the resource."""
-        if self._private_key:
-            return self._private_key
-        if self.id is not None:
-            rs = db_api.resource_get(self.context, self.id)
-            encrypted_private_key = rs.private_key
-            if not encrypted_private_key:
-                return None
-            private_key = crypt.decrypt(encrypted_private_key)
-            self._private_key = private_key
-            return private_key
-
-    @private_key.setter
-    def private_key(self, private_key):
-        """Save the resource's private SSH key to the database."""
-        self._private_key = private_key
-        if self.id is not None:
-            encrypted_private_key = crypt.encrypt(private_key)
-            rs = db_api.resource_get(self.context, self.id)
-            rs.update_and_save({'private_key': encrypted_private_key})
 
     def _store(self):
         '''Create the resource in the database.'''

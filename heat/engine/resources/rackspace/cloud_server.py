@@ -19,10 +19,12 @@ from Crypto.PublicKey import RSA
 import novaclient.exceptions as novaexception
 
 from heat.common import exception
+from heat.common import crypt
 from heat.openstack.common import log as logging
 from heat.engine import scheduler
 from heat.engine.resources import instance
 from heat.engine.resources.rackspace import rackspace_resource
+from heat.db import api as db_api
 
 logger = logging.getLogger(__name__)
 
@@ -137,6 +139,29 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         else:
             self.__class__._flavors = (get_flavors(), time_now)
         return self.__class__._flavors[0]
+
+    @property
+    def private_key(self):
+        """Return the private SSH key for the resource."""
+        if self._private_key:
+            return self._private_key
+        if self.id is not None:
+            rs = db_api.resource_get(self.context, self.id)
+            encrypted_private_key = rs.private_key
+            if not encrypted_private_key:
+                return None
+            private_key = crypt.decrypt(encrypted_private_key)
+            self._private_key = private_key
+            return private_key
+
+    @private_key.setter
+    def private_key(self, private_key):
+        """Save the resource's private SSH key to the database."""
+        self._private_key = private_key
+        if self.id is not None:
+            encrypted_private_key = crypt.encrypt(private_key)
+            rs = db_api.resource_get(self.context, self.id)
+            rs.update_and_save({'private_key': encrypted_private_key})
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server."""
