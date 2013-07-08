@@ -30,6 +30,7 @@ from heat.tests.utils import setup_dummy_db
 from heat.engine.resources.rackspace import cloud_server
 from heat.engine.resources.rackspace import rackspace_resource
 from heat.engine import environment
+from heat.db import api as db_api
 
 logger = logging.getLogger(__name__)
 
@@ -421,7 +422,7 @@ class RackspaceCloudServerTest(HeatTestCase):
     def test_flavors(self):
         stack_name = 'test_cs_flavors'
         (t, stack) = self._setup_test_stack(stack_name)
-        cs = cloud_server.CloudServer('cs_create_image_err',
+        cs = cloud_server.CloudServer('cs_test_flavors',
                                       t['Resources']['WebServer'],
                                       stack)
 
@@ -449,3 +450,20 @@ class RackspaceCloudServerTest(HeatTestCase):
         self.m.ReplayAll()
         cs.flavors
         self.assertEqual(cs.__class__._flavors[1], time_now)
+
+    def test_private_key(self):
+        stack_name = 'test_private_key'
+        (t, stack) = self._setup_test_stack(stack_name)
+        cs = cloud_server.CloudServer('cs_private_key',
+                                      t['Resources']['WebServer'],
+                                      stack)
+
+        # This gives the fake cloud server an id and created_time attribute
+        cs._store_or_update(cs.CREATE, cs.IN_PROGRESS, 'test_store')
+
+        cs.private_key = "fake private key"
+        encrypted_key = db_api.resource_get(cs.context, cs.id)\
+                              .resource_data['private_key']
+        self.assertNotEqual(encrypted_key, "fake private key")
+        unencrypted_key = cs.private_key
+        self.assertEqual(unencrypted_key, "fake private key")

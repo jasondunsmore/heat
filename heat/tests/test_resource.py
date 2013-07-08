@@ -463,19 +463,6 @@ class ResourceTest(HeatTestCase):
         self.assertRaises(exception.ResourceFailure, resume)
         self.assertEqual((res.RESUME, res.FAILED), res.state)
 
-    def test_private_key(self):
-        tmpl = {'Type': 'Foo'}
-        res = generic_rsrc.GenericResource('test_resource', tmpl, self.stack)
-
-        # This gives the fake resource an id and created_time attribute
-        res._store_or_update(res.CREATE, res.IN_PROGRESS, 'test_store')
-
-        res.private_key = "fake private key"
-        encrypted_key = db_api.resource_get(res.context, res.id).private_key
-        self.assertNotEqual(encrypted_key, "fake private key")
-        unencrypted_key = res.private_key
-        self.assertEqual(unencrypted_key, "fake private key")
-
 
 class MetadataTest(HeatTestCase):
     def setUp(self):
