@@ -219,7 +219,7 @@ class Resource(BASE, HeatBase):
 
     __tablename__ = 'resource'
 
-    id = sqlalchemy.Column(sqlalchemy.Integer,
+    id = sqlalchemy.Column(sqlalchemy.String,
                            primary_key=True,
                            default=uuidutils.generate_uuid)
     action = sqlalchemy.Column('action', sqlalchemy.String)
@@ -234,6 +234,25 @@ class Resource(BASE, HeatBase):
                                  sqlalchemy.ForeignKey('stack.id'),
                                  nullable=False)
     stack = relationship(Stack, backref=backref('resources'))
+
+
+class ResourceData(BASE, HeatBase):
+    """Key/value store of arbitrary, resource-specific data."""
+
+    __tablename__ = 'resource_data'
+
+    id = sqlalchemy.Column('id',
+                           sqlalchemy.Integer,
+                           primary_key=True,
+                           nullable=False)
+    key = sqlalchemy.Column('key', sqlalchemy.String)
+    value = sqlalchemy.Column('value', Json)
+    redact = sqlalchemy.Column('redact', sqlalchemy.Boolean)
+    resource_id = sqlalchemy.Column('resource_id',
+                                    sqlalchemy.String,
+                                    sqlalchemy.ForeignKey('resource.id'),
+                                    nullable=False)
+    resource = relationship(Resource, backref=backref('data'))
 
 
 class WatchRule(BASE, HeatBase):

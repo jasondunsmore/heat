@@ -97,6 +97,29 @@ def resource_get_all(context):
     return results
 
 
+def resource_data_get(context, resource_id, key):
+    import ipdb; ipdb.set_trace()
+    result = model_query(context, models.ResourceData).get(resource_id)\
+                                                      .filter_by(key)
+    if not result:
+        raise exception.NotFound("resource with id %s not found" % resource_id)
+    if result.redact:
+        return crypt.decrypt(result.value)
+    else:
+        return result.value
+
+
+def resource_data_set(context, resource_id, key, value, redact=False):
+    import ipdb; ipdb.set_trace()
+    if redact:
+        value = crypt.encrypt(value)
+    data = models.ResourceData()
+    data.update(values={'value': value})\
+        .where(resource_id == resource_id, key=key)
+    data.save(_session(context))
+    return data
+
+
 def resource_create(context, values):
     resource_ref = models.Resource()
     resource_ref.update(values)
