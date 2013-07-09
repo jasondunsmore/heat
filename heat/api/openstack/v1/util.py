@@ -88,6 +88,7 @@ def remote_error(ex):
         'RevertFailed': exc.HTTPInternalServerError,
         'ServerBuildFailed': exc.HTTPInternalServerError,
         'NotSupported': exc.HTTPBadRequest,
+        'MissingCredentialError': exc.HTTPBadRequest,
     }
 
     Exc = error_map.get(ex.exc_type, exc.HTTPInternalServerError)
