@@ -19,6 +19,7 @@ from sqlalchemy import Table
 from sqlalchemy import MetaData
 from sqlalchemy.sql.expression import select
 from sqlalchemy.sql.expression import and_
+from heat.db.sqlalchemy.session import get_engine
 
 from heat.common import crypt
 from heat.common import exception
@@ -104,7 +105,12 @@ def resource_get_all(context):
 def resource_data_get(context, resource_id, key):
     import ipdb; ipdb.set_trace()
     meta = MetaData()
-    resource_data = Table('resource_data', meta, autoload=True)
+    engine = get_engine()
+    resource_data = Table('resource_data',
+                          meta,
+                          autoload=True,
+                          autoload_with=engine)
+    conn = engine.connect()
     stmt = select().\
            where(
                and_(
@@ -112,7 +118,7 @@ def resource_data_get(context, resource_id, key):
                    resource_data.c.key == key
                )
            )
-    result = resource_data.execute(stmt)
+    result = conn.execute(stmt)
     if not result:
         raise exception.NotFound("resource with id %s not found" % resource_id)
     if result.redact:
@@ -126,7 +132,12 @@ def resource_data_set(context, resource_id, key, value, redact=False):
     if redact:
         value = crypt.encrypt(value)
     meta = MetaData()
-    resource_data = Table('resource_data', meta, autoload=True)
+    engine = get_engine()
+    resource_data = Table('resource_data',
+                          meta,
+                          autoload=True,
+                          autoload_with=engine)
+    conn = engine.connect()
     stmt = select().\
            where(
                and_(
@@ -134,17 +145,17 @@ def resource_data_set(context, resource_id, key, value, redact=False):
                    resource_data.c.key == key
                )
            )
-    result = resource_data.execute(stmt)
+    result = conn.execute(stmt)
     if result:
         stmt = resource_data.update().values(value=value)
-        resource_data.execute(stmt)
+        conn.execute(stmt)
     else:
         stmt = resource_data.insert().\
                values(resource_id=resource_id,
                       key=key,
                       value=value,
                       redact=redact)
-        resource_data.execute(stmt)
+        conn.execute(stmt)
 
 
 def resource_create(context, values):
