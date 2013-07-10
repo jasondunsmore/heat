@@ -98,7 +98,6 @@ def resource_get_all(context):
 
 
 def resource_data_get(context, resource_id, key):
-    import ipdb; ipdb.set_trace()
     resource = model_query(context, models.Resource).get(resource_id)
     data_lst = filter(lambda x: x.key == key, resource.data)
     if not data_lst:
@@ -112,7 +111,6 @@ def resource_data_get(context, resource_id, key):
 
 
 def resource_data_set(context, resource_id, key, value, redact=False):
-    import ipdb; ipdb.set_trace()
     if redact:
         value = crypt.encrypt(value)
     resource = model_query(context, models.Resource).get(resource_id)
@@ -120,17 +118,16 @@ def resource_data_set(context, resource_id, key, value, redact=False):
     if data_lst:
         assert len(data_lst) == 1
         resource_data = data_lst[0]
+        for i, d in enumerate(resource.data):
+            if d.key == key:
+                index = i
+        del(resource.data[index])
     else:
         resource_data = models.ResourceData()
         resource_data.key = key
         resource_data.resource_id = resource_id
         resource_data.redact = True
     resource_data.value = value
-    index = filter(lambda x, y: y.key == key, list(enumerate(resource.data))[0])
-    for i, d in enumerate(resource.data):
-        if d.key == key:
-            index = i
-    del(resource.data[index])
     resource.data.append(resource_data)
     resource.save(_session(context))
 
