@@ -19,16 +19,11 @@ from Crypto.PublicKey import RSA
 import novaclient.exceptions as novaexception
 
 from heat.common import exception
-from heat.common import crypt
 from heat.openstack.common import log as logging
 from heat.engine import scheduler
 from heat.engine.resources import instance
 from heat.engine.resources.rackspace import rackspace_resource
-<<<<<<< HEAD
-from heat.db import api as db_api
-=======
 from heat.db.sqlalchemy import api as db_api
->>>>>>> resource-data
 
 logger = logging.getLogger(__name__)
 
