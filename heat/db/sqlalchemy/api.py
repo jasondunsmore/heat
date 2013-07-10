@@ -97,6 +97,41 @@ def resource_get_all(context):
     return results
 
 
+def resource_data_get(context, resource_id, key):
+    resource = model_query(context, models.Resource).get(resource_id)
+    data_lst = filter(lambda x: x.key == key, resource.data)
+    if not data_lst:
+        raise exception.NotFound("resource with id %s not found" % resource_id)
+    assert len(data_lst) == 1
+    data = data_lst[0]
+    if data.redact:
+        return crypt.decrypt(data.value)
+    else:
+        return data.value
+
+
+def resource_data_set(context, resource_id, key, value, redact=False):
+    if redact:
+        value = crypt.encrypt(value)
+    resource = model_query(context, models.Resource).get(resource_id)
+    data_lst = filter(lambda x: x.key == key, resource.data)
+    if data_lst:
+        assert len(data_lst) == 1
+        resource_data = data_lst[0]
+        for i, d in enumerate(resource.data):
+            if d.key == key:
+                index = i
+        del(resource.data[index])
+    else:
+        resource_data = models.ResourceData()
+        resource_data.key = key
+        resource_data.resource_id = resource_id
+        resource_data.redact = True
+    resource_data.value = value
+    resource.data.append(resource_data)
+    resource.save(_session(context))
+
+
 def resource_create(context, values):
     resource_ref = models.Resource()
     resource_ref.update(values)

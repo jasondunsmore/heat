@@ -17,13 +17,29 @@ def upgrade(migrate_engine):
     meta = sqlalchemy.MetaData()
     meta.bind = migrate_engine
 
-    resource = sqlalchemy.Table('resource', meta, autoload=True)
-    sqlalchemy.Column('resource_data', sqlalchemy.Text).create(resource)
+    resource_data = sqlalchemy.Table(
+        'resource_data', meta,
+        sqlalchemy.Column('id',
+                          sqlalchemy.Integer,
+                          primary_key=True,
+                          nullable=False),
+        sqlalchemy.Column('created_at', sqlalchemy.DateTime),
+        sqlalchemy.Column('updated_at', sqlalchemy.DateTime),
+        sqlalchemy.Column('key', sqlalchemy.String(255)),
+        sqlalchemy.Column('value', sqlalchemy.Text),
+        sqlalchemy.Column('redact', sqlalchemy.Boolean),
+        sqlalchemy.Column('resource_id',
+                          sqlalchemy.String(36),
+                          sqlalchemy.ForeignKey('resource.id'),
+                          nullable=False)
+    )
+    sqlalchemy.Table('resource', meta, autoload=True)
+    resource_data.create()
 
 
 def downgrade(migrate_engine):
     meta = sqlalchemy.MetaData()
     meta.bind = migrate_engine
 
-    resource = sqlalchemy.Table('resource', meta, autoload=True)
-    resource.c.resource_data.drop()
+    resource_data = sqlalchemy.Table('resource_data', meta, autoload=True)
+    resource_data.drop()

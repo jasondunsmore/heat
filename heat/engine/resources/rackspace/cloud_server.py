@@ -24,7 +24,11 @@ from heat.openstack.common import log as logging
 from heat.engine import scheduler
 from heat.engine.resources import instance
 from heat.engine.resources.rackspace import rackspace_resource
+<<<<<<< HEAD
 from heat.db import api as db_api
+=======
+from heat.db.sqlalchemy import api as db_api
+>>>>>>> resource-data
 
 logger = logging.getLogger(__name__)
 
@@ -150,11 +154,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         if self._private_key:
             return self._private_key
         if self.id is not None:
-            rs = db_api.resource_get(self.context, self.id)
-            encrypted_private_key = rs.resource_data['private_key']
-            if not encrypted_private_key:
+            private_key = db_api.resource_data_get(self.context,
+                                                   self.id,
+                                                   'private_key')
+            if not private_key:
                 return None
-            private_key = crypt.decrypt(encrypted_private_key)
             self._private_key = private_key
             return private_key
 
@@ -163,10 +167,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         """Save the resource's private SSH key to the database."""
         self._private_key = private_key
         if self.id is not None:
-            encrypted_private_key = crypt.encrypt(private_key)
-            rs = db_api.resource_get(self.context, self.id)
-            rs.update_and_save({'resource_data':
-                                {'private_key': encrypted_private_key}})
+            db_api.resource_data_set(self.context,
+                                     self.id,
+                                     'private_key',
+                                     private_key,
+                                     redact=True)
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server."""
