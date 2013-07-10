@@ -17,7 +17,7 @@ SQLAlchemy models for heat data.
 
 import sqlalchemy
 
-from sqlalchemy.orm import relationship, backref, object_mapper
+from sqlalchemy.orm import relationship, backref, object_mapper, mapper
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import types
@@ -234,6 +234,8 @@ class Resource(BASE, HeatBase):
                                  sqlalchemy.ForeignKey('stack.id'),
                                  nullable=False)
     stack = relationship(Stack, backref=backref('resources'))
+    data = relationship("ResourceData", backref=backref('resource_data',
+                                                        lazy='joined'))
 
 
 class ResourceData(BASE, HeatBase):
@@ -252,7 +254,6 @@ class ResourceData(BASE, HeatBase):
                                     sqlalchemy.String,
                                     sqlalchemy.ForeignKey('resource.id'),
                                     nullable=False)
-    resource = relationship(Resource, backref=backref('data'))
 
 
 class WatchRule(BASE, HeatBase):

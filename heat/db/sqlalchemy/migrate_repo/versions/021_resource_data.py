@@ -23,6 +23,8 @@ def upgrade(migrate_engine):
                           sqlalchemy.Integer,
                           primary_key=True,
                           nullable=False),
+        sqlalchemy.Column('created_at', sqlalchemy.DateTime),
+        sqlalchemy.Column('updated_at', sqlalchemy.DateTime),
         sqlalchemy.Column('key', sqlalchemy.String(255)),
         sqlalchemy.Column('value', sqlalchemy.Text),
         sqlalchemy.Column('redact', sqlalchemy.Boolean),

@@ -99,25 +99,40 @@ def resource_get_all(context):
 
 def resource_data_get(context, resource_id, key):
     import ipdb; ipdb.set_trace()
-    result = model_query(context, models.ResourceData).get(resource_id)\
-                                                      .filter_by(key)
-    if not result:
+    resource = model_query(context, models.Resource).get(resource_id)
+    data_lst = filter(lambda x: x.key == key, resource.data)
+    if not data_lst:
         raise exception.NotFound("resource with id %s not found" % resource_id)
-    if result.redact:
-        return crypt.decrypt(result.value)
+    assert len(data_lst) == 1
+    data = data_lst[0]
+    if data.redact:
+        return crypt.decrypt(data.value)
     else:
-        return result.value
+        return data.value
 
 
 def resource_data_set(context, resource_id, key, value, redact=False):
     import ipdb; ipdb.set_trace()
     if redact:
         value = crypt.encrypt(value)
-    data = models.ResourceData()
-    data.update(values={'value': value})\
-        .where(resource_id == resource_id, key=key)
-    data.save(_session(context))
-    return data
+    resource = model_query(context, models.Resource).get(resource_id)
+    data_lst = filter(lambda x: x.key == key, resource.data)
+    if data_lst:
+        assert len(data_lst) == 1
+        resource_data = data_lst[0]
+    else:
+        resource_data = models.ResourceData()
+        resource_data.key = key
+        resource_data.resource_id = resource_id
+        resource_data.redact = True
+    resource_data.value = value
+    index = filter(lambda x, y: y.key == key, list(enumerate(resource.data))[0])
+    for i, d in enumerate(resource.data):
+        if d.key == key:
+            index = i
+    del(resource.data[index])
+    resource.data.append(resource_data)
+    resource.save(_session(context))
 
 
 def resource_create(context, values):
