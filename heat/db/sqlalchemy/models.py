@@ -236,6 +236,25 @@ class Resource(BASE, HeatBase):
     stack = relationship(Stack, backref=backref('resources'))
 
 
+class ResourceData(BASE, HeatBase):
+    """Key/value store of arbitrary, resource-specific data."""
+
+    __tablename__ = 'resource_data'
+
+    id = sqlalchemy.Column('id',
+                           sqlalchemy.Integer,
+                           primary_key=True,
+                           nullable=False)
+    key = sqlalchemy.Column('key', sqlalchemy.String)
+    value = sqlalchemy.Column('value', Json)
+    redact = sqlalchemy.Column('redact', sqlalchemy.Boolean)
+    resource_id = sqlalchemy.Column('resource_id',
+                                    sqlalchemy.String,
+                                    sqlalchemy.ForeignKey('resource.id'),
+                                    nullable=False)
+    resource = relationship(Resource, backref=backref('data'))
+
+
 class WatchRule(BASE, HeatBase):
     """Represents a watch_rule created by the heat engine."""
 
