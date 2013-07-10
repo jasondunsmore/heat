@@ -214,6 +214,24 @@ class Event(BASE, HeatBase):
     resource_properties = sqlalchemy.Column(sqlalchemy.PickleType)
 
 
+class ResourceData(BASE, HeatBase):
+    """Key/value store of arbitrary, resource-specific data."""
+
+    __tablename__ = 'resource_data'
+
+    id = sqlalchemy.Column('id',
+                           sqlalchemy.Integer,
+                           primary_key=True,
+                           nullable=False)
+    key = sqlalchemy.Column('key', sqlalchemy.String)
+    value = sqlalchemy.Column('value', Json)
+    redact = sqlalchemy.Column('redact', sqlalchemy.Boolean)
+    resource_id = sqlalchemy.Column('resource_id',
+                                    sqlalchemy.String,
+                                    sqlalchemy.ForeignKey('resource.id'),
+                                    nullable=False)
+
+
 class Resource(BASE, HeatBase):
     """Represents a resource created by the heat engine."""
 
@@ -235,26 +253,8 @@ class Resource(BASE, HeatBase):
                                  sqlalchemy.ForeignKey('stack.id'),
                                  nullable=False)
     stack = relationship(Stack, backref=backref('resources'))
-    data = relationship("ResourceData", backref=backref('resource_data',
-                                                        lazy='joined'))
-
-
-class ResourceData(BASE, HeatBase):
-    """Key/value store of arbitrary, resource-specific data."""
-
-    __tablename__ = 'resource_data'
-
-    id = sqlalchemy.Column('id',
-                           sqlalchemy.Integer,
-                           primary_key=True,
-                           nullable=False)
-    key = sqlalchemy.Column('key', sqlalchemy.String)
-    value = sqlalchemy.Column('value', Json)
-    redact = sqlalchemy.Column('redact', sqlalchemy.Boolean)
-    resource_id = sqlalchemy.Column('resource_id',
-                                    sqlalchemy.String,
-                                    sqlalchemy.ForeignKey('resource.id'),
-                                    nullable=False)
+    data = relationship(ResourceData, backref=backref('resource_data',
+                                                      lazy='joined'))
 
 
 class WatchRule(BASE, HeatBase):
