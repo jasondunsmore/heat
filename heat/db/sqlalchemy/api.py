@@ -15,6 +15,10 @@
 
 '''Implementation of SQLAlchemy backend.'''
 from sqlalchemy.orm.session import Session
+from sqlalchemy import Table
+from sqlalchemy import MetaData
+from sqlalchemy.sql.expression import select
+from sqlalchemy.sql.expression import and_
 
 from heat.common import crypt
 from heat.common import exception
@@ -99,8 +103,16 @@ def resource_get_all(context):
 
 def resource_data_get(context, resource_id, key):
     import ipdb; ipdb.set_trace()
-    result = model_query(context, models.ResourceData).get(resource_id)\
-                                                      .filter_by(key)
+    meta = MetaData()
+    resource_data = Table('resource_data', meta, autoload=True)
+    stmt = select().\
+           where(
+               and_(
+                   resource_data.c.resource_id == resource_id,
+                   resource_data.c.key == key
+               )
+           )
+    result = resource_data.execute(stmt)
     if not result:
         raise exception.NotFound("resource with id %s not found" % resource_id)
     if result.redact:
@@ -113,11 +125,26 @@ def resource_data_set(context, resource_id, key, value, redact=False):
     import ipdb; ipdb.set_trace()
     if redact:
         value = crypt.encrypt(value)
-    data = models.ResourceData()
-    data.update(values={'value': value})\
-        .where(resource_id == resource_id, key=key)
-    data.save(_session(context))
-    return data
+    meta = MetaData()
+    resource_data = Table('resource_data', meta, autoload=True)
+    stmt = select().\
+           where(
+               and_(
+                   resource_data.c.resource_id == resource_id,
+                   resource_data.c.key == key
+               )
+           )
+    result = resource_data.execute(stmt)
+    if result:
+        stmt = resource_data.update().values(value=value)
+        resource_data.execute(stmt)
+    else:
+        stmt = resource_data.insert().\
+               values(resource_id=resource_id,
+                      key=key,
+                      value=value,
+                      redact=redact)
+        resource_data.execute(stmt)
 
 
 def resource_create(context, values):
