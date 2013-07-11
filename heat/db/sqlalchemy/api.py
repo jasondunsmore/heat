@@ -142,7 +142,7 @@ def resource_data_set(resource, key, value, redact=False):
 
     # Save to new key/value pair to database
     rs = model_query(resource.context, models.Resource).get(resource.id)
-    rs.save(_session(resource.context))
+    rs.update_and_save({'data': resource.data})
 
 
 def resource_create(context, values):
