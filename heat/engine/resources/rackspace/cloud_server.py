@@ -160,11 +160,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         """Save the resource's private SSH key to the database."""
         self._private_key = private_key
         if self.id is not None:
-            db_api.resource_data_set(self.context,
-                                     self.id,
-                                     'private_key',
-                                     private_key,
-                                     redact=True)
+            db_api.resource_data_set(self, 'private_key', private_key, True)
 
     def _get_ip(self, ip_type):
         """Return the IP of the Cloud Server."""

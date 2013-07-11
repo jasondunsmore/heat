@@ -98,37 +98,51 @@ def resource_get_all(context):
 
 
 def resource_data_get(resource, key):
+    """Lookup value of resource's data by key."""
     data_lst = filter(lambda x: x.key == key, resource.data)
     if not data_lst:
         raise exception.NotFound("resource with id %s not found" % resource.id)
     assert len(data_lst) == 1
     data = data_lst[0]
+
     if data.redact:
         return crypt.decrypt(data.value)
     else:
         return data.value
 
 
-def resource_data_set(context, resource_id, key, value, redact=False):
+def resource_data_set(resource, key, value, redact=False):
+    """Save resource's key/value pair to database."""
     if redact:
         value = crypt.encrypt(value)
-    resource = model_query(context, models.Resource).get(resource_id)
     data_lst = filter(lambda x: x.key == key, resource.data)
-    if data_lst:
+
+    if data_lst:  # Key exists in db, so check value & replace if necessary
         assert len(data_lst) == 1
         resource_data = data_lst[0]
+
+        # If the new value isn't different, do nothing
+        if value == resource_data.value:
+            return
+
+        # Otherwise, delete the old value
         for i, d in enumerate(resource.data):
             if d.key == key:
                 index = i
         del(resource.data[index])
-    else:
+
+    else:  # Build a new key/value
         resource_data = models.ResourceData()
         resource_data.key = key
-        resource_data.resource_id = resource_id
+        resource_data.resource_id = resource.id
         resource_data.redact = True
+
     resource_data.value = value
     resource.data.append(resource_data)
-    resource.save(_session(context))
+
+    # Save to new key/value pair to database
+    rs = model_query(resource.context, models.Resource).get(resource.id)
+    rs.save(_session(resource.context))
 
 
 def resource_create(context, values):
