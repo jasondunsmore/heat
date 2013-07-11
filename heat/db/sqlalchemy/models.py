@@ -17,7 +17,7 @@ SQLAlchemy models for heat data.
 
 import sqlalchemy
 
-from sqlalchemy.orm import relationship, backref, object_mapper, mapper
+from sqlalchemy.orm import relationship, backref, object_mapper
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import types
