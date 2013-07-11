@@ -32,6 +32,7 @@ from heat.engine.resources.rackspace import rackspace_resource
 from heat.engine import environment
 from heat.db import api as db_api
 
+
 logger = logging.getLogger(__name__)
 
 wp_template = '''
@@ -461,9 +462,11 @@ class RackspaceCloudServerTest(HeatTestCase):
         # This gives the fake cloud server an id and created_time attribute
         cs._store_or_update(cs.CREATE, cs.IN_PROGRESS, 'test_store')
 
-        cs.private_key = "fake private key"
-        encrypted_key = db_api.resource_get(cs.context, cs.id)\
-                              .resource_data['private_key']
+        cs.private_key = 'fake private key'
+        rs = db_api.resource_get_by_name_and_stack(None,
+                                                   'cs_private_key',
+                                                   stack.id)
+        encrypted_key = rs.data[0]['value']
         self.assertNotEqual(encrypted_key, "fake private key")
-        unencrypted_key = cs.private_key
-        self.assertEqual(unencrypted_key, "fake private key")
+        decrypted_key = cs.private_key
+        self.assertEqual(decrypted_key, "fake private key")

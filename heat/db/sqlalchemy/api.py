@@ -101,7 +101,7 @@ def resource_data_get(resource, key):
     """Lookup value of resource's data by key."""
     data_lst = filter(lambda x: x.key == key, resource.data)
     if not data_lst:
-        raise exception.NotFound("resource with id %s not found" % resource.id)
+        return None
     assert len(data_lst) == 1
     data = data_lst[0]
 
@@ -121,9 +121,9 @@ def resource_data_set(resource, key, value, redact=False):
         assert len(data_lst) == 1
         resource_data = data_lst[0]
 
-        # If the new value isn't different, do nothing
+        # If the new value is the same, do nothing
         if value == resource_data.value:
-            return
+            return None
 
         # Otherwise, delete the old value
         for i, d in enumerate(resource.data):
