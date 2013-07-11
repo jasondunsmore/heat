@@ -10,10 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from heat.db import api as db_api
+from heat.db.sqlalchemy import api as db_api
 from heat.engine import environment
 from heat.tests.v1_1 import fakes
-from heat.engine.resources.rackspace import cloud_server
+from heat.engine.resource import Resource
 from heat.common import template_format
 from heat.engine import parser
 from heat.openstack.common import uuidutils
@@ -47,6 +47,24 @@ wp_template = '''
 '''
 
 
+class MyResource(Resource):
+    properties_schema = {
+        'ServerName': {'Type': 'String', 'Required': True},
+        'Flavor': {'Type': 'String', 'Required': True},
+        'ImageName': {'Type': 'String', 'Required': True},
+        'UserData': {'Type': 'String'},
+        'PublicKey': {'Type': 'String'}
+    }
+
+    @property
+    def my_secret(self):
+        return db_api.resource_data_get(self, 'my_secret')
+
+    @my_secret.setter
+    def my_secret(self, my_secret):
+        db_api.resource_data_set(self, 'my_secret', my_secret, True)
+
+
 class SqlAlchemyTest(HeatTestCase):
     def setUp(self):
         super(SqlAlchemyTest, self).setUp()
@@ -62,20 +80,20 @@ class SqlAlchemyTest(HeatTestCase):
         return (t, stack)
 
     def test_encryption(self):
-        stack_name = 'test_private_key'
+        stack_name = 'test_encryption'
         (t, stack) = self._setup_test_stack(stack_name)
-        cs = cloud_server.CloudServer('cs_private_key',
-                                      t['Resources']['WebServer'],
-                                      stack)
+        cs = MyResource('cs_encryption',
+                        t['Resources']['WebServer'],
+                        stack)
 
         # This gives the fake cloud server an id and created_time attribute
         cs._store_or_update(cs.CREATE, cs.IN_PROGRESS, 'test_store')
 
-        cs.private_key = 'fake private key'
+        cs.my_secret = 'fake secret'
         rs = db_api.resource_get_by_name_and_stack(None,
-                                                   'cs_private_key',
+                                                   'cs_encryption',
                                                    stack.id)
         encrypted_key = rs.data[0]['value']
-        self.assertNotEqual(encrypted_key, "fake private key")
-        decrypted_key = cs.private_key
-        self.assertEqual(decrypted_key, "fake private key")
+        self.assertNotEqual(encrypted_key, "fake secret")
+        decrypted_key = cs.my_secret
+        self.assertEqual(decrypted_key, "fake secret")
