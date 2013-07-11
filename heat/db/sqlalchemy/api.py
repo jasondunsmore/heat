@@ -97,11 +97,10 @@ def resource_get_all(context):
     return results
 
 
-def resource_data_get(context, resource_id, key):
-    resource = model_query(context, models.Resource).get(resource_id)
+def resource_data_get(resource, key):
     data_lst = filter(lambda x: x.key == key, resource.data)
     if not data_lst:
-        raise exception.NotFound("resource with id %s not found" % resource_id)
+        raise exception.NotFound("resource with id %s not found" % resource.id)
     assert len(data_lst) == 1
     data = data_lst[0]
     if data.redact:

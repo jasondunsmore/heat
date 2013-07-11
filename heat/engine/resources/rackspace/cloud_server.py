@@ -149,9 +149,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         if self._private_key:
             return self._private_key
         if self.id is not None:
-            private_key = db_api.resource_data_get(self.context,
-                                                   self.id,
-                                                   'private_key')
+            private_key = db_api.resource_data_get(self, 'private_key')
             if not private_key:
                 return None
             self._private_key = private_key
