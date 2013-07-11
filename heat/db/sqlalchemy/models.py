@@ -224,7 +224,7 @@ class ResourceData(BASE, HeatBase):
                            primary_key=True,
                            nullable=False)
     key = sqlalchemy.Column('key', sqlalchemy.String)
-    value = sqlalchemy.Column('value', Json)
+    value = sqlalchemy.Column('value', sqlalchemy.String)
     redact = sqlalchemy.Column('redact', sqlalchemy.Boolean)
     resource_id = sqlalchemy.Column('resource_id',
                                     sqlalchemy.String,
@@ -253,7 +253,7 @@ class Resource(BASE, HeatBase):
                                  sqlalchemy.ForeignKey('stack.id'),
                                  nullable=False)
     stack = relationship(Stack, backref=backref('resources'))
-    data = relationship(ResourceData, backref=backref('resource_data',
+    data = relationship(ResourceData, backref=backref('resources',
                                                       lazy='joined'))
 
 
