@@ -53,7 +53,7 @@ class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
 # Install cloud-init and heat-cfntools
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
-apt-get install -y cloud-init python-boto python-pip gcc python-dev mysql-server
+apt-get install -y cloud-init python-boto python-pip gcc python-dev
 pip install heat-cfntools
 
 # Create data source for cloud-init
