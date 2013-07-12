@@ -87,11 +87,11 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
     # List of supported Linux distros and their corresponding config scripts
     image_scripts = {
         'arch': None,
-        'centos': None,
+        'centos': fedora_script,
         'debian': None,
         'fedora': fedora_script,
         'opensuse': None,
-        'rhel': None,
+        'rhel': fedora_script,
         'ubuntu': ubuntu_script
     }
 
