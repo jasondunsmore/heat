@@ -63,7 +63,7 @@ cloud-init start
 bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 """
 
-    debian_script = base_script % """\
+    ubuntu_script = base_script % """\
 apt-get update
 apt-get install -y cloud-init python-boto python-pip gcc python-dev
 pip install heat-cfntools
@@ -90,13 +90,13 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
     # List of supported Linux distros and their corresponding config scripts
     image_scripts = {
         'arch': arch_script,  # cloud-init not available
-        'centos': fedora_script,
-        'debian': debian_script,  # cloud-init not available
+        'centos': fedora_script,  # cloud-init not available
+        'debian': ubuntu_script,  # cloud-init not available
         'fedora': fedora_script,  # Verified working: F17
         'gentoo': gentoo_script,  # cloud-init not available
         'opensuse': opensuse_script,  # cloud-init not available
-        'rhel': fedora_script,
-        'ubuntu': debian_script  # Verified working: U12.04
+        'rhel': fedora_script,  # cloud-init not available
+        'ubuntu': ubuntu_script  # Verified working: U12.04
     }
 
     # Cache data retrieved from APIs in class attributes
