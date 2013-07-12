@@ -48,14 +48,10 @@ class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
                          'PublicIp': ('Public IP address of the specified '
                                       'instance.')}
 
-    ubuntu_script = """#!/bin/bash
+    base_script = """#!/bin/bash
 
 # Install cloud-init and heat-cfntools
-export DEBIAN_FRONTEND=noninteractive
-apt-get update
-apt-get install -y cloud-init python-boto python-pip gcc python-dev
-pip install heat-cfntools
-
+%s
 # Create data source for cloud-init
 mkdir -p /var/lib/cloud/seed/nocloud-net
 mv /tmp/userdata /var/lib/cloud/seed/nocloud-net/user-data
@@ -67,32 +63,40 @@ cloud-init start
 bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
 """
 
-    fedora_script = """#!/bin/bash
+    debian_script = base_script % """\
+apt-get update
+apt-get install -y cloud-init python-boto python-pip gcc python-dev
+pip install heat-cfntools
+"""
 
-# Install cloud-init and heat-cfntools
+    fedora_script = base_script % """\
 yum install -y cloud-init python-boto python-pip gcc python-devel
 pip-python install heat-cfntools
+"""
 
-# Create data source for cloud-init
-mkdir -p /var/lib/cloud/seed/nocloud-net
-mv /tmp/userdata /var/lib/cloud/seed/nocloud-net/user-data
-touch /var/lib/cloud/seed/nocloud-net/meta-data
-chmod 600 /var/lib/cloud/seed/nocloud-net/*
+    arch_script = base_script % """\
+pacman -S --noconfirm python-pip gcc
+"""
 
-# Run cloud-init & cfn-init
-cloud-init start
-bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
+    gentoo_script = base_script % """\
+emerge cloud-init python-boto python-pip gcc python-devel
+"""
+
+    opensuse_script = base_script % """\
+zypper --non-interactive rm patterns-openSUSE-minimal_base-conflicts
+zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
 """
 
     # List of supported Linux distros and their corresponding config scripts
     image_scripts = {
-        'arch': None,
+        'arch': arch_script,  # cloud-init not available
         'centos': fedora_script,
-        'debian': None,
-        'fedora': fedora_script,
-        'opensuse': None,
+        'debian': debian_script,  # cloud-init not available
+        'fedora': fedora_script,  # Verified working: F17
+        'gentoo': gentoo_script,  # cloud-init not available
+        'opensuse': opensuse_script,  # cloud-init not available
         'rhel': fedora_script,
-        'ubuntu': ubuntu_script
+        'ubuntu': debian_script  # Verified working: U12.04
     }
 
     # Cache data retrieved from APIs in class attributes
