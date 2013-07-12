@@ -48,6 +48,24 @@ class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
                          'PublicIp': ('Public IP address of the specified '
                                       'instance.')}
 
+    ubuntu_script = """#!/bin/bash
+
+# Install cloud-init and heat-cfntools
+apt-get update
+apt-get install -y cloud-init python-boto python-pip gcc python-dev
+pip install heat-cfntools
+
+# Create data source for cloud-init
+mkdir -p /var/lib/cloud/seed/nocloud-net
+mv /tmp/userdata /var/lib/cloud/seed/nocloud-net/user-data
+touch /var/lib/cloud/seed/nocloud-net/meta-data
+chmod 600 /var/lib/cloud/seed/nocloud-net/*
+
+# Run cloud-init & cfn-init
+cloud-init start
+bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
+"""
+
     fedora_script = """#!/bin/bash
 
 # Install cloud-init and heat-cfntools
@@ -73,7 +91,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
         'fedora': fedora_script,
         'opensuse': None,
         'rhel': None,
-        'ubuntu': None
+        'ubuntu': ubuntu_script
     }
 
     # Cache data retrieved from APIs in class attributes
