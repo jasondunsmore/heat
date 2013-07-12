@@ -13,7 +13,7 @@
 from heat.db.sqlalchemy import api as db_api
 from heat.engine import environment
 from heat.tests.v1_1 import fakes
-from heat.engine.resource import Resource
+from heat.tests.generic_resource import GenericResource
 from heat.common import template_format
 from heat.engine import parser
 from heat.openstack.common import uuidutils
@@ -47,7 +47,7 @@ wp_template = '''
 '''
 
 
-class MyResource(Resource):
+class MyResource(GenericResource):
     properties_schema = {
         'ServerName': {'Type': 'String', 'Required': True},
         'Flavor': {'Type': 'String', 'Required': True},
