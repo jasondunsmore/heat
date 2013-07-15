@@ -96,7 +96,8 @@ class RackspaceCloudServerTest(HeatTestCase):
         stack = parser.Stack(None, stack_name, template,
                              environment.Environment({'Flavor': '2'}),
                              stack_id=uuidutils.generate_uuid())
-        stack.context = context.get_admin_context(stack_name)
+        stack.context = context.get_admin_context()
+        stack.context.tenant = 't'
         return (t, stack)
 
     def _mock_ssh_sftp(self):
