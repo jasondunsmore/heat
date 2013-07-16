@@ -184,7 +184,7 @@ class RackspaceCloudServerTest(HeatTestCase):
         return_server = self.fc.servers.list()[1]
         cs = self._create_test_cs(return_server, 'test_cs_create')
         # this makes sure the auto increment worked on cloud server creation
-        #self.assertTrue(cs.id > 0)
+        self.assertTrue(cs.id > 0)
 
         expected_public = return_server.networks['public'][0]
         expected_private = return_server.networks['private'][0]
