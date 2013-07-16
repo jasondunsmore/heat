@@ -128,7 +128,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
         if self.resource_id in self.__class__._server_map:
             return self.__class__._server_map[self.resource_id]
         else:
-            server = RackspaceResource.nova().servers.get(self.resource_id)
+            server = RackspaceResource.nova(self).servers.get(self.resource_id)
             self.__class__._server_map[self.resource_id] = server
             return server
 
@@ -149,7 +149,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
         if self.image_id in self.__class__._distro_map:
             return self.__class__._distro_map[self.image_id]
         else:
-            image = RackspaceResource.nova().images.get(self.image_id)
+            image = RackspaceResource.nova(self).images.get(self.image_id)
             distro = image.metadata['os_distro']
             self.__class__._distro_map[self.image_id] = distro
             return distro
@@ -164,7 +164,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
         """Get the flavors from the API or cache (updated every 6 hours)."""
         def get_flavors():
             return [flavor.id for flavor in
-                    RackspaceResource.nova().flavors.list()]
+                    RackspaceResource.nova(self).flavors.list()]
         time_now = time.time()
         if self.__class__._flavors:
             last_update = self.__class__._flavors[1]
@@ -276,7 +276,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
         personality_files = {"/root/.ssh/authorized_keys": public_keys}
 
         # Create server
-        client = RackspaceResource.nova().servers
+        client = RackspaceResource.nova(self).servers
         server = client.create(self.properties['ServerName'],
                                self.image_id,
                                flavor,
@@ -317,7 +317,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
             return
 
         try:
-            server = RackspaceResource.nova().servers.get(self.resource_id)
+            server = RackspaceResource.nova(self).servers.get(self.resource_id)
         except novaexception.NotFound:
             pass
         else:
