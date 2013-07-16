@@ -21,23 +21,24 @@ import novaclient.exceptions as novaexception
 from heat.common import exception
 from heat.openstack.common import log as logging
 from heat.engine import scheduler
-from heat.engine.resources import instance
-from heat.engine.resources.rackspace import rackspace_resource
+from heat.engine.resources.instance import Instance
+from heat.engine.resources.rackspace.rackspace_resource \
+    import RackspaceResource
+from heat.engine.resources.rackspace.rackspace_resource \
+    import PYRAX_INSTALLED
 from heat.db.sqlalchemy import api as db_api
 
 logger = logging.getLogger(__name__)
 
 
-class CloudServer(instance.Instance, rackspace_resource.RackspaceResource):
+class CloudServer(Instance):
     """Resource for Rackspace Cloud Servers."""
 
-    properties_schema = {
-        'ServerName': {'Type': 'String', 'Required': True},
-        'Flavor': {'Type': 'String', 'Required': True},
-        'ImageName': {'Type': 'String', 'Required': True},
-        'UserData': {'Type': 'String'},
-        'PublicKey': {'Type': 'String'}
-    }
+    properties_schema = {'ServerName': {'Type': 'String', 'Required': True},
+                         'Flavor': {'Type': 'String', 'Required': True},
+                         'ImageName': {'Type': 'String', 'Required': True},
+                         'UserData': {'Type': 'String'},
+                         'PublicKey': {'Type': 'String'}}
 
     attributes_schema = {'PrivateDnsName': ('Private DNS name of the specified'
                                             ' instance.'),
@@ -88,16 +89,14 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
 """
 
     # List of supported Linux distros and their corresponding config scripts
-    image_scripts = {
-        'arch': arch_script,  # cloud-init not available
-        'centos': fedora_script,  # cloud-init not available
-        'debian': ubuntu_script,  # cloud-init not available
-        'fedora': fedora_script,  # Verified working: F17
-        'gentoo': gentoo_script,  # cloud-init not available
-        'opensuse': opensuse_script,  # cloud-init not available
-        'rhel': fedora_script,  # cloud-init not available
-        'ubuntu': ubuntu_script  # Verified working: U12.04
-    }
+    image_scripts = {'arch': arch_script,  # cloud-init not available
+                     'centos': fedora_script,  # cloud-init not available
+                     'debian': ubuntu_script,  # cloud-init not available
+                     'fedora': fedora_script,  # Verified working: F17
+                     'gentoo': gentoo_script,  # cloud-init not available
+                     'opensuse': opensuse_script,  # cloud-init not available
+                     'rhel': fedora_script,  # cloud-init not available
+                     'ubuntu': ubuntu_script}  # Verified working: U12.04
 
     # Cache data retrieved from APIs in class attributes
     _flavors = None
@@ -120,7 +119,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
         if self.resource_id in self.__class__._server_map:
             return self.__class__._server_map[self.resource_id]
         else:
-            server = self.nova().servers.get(self.resource_id)
+            server = RackspaceResource.nova().servers.get(self.resource_id)
             self.__class__._server_map[self.resource_id] = server
             return server
 
@@ -141,7 +140,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
         if self.image_id in self.__class__._distro_map:
             return self.__class__._distro_map[self.image_id]
         else:
-            image = self.nova().images.get(self.image_id)
+            image = RackspaceResource.nova().images.get(self.image_id)
             distro = image.metadata['os_distro']
             self.__class__._distro_map[self.image_id] = distro
             return distro
@@ -155,7 +154,8 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
     def flavors(self):
         """Get the flavors from the API or cache (updated every 6 hours)."""
         def get_flavors():
-            return [flavor.id for flavor in self.nova().flavors.list()]
+            return [flavor.id for flavor in
+                    RackspaceResource.nova().flavors.list()]
         time_now = time.time()
         if self.__class__._flavors:
             last_update = self.__class__._flavors[1]
@@ -267,7 +267,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
         personality_files = {"/root/.ssh/authorized_keys": public_keys}
 
         # Create server
-        client = self.nova().servers
+        client = RackspaceResource.nova().servers
         server = client.create(self.properties['ServerName'],
                                self.image_id,
                                flavor,
@@ -292,10 +292,8 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
         # Create heat-script and userdata files on server
         raw_userdata = self.properties['UserData'] or ''
         userdata = self._build_userdata(raw_userdata)
-        files = [
-            {'path': "/tmp/userdata", 'data': userdata},
-            {'path': "/root/heat-script.sh", 'data': self.script}
-        ]
+        files = [{'path': "/tmp/userdata", 'data': userdata},
+                 {'path': "/root/heat-script.sh", 'data': self.script}]
         self._sftp_files(files)
 
         # Connect via SSH and run script
@@ -310,7 +308,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
             return
 
         try:
-            server = self.nova().servers.get(self.resource_id)
+            server = RackspaceResource.nova().servers.get(self.resource_id)
         except novaexception.NotFound:
             pass
         else:
@@ -408,12 +406,10 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
 
     def _resolve_attribute(self, key):
         """Return the method that provides a given template attribute."""
-        attribute_function = {
-            'PublicIp': self.public_ip,
-            'PrivateIp': self.private_ip,
-            'PublicDnsName': self.public_ip,
-            'PrivateDnsName': self.public_ip
-        }
+        attribute_function = {'PublicIp': self.public_ip,
+                              'PrivateIp': self.private_ip,
+                              'PublicDnsName': self.public_ip,
+                              'PrivateDnsName': self.public_ip}
         if key not in attribute_function:
             raise exception.InvalidTemplateAttribute(resource=self.name,
                                                      key=key)
@@ -426,9 +422,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
 # pyrax module is required to work with Rackspace cloud server provider.
 # If it is not installed, don't register cloud server provider
 def resource_mapping():
-    if rackspace_resource.PYRAX_INSTALLED:
-        return {
-            'Rackspace::Cloud::Server': CloudServer
-        }
+    if PYRAX_INSTALLED:
+        return {'Rackspace::Cloud::Server': CloudServer}
     else:
         return {}
