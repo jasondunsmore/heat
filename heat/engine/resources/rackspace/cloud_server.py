@@ -75,28 +75,37 @@ yum install -y cloud-init python-boto python-pip gcc python-devel
 pip-python install heat-cfntools
 """
 
+    # TODO(jason): Install cloud-init & other deps from third-party repos
+    centos_script = base_script % """\
+yum install -y cloud-init python-boto python-pip gcc python-devel
+pip-python install heat-cfntools
+"""
+
+    # TODO(jason): Install cloud-init & other deps from third-party repos
     arch_script = base_script % """\
 pacman -S --noconfirm python-pip gcc
 """
 
+    # TODO(jason): Install cloud-init & other deps from third-party repos
     gentoo_script = base_script % """\
 emerge cloud-init python-boto python-pip gcc python-devel
 """
 
+    # TODO(jason): Install cloud-init & other deps from third-party repos
     opensuse_script = base_script % """\
 zypper --non-interactive rm patterns-openSUSE-minimal_base-conflicts
 zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
 """
 
     # List of supported Linux distros and their corresponding config scripts
-    image_scripts = {'arch': arch_script,  # cloud-init not available
-                     'centos': fedora_script,  # cloud-init not available
-                     'debian': ubuntu_script,  # cloud-init not available
-                     'fedora': fedora_script,  # Verified working: F17
-                     'gentoo': gentoo_script,  # cloud-init not available
-                     'opensuse': opensuse_script,  # cloud-init not available
-                     'rhel': fedora_script,  # cloud-init not available
-                     'ubuntu': ubuntu_script}  # Verified working: U12.04
+    image_scripts = {'arch': None,
+                     'centos': None,
+                     'debian': None,
+                     'fedora': fedora_script,
+                     'gentoo': None,
+                     'opensuse': None,
+                     'rhel': None,
+                     'ubuntu': ubuntu_script}
 
     # Cache data retrieved from APIs in class attributes
     _flavors = None
