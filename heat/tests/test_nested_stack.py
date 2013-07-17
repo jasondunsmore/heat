@@ -90,9 +90,13 @@ Outputs:
         self.assertRaises(resource.UpdateReplace,
                           rsrc.handle_update, {}, {}, {})
 
+        # test backwards compatibility
         self.assertEqual('bar', rsrc.FnGetAtt('Outputs.Foo'))
+        self.assertEqual('bar', rsrc.FnGetAtt('Foo'))
         self.assertRaises(
-            exception.InvalidTemplateAttribute, rsrc.FnGetAtt, 'Foo')
+            exception.InvalidTemplateAttribute, rsrc.FnGetAtt, 'Outputs.Bar')
+        self.assertRaises(
+            exception.InvalidTemplateAttribute, rsrc.FnGetAtt, 'Bar')
 
         rsrc.delete()
         self.assertTrue(rsrc.FnGetRefId().startswith(arn_prefix))
