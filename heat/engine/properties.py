@@ -17,7 +17,7 @@ import collections
 import re
 
 from heat.common import exception
-
+from heat.engine import parameters
 
 SCHEMA_KEYS = (
     REQUIRED, IMPLEMENTED, DEFAULT, TYPE, SCHEMA,
@@ -249,3 +249,105 @@ class Properties(collections.Mapping):
 
     def __iter__(self):
         return iter(self.props)
+
+    @staticmethod
+    def _generate_input(schema, params=None, path=None):
+        '''Generate an input based on a path in the schema or property
+        defaults.
+
+        :param schema: The schema to generate a parameter or value for.
+        :param params: A dict to map a schema to a parameter path.
+        :param path: Required if params != None. The params key
+            to save the schema at.
+        :returns: A Ref to the parameter if path != None and params != None
+        :returns: The property default if params == None or path == None
+        '''
+        if schema.get('Implemented') is False:
+            return
+        if params is not None and path is not None:
+            for prop in schema.keys():
+                if prop not in parameters.PARAMETER_KEYS and prop in schema:
+                    del schema[prop]
+            params[path] = schema
+            return {'Ref': path}
+        else:
+            prop = Property(schema)
+            return prop.has_default() and prop.default() or None
+
+    @staticmethod
+    def _schema_to_params_and_props(schema, params=None, path=None,
+                                    explode_nested=True):
+        '''Generates a default template based on the provided schema.
+
+        ex: input: schema = {'foo': {'Type': 'String'}}, params = {}
+            output: {'foo': {'Ref': 'foo'}},
+                params = {'foo': {'Type': 'String'}}
+
+        :param schema: The schema to generate a parameter or value for.
+        :param params: A dict to map a schema to a parameter path.
+        :param path: Required if params != None. The params key
+            to save the schema at.
+        :param explode_nested: True if a resource's nested properties schema's
+            should be resolved.
+        :returns: A dict of properties resolved for a template's schema
+        '''
+        def resolve_schema(nested_schema, path, explode_nested):
+            '''Generate a parameter when we reach a non-nested schema property.
+            '''
+            if TYPE in nested_schema:
+                if nested_schema[TYPE] == LIST:
+                    params[path] = {'Type': 'CommaSeparatedList'}
+                    return {'Fn::Split': {'Ref': path}}
+
+                elif nested_schema[TYPE] == MAP:
+                    if SCHEMA in nested_schema and explode_nested:
+                        return resolve_schema(nested_schema[SCHEMA], path,
+                                              explode_nested)
+                    else:
+                        params[path] = {'Type': 'Json'}
+                        return {'Ref': path}
+
+                #No possibility of nested schema, generate a parameter and ref
+                else:
+                    return Properties._generate_input(nested_schema,
+                                                      params, path)
+
+            #Outside of the schema definition section.
+            else:
+                return (Properties.
+                        _schema_to_params_and_props(nested_schema,
+                                                    params=params,
+                                                    path=path,
+                                                    explode_nested=(
+                                                        explode_nested)))
+        #Outer loop for sections of the schema without the keyword 'Schema'
+        properties = {}
+        for prop, nested_schema in schema.iteritems():
+            if path:
+                new_path = "%s_%s" % (path, prop)
+                properties[prop] = resolve_schema(nested_schema, new_path,
+                                                  explode_nested)
+            else:
+                properties[prop] = resolve_schema(nested_schema, prop,
+                                                  explode_nested)
+            #remove not implemented properties
+            if properties[prop] is None:
+                del properties[prop]
+        return properties
+
+    @staticmethod
+    def schema_to_parameters_and_properties(schema, explode_nested=True):
+        '''Generates properties with params resolved for a resource's
+        properties_schema.
+        :param schema: A resource's properties_schema
+        :param explode_nested: True if a resource's nested properties schema
+            should be resolved.
+        :returns: A tuple of params and properties dicts
+        '''
+        params = {}
+        properties = (Properties.
+                      _schema_to_params_and_props(schema,
+                                                  params=params,
+                                                  explode_nested=explode_nested
+                                                  ))
+        return (params, properties)
