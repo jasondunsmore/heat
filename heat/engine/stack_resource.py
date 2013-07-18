@@ -33,7 +33,6 @@ class StackResource(resource.Resource):
 
     def __init__(self, name, json_snippet, stack):
         super(StackResource, self).__init__(name, json_snippet, stack)
-        self._outputs_to_attribs(json_snippet)
         self._nested = None
 
     def _outputs_to_attribs(self, json_snippet):
@@ -161,12 +160,17 @@ class StackResource(resource.Resource):
         if stack is None:
             return None
         if op not in stack.outputs:
-            raise exception.InvalidTemplateAttribute(
-                resource=self.name, key=op)
-
+            raise exception.InvalidTemplateAttribute(resource=self.name,
+                                                     key=op)
         return stack.output(op)
 
     def _resolve_attribute(self, name):
-        if name.startswith('Outputs.'):
-            name = name.partition('.')[-1]
         return unicode(self.get_output(name))
+
+    def FnGetAtt(self, key):
+        # previous nested templates may have prepended 'Outputs.' to
+        # the attribute name, so we strip that off since we don't
+        # alter the attribute name anymore
+        if key.startswith("Outputs."):
+            key = key.partition('.')[-1]
+        return resource.Resource.FnGetAtt(self, key)
