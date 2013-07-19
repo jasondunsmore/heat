@@ -573,3 +573,70 @@ class PropertiesValidationTest(testtools.TestCase):
         schema = {'foo': {'Type': 'List', 'Default': ['one', 'two']}}
         props = properties.Properties(schema, {'foo': None})
         self.assertEqual(props.validate(), None)
+
+    def test_schema_to_template_nested_map_map_schema(self):
+        nested_schema = {'Key': {'Type': 'String',
+                         'Required': True},
+                         'Value': {'Type': 'String',
+                         'Required': True,
+                         'Default': 'fewaf'}}
+        schema = {'foo': {'Type': 'Map', 'Schema': {'Type': 'Map',
+                  'Schema': nested_schema}}}
+
+        prop_expected = {'foo': {'Key': {'Ref': 'foo_Key'},
+                         'Value': {'Ref': 'foo_Value'}}}
+        param_expected = {'foo_Key': {'Type': 'String'},
+                          'foo_Value': {'Type': 'String', 'Default': 'fewaf'}}
+        (parameters, props) = \
+            properties.Properties.schema_to_parameters_and_properties(schema)
+        self.assertEquals(param_expected, parameters)
+        self.assertEquals(prop_expected, props)
+
+    def test_schema_to_template_nested_map_map_map_schema(self):
+        key_schema = {'bar': {'Type': 'Map'}}
+        nested_schema = {'Key': {'Type': 'Map', 'Schema': {'Type': 'Map',
+                         'Schema': key_schema}},
+                         'Value': {'Type': 'String',
+                         'Required': True}}
+        schema = {'foo': {'Type': 'Map', 'Schema': {'Type': 'Map',
+                  'Schema': nested_schema}}}
+
+        prop_expected = {'foo': {'Key': {'bar': {'Ref': 'foo_Key_bar'}},
+                         'Value': {'Ref': 'foo_Value'}}}
+        param_expected = {'foo_Key_bar': {'Type': 'Json'},
+                          'foo_Value': {'Type': 'String'}}
+        (parameters, props) = \
+            properties.Properties.schema_to_parameters_and_properties(schema)
+        self.assertEquals(param_expected, parameters)
+        self.assertEquals(prop_expected, props)
+
+    def test_schema_to_template_nested_map_list_map_schema(self):
+        key_schema = {'bar': {'Type': 'Number'}}
+        nested_schema = {'Key': {'Type': 'Map', 'Schema': {'Type': 'Map',
+                         'Schema': key_schema}},
+                         'Value': {'Type': 'String',
+                         'Required': True}}
+        schema = {'foo': {'Type': 'Map', 'Schema': {'Type': 'List',
+                  'Schema': nested_schema}}}
+
+        prop_expected = {'foo': {'Fn::Split': {'Ref': 'foo'}}}
+        param_expected = {'foo': {'Type': 'CommaSeparatedList'}}
+        (parameters, props) = \
+            properties.Properties.schema_to_parameters_and_properties(schema)
+        self.assertEquals(param_expected, parameters)
+        self.assertEquals(prop_expected, props)
+
+    def test_schema_invalid_parameters_stripped(self):
+        nested_schema = {'Key': {'Type': 'String',
+                         'Required': True,
+                         'Implemented': True}}
+        schema = {'foo': {'Type': 'Map', 'Schema': {'Type': 'Map',
+                  'Schema': nested_schema}}}
+
+        prop_expected = {'foo': {'Key': {'Ref': 'foo_Key'}}}
+        param_expected = {'foo_Key': {'Type': 'String'}}
+
+        (parameters, props) = \
+            properties.Properties.schema_to_parameters_and_properties(schema)
+        self.assertEquals(param_expected, parameters)
+        self.assertEquals(prop_expected, props)
