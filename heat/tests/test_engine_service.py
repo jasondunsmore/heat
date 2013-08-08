@@ -31,6 +31,7 @@ from heat.common import identifier
 from heat.common import template_format
 from heat.engine import parser
 from heat.engine.resource import _register_class
+from heat.engine import resource
 from heat.engine import service
 from heat.engine.properties import Properties
 from heat.engine.resources import instance as instances
@@ -125,6 +126,18 @@ def get_stack(stack_name, ctx, template):
     return stack
 
 
+def mock_stack_listener(mocks):
+    mocks.StubOutWithMock(resource.StackListener, 'start')
+    listener = resource.StackListener('localhost', 'fake-topic')
+    listener.start().MultipleTimes().AndReturn(True)
+
+
+def mock_stack_asker(mocks, eng, stack):
+    mocks.StubOutWithMock(service.EngineService, '_raise_if_stack_in_progress')
+    eng._raise_if_stack_in_progress(utils.dummy_context(), stack)\
+       .AndReturn(None)
+
+
 def setup_mocks(mocks, stack):
     fc = fakes.FakeClient()
     mocks.StubOutWithMock(instances.Instance, 'nova')
@@ -142,6 +155,7 @@ def setup_mocks(mocks, stack):
                       meta=None, nics=None,
                       availability_zone=None).AndReturn(
                           fc.servers.list()[-1])
+    mock_stack_listener(mocks)
     return fc
 
 
@@ -202,6 +216,9 @@ def stack_context(stack_name, create_res=True):
                 finally:
                     raise exc_class, exc_val, exc_tb
             else:
+                m = mox.Mox()
+                mock_stack_listener(m)
+                m.ReplayAll()
                 delete_stack()
 
         return wrapped_test
@@ -246,6 +263,7 @@ class StackCreateTest(HeatTestCase):
         ctx = utils.dummy_context()
         stack = get_wordpress_stack('test_stack', ctx)
         fc = setup_mocks(self.m, stack)
+
         self.m.ReplayAll()
         stack_id = stack.store()
         stack.create()
@@ -540,6 +558,18 @@ class StackServiceCreateUpdateDeleteTest(HeatTestCase):
                           ctx, stack.identifier(), template, params,
                           None, {})
 
+    def test_stack_update_engine_dead(self):
+        pass
+
+    def test_stack_delete_engine_dead(self):
+        pass
+
+    def test_stack_resume_engine_dead(self):
+        pass
+
+    def test_stack_suspend_engine_dead(self):
+        pass
+
 
 class StackServiceSuspendResumeTest(HeatTestCase):
 
@@ -728,8 +758,10 @@ class StackServiceTest(HeatTestCase):
         self.m.StubOutWithMock(instances.Instance, 'handle_delete')
         instances.Instance.handle_delete()
 
+        mock_stack_asker(self.m, self.eng, self.stack)
         self.m.ReplayAll()
 
+        #import ipdb; ipdb.set_trace()
         result = self.eng.update_stack(self.ctx, self.stack.identifier(),
                                        new_tmpl, None, None, {})
 
@@ -1175,6 +1207,7 @@ class StackServiceTest(HeatTestCase):
                           self.ctx,
                           policy_template)
         self.stack = stack
+        mock_stack_listener(self.m)
         self.m.ReplayAll()
         stack.store()
         stack.create()
@@ -1205,6 +1238,7 @@ class StackServiceTest(HeatTestCase):
                           self.ctx,
                           policy_template)
         self.stack = stack
+        mock_stack_listener(self.m)
         self.m.ReplayAll()
         stack.store()
         stack.create()
@@ -1296,6 +1330,7 @@ class StackServiceTest(HeatTestCase):
                           utils.dummy_context(),
                           alarm_template)
         self.stack = stack
+        mock_stack_listener(self.m)
         self.m.ReplayAll()
         stack.store()
         stack.create()

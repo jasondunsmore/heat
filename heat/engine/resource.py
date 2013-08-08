@@ -29,6 +29,7 @@ from heat.engine.attributes import Attributes
 from heat.engine.properties import Properties
 
 from heat.openstack.common import log as logging
+from heat.openstack.common.rpc import service
 from heat.openstack.common.gettextutils import _
 
 logger = logging.getLogger(__name__)
@@ -85,6 +86,20 @@ class Metadata(object):
             raise exception.ResourceNotAvailable(resource_name=resource.name)
         rs = db_api.resource_get(resource.stack.context, resource.id)
         rs.update_and_save({'rsrc_metadata': metadata})
+
+
+class StackListener(service.Service):
+    '''
+    Listen on an AMQP queue while a stack action is in-progress and
+    respond to stack-related questions.  Used for multi-engine support.
+    '''
+    def listening(self, ctxt):
+        '''
+        Respond affirmatively to confirm that the engine performing the
+        action is still alive.
+        '''
+        import ipdb; ipdb.set_trace()
+        return True
 
 
 class Resource(object):
@@ -355,6 +370,12 @@ class Resource(object):
                     logger.exception('Error marking resource as failed')
         else:
             self.state_set(action, self.COMPLETE)
+            self.listener.stop()
+
+    def _start_listener(self):
+        topic = "heat-stack-" + self.stack.id
+        self.listener = StackListener('localhost', topic)
+        self.listener.start()
 
     def create(self):
         '''
@@ -367,6 +388,7 @@ class Resource(object):
                                   % str(self.state))
             raise exception.ResourceFailure(exc, self, action)
 
+        self._start_listener()
         logger.info('creating %s' % str(self))
 
         # Re-resolve the template, since if the resource Ref's
@@ -385,6 +407,8 @@ class Resource(object):
         update the resource. Subclasses should provide a handle_update() method
         to customise update, the base-class handle_update will fail by default.
         '''
+        self._start_listener()
+
         action = self.UPDATE
 
         if before is None:
@@ -419,12 +443,15 @@ class Resource(object):
         else:
             self.t = self.stack.resolve_static_data(after)
             self.state_set(action, self.COMPLETE)
+            self.listener.stop()
 
     def suspend(self):
         '''
         Suspend the resource.  Subclasses should provide a handle_suspend()
         method to implement suspend
         '''
+        self._start_listener()
+
         action = self.SUSPEND
 
         # Don't try to suspend the resource unless it's in a stable state
@@ -441,6 +468,8 @@ class Resource(object):
         Resume the resource.  Subclasses should provide a handle_resume()
         method to implement resume
         '''
+        self._start_listener()
+
         action = self.RESUME
 
         # Can't resume a resource unless it's SUSPEND_COMPLETE
@@ -482,6 +511,8 @@ class Resource(object):
         Delete the resource. Subclasses should provide a handle_delete() method
         to customise deletion.
         '''
+        self._start_listener()
+
         action = self.DELETE
 
         if (self.action, self.status) == (self.DELETE, self.COMPLETE):
@@ -518,6 +549,7 @@ class Resource(object):
                     logger.exception('Error marking resource deletion failed')
         else:
             self.state_set(action, self.COMPLETE)
+            self.listener.stop()
 
     def destroy(self):
         '''
