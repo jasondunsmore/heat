@@ -115,6 +115,8 @@ class AutoScalingTest(HeatTestCase):
         # create the launch configuration resource
         conf = stack.resources['LaunchConfig']
         self.assertEqual(None, conf.validate())
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         scheduler.TaskRunner(conf.create)()
         self.assertEqual((conf.CREATE, conf.COMPLETE), conf.state)
 
@@ -219,6 +221,7 @@ class AutoScalingTest(HeatTestCase):
         # trigger adjustment to reduce to 0, there should be no more instances
         self._stub_lb_reload(0)
         self._stub_meta_expected(now, 'ChangeInCapacity : -1')
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         rsrc.adjust(-1)
         self.assertEqual([], rsrc.get_instance_names())
@@ -270,6 +273,7 @@ class AutoScalingTest(HeatTestCase):
         instance.Instance.handle_suspend().AndReturn(inst_cookie)
         instance.Instance.check_suspend_complete(inst_cookie).AndReturn(False)
         instance.Instance.check_suspend_complete(inst_cookie).AndReturn(True)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         scheduler.TaskRunner(rsrc.suspend)()
@@ -301,6 +305,7 @@ class AutoScalingTest(HeatTestCase):
         instance.Instance.handle_resume().AndReturn(inst_cookie)
         instance.Instance.check_resume_complete(inst_cookie).AndReturn(False)
         instance.Instance.check_resume_complete(inst_cookie).AndReturn(True)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         rsrc.state_set(rsrc.SUSPEND, rsrc.COMPLETE)
@@ -343,6 +348,7 @@ class AutoScalingTest(HeatTestCase):
         ).AndReturn(True)
         instance.Instance.check_suspend_complete(inst_cookie2).InAnyOrder(
         ).AndReturn(True)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         scheduler.TaskRunner(rsrc.suspend)()
@@ -381,6 +387,7 @@ class AutoScalingTest(HeatTestCase):
         ).AndReturn(True)
         instance.Instance.check_resume_complete(inst_cookie2).InAnyOrder(
         ).AndReturn(True)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         rsrc.state_set(rsrc.SUSPEND, rsrc.COMPLETE)
@@ -413,6 +420,7 @@ class AutoScalingTest(HeatTestCase):
         self.m.StubOutWithMock(instance.Instance, 'handle_suspend')
         self.m.StubOutWithMock(instance.Instance, 'check_suspend_complete')
         instance.Instance.handle_suspend().AndRaise(Exception('oops'))
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         sus_task = scheduler.TaskRunner(rsrc.suspend)
@@ -444,6 +452,7 @@ class AutoScalingTest(HeatTestCase):
         self.m.StubOutWithMock(instance.Instance, 'handle_resume')
         self.m.StubOutWithMock(instance.Instance, 'check_resume_complete')
         instance.Instance.handle_resume().AndRaise(Exception('oops'))
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         rsrc.state_set(rsrc.SUSPEND, rsrc.COMPLETE)
@@ -468,6 +477,7 @@ class AutoScalingTest(HeatTestCase):
         self.m.StubOutWithMock(instance.Instance, 'check_create_complete')
         instance.Instance.handle_create().AndRaise(Exception)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         conf = stack.resources['LaunchConfig']
@@ -530,6 +540,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_lb_reload(2)
         self._stub_meta_expected(now, 'ExactCapacity : 2')
         self._stub_create(1)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         update_snippet = copy.deepcopy(rsrc.parsed_template())
@@ -561,6 +572,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_lb_reload(2)
         self._stub_meta_expected(now, 'ExactCapacity : 2')
         self._stub_create(1)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         update_snippet = copy.deepcopy(rsrc.parsed_template())
@@ -734,6 +746,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_lb_reload(1)
         self._stub_validate()
         self._stub_meta_expected(now, 'ChangeInCapacity : -2')
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         rsrc.adjust(-2)
         self.assertEqual(['WebServerGroup-0'], rsrc.get_instance_names())
@@ -742,6 +755,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_lb_reload(3)
         self._stub_meta_expected(now, 'ChangeInCapacity : 2')
         self._stub_create(2)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         rsrc.adjust(2)
         self.assertEqual(['WebServerGroup-0', 'WebServerGroup-1',
@@ -752,6 +766,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_lb_reload(2)
         self._stub_validate()
         self._stub_meta_expected(now, 'ExactCapacity : 2')
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         rsrc.adjust(2, 'ExactCapacity')
         self.assertEqual(['WebServerGroup-0', 'WebServerGroup-1'],
@@ -778,6 +793,7 @@ class AutoScalingTest(HeatTestCase):
         instance.Instance.handle_create().AndRaise(Exception)
         self._stub_lb_reload(1, unset=False, nochange=True)
         self._stub_validate()
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         self.assertRaises(Exception, rsrc.adjust, 1)
@@ -840,6 +856,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_lb_reload(1)
         self._stub_meta_expected(now, 'PercentChangeInCapacity : -50')
         self._stub_validate()
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         rsrc.adjust(-50, 'PercentChangeInCapacity')
         self.assertEqual(['WebServerGroup-0'],
@@ -849,6 +866,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_lb_reload(3)
         self._stub_meta_expected(now, 'PercentChangeInCapacity : 200')
         self._stub_create(2)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         rsrc.adjust(200, 'PercentChangeInCapacity')
         self.assertEqual(['WebServerGroup-0', 'WebServerGroup-1',
@@ -879,6 +897,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_lb_reload(1)
         self._stub_validate()
         self._stub_meta_expected(now, 'PercentChangeInCapacity : -50')
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         rsrc.adjust(-50, 'PercentChangeInCapacity')
         self.assertEqual(['WebServerGroup-0'],
@@ -903,6 +922,7 @@ class AutoScalingTest(HeatTestCase):
         Metadata.__get__(mox.IgnoreArg(), rsrc, mox.IgnoreArg()
                          ).AndReturn(previous_meta)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         # raise by 200%, too soon for Cooldown so there should be no change
@@ -933,6 +953,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_lb_reload(1)
         self._stub_validate()
         self._stub_meta_expected(now, 'PercentChangeInCapacity : -50')
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         rsrc.adjust(-50, 'PercentChangeInCapacity')
         self.assertEqual(['WebServerGroup-0'],
@@ -961,6 +982,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_lb_reload(3, unset=False)
         self._stub_create(2)
         self._stub_meta_expected(now, 'PercentChangeInCapacity : 200')
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         rsrc.adjust(200, 'PercentChangeInCapacity')
         self.assertEqual(['WebServerGroup-0', 'WebServerGroup-1',
@@ -991,6 +1013,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_lb_reload(1)
         self._stub_meta_expected(now, 'PercentChangeInCapacity : -50')
         self._stub_validate()
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         rsrc.adjust(-50, 'PercentChangeInCapacity')
         self.assertEqual(['WebServerGroup-0'],
@@ -1015,6 +1038,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_lb_reload(3, unset=False)
         self._stub_meta_expected(now, 'PercentChangeInCapacity : 200')
         self._stub_create(2)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         rsrc.adjust(200, 'PercentChangeInCapacity')
         self.assertEqual(['WebServerGroup-0', 'WebServerGroup-1',
@@ -1048,6 +1072,7 @@ class AutoScalingTest(HeatTestCase):
         asc.ScalingPolicy.keystone().MultipleTimes().AndReturn(
             self.fc)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         up_policy = self.create_scaling_policy(t, stack,
                                                'WebServerScaleUpPolicy')
@@ -1087,6 +1112,7 @@ class AutoScalingTest(HeatTestCase):
         asc.ScalingPolicy.keystone().MultipleTimes().AndReturn(
             self.fc)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         down_policy = self.create_scaling_policy(t, stack,
                                                  'WebServerScaleDownPolicy')
@@ -1119,6 +1145,7 @@ class AutoScalingTest(HeatTestCase):
         asc.ScalingPolicy.keystone().MultipleTimes().AndReturn(
             self.fc)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         up_policy = self.create_scaling_policy(t, stack,
                                                'WebServerScaleUpPolicy')
@@ -1144,6 +1171,7 @@ class AutoScalingTest(HeatTestCase):
         Metadata.__get__(mox.IgnoreArg(), up_policy, mox.IgnoreArg()
                          ).AndReturn(previous_meta)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         up_policy.signal()
         self.assertEqual(['WebServerGroup-0', 'WebServerGroup-1'],
@@ -1175,6 +1203,7 @@ class AutoScalingTest(HeatTestCase):
         asc.ScalingPolicy.keystone().MultipleTimes().AndReturn(
             self.fc)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         up_policy = self.create_scaling_policy(t, stack,
                                                'WebServerScaleUpPolicy')
@@ -1202,6 +1231,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_meta_expected(now, 'ChangeInCapacity : 1', 2)
         self._stub_create(1)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         up_policy.signal()
         self.assertEqual(['WebServerGroup-0', 'WebServerGroup-1',
@@ -1236,6 +1266,7 @@ class AutoScalingTest(HeatTestCase):
         asc.ScalingPolicy.keystone().MultipleTimes().AndReturn(
             self.fc)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         up_policy = self.create_scaling_policy(t, stack,
                                                'WebServerScaleUpPolicy')
@@ -1261,6 +1292,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_meta_expected(now, 'ChangeInCapacity : 1', 2)
         self._stub_create(1)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         up_policy.signal()
         self.assertEqual(['WebServerGroup-0', 'WebServerGroup-1',
@@ -1297,6 +1329,7 @@ class AutoScalingTest(HeatTestCase):
         asc.ScalingPolicy.keystone().MultipleTimes().AndReturn(
             self.fc)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         up_policy = self.create_scaling_policy(t, stack,
                                                'WebServerScaleUpPolicy')
@@ -1322,6 +1355,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_meta_expected(now, 'ChangeInCapacity : 1', 2)
         self._stub_create(1)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         up_policy.signal()
         self.assertEqual(['WebServerGroup-0', 'WebServerGroup-1',
@@ -1363,6 +1397,7 @@ class AutoScalingTest(HeatTestCase):
         asc.ScalingPolicy.keystone().MultipleTimes().AndReturn(
             self.fc)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         # Trigger alarm
@@ -1399,6 +1434,7 @@ class AutoScalingTest(HeatTestCase):
         self._stub_lb_reload(4, unset=False)
         self._stub_meta_expected(now, 'ChangeInCapacity : 2', 2)
         self._stub_create(2)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         # Trigger alarm

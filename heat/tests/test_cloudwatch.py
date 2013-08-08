@@ -53,11 +53,15 @@ class CloudWatchAlarmTest(common.HeatTestCase):
 
     @utils.stack_delete_after
     def test_resource_create_good(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         s = self.parse_stack()
         self.assertEqual(None, scheduler.TaskRunner(s['test_me'].create)())
 
     @utils.stack_delete_after
     def test_resource_create_failed(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         s = self.parse_stack()
         with patch.object(watchrule.WatchRule, 'store') as bad_store:
             bad_store.side_effect = KeyError('any random failure')
@@ -66,6 +70,8 @@ class CloudWatchAlarmTest(common.HeatTestCase):
 
     @utils.stack_delete_after
     def test_resource_delete_good(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         s = self.parse_stack()
         self.assertEqual(None, scheduler.TaskRunner(s['test_me'].create)())
         self.assertEqual(None, scheduler.TaskRunner(s['test_me'].delete)())
@@ -73,6 +79,8 @@ class CloudWatchAlarmTest(common.HeatTestCase):
     @utils.stack_delete_after
     @utils.wr_delete_after
     def test_resource_delete_notfound(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         # if a resource is not found, handle_delete() should not raise
         # an exception.
         s = self.parse_stack()

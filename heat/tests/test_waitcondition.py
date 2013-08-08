@@ -131,6 +131,7 @@ class WaitConditionTest(HeatTestCase):
         wc.WaitConditionHandle.get_status().AndReturn([])
         wc.WaitConditionHandle.get_status().AndReturn(['SUCCESS'])
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         self.stack.create()
@@ -151,6 +152,7 @@ class WaitConditionTest(HeatTestCase):
         wc.WaitConditionHandle.get_status().AndReturn([])
         wc.WaitConditionHandle.get_status().AndReturn(['FAILURE'])
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         self.stack.create()
@@ -174,6 +176,7 @@ class WaitConditionTest(HeatTestCase):
         wc.WaitConditionHandle.get_status().AndReturn(['SUCCESS', 'SUCCESS',
                                                        'SUCCESS'])
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         self.stack.create()
@@ -194,6 +197,7 @@ class WaitConditionTest(HeatTestCase):
         wc.WaitConditionHandle.get_status().AndReturn(['SUCCESS'])
         wc.WaitConditionHandle.get_status().AndReturn(['SUCCESS', 'FAILURE'])
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         self.stack.create()
@@ -228,6 +232,7 @@ class WaitConditionTest(HeatTestCase):
         wc.WaitConditionHandle.get_status().AndReturn([])
         scheduler.wallclock().AndReturn(st + 5.1)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         self.stack.create()
@@ -247,6 +252,7 @@ class WaitConditionTest(HeatTestCase):
         self.stack = self.create_stack()
         wc.WaitConditionHandle.get_status().AndReturn(['SUCCESS'])
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         self.stack.create()
 
@@ -292,6 +298,8 @@ class WaitConditionTest(HeatTestCase):
         self.assertRaises(ValueError, rsrc.handle_create)
 
         self.m.VerifyAll()
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
 
     @utils.stack_delete_after
     def test_validate_handle_url_bad_stackname(self):
@@ -311,6 +319,8 @@ class WaitConditionTest(HeatTestCase):
         self.assertRaises(ValueError, rsrc.handle_create)
 
         self.m.VerifyAll()
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
 
     @utils.stack_delete_after
     def test_validate_handle_url_bad_tenant(self):
@@ -330,11 +340,11 @@ class WaitConditionTest(HeatTestCase):
         self.assertRaises(ValueError, rsrc.handle_create)
 
         self.m.VerifyAll()
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
 
     @utils.stack_delete_after
     def test_validate_handle_url_bad_resource(self):
-        self.m.ReplayAll()
-
         stack_id = 'STACK_HUBR_1234'
         t = json.loads(test_template_waitcondition)
         badhandle = ("http://127.0.0.1:8000/v1/waitcondition/" +
@@ -349,6 +359,8 @@ class WaitConditionTest(HeatTestCase):
         self.assertRaises(ValueError, rsrc.handle_create)
 
         self.m.VerifyAll()
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
 
     @utils.stack_delete_after
     def test_validate_handle_url_bad_resource_type(self):
@@ -367,6 +379,8 @@ class WaitConditionTest(HeatTestCase):
         self.assertRaises(ValueError, rsrc.handle_create)
 
         self.m.VerifyAll()
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
 
 
 class WaitConditionHandleTest(HeatTestCase):
@@ -418,6 +432,8 @@ class WaitConditionHandleTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_handle(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         stack_id = 'STACKABCD1234'
         stack_name = 'test_stack2'
         created_time = datetime.datetime(2012, 11, 29, 13, 49, 37)
@@ -451,6 +467,8 @@ class WaitConditionHandleTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_metadata_update(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = self.create_stack()
         rsrc = self.stack.resources['WaitHandle']
         self.assertEqual(rsrc.state, (rsrc.CREATE, rsrc.COMPLETE))
@@ -466,6 +484,8 @@ class WaitConditionHandleTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_metadata_update_invalid(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = self.create_stack()
         rsrc = self.stack.resources['WaitHandle']
         self.assertEqual(rsrc.state, (rsrc.CREATE, rsrc.COMPLETE))
@@ -510,6 +530,8 @@ class WaitConditionHandleTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_get_status(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = self.create_stack()
         rsrc = self.stack.resources['WaitHandle']
         self.assertEqual(rsrc.state, (rsrc.CREATE, rsrc.COMPLETE))
@@ -533,10 +555,13 @@ class WaitConditionHandleTest(HeatTestCase):
         # re-stub keystone() with fake client or stack delete fails
         self.m.StubOutWithMock(wc.WaitConditionHandle, 'keystone')
         wc.WaitConditionHandle.keystone().MultipleTimes().AndReturn(self.fc)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
     @utils.stack_delete_after
     def test_get_status_reason(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = self.create_stack()
         rsrc = self.stack.resources['WaitHandle']
         self.assertEqual(rsrc.state, (rsrc.CREATE, rsrc.COMPLETE))

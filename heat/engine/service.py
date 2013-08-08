@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
 import functools
 import json
 
@@ -40,6 +41,8 @@ from heat.engine import watchrule
 from heat.openstack.common import log as logging
 from heat.openstack.common import threadgroup
 from heat.openstack.common.gettextutils import _
+from heat.openstack.common.rpc import proxy
+from heat.openstack.common.rpc.common import Timeout
 from heat.openstack.common.rpc import service
 from heat.openstack.common import uuidutils
 
@@ -114,6 +117,20 @@ class EngineService(service.Service):
         if start_watch_thread:
             self._timer_in_thread(stack_id, self._periodic_watcher_task,
                                   sid=stack_id)
+
+    def _raise_if_stack_in_progress(self, cnxt, stack):
+        topic = "heat-stack-" + stack.id
+        rpc = proxy.RpcProxy(topic, "1.0")
+        msg = rpc.make_msg("listening")
+        try:
+            listening = rpc.call(cnxt, msg, topic=topic, timeout=2)
+        except Timeout:
+            logger.debug('No engine claimed in-progress stack %s on topic '
+                         '%s.' % (stack.name, topic))
+        else:
+            if listening:
+                raise exception.ActionInProgress(stack_name=stack.name,
+                                                     action=stack.action)
 
     def start(self):
         super(EngineService, self).start()
@@ -226,6 +243,7 @@ class EngineService(service.Service):
                       (currently provider templates).
         :param args: Request parameters/args passed from API
         """
+        logger.debug('Creating stack in PID %s' % os.getpid())
         logger.info('template is %s' % template)
 
         self._validate_mandatory_credentials(cnxt)
@@ -272,13 +290,15 @@ class EngineService(service.Service):
         arg4 -> Stack Input Params
         arg4 -> Request parameters/args passed from API
         """
+        logger.debug('Updating stack in PID %s' % os.getpid())
         logger.info('template is %s' % template)
 
         self._validate_mandatory_credentials(cnxt)
 
         # Get the database representation of the existing stack
         db_stack = self._get_stack(cnxt, stack_identity)
-
+        self._raise_if_stack_in_progress(cnxt, db_stack)
+ 
         current_stack = parser.Stack.load(cnxt, stack=db_stack)
 
         # Now parse the template and any parameters for the updated
@@ -378,9 +398,13 @@ class EngineService(service.Service):
         arg1 -> RPC context.
         arg2 -> Name of the stack you want to delete.
         """
+        logger.debug('Deleting stack in PID %s' % os.getpid())
+
         st = self._get_stack(cnxt, stack_identity)
 
         logger.info('deleting stack %s' % st.name)
+
+        self._raise_if_stack_in_progress(cnxt, st)
 
         stack = parser.Stack.load(cnxt, stack=st)
 
@@ -596,6 +620,7 @@ class EngineService(service.Service):
             stack.suspend()
 
         s = self._get_stack(cnxt, stack_identity)
+        self._raise_if_stack_in_progress(cnxt, s)
 
         stack = parser.Stack.load(cnxt, stack=s)
         self._start_in_thread(stack.id, _stack_suspend, stack)
@@ -610,6 +635,7 @@ class EngineService(service.Service):
             stack.resume()
 
         s = self._get_stack(cnxt, stack_identity)
+        self._raise_if_stack_in_progress(cnxt, s)
 
         stack = parser.Stack.load(cnxt, stack=s)
         self._start_in_thread(stack.id, _stack_resume, stack)

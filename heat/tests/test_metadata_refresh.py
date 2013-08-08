@@ -139,6 +139,8 @@ class MetadataRefreshTest(HeatTestCase):
     # Note tests creating a stack should be decorated with @stack_delete_after
     # to ensure the stack is properly cleaned up
     def create_stack(self, stack_name='test_stack', params={}):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         temp = template_format.parse(test_template_metadata)
         template = parser.Template(temp)
         ctx = utils.dummy_context()
@@ -262,6 +264,7 @@ class WaitCondMetadataUpdateTest(HeatTestCase):
             self.stack.context.to_dict())
         scheduler.TaskRunner._sleep(mox.IsA(int)).AndReturn(None)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         self.stack.create()
 

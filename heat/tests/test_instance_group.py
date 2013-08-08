@@ -92,6 +92,8 @@ class InstanceGroupTest(HeatTestCase):
     def test_instance_group(self):
 
         t = template_format.parse(ig_template)
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         stack = utils.parse_stack(t)
 
         # start with min then delete
@@ -128,6 +130,8 @@ class InstanceGroupTest(HeatTestCase):
                         original_instance)
 
         t = template_format.parse(ig_template)
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         stack = utils.parse_stack(t)
         self._stub_create(1, instance_class=MyInstance)
 
@@ -141,6 +145,8 @@ class InstanceGroupTest(HeatTestCase):
     def test_missing_image(self):
 
         t = template_format.parse(ig_template)
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         stack = utils.parse_stack(t)
 
         conf = self.create_resource(t, stack, 'JobServerConfig')
@@ -164,6 +170,8 @@ class InstanceGroupTest(HeatTestCase):
         t = template_format.parse(ig_template)
         properties = t['Resources']['JobServerGroup']['Properties']
         properties['Size'] = '2'
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         stack = utils.parse_stack(t)
 
         self._stub_create(2)
@@ -183,6 +191,7 @@ class InstanceGroupTest(HeatTestCase):
         instance.Instance.FnGetAtt('PublicIp').AndReturn('10.0.0.5')
         instance.Instance.FnGetAtt('PublicIp').AndReturn('10.0.0.6')
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         update_snippet = copy.deepcopy(rsrc.parsed_template())
@@ -203,6 +212,8 @@ class InstanceGroupTest(HeatTestCase):
         group itself will fail and the broken inner resource will remain.
         """
         t = template_format.parse(ig_template)
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         stack = utils.parse_stack(t)
 
         self.m.StubOutWithMock(parser.Stack, 'validate')
@@ -233,6 +244,8 @@ class InstanceGroupTest(HeatTestCase):
         resource will remain.
         """
         t = template_format.parse(ig_template)
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         stack = utils.parse_stack(t)
 
         self._stub_create(1)
@@ -248,6 +261,7 @@ class InstanceGroupTest(HeatTestCase):
         self.m.StubOutWithMock(instance.Instance, 'handle_create')
         instance.Instance.handle_create().AndRaise(Exception)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         update_snippet = copy.deepcopy(rsrc.parsed_template())
@@ -270,6 +284,8 @@ class InstanceGroupTest(HeatTestCase):
         t = template_format.parse(ig_template)
         properties = t['Resources']['JobServerGroup']['Properties']
         properties['Size'] = '2'
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         stack = utils.parse_stack(t)
 
         self._stub_create(2)
@@ -291,6 +307,8 @@ class InstanceGroupTest(HeatTestCase):
         t = template_format.parse(ig_template)
         properties = t['Resources']['JobServerGroup']['Properties']
         properties['Size'] = '2'
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         stack = utils.parse_stack(t)
 
         self._stub_create(2)

@@ -33,12 +33,26 @@ from heat.db import api as db_api
 
 from heat.openstack.common import log as logging
 from heat.openstack.common.gettextutils import _
+from heat.openstack.common.rpc import service
 
 from heat.common.exception import StackValidationFailed
 
 logger = logging.getLogger(__name__)
 
 (PARAM_STACK_NAME, PARAM_REGION) = ('AWS::StackName', 'AWS::Region')
+
+
+class StackListener(service.Service):
+    '''
+    Listen on an AMQP queue while a stack action is in-progress and
+    respond to stack-related questions.  Used for multi-engine support.
+    '''
+    def listening(self, ctxt):
+        '''
+        Respond affirmatively to confirm that the engine performing the
+        action is still alive.
+        '''
+        return True
 
 
 class Stack(object):
@@ -62,7 +76,8 @@ class Stack(object):
     def __init__(self, context, stack_name, tmpl, env=None,
                  stack_id=None, action=None, status=None,
                  status_reason='', timeout_mins=60, resolve_data=True,
-                 disable_rollback=True, parent_resource=None, owner_id=None):
+                 disable_rollback=True, parent_resource=None, owner_id=None,
+                 host=None):
         '''
         Initialise from a context, name, Template object and (optionally)
         Environment object. The database ID may also be initialised, if the
@@ -88,6 +103,8 @@ class Stack(object):
         self.timeout_mins = timeout_mins
         self.disable_rollback = disable_rollback
         self.parent_resource = parent_resource
+        self.host = host
+        self.listener = None
 
         resources.initialise()
 
@@ -278,6 +295,15 @@ class Stack(object):
 
         if status not in self.STATUSES:
             raise ValueError("Invalid status %s" % status)
+
+        if status == self.IN_PROGRESS:
+            topic = "heat-stack-" + self.id
+            self.listener = StackListener(self.host, topic)
+            logger.debug("Starting listener for %s" % self)
+            self.listener.start()
+        elif self.listener:
+            logger.debug("Stopping listener for %s" % self)
+            self.listener.stop()
 
         self.action = action
         self.status = status

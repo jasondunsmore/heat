@@ -148,6 +148,7 @@ class CeilometerAlarmTest(HeatTestCase):
         al2['alarm_id'] = mox.IgnoreArg()
         self.fa.alarms.update(**al2).AndReturn(None)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         self.stack.create()
         rsrc = self.stack['MEMAlarmHigh']
@@ -182,6 +183,7 @@ class CeilometerAlarmTest(HeatTestCase):
 
         self.stack = self.create_stack(template=json.dumps(t))
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         self.stack.create()
         rsrc = self.stack['MEMAlarmHigh']
@@ -210,6 +212,7 @@ class CeilometerAlarmTest(HeatTestCase):
         al_resume = {'alarm_id': mox.IgnoreArg(),
                      'enabled': True}
         self.fa.alarms.update(**al_resume).AndReturn(None)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         self.stack.create()

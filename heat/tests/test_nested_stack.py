@@ -65,6 +65,8 @@ Outputs:
         utils.setup_dummy_db()
 
     def create_stack(self, template):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         t = template_format.parse(template)
         stack = self.parse_stack(t)
         stack.create()

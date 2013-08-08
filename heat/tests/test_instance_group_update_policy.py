@@ -295,6 +295,8 @@ class InstanceGroupTest(HeatTestCase):
 
         # setup stack from the initial template
         tmpl = template_format.parse(ig_tmpl_with_updt_policy_1)
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         stack = utils.parse_stack(tmpl)
         nested = stack.resources['JobServerGroup'].nested()
 
@@ -339,6 +341,8 @@ class InstanceGroupTest(HeatTestCase):
 
         # setup stack from the initial template
         tmpl = template_format.parse(ig_tmpl_with_updt_policy_1)
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         stack = utils.parse_stack(tmpl)
         nested = stack.resources['JobServerGroup'].nested()
 

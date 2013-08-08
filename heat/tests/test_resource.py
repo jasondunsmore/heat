@@ -13,6 +13,7 @@
 #    under the License.
 
 import itertools
+import mox
 
 from heat.common import exception
 from heat.engine import parser
@@ -574,6 +575,12 @@ class MetadataTest(HeatTestCase):
         self.stack.store()
         self.res = generic_rsrc.GenericResource('metadata_resource',
                                                 tmpl, self.stack)
+
+        self.m.StubOutWithMock(parser.StackListener, 'start')
+        listener = parser.StackListener(mox.IgnoreArg(), mox.IgnoreArg())
+        listener.start().AndReturn(True)
+        self.m.ReplayAll()
+
         scheduler.TaskRunner(self.res.create)()
         self.addCleanup(self.stack.delete)
 

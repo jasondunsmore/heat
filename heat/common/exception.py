@@ -294,6 +294,11 @@ class WatchRuleNotFound(HeatException):
     message = _("The Watch Rule (%(watch_name)s) could not be found.")
 
 
+class ActionInProgress(HeatException):
+    message = _("Stack %(stack_name)s already has an action (%(action)s) "
+                "in progress")
+
+
 class ResourceFailure(HeatException):
     message = _("%(exc_type)s: %(message)s")
 

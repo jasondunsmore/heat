@@ -309,6 +309,7 @@ class InstanceGroupTest(HeatTestCase):
         # test that physical resource name of launch configuration is used
         size = int(stack.resources['WebServerGroup'].properties['MinSize'])
         self._stub_create(size)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         stack.create()
         self.m.VerifyAll()
@@ -355,6 +356,7 @@ class InstanceGroupTest(HeatTestCase):
         # test that physical resource name of launch configuration is used
         size = int(stack.resources['WebServerGroup'].properties['MinSize'])
         self._stub_create(size)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         stack.create()
         self.m.VerifyAll()

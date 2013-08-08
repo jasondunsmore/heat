@@ -141,6 +141,7 @@ class SqlAlchemyTest(HeatTestCase):
     def test_resource_data_delete(self):
         stack = self._setup_test_stack('stack', UUID1)[1]
         self._mock_create(self.m)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         stack.create()
         rsrc = stack.resources['WebServer']
@@ -151,6 +152,9 @@ class SqlAlchemyTest(HeatTestCase):
                           db_api.resource_data_get, rsrc, 'test')
 
     def test_stack_get_by_name(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         stack = self._setup_test_stack('stack', UUID1)[1]
 
         st = db_api.stack_get_by_name(self.ctx, 'stack')
@@ -162,6 +166,8 @@ class SqlAlchemyTest(HeatTestCase):
         self.assertIsNone(st)
 
     def test_stack_get(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         stack = self._setup_test_stack('stack', UUID1)[1]
 
         st = db_api.stack_get(self.ctx, UUID1, show_deleted=False)
@@ -175,6 +181,9 @@ class SqlAlchemyTest(HeatTestCase):
         self.assertEqual(UUID1, st.id)
 
     def test_stack_get_all(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         stacks = [self._setup_test_stack('stack', x)[1] for x in UUIDs]
 
         st_db = db_api.stack_get_all(self.ctx)
@@ -189,6 +198,8 @@ class SqlAlchemyTest(HeatTestCase):
         self.assertEqual(0, len(st_db))
 
     def test_stack_get_all_by_tenant(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         stacks = [self._setup_test_stack('stack', x)[1] for x in UUIDs]
 
         st_db = db_api.stack_get_all_by_tenant(self.ctx)
@@ -206,6 +217,7 @@ class SqlAlchemyTest(HeatTestCase):
         stack = self._setup_test_stack('stack', UUID1)[1]
 
         self._mock_create(self.m)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         stack.create()
         self.m.UnsetStubs()
@@ -214,6 +226,7 @@ class SqlAlchemyTest(HeatTestCase):
         self.assertEqual(2, len(events))
 
         self._mock_delete(self.m)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         stack.delete()
 
@@ -226,6 +239,7 @@ class SqlAlchemyTest(HeatTestCase):
         stacks = [self._setup_test_stack('stack', x)[1] for x in UUIDs]
 
         self._mock_create(self.m)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         [s.create() for s in stacks]
         self.m.UnsetStubs()
@@ -234,6 +248,7 @@ class SqlAlchemyTest(HeatTestCase):
         self.assertEqual(4, len(events))
 
         self._mock_delete(self.m)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         [s.delete() for s in stacks]
 
@@ -246,6 +261,7 @@ class SqlAlchemyTest(HeatTestCase):
         stacks = [self._setup_test_stack('stack', x)[1] for x in UUIDs]
 
         self._mock_create(self.m)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         [s.create() for s in stacks]
         self.m.UnsetStubs()
@@ -253,6 +269,8 @@ class SqlAlchemyTest(HeatTestCase):
         events = db_api.event_get_all(self.ctx)
         self.assertEqual(4, len(events))
 
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self._mock_delete(self.m)
         self.m.ReplayAll()
         stacks[0].delete()

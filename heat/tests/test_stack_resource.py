@@ -104,6 +104,8 @@ class StackResourceTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_create_with_template_ok(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.parent_resource.create_with_template(self.templ,
                                                   {"KeyName": "key"})
         self.stack = self.parent_resource.nested()
@@ -132,6 +134,8 @@ class StackResourceTest(HeatTestCase):
     @utils.stack_delete_after
     def test_update_with_template_validates(self):
         """Updating a stack with a template validates the created stack."""
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         create_result = self.parent_resource.create_with_template(
             self.simple_template, {})
         while not create_result.step():
@@ -150,6 +154,8 @@ class StackResourceTest(HeatTestCase):
         The update_with_template method updates the nested stack with the
         given template and user parameters.
         """
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         create_result = self.parent_resource.create_with_template(
             self.simple_template, {})
         while not create_result.step():
@@ -176,6 +182,8 @@ class StackResourceTest(HeatTestCase):
         update_with_template_state_err method should raise error when update
         task is done but the nested stack is in (UPDATE, FAILED) state.
         """
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         create_creator = self.parent_resource.create_with_template(
             self.simple_template, {})
         create_creator.run_to_completion()
@@ -201,6 +209,8 @@ class StackResourceTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_load_nested_ok(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.parent_resource.create_with_template(self.templ,
                                                   {"KeyName": "key"})
         self.stack = self.parent_resource.nested()
@@ -217,6 +227,8 @@ class StackResourceTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_load_nested_non_exist(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.parent_resource.create_with_template(self.templ,
                                                   {"KeyName": "key"})
         self.stack = self.parent_resource.nested()
@@ -279,6 +291,8 @@ class StackResourceTest(HeatTestCase):
         phy_id = "cb2f2b28-a663-4683-802c-4b40c916e1ff"
         templ = parser.Template(self.templ)
         env = environment.Environment({"KeyName": "test"})
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = parser.Stack(ctx, phy_id, templ, env, timeout_mins=None,
                                   disable_rollback=True,
                                   parent_resource=self.parent_resource)
@@ -321,6 +335,8 @@ class StackResourceTest(HeatTestCase):
         check_suspend_complete should raise error when suspend task is
         done but the nested stack is not in (SUSPEND,COMPLETE) state
         """
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         del self.templ['Resources']['WebServer']
         self.parent_resource.set_template(self.templ, {"KeyName": "test"})
         scheduler.TaskRunner(self.parent_resource.create)()
@@ -351,6 +367,8 @@ class StackResourceTest(HeatTestCase):
         check_resume_complete should raise error when resume task is
         done but the nested stack is not in (RESUME,COMPLETE) state
         """
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         del self.templ['Resources']['WebServer']
         self.parent_resource.set_template(self.templ, {"KeyName": "test"})
         scheduler.TaskRunner(self.parent_resource.create)()

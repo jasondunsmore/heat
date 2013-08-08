@@ -91,6 +91,7 @@ class SignalTest(HeatTestCase):
     def test_FnGetAtt_Alarm_Url(self):
         self.stack = self.create_stack()
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         self.stack.create()
 
@@ -118,6 +119,7 @@ class SignalTest(HeatTestCase):
     def test_FnGetAtt_Alarm_Url_is_cached(self):
         self.stack = self.create_stack()
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         self.stack.create()
 
@@ -133,6 +135,7 @@ class SignalTest(HeatTestCase):
     def test_FnGetAtt_delete_not_found(self):
         self.stack = self.create_stack()
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         self.stack.create()
 
@@ -147,6 +150,9 @@ class SignalTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_signal(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         test_d = {'Data': 'foo', 'Reason': 'bar',
                   'Status': 'SUCCESS', 'UniqueId': '123'}
 
@@ -169,6 +175,9 @@ class SignalTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_signal_wrong_resource(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         # assert that we get the correct exception when calling a
         # resource.signal() that does not have a handle_signal()
         self.stack = self.create_stack()
@@ -187,6 +196,9 @@ class SignalTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_signal_reception_wrong_state(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         # assert that we get the correct exception when calling a
         # resource.signal() that is in having a destructive action.
         self.stack = self.create_stack()
@@ -207,6 +219,9 @@ class SignalTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_signal_reception_failed_call(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         # assert that we get the correct exception from resource.signal()
         # when resource.handle_signal() raises an exception.
         self.stack = self.create_stack()

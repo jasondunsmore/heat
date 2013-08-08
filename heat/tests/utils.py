@@ -177,3 +177,9 @@ class PhysName(object):
         return '%s-%s-%s' % (self.stack_name,
                              self.resource_name,
                              'x' * 12)
+
+
+def mock_stack_listener(mocks):
+    mocks.StubOutWithMock(parser.StackListener, 'start')
+    listener = parser.StackListener('localhost', 'fake-topic')
+    listener.start().MultipleTimes().AndReturn(True)

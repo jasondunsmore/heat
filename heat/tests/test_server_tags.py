@@ -175,6 +175,7 @@ class ServerTagsTest(HeatTestCase):
         metadata = dict((tm['Key'], tm['Value']) for tm in tags)
         metadata['metering.groupname'] = 'WebServer'
         group = self._setup_test_group(intags=tags, nova_tags=metadata)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         scheduler.TaskRunner(group.create)()
         # we are just using mock to verify that the tags get through to the

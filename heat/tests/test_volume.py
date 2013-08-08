@@ -187,6 +187,8 @@ class VolumeTest(HeatTestCase):
         self.m.ReplayAll()
 
         t = template_format.parse(volume_template)
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         stack = utils.parse_stack(t, stack_name=stack_name)
 
         rsrc = stack['DataVolume']

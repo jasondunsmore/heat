@@ -342,6 +342,7 @@ Resources:
         self.mock_keystone()
         self.mock_create_network()
         self.mock_delete_network()
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         stack = self.create_stack(self.test_template)
@@ -376,6 +377,7 @@ Resources:
         self.mock_create_subnet()
         self.mock_delete_subnet()
         self.mock_delete_network()
+        utils.mock_stack_listener(self.m)
 
         # mock delete subnet which is already deleted
         self.mock_router_for_vpc()
@@ -558,6 +560,7 @@ Resources:
         self.mock_delete_subnet()
         self.mock_delete_network()
         self.mock_delete_security_group()
+        utils.mock_stack_listener(self.m)
 
         self.m.ReplayAll()
 
@@ -584,6 +587,7 @@ Resources:
         self.mock_delete_network_interface()
         self.mock_delete_subnet()
         self.mock_delete_network()
+        utils.mock_stack_listener(self.m)
 
         self.m.ReplayAll()
 
@@ -610,6 +614,7 @@ Resources:
         self.mock_show_subnet()
         self.mock_delete_subnet()
         self.mock_delete_network()
+        utils.mock_stack_listener(self.m)
 
         self.m.ReplayAll()
 
@@ -692,6 +697,7 @@ Resources:
         self.mock_delete_route_table()
         self.mock_delete_subnet()
         self.mock_delete_network()
+        utils.mock_stack_listener(self.m)
 
         self.m.ReplayAll()
 
@@ -750,6 +756,7 @@ Resources:
         self.mock_delete_route_table()
         self.mock_delete_subnet()
         self.mock_delete_network()
+        utils.mock_stack_listener(self.m)
 
         self.m.ReplayAll()
 

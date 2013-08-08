@@ -153,6 +153,7 @@ class LoadBalancerTest(HeatTestCase):
     def test_loadbalancer(self):
         self._create_stubs()
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         t = template_format.parse(lb_template)
@@ -209,6 +210,7 @@ class LoadBalancerTest(HeatTestCase):
 
     def test_loadbalancer_nokey(self):
         self._create_stubs(key_name=None, stub_meta=False)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         t = template_format.parse(lb_template_nokey)

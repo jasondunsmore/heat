@@ -233,6 +233,7 @@ Resources:
         clients.OpenStackClients.nova('compute').AndReturn(self.fc)
         nova_sg.SecurityGroupManager.delete(2).AndReturn(None)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         stack = self.create_stack(self.test_template_nova)
 
@@ -351,6 +352,7 @@ Resources:
         nova_sg.SecurityGroupManager.get(2).AndRaise(
             clients.novaclient.exceptions.NotFound('goneburger'))
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         stack = self.create_stack(self.test_template_nova)
 
@@ -612,6 +614,7 @@ Resources:
         neutronclient.Client.delete_security_group_rule('ffff').AndReturn(None)
         neutronclient.Client.delete_security_group('aaaa').AndReturn(None)
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         stack = self.create_stack(self.test_template_neutron)
 
@@ -789,6 +792,7 @@ Resources:
         neutronclient.Client.show_security_group('aaaa').AndRaise(
             NeutronClientException(status_code=404))
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         stack = self.create_stack(self.test_template_neutron)
 

@@ -615,6 +615,8 @@ class StackTest(HeatTestCase):
                           parser.Stack.CREATE, 'oops', 'test')
 
     def test_status_reason(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         stack = parser.Stack(self.ctx, 'test_stack', parser.Template({}),
                              status_reason='quux')
         self.assertEqual(stack.status_reason, 'quux')
@@ -650,13 +652,16 @@ class StackTest(HeatTestCase):
         self.m.ReplayAll()
         parser.Stack.load(self.ctx, stack_id=self.stack.id,
                           parent_resource='parent')
-
         self.m.VerifyAll()
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
 
     # Note tests creating a stack should be decorated with @stack_delete_after
     # to ensure the self.stack is properly cleaned up
     @utils.stack_delete_after
     def test_identifier(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = parser.Stack(self.ctx, 'identifier_test',
                                   parser.Template({}))
         self.stack.store()
@@ -681,9 +686,13 @@ class StackTest(HeatTestCase):
         self.assertEqual(self.stack.parameters['AWS::StackId'],
                          identifier.arn())
         self.m.VerifyAll()
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
 
     @utils.stack_delete_after
     def test_load_param_id(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = parser.Stack(self.ctx, 'param_load_arn_test',
                                   parser.Template({}))
         self.stack.store()
@@ -696,6 +705,8 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_created_time(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = parser.Stack(self.ctx, 'creation_time_test',
                                   parser.Template({}))
         self.assertEqual(self.stack.created_time, None)
@@ -704,6 +715,8 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_updated_time(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = parser.Stack(self.ctx, 'update_time_test',
                                   parser.Template({}))
         self.assertEqual(self.stack.updated_time, None)
@@ -715,6 +728,8 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_delete(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = parser.Stack(self.ctx, 'delete_test',
                                   parser.Template({}))
         stack_id = self.stack.store()
@@ -731,8 +746,11 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_suspend_resume(self):
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
+
         tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType'}}}
+
         self.stack = parser.Stack(self.ctx, 'suspend_test',
                                   parser.Template(tmpl))
         stack_id = self.stack.store()
@@ -758,6 +776,7 @@ class StackTest(HeatTestCase):
         self.m.StubOutWithMock(generic_rsrc.GenericResource, 'handle_suspend')
         exc = Exception('foo')
         generic_rsrc.GenericResource.handle_suspend().AndRaise(exc)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         self.stack = parser.Stack(self.ctx, 'suspend_test_fail',
@@ -781,6 +800,7 @@ class StackTest(HeatTestCase):
         tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType'}}}
         self.m.StubOutWithMock(generic_rsrc.GenericResource, 'handle_resume')
         generic_rsrc.GenericResource.handle_resume().AndRaise(Exception('foo'))
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         self.stack = parser.Stack(self.ctx, 'resume_test_fail',
@@ -810,6 +830,7 @@ class StackTest(HeatTestCase):
         self.m.StubOutWithMock(generic_rsrc.GenericResource, 'handle_suspend')
         exc = scheduler.Timeout('foo', 0)
         generic_rsrc.GenericResource.handle_suspend().AndRaise(exc)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         self.stack = parser.Stack(self.ctx, 'suspend_test_fail_timeout',
@@ -833,6 +854,7 @@ class StackTest(HeatTestCase):
         self.m.StubOutWithMock(generic_rsrc.GenericResource, 'handle_resume')
         exc = scheduler.Timeout('foo', 0)
         generic_rsrc.GenericResource.handle_resume().AndRaise(exc)
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         self.stack = parser.Stack(self.ctx, 'resume_test_fail_timeout',
@@ -858,6 +880,8 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_delete_rollback(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = parser.Stack(self.ctx, 'delete_rollback_test',
                                   parser.Template({}), disable_rollback=False)
         stack_id = self.stack.store()
@@ -874,6 +898,8 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_delete_badaction(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = parser.Stack(self.ctx, 'delete_badaction_test',
                                   parser.Template({}))
         stack_id = self.stack.store()
@@ -890,6 +916,8 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_update_badstate(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = parser.Stack(self.ctx, 'test_stack', parser.Template({}),
                                   action=parser.Stack.CREATE,
                                   status=parser.Stack.FAILED)
@@ -902,6 +930,9 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_resource_by_refid(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType'}}}
 
         self.stack = parser.Stack(self.ctx, 'resource_by_refid_stack',
@@ -925,6 +956,9 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_update_add(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType'}}}
 
         self.stack = parser.Stack(self.ctx, 'update_test_stack',
@@ -946,6 +980,9 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_update_remove(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Resources': {
                 'AResource': {'Type': 'GenericResourceType'},
                 'BResource': {'Type': 'GenericResourceType'}}}
@@ -968,6 +1005,9 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_update_description(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Description': 'ATemplate',
                 'Resources': {'AResource': {'Type': 'GenericResourceType'}}}
 
@@ -990,6 +1030,9 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_update_modify_ok_replace(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Resources': {'AResource': {'Type': 'ResourceWithPropsType',
                                             'Properties': {'Foo': 'abc'}}}}
 
@@ -1019,6 +1062,9 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_update_modify_update_failed(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Resources': {'AResource': {'Type': 'ResourceWithPropsType',
                                             'Properties': {'Foo': 'abc'}}}}
 
@@ -1056,6 +1102,9 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_update_modify_replace_failed_delete(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Resources': {'AResource': {'Type': 'ResourceWithPropsType',
                                             'Properties': {'Foo': 'abc'}}}}
 
@@ -1086,11 +1135,12 @@ class StackTest(HeatTestCase):
         self.assertEqual(self.stack.state,
                          (parser.Stack.UPDATE, parser.Stack.FAILED))
         self.m.VerifyAll()
-        # Unset here so destroy() is not stubbed for stack.delete cleanup
-        self.m.UnsetStubs()
 
     @utils.stack_delete_after
     def test_update_modify_replace_failed_create(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Resources': {'AResource': {'Type': 'ResourceWithPropsType',
                                             'Properties': {'Foo': 'abc'}}}}
 
@@ -1124,6 +1174,9 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_update_add_failed_create(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType'}}}
 
         self.stack = parser.Stack(self.ctx, 'update_test_stack',
@@ -1157,6 +1210,9 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_update_rollback(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Resources': {'AResource': {'Type': 'ResourceWithPropsType',
                                             'Properties': {'Foo': 'abc'}}}}
 
@@ -1192,6 +1248,9 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_update_rollback_fail(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Resources': {'AResource': {'Type': 'ResourceWithPropsType',
                                             'Properties': {'Foo': 'abc'}}}}
 
@@ -1228,6 +1287,9 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_update_rollback_add(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Resources': {'AResource': {'Type': 'GenericResourceType'}}}
 
         self.stack = parser.Stack(self.ctx, 'update_test_stack',
@@ -1259,6 +1321,9 @@ class StackTest(HeatTestCase):
 
     @utils.stack_delete_after
     def test_update_rollback_remove(self):
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Resources': {
                 'AResource': {'Type': 'GenericResourceType'},
                 'BResource': {'Type': 'ResourceWithPropsType'}}}
@@ -1286,8 +1351,6 @@ class StackTest(HeatTestCase):
                          (parser.Stack.ROLLBACK, parser.Stack.COMPLETE))
         self.assertTrue('BResource' in self.stack)
         self.m.VerifyAll()
-        # Unset here so delete() is not stubbed for stack.delete cleanup
-        self.m.UnsetStubs()
 
     @utils.stack_delete_after
     def test_update_rollback_replace(self):
@@ -1330,6 +1393,9 @@ class StackTest(HeatTestCase):
         changes in dynamic attributes, due to other resources been updated
         are not ignored and can cause dependant resources to be updated.
         '''
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Resources': {
                 'AResource': {'Type': 'ResourceWithPropsType',
                               'Properties': {'Foo': 'abc'}},
@@ -1384,6 +1450,9 @@ class StackTest(HeatTestCase):
         check that rollback still works with dynamic metadata
         this test fails the first instance
         '''
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Resources': {
                 'AResource': {'Type': 'ResourceWithPropsType',
                               'Properties': {'Foo': 'abc'}},
@@ -1455,6 +1524,9 @@ class StackTest(HeatTestCase):
 
         resource._register_class('ResourceTypeA', ResourceTypeA)
 
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Resources': {
                 'AResource': {'Type': 'ResourceTypeA',
                               'Properties': {'Foo': 'abc'}},
@@ -1515,6 +1587,9 @@ class StackTest(HeatTestCase):
         changes in static environment parameters
         are not ignored and can cause dependant resources to be updated.
         '''
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
+
         tmpl = {'Parameters': {'AParam': {'Type': 'String'}},
                 'Resources': {
                     'AResource': {'Type': 'ResourceWithPropsType',
@@ -1543,6 +1618,7 @@ class StackTest(HeatTestCase):
     def test_stack_create_timeout(self):
         self.m.StubOutWithMock(scheduler.DependencyTaskGroup, '__call__')
         self.m.StubOutWithMock(scheduler, 'wallclock')
+        utils.mock_stack_listener(self.m)
 
         stack = parser.Stack(self.ctx, 's', parser.Template({}))
 
@@ -1617,6 +1693,8 @@ class StackTest(HeatTestCase):
             }
         }
 
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = parser.Stack(self.ctx, 'resource_state_get_att',
                                   template.Template(tmpl))
         self.stack.store()
@@ -1654,6 +1732,8 @@ class StackTest(HeatTestCase):
                               'DResource': {'Type': 'GenericResourceType',
                                             'DependsOn': 'BResource'}}}
 
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = parser.Stack(self.ctx, 'depends_test_stack',
                                   template.Template(tmpl))
         self.stack.store()
@@ -1689,6 +1769,8 @@ class StackTest(HeatTestCase):
         """
         A user_creds entry is created on first stack store
         """
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack = parser.Stack(
             self.ctx, 'creds_stack', template.Template({}))
         self.stack.store()
@@ -1717,3 +1799,12 @@ class StackTest(HeatTestCase):
 
         saved_stack = parser.Stack.load(self.ctx, stack_id=stack_ownee.id)
         self.assertEqual(saved_stack.owner_id, self.stack.id)
+
+
+class StackListenerTest(HeatTestCase):
+
+    def test_listening(self):
+        ctx = utils.dummy_context()
+        listener = parser.StackListener('localhost', 'fake-topic')
+        result = listener.listening(ctx)
+        self.assertEqual(result, True)

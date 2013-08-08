@@ -142,6 +142,7 @@ def setup_mocks(mocks, stack):
                       meta=None, nics=None,
                       availability_zone=None).AndReturn(
                           fc.servers.list()[-1])
+    utils.mock_stack_listener(mocks)
     return fc
 
 
@@ -202,6 +203,10 @@ def stack_context(stack_name, create_res=True):
                 finally:
                     raise exc_class, exc_val, exc_tb
             else:
+                m = mox.Mox()
+                m.UnsetStubs()
+                utils.mock_stack_listener(m)
+                m.ReplayAll()
                 delete_stack()
 
         return wrapped_test
@@ -246,6 +251,7 @@ class StackCreateTest(HeatTestCase):
         ctx = utils.dummy_context()
         stack = get_wordpress_stack('test_stack', ctx)
         fc = setup_mocks(self.m, stack)
+
         self.m.ReplayAll()
         stack_id = stack.store()
         stack.create()
@@ -541,6 +547,103 @@ class StackServiceCreateUpdateDeleteTest(HeatTestCase):
                           None, {})
 
 
+class StackServiceMultiEngineTest(HeatTestCase):
+
+    def setUp(self):
+        super(StackServiceMultiEngineTest, self).setUp()
+        utils.setup_dummy_db()
+        self.ctx = utils.dummy_context()
+
+        self.eng = service.EngineService('a-host', 'a-topic')
+
+    def mock_stack_asker_alive_response(self, context, mocks, eng):
+        mocks.StubOutWithMock(service.EngineService,
+                              '_raise_if_stack_in_progress')
+        eng._raise_if_stack_in_progress(context, mox.IgnoreArg())\
+           .AndRaise(exception.ActionInProgress(stack_name=mox.IgnoreArg(),
+                                                action=mox.IgnoreArg()))
+
+    def mock_stack_asker_dead_response(self, context, mocks, eng):
+        mocks.StubOutWithMock(service.EngineService,
+                              '_raise_if_stack_in_progress')
+        eng._raise_if_stack_in_progress(context, mox.IgnoreArg())\
+           .AndReturn(None)
+
+    def test_stack_engine_dead(self):
+        stack_name = 'service_update_nonexist_test_stack'
+        params = {'foo': 'bar'}
+        template = '{ "Template": "data" }'
+
+        old_stack = get_wordpress_stack(stack_name, self.ctx)
+        sid = old_stack.store()
+        s = db_api.stack_get(self.ctx, sid)
+
+        stack = get_wordpress_stack(stack_name, self.ctx)
+
+        self.m.StubOutWithMock(parser, 'Stack')
+        self.m.StubOutWithMock(parser.Stack, 'load')
+        parser.Stack.load(self.ctx, stack=s).AndReturn(old_stack)
+
+        self.m.StubOutWithMock(parser, 'Template')
+        self.m.StubOutWithMock(environment, 'Environment')
+
+        parser.Template(template, files=None).AndReturn(stack.t)
+        environment.Environment(params).AndReturn(stack.env)
+        parser.Stack(self.ctx, stack.name,
+                     stack.t, stack.env).AndReturn(stack)
+
+        self.m.StubOutWithMock(stack, 'validate')
+        stack.validate().AndReturn(None)
+
+        self.m.StubOutWithMock(threadgroup, 'ThreadGroup')
+        threadgroup.ThreadGroup().AndReturn(DummyThreadGroup())
+
+        self.mock_stack_asker_dead_response(self.ctx, self.m, self.eng)
+        self.m.ReplayAll()
+
+        result = self.eng.update_stack(self.ctx, old_stack.identifier(),
+                                       template, params, None, {})
+        self.assertEqual(old_stack.identifier(), result)
+        self.assertTrue(isinstance(result, dict))
+        self.assertTrue(result['stack_id'])
+
+    def test_stack_engine_alive(self):
+        stack_name = 'service_update_nonexist_test_stack'
+        params = {'foo': 'bar'}
+        template = '{ "Template": "data" }'
+
+        old_stack = get_wordpress_stack(stack_name, self.ctx)
+        sid = old_stack.store()
+        s = db_api.stack_get(self.ctx, sid)
+
+        stack = get_wordpress_stack(stack_name, self.ctx)
+
+        self.m.StubOutWithMock(parser, 'Stack')
+        self.m.StubOutWithMock(parser.Stack, 'load')
+        parser.Stack.load(self.ctx, stack=s).AndReturn(old_stack)
+
+        self.m.StubOutWithMock(parser, 'Template')
+        self.m.StubOutWithMock(environment, 'Environment')
+
+        parser.Template(template, files=None).AndReturn(stack.t)
+        environment.Environment(params).AndReturn(stack.env)
+        parser.Stack(self.ctx, stack.name,
+                     stack.t, stack.env).AndReturn(stack)
+
+        self.m.StubOutWithMock(stack, 'validate')
+        stack.validate().AndReturn(None)
+
+        self.m.StubOutWithMock(threadgroup, 'ThreadGroup')
+        threadgroup.ThreadGroup().AndReturn(DummyThreadGroup())
+
+        self.mock_stack_asker_alive_response(self.ctx, self.m, self.eng)
+        self.m.ReplayAll()
+
+        self.assertRaises(exception.ActionInProgress, self.eng.update_stack,
+                          self.ctx, old_stack.identifier(), template, params,
+                          None, {})
+
+
 class StackServiceSuspendResumeTest(HeatTestCase):
 
     def setUp(self):
@@ -728,6 +831,7 @@ class StackServiceTest(HeatTestCase):
         self.m.StubOutWithMock(instances.Instance, 'handle_delete')
         instances.Instance.handle_delete()
 
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
 
         result = self.eng.update_stack(self.ctx, self.stack.identifier(),
@@ -770,6 +874,7 @@ class StackServiceTest(HeatTestCase):
             self.assertIn('event_time', ev)
 
         self.m.VerifyAll()
+        self.m.UnsetStubs()
 
     @stack_context('service_event_list_test_stack')
     def test_stack_event_list_by_tenant(self):
@@ -1175,6 +1280,7 @@ class StackServiceTest(HeatTestCase):
                           self.ctx,
                           policy_template)
         self.stack = stack
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         stack.store()
         stack.create()
@@ -1205,6 +1311,7 @@ class StackServiceTest(HeatTestCase):
                           self.ctx,
                           policy_template)
         self.stack = stack
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         stack.store()
         stack.create()
@@ -1296,6 +1403,7 @@ class StackServiceTest(HeatTestCase):
                           utils.dummy_context(),
                           alarm_template)
         self.stack = stack
+        utils.mock_stack_listener(self.m)
         self.m.ReplayAll()
         stack.store()
         stack.create()

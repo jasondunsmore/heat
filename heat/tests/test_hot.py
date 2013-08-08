@@ -343,6 +343,8 @@ class StackTest(test_parser.StackTest):
         self.stack = parser.Stack(self.ctx, 'test_get_attr',
                                   template.Template(hot_tpl))
         self.stack.store()
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack.create()
         self.assertEqual(self.stack.state,
                          (parser.Stack.CREATE, parser.Stack.COMPLETE))
@@ -372,6 +374,8 @@ class StackTest(test_parser.StackTest):
         self.stack = parser.Stack(self.ctx, 'test_get_resource',
                                   template.Template(hot_tpl))
         self.stack.store()
+        utils.mock_stack_listener(self.m)
+        self.m.ReplayAll()
         self.stack.create()
         self.assertEqual(self.stack.state,
                          (parser.Stack.CREATE, parser.Stack.COMPLETE))
