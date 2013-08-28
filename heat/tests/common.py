@@ -44,4 +44,6 @@ class HeatTestCase(testtools.TestCase):
         env_dir = os.path.join(project_dir, 'etc', 'heat',
                                'environment.d')
 
-        cfg.CONF.set_default('environment_dir', env_dir)
+        if not 'environment_dir' in cfg.CONF.keys():
+            cfg.CONF.register_opt(cfg.StrOpt('environment_dir',
+                                             default=env_dir))

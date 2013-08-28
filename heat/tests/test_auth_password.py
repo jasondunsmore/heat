@@ -80,6 +80,13 @@ class KeystonePasswordAuthProtocolTest(HeatTestCase):
         self.config = {'auth_uri': 'http://keystone.test.com:5000'}
         self.app = FakeApp(
             expected_env={'HTTP_X_AUTH_URL': self.config['auth_uri']})
+        auth_password_group = cfg.OptGroup('auth_password')
+        cfg.CONF.register_group(auth_password_group)
+        auth_password_opts = [
+            cfg.CONF.register_opt(cfg.BoolOpt('multi_cloud', default=False)),
+            cfg.CONF.register_opt(cfg.ListOpt('allowed_auth_uris', default=[]))
+        ]
+        cfg.CONF.register_opts(auth_password_opts, group=auth_password_group)
         self.middleware = KeystonePasswordAuthProtocol(self.app, self.config)
 
     def tearDown(self):
