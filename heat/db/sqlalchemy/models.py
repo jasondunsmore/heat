@@ -196,6 +196,19 @@ class Stack(BASE, HeatBase, SoftDelete):
     disable_rollback = sqlalchemy.Column(sqlalchemy.Boolean)
 
 
+class StackLock(BASE, HeatBase):
+    """Store stack locks for deployments with multiple-engines."""
+
+    __tablename__ = 'stack_lock'
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    stack_id = sqlalchemy.Column(sqlalchemy.String,
+                                 sqlalchemy.ForeignKey('stack.id'),
+                                 nullable=False,
+                                 unique=True)
+    engine_id = sqlalchemy.Column(sqlalchemy.String)
+
+
 class UserCreds(BASE, HeatBase):
     """
     Represents user credentials and mirrors the 'context'

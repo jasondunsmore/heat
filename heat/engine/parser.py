@@ -358,7 +358,7 @@ class Stack(object):
 
         return self.timeout_mins * 60
 
-    def create(self):
+    def create(self, lock):
         '''
         Create the stack and all of the resources.
         '''
@@ -372,6 +372,7 @@ class Stack(object):
                                        reverse=False,
                                        post_func=rollback)
         creator(timeout=self.timeout_secs())
+        lock.release()
 
     @scheduler.wrappertask
     def stack_task(self, action, reverse=False, post_func=None):
@@ -430,7 +431,7 @@ class Stack(object):
         else:
             return None
 
-    def update(self, newstack):
+    def update(self, newstack, lock):
         '''
         Compare the current stack with newstack,
         and where necessary create/update/delete the resources until
@@ -444,6 +445,7 @@ class Stack(object):
         '''
         updater = scheduler.TaskRunner(self.update_task, newstack)
         updater()
+        lock.release()
 
     @scheduler.wrappertask
     def update_task(self, newstack, action=UPDATE):
@@ -518,7 +520,7 @@ class Stack(object):
         self.outputs = self.resolve_static_data(template_outputs)
         self.store()
 
-    def delete(self, action=DELETE):
+    def delete(self, lock, action=DELETE):
         '''
         Delete all of the resources, and then the stack itself.
         The action parameter is used to differentiate between a user
@@ -569,8 +571,9 @@ class Stack(object):
             # delete the stack
             db_api.stack_delete(self.context, self.id)
             self.id = None
+        lock.release()
 
-    def suspend(self):
+    def suspend(self, lock):
         '''
         Suspend the stack, which invokes handle_suspend for all stack resources
         waits for all resources to become SUSPEND_COMPLETE then declares the
@@ -583,8 +586,9 @@ class Stack(object):
                                         action=self.SUSPEND,
                                         reverse=True)
         sus_task(timeout=self.timeout_secs())
+        lock.release()
 
-    def resume(self):
+    def resume(self, lock):
         '''
         Resume the stack, which invokes handle_resume for all stack resources
         waits for all resources to become RESUME_COMPLETE then declares the
@@ -597,6 +601,7 @@ class Stack(object):
                                         action=self.RESUME,
                                         reverse=False)
         sus_task(timeout=self.timeout_secs())
+        lock.release()
 
     def output(self, key):
         '''

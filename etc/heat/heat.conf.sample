@@ -18,6 +18,12 @@
 # Driver to use for controlling instances (string value)
 #instance_driver=heat.engine.nova
 
+# Driver to use for multi-engine distributed lock
+#distributed_lock_driver=db
+
+# Engine identifier for multi-engine distributed lock
+#engine_id=1
+
 # List of directories to search for Plugins (list value)
 #plugin_dirs=/usr/lib64/heat,/usr/lib/heat
 
