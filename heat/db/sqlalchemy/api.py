@@ -277,6 +277,32 @@ def stack_delete(context, stack_id):
     session.flush()
 
 
+def stack_lock_get(context, stack_id):
+    stack_lock = model_query(context, models.StackLock).\
+                 filter_by(stack_id=stack_id).\
+                 first()  # database constraint ensures there will only be one
+    return stack_lock
+
+
+def stack_lock_create(context, stack_id, engine_id):
+    stack_lock = models.StackLock()
+    stack_lock.update({"stack_id": stack_id,
+                       "engine_id": engine_id})
+    stack_lock.save(_session(context))
+
+
+def stack_lock_force(context, stack_id, engine_id):
+    stack_lock = stack_lock_get(context, stack_id)
+    stack_lock.update({"stack_id": stack_id,
+                       "engine_id": engine_id})
+    stack_lock.save(_session(context))
+
+
+def stack_lock_release(context, stack_id, engine_id):
+    stack_lock = stack_lock_get(context, stack_id)
+    stack_lock.delete()
+
+
 def user_creds_create(context):
     values = context.to_dict()
     user_creds_ref = models.UserCreds()

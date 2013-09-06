@@ -1,0 +1,85 @@
+"""Stack """
+
+import time
+
+from oslo.config import cfg
+
+from heat.common import exception
+
+if cfg.CONF.distributed_lock_driver == 'zookeeper':
+    from kazoo.client import KazooClient
+    from kazoo.recipe.lock import Lock as KazooLock
+
+from heat.db import api as db_api
+
+
+class StackZKLock(object):
+    """"""
+    def __init__(self, stack):
+        zk = KazooClient(hosts='127.0.0.1:2181')
+        zk.start()
+        lock_name = "%s_%s_%s" % (cfg.CONF.engine_id, stack.context.tenant,
+                                  stack.name)
+        self.lock = KazooLock(zk, lock_name)
+
+    def acquire(self):
+        """Acquire a lock on the stack"""
+        # TODO: Make lock acquire timeout configurable
+        self.lock.acquire(blocking=True, timeout=2)
+
+    def cancel(self):
+        """Cancel a pending acquire"""
+        self.lock.cancel()
+
+    def release(self):
+        """Release a stack lock"""
+        self.lock.release()
+
+
+class StackDBLock(object):
+    """"""
+    def __init__(self, stack):
+        self.stack = stack
+        self.engine_id = cfg.CONF.engine_id
+
+    @staticmethod
+    def _lock_staleness(lock):
+        """Returns number of seconds since stack was created or updated."""
+        if lock.updated_at:
+            changed_time = lock.updated_at
+        else:
+            changed_time = lock.created_at
+        changed_epoch = float(changed_time.strftime('%s'))
+        current_epoch = time.time()
+        return current_epoch - changed_epoch
+
+    def acquire(self):
+        """Acquire a lock on the stack"""
+        existing_lock = db_api.stack_lock_get(self.stack.context,
+                                              self.stack.id)
+        if existing_lock:
+            # TODO: Make lock timeout configurable
+            if self._lock_staleness(existing_lock) > 300:  # Lock expired
+                db_api.stack_lock_force(self.stack.context, self.stack.id,
+                                        self.engine_id)
+            else:
+                raise exception.ActionInProgress(stack_name=self.stack.name,
+                                                 action=self.stack.action)
+        else:
+            db_api.stack_lock_create(self.stack.context, self.stack.id,
+                                     self.engine_id)
+
+    def cancel(self):
+        """Cancel a pending acquire.  Doesn't apply to db backend."""
+        pass
+
+    def release(self):
+        """Release a stack lock"""
+        db_api.stack_lock_release(self.stack.context, self.stack.id,
+                                  self.engine_id)
+
+
+if cfg.CONF.distributed_lock_driver == 'zookeeper':
+    StackLock = StackZKLock
+elif cfg.CONF.distributed_lock_driver == 'db':
+    StackLock = StackDBLock
