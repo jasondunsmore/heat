@@ -454,7 +454,6 @@ class ChefSolo(resource.Resource):
                 role_file.write(json.dumps(role))
 
     def handle_create(self):
-        import pdb;pdb.set_trace()
         env = self.create_chef_environment()
         self.write_databags(self.properties.get('databags'), env['kitchen'],
                             secret_file=env['private_key_path'])
