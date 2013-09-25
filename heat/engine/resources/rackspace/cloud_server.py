@@ -271,6 +271,14 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
                         username="root",
                         key_filename=private_key_file.name)
             stdin, stdout, stderr = ssh.exec_command(command)
+
+            # Prevent the SSH session from hanging if standard error
+            # is greater than than the default window size (65536).
+            # This is a temporary fix until
+            # https://github.com/paramiko/paramiko/issues/175 is
+            # resolved
+            ssh._transport.window_size = 2147483647
+
             logger.debug(stdout.read())
             logger.debug(stderr.read())
 
