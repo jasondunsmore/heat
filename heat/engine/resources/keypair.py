@@ -11,6 +11,7 @@
 #    under the License.
 
 from Crypto.PublicKey import RSA
+import uuid
 
 from heat.db.sqlalchemy import api as db_api
 from heat.engine.resources.rackspace import rackspace_resource
@@ -24,7 +25,10 @@ logger = logging.getLogger(__name__)
 class KeyPair(rackspace_resource.RackspaceResource):
     properties_schema = {
         'key_name': {'Type': 'String',
-                     'Required': True}
+                     'Required': True,
+                     'Default': str(uuid.uuild4())},
+        'private_key': {'Type': 'String'},
+        'public_key': {'Type': 'String'}
     }
 
     attributes_schema = {
