@@ -107,15 +107,14 @@ class KeyPair(rackspace_resource.RackspaceResource):
             self.resource_id_set(keypair.id)
 
     def validate(self):
-        if hasattr(self.properties, 'private_key') or \
-           hasattr(self.properties, 'public_key'):
-            if hasattr(self.properties, 'private_key') and \
-               hasattr(self.properties, 'public_key'):
+        if self.properties.get('private_key') or \
+           self.properties.get('public_key'):
+            if self.properties.get('private_key') and \
+               self.properties.get('public_key'):
                pass
             else:
                 return {'Error': 'Both the public and private key are required'
                         ' for heat to manage a keypair.'}
-
 
     def _resolve_attribute(self, key):
         attr_fn = {'key_name': self.properties['key_name'],
