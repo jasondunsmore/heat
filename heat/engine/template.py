@@ -15,6 +15,9 @@
 
 import collections
 import json
+import random
+import string
+import uuid
 
 from heat.api.aws import utils as aws_utils
 from heat.db import api as db_api
@@ -433,25 +436,31 @@ class Template(collections.Mapping):
     @staticmethod
     def resolve_gen_pass(s):
         '''
-        Resolve constructs of the form { "Fn::generate_password" : "string" }
+        Resolve constructs of the form { "Fn::gen_pass" : "string" }
         '''
-        def handle_generate_password(string):
-            """Generates a password based on constraints provided
+        def wrapper(args):
+            def handle_generate_password(min_length=None, max_length=None,
+                                         required_chars=None,
+                                         starts_with=string.ascii_letters,
+                                         valid_chars=None):
+                """Generates a password based on constraints provided
 
-            :param min_length: minimum password length
-            :param max_length: maximum password length
-            :param required_chars: a set of character sets, one for each required char
-            :param starts_with: a set of characters required as the first character
-            :param valid_chars: the set of valid characters for non-required chars
-            """
-            def generate_password(min_length=None, max_length=None, required_chars=None,
-                                  starts_with=string.ascii_letters, valid_chars=None):
-
+                :param min_length: minimum password length
+                :param max_length: maximum password length
+                :param required_chars: a set of character sets, one for each
+                    required char
+                :param starts_with: a set of characters required as the first
+                    character
+                :param valid_chars: the set of valid characters for
+                    non-required chars
+                """
                 # raise exception if max_length exceeded
                 if min_length > 255 or max_length > 255:
-                    raise ValueError('maximum password length of 255 characters exceeded.')
+                    raise ValueError('maximum password length of 255'
+                                     'characters exceeded.')
 
-                # choose a valid password length based on min_length and max_length
+                # choose a valid password length based on min_length and
+                # max_length
                 if max_length and min_length and max_length != min_length:
                     password_length = random.randint(min_length, max_length)
                 else:
@@ -472,7 +481,8 @@ class Template(collections.Mapping):
                 if required_chars:
                     for required_set in required_chars:
                         if password_length > 0:
-                            password = ''.join([password, random.choice(required_set)])
+                            password = ''.join([password,
+                                               random.choice(required_set)])
                             password_length -= 1
                         else:
                             raise ValueError(
@@ -484,7 +494,8 @@ class Template(collections.Mapping):
                     password = ''.join([
                         password,
                         ''.join(
-                            [random.choice(valid_chars) for _ in range(password_length)]
+                            [random.choice(valid_chars)
+                                for _ in range(password_length)]
                         )
                     ])
 
@@ -493,7 +504,21 @@ class Template(collections.Mapping):
 
                 return '%s%s' % (first_char, password)
 
-        return _resolve(lambda k, v: k == 'generate_password', handle_generate_password, s)
+            kwargs = {
+                'required_chars': args.get('required_chars'),
+                'min_length': args.get('min_length'),
+                'max_length': args.get('max_length'),
+                'valid_chars': args.get('valid_chars'),
+                'starts_with': args.get('starts_with')
+            }
+            return handle_generate_password(**kwargs)
+        return _resolve(lambda k, v: k == 'gen_pass', wrapper, s)
+
+    @staticmethod
+    def resolve_gen_uuid(s):
+        def handle_gen_uuid(string):
+            return str(uuid.uuid4())
+        return _resolve(lambda k, v: k == 'gen_uuid', handle_gen_uuid, s)
 
 
 def _resolve(match, handle, snippet):
