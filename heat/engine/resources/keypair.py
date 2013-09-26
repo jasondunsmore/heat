@@ -26,7 +26,7 @@ class KeyPair(rackspace_resource.RackspaceResource):
     properties_schema = {
         'key_name': {'Type': 'String',
                      'Required': True,
-                     'Default': str(uuid.uuild4())},
+                     'Default': str(uuid.uuid4())},
         'private_key': {'Type': 'String'},
         'public_key': {'Type': 'String'}
     }

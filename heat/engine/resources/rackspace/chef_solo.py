@@ -393,12 +393,6 @@ class ChefSolo(resource.Resource):
         params = ['knife', 'solo', 'init', '.']
         self._run_kitchen_command(kitchen_path, params)
 
-        #todo check this, does it have to be a fully qualified path?
-        #TODO remove
-        # remote_config_file = self._write_knife_config_file(kitchen_path,
-        #                                           remote_path,
-        #                                           os.path.join(remote_path,
-        #                                             secret_key_path))
         remote_config_file = self._write_knife_config_file(kitchen_path,
                                                           kitchen_path,
                                                           os.path.join(
