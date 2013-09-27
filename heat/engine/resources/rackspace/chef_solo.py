@@ -480,8 +480,10 @@ class ChefSolo(resource.Resource):
 
     #TODO(andrew-plunk): see if this can be run multiple times, may have to
     #use cook/prepare
-    def bootstrap(self, solo_path, kitchen_path, username, host, ssh_config_path):
-        #TODO(andrew-plunk): check knife bootstrap with erb template to create directory
+    def bootstrap(self, solo_path, kitchen_path, username, host,
+                  ssh_config_path):
+        #TODO(andrew-plunk): check knife bootstrap with erb template to create
+        #directory
         params = ['knife', 'solo', 'bootstrap', '%s@%s' % (username, host),
               '-c', solo_path, "-F", ssh_config_path]
         #TODO(andrew-plunk): params.extend(['bootstrap.json'])
@@ -516,9 +518,8 @@ class ChefSolo(resource.Resource):
         if self.properties.get('roles'):
             self.write_roles(self.properties.get('roles'))
 
-        #create remote kitchen path
-        #TODO this is crazy, creating the remote path to match the server path...
-        #find a fix
+        #TODO this is crazy, creating the remote path to match the server
+        #path... find a fix
         self._run_ssh_command(self.properties['username'],
                               self.properties['hostname'],
                               'mkdir -p ' + self.env['kitchen'],
