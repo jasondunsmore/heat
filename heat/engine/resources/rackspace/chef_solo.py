@@ -41,7 +41,9 @@ class ChefSolo(resource.Resource):
         'private_key': {'Type': 'String',
                         'Required': True},
         'data_bags': {'Type': 'Map'},
-        'node_json': {'Type': 'Map'}
+        'node_json': {'Type': 'Map'},
+        'id': {'Type': 'String',
+               'Default': str(uuid.uuid4())}
     }
     attributes_schema = {
         'secret_key': ('The chef secret key for encrypting databags.'),
@@ -50,7 +52,7 @@ class ChefSolo(resource.Resource):
     def __init__(self, name, json_snippet, stack):
         super(ChefSolo, self).__init__(name, json_snippet, stack) 
         self._secret_key = None
-        self._future_resource_id = str(uuid.uuid4())
+        self.id = self.properties['id']
 
     @property
     def secret_key(self):
@@ -300,7 +302,7 @@ class ChefSolo(resource.Resource):
 
     def write_node_json(self, kitchen_path, name, node_json):
         #TODO(andrew-plunk): this is to conform with checkmate... remove
-        node_json['deployment'] = {'id': self._future_resource_id}
+        node_json['deployment'] = {'id': self.id}
         node_json['run_list'].append('recipe[chef-solo-search]')
         node_json_path = os.path.join(kitchen_path, "nodes", name + ".json")
         with file(node_json_path, 'w') as json_file:
@@ -497,9 +499,9 @@ class ChefSolo(resource.Resource):
         #TODO(andrew-plunk) try to setup chef env in init, this will let us
         #do it in parallel with the server creation. You may have to create
         #deferred attributes
-        self.env = self.create_chef_environment(self._future_resource_id)
+        self.env = self.create_chef_environment(self.id)
         if self.properties.get('data_bags'):
-            self.write_databags(self._future_resource_id,
+            self.write_databags(self.id,
                                 self.properties['data_bags'],
                                 self.env['kitchen'],
                                 self.env['secret_key'],
@@ -531,7 +533,7 @@ class ChefSolo(resource.Resource):
                        self.properties['username'],
                        self.properties['hostname'],
                        self.env['ssh_config'])
-        self.resource_id_set(self._future_resource_id)
+        self.resource_id_set(self.id)
 
 def resource_mapping():
     return {
