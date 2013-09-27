@@ -302,7 +302,7 @@ class ChefSolo(resource.Resource):
 
     def write_node_json(self, kitchen_path, name, node_json):
         #TODO(andrew-plunk): this is to conform with checkmate... remove
-        node_json['deployment'] = {'id': self.id}
+        #node_json['deployment'] = {'id': self.id}
         node_json['run_list'].append('recipe[chef-solo-search]')
         node_json_path = os.path.join(kitchen_path, "nodes", name + ".json")
         with file(node_json_path, 'w') as json_file:
