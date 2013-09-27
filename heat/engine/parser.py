@@ -655,7 +655,9 @@ def resolve_runtime_data(template, resources, snippet):
                       template.resolve_select,
                       template.resolve_joins,
                       template.resolve_replace,
-                      template.resolve_base64])
+                      template.resolve_base64,
+                      template.resolve_gen_pass,
+                      template.resolve_gen_uuid])
 
 
 def transform(data, transformations):

@@ -253,6 +253,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
     def validate(self):
         """Validate user parameters."""
         if self.properties['flavor'] not in self.flavors:
+            import pdb;pdb.set_trace()
             return {'Error': "flavor not found."}
 
         # It's okay if there's no script, as long as user_data and

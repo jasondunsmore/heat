@@ -15,6 +15,9 @@
 
 import collections
 import json
+import random
+import string
+import uuid
 
 from heat.api.aws import utils as aws_utils
 from heat.db import api as db_api
@@ -429,6 +432,93 @@ class Template(collections.Mapping):
     def param_schemata(self):
         parameters = self[PARAMETERS].iteritems()
         return dict((name, ParamSchema(schema)) for name, schema in parameters)
+
+    @staticmethod
+    def resolve_gen_pass(s):
+        '''
+        Resolve constructs of the form { "Fn::gen_pass" : "string" }
+        '''
+        def wrapper(args):
+            def handle_generate_password(min_length=None, max_length=None,
+                                         required_chars=None,
+                                         starts_with=string.ascii_letters,
+                                         valid_chars=None):
+                """Generates a password based on constraints provided
+
+                :param min_length: minimum password length
+                :param max_length: maximum password length
+                :param required_chars: a set of character sets, one for each
+                    required char
+                :param starts_with: a set of characters required as the first
+                    character
+                :param valid_chars: the set of valid characters for
+                    non-required chars
+                """
+                # raise exception if max_length exceeded
+                if min_length > 255 or max_length > 255:
+                    raise ValueError('maximum password length of 255'
+                                     'characters exceeded.')
+
+                # choose a valid password length based on min_length and
+                # max_length
+                if max_length and min_length and max_length != min_length:
+                    password_length = random.randint(min_length, max_length)
+                else:
+                    password_length = max_length or min_length or 8
+
+                # if not specified, default valid_chars to letters and numbers
+                valid_chars = valid_chars or ''.join([
+                    string.ascii_letters,
+                    string.digits
+                ])
+
+                first_char = ''
+                if starts_with:
+                    first_char = random.choice(starts_with)
+                    password_length -= 1
+
+                password = ''
+                if required_chars:
+                    for required_set in required_chars:
+                        if password_length > 0:
+                            password = ''.join([password,
+                                               random.choice(required_set)])
+                            password_length -= 1
+                        else:
+                            raise ValueError(
+                                'password length is less than the '
+                                'number of required characters.'
+                            )
+
+                if password_length > 0:
+                    password = ''.join([
+                        password,
+                        ''.join(
+                            [random.choice(valid_chars)
+                                for _ in range(password_length)]
+                        )
+                    ])
+
+                # shuffle all except first_char
+                password = ''.join(random.sample(password, len(password)))
+
+                return '%s%s' % (first_char, password)
+
+            kwargs = {
+                'required_chars': args.get('required_chars'),
+                'min_length': args.get('min_length'),
+                'max_length': args.get('max_length'),
+                'valid_chars': args.get('valid_chars'),
+                'starts_with': args.get('starts_with')
+            }
+            return handle_generate_password(**kwargs)
+        return _resolve(lambda k, v: k == 'gen_pass', wrapper, s)
+
+    @staticmethod
+    def resolve_gen_uuid(s):
+        def handle_gen_uuid(string):
+            return str(uuid.uuid4())
+        return _resolve(lambda k, v: k == 'gen_uuid', handle_gen_uuid, s)
 
 
 def _resolve(match, handle, snippet):
