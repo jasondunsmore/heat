@@ -42,7 +42,7 @@ class ChefSolo(resource.Resource):
                         'Required': True},
         'data_bags': {'Type': 'Map'},
         'node_json': {'Type': 'Map'},
-        'id': {'Type': 'String',
+        'resource_id': {'Type': 'String',
                'Default': str(uuid.uuid4())}
     }
     attributes_schema = {
@@ -52,7 +52,6 @@ class ChefSolo(resource.Resource):
     def __init__(self, name, json_snippet, stack):
         super(ChefSolo, self).__init__(name, json_snippet, stack) 
         self._secret_key = None
-        self.id = self.properties['id']
 
     @property
     def secret_key(self):
@@ -501,7 +500,8 @@ class ChefSolo(resource.Resource):
         #TODO(andrew-plunk) try to setup chef env in init, this will let us
         #do it in parallel with the server creation. You may have to create
         #deferred attributes
-        self.env = self.create_chef_environment(self.id)
+        self._future_id = self.properties['resource_id']
+        self.env = self.create_chef_environment(self._future_id)
         if self.properties.get('data_bags'):
             self.write_databags(self.id,
                                 self.properties['data_bags'],
@@ -534,7 +534,7 @@ class ChefSolo(resource.Resource):
                        self.properties['username'],
                        self.properties['hostname'],
                        self.env['ssh_config'])
-        self.resource_id_set(self.id)
+        self.resource_id_set(self._future_id)
 
 def resource_mapping():
     return {
