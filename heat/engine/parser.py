@@ -23,6 +23,7 @@ from heat.common import identifier
 from heat.engine import resource
 from heat.engine import resources
 from heat.engine import scheduler
+from heat.engine import stack_lock
 from heat.engine import template
 from heat.engine import timestamp
 from heat.engine import update
@@ -350,7 +351,7 @@ class Stack(object):
 
         return self.timeout_mins * 60
 
-    def create(self, lock):
+    def create(self):
         '''
         Create the stack and all of the resources.
         '''
@@ -359,6 +360,8 @@ class Stack(object):
                                                             self.FAILED):
                 self.delete(action=self.ROLLBACK)
 
+        lock = stack_lock.StackLock(self)
+        lock.acquire()
         creator = scheduler.TaskRunner(self.stack_task,
                                        action=self.CREATE,
                                        reverse=False,
@@ -423,7 +426,7 @@ class Stack(object):
         else:
             return None
 
-    def update(self, newstack, lock):
+    def update(self, newstack):
         '''
         Compare the current stack with newstack,
         and where necessary create/update/delete the resources until
@@ -435,6 +438,8 @@ class Stack(object):
         Update will fail if it exceeds the specified timeout. The default is
         60 minutes, set in the constructor
         '''
+        lock = stack_lock.StackLock(self)
+        lock.acquire()
         updater = scheduler.TaskRunner(self.update_task, newstack)
         updater()
         lock.release()
@@ -512,7 +517,7 @@ class Stack(object):
         self.outputs = self.resolve_static_data(template_outputs)
         self.store()
 
-    def delete(self, lock, action=DELETE):
+    def delete(self, action=DELETE):
         '''
         Delete all of the resources, and then the stack itself.
         The action parameter is used to differentiate between a user
@@ -520,6 +525,8 @@ class Stack(object):
         create, which amount to the same thing, but the states are recorded
         differently.
         '''
+        lock = stack_lock.StackLock(self)
+        lock.acquire()
         if action not in (self.DELETE, self.ROLLBACK):
             logger.error("Unexpected action %s passed to delete!" % action)
             self.state_set(self.DELETE, self.FAILED,
@@ -558,7 +565,7 @@ class Stack(object):
             self.id = None
         lock.release()
 
-    def suspend(self, lock):
+    def suspend(self):
         '''
         Suspend the stack, which invokes handle_suspend for all stack resources
         waits for all resources to become SUSPEND_COMPLETE then declares the
@@ -567,13 +574,15 @@ class Stack(object):
         other than move to SUSPEND_COMPLETE, so the resources must implement
         handle_suspend for this to have any effect.
         '''
+        lock = stack_lock.StackLock(self)
+        lock.acquire()
         sus_task = scheduler.TaskRunner(self.stack_task,
                                         action=self.SUSPEND,
                                         reverse=True)
         sus_task(timeout=self.timeout_secs())
         lock.release()
 
-    def resume(self, lock):
+    def resume(self):
         '''
         Resume the stack, which invokes handle_resume for all stack resources
         waits for all resources to become RESUME_COMPLETE then declares the
@@ -582,6 +591,8 @@ class Stack(object):
         other than move to RESUME_COMPLETE, so the resources must implement
         handle_resume for this to have any effect.
         '''
+        lock = stack_lock.StackLock(self)
+        lock.acquire()
         sus_task = scheduler.TaskRunner(self.stack_task,
                                         action=self.RESUME,
                                         reverse=False)

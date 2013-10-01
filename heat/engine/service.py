@@ -39,7 +39,6 @@ from heat.engine import parser
 from heat.engine import properties
 from heat.engine import resource
 from heat.engine import resources
-from heat.engine import stack_lock
 from heat.engine import template as tpl
 from heat.engine import watchrule
 
@@ -238,15 +237,11 @@ class EngineService(service.Service):
                       (currently provider templates).
         :param args: Request parameters/args passed from API
         """
-        import ipdb; ipdb.set_trace()
-        lock = stack_lock.StackLock(self)
-        lock.acquire()
-
         logger.info('template is %s' % template)
 
         def _stack_create(stack):
             # Create the stack, and create the periodic task if successful
-            stack.create(lock)
+            stack.create()
             if stack.action == stack.CREATE and stack.status == stack.COMPLETE:
                 # Schedule a periodic watcher task for this stack
                 self._start_watch_task(stack.id, cnxt)
@@ -302,9 +297,6 @@ class EngineService(service.Service):
         arg4 -> Stack Input Params
         arg4 -> Request parameters/args passed from API
         """
-        lock = stack_lock.StackLock(self)
-        lock.acquire()
-
         logger.info('template is %s' % template)
 
         # Get the database representation of the existing stack
@@ -327,8 +319,7 @@ class EngineService(service.Service):
         self._validate_deferred_auth_context(cnxt, updated_stack)
         updated_stack.validate()
 
-        self._start_in_thread(db_stack.id, current_stack.update, updated_stack,
-                              lock)
+        self._start_in_thread(db_stack.id, current_stack.update, updated_stack)
 
         return dict(current_stack.identifier())
 
@@ -414,9 +405,6 @@ class EngineService(service.Service):
         arg1 -> RPC context.
         arg2 -> Name of the stack you want to delete.
         """
-        lock = stack_lock.StackLock(self)
-        lock.acquire()
-
         st = self._get_stack(cnxt, stack_identity)
 
         logger.info('deleting stack %s' % st.name)
@@ -435,7 +423,7 @@ class EngineService(service.Service):
             self.stg[st.id].stop()
             del self.stg[st.id]
         # use the service ThreadGroup for deletes
-        self.tg.add_thread(stack.delete, lock)
+        self.tg.add_thread(stack.delete)
         return None
 
     def list_resource_types(self, cnxt):
@@ -636,12 +624,9 @@ class EngineService(service.Service):
         '''
         Handle request to perform suspend action on a stack
         '''
-        lock = stack_lock.StackLock(self)
-        lock.acquire()
-
         def _stack_suspend(stack):
             logger.debug("suspending stack %s" % stack.name)
-            stack.suspend(lock)
+            stack.suspend()
 
         s = self._get_stack(cnxt, stack_identity)
 
@@ -653,12 +638,9 @@ class EngineService(service.Service):
         '''
         Handle request to perform a resume action on a stack
         '''
-        lock = stack_lock.StackLock(self)
-        lock.acquire()
-
         def _stack_resume(stack):
             logger.debug("resuming stack %s" % stack.name)
-            stack.resume(lock)
+            stack.resume()
 
         s = self._get_stack(cnxt, stack_identity)
 
