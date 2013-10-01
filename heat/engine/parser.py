@@ -443,12 +443,12 @@ class Stack(object):
         Update will fail if it exceeds the specified timeout. The default is
         60 minutes, set in the constructor
         '''
-        updater = scheduler.TaskRunner(self.update_task, newstack)
+        updater = scheduler.TaskRunner(self.update_task, newstack, lock)
         updater()
         lock.release()
 
     @scheduler.wrappertask
-    def update_task(self, newstack, action=UPDATE):
+    def update_task(self, newstack, lock, action=UPDATE):
         if action not in (self.UPDATE, self.ROLLBACK):
             logger.error("Unexpected action %s passed to update!" % action)
             self.state_set(self.UPDATE, self.FAILED,
@@ -520,7 +520,7 @@ class Stack(object):
         self.outputs = self.resolve_static_data(template_outputs)
         self.store()
 
-    def delete(self, lock, action=DELETE):
+    def delete(self, lock=None, action=DELETE):
         '''
         Delete all of the resources, and then the stack itself.
         The action parameter is used to differentiate between a user
@@ -571,7 +571,8 @@ class Stack(object):
             # delete the stack
             db_api.stack_delete(self.context, self.id)
             self.id = None
-        lock.release()
+        if lock:
+            lock.release()
 
     def suspend(self, lock):
         '''

@@ -238,13 +238,9 @@ class EngineService(service.Service):
                       (currently provider templates).
         :param args: Request parameters/args passed from API
         """
-        import ipdb; ipdb.set_trace()
-        lock = stack_lock.StackLock(self)
-        lock.acquire()
-
         logger.info('template is %s' % template)
 
-        def _stack_create(stack):
+        def _stack_create(stack, lock):
             # Create the stack, and create the periodic task if successful
             stack.create(lock)
             if stack.action == stack.CREATE and stack.status == stack.COMPLETE:
@@ -279,9 +275,13 @@ class EngineService(service.Service):
 
         stack_id = stack.store()
 
-        self._start_in_thread(stack_id, _stack_create, stack)
+        stack_identity = stack.identifier()
+        lock = stack_lock.StackLock(cnxt, stack_identity)
+        lock.acquire()
 
-        return dict(stack.identifier())
+        self._start_in_thread(stack_id, _stack_create, stack, lock)
+
+        return dict(stack_identity)
 
     @request_context
     def update_stack(self, cnxt, stack_identity, template, params,
@@ -297,7 +297,7 @@ class EngineService(service.Service):
         arg4 -> Stack Input Params
         arg4 -> Request parameters/args passed from API
         """
-        lock = stack_lock.StackLock(self)
+        lock = stack_lock.StackLock(cnxt, stack_identity)
         lock.acquire()
 
         logger.info('template is %s' % template)
@@ -409,7 +409,7 @@ class EngineService(service.Service):
         arg1 -> RPC context.
         arg2 -> Name of the stack you want to delete.
         """
-        lock = stack_lock.StackLock(self)
+        lock = stack_lock.StackLock(cnxt, stack_identity)
         lock.acquire()
 
         st = self._get_stack(cnxt, stack_identity)
@@ -624,7 +624,7 @@ class EngineService(service.Service):
         '''
         Handle request to perform suspend action on a stack
         '''
-        lock = stack_lock.StackLock(self)
+        lock = stack_lock.StackLock(cnxt, stack_identity)
         lock.acquire()
 
         def _stack_suspend(stack):
@@ -641,7 +641,7 @@ class EngineService(service.Service):
         '''
         Handle request to perform a resume action on a stack
         '''
-        lock = stack_lock.StackLock(self)
+        lock = stack_lock.StackLock(cnxt, stack_identity)
         lock.acquire()
 
         def _stack_resume(stack):

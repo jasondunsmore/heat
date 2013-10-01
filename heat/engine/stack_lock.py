@@ -4,6 +4,9 @@ import time
 
 from oslo.config import cfg
 
+cfg.CONF.import_opt('distributed_lock_driver', 'heat.common.config')
+cfg.CONF.import_opt('engine_id', 'heat.common.config')
+
 from heat.common import exception
 
 if cfg.CONF.distributed_lock_driver == 'zookeeper':
@@ -38,8 +41,9 @@ class StackZKLock(object):
 
 class StackDBLock(object):
     """"""
-    def __init__(self, stack):
-        self.stack = stack
+    def __init__(self, context, stack_identity):
+        self.context = context
+        self.stack = db_api.stack_get(context, stack_identity['stack_id'])
         self.engine_id = cfg.CONF.engine_id
 
     @staticmethod
@@ -55,18 +59,17 @@ class StackDBLock(object):
 
     def acquire(self):
         """Acquire a lock on the stack"""
-        existing_lock = db_api.stack_lock_get(self.stack.context,
-                                              self.stack.id)
+        existing_lock = db_api.stack_lock_get(self.context, self.stack.id)
         if existing_lock:
             # TODO: Make lock timeout configurable
             if self._lock_staleness(existing_lock) > 300:  # Lock expired
-                db_api.stack_lock_force(self.stack.context, self.stack.id,
+                db_api.stack_lock_force(self.context, self.stack.id,
                                         self.engine_id)
             else:
                 raise exception.ActionInProgress(stack_name=self.stack.name,
                                                  action=self.stack.action)
         else:
-            db_api.stack_lock_create(self.stack.context, self.stack.id,
+            db_api.stack_lock_create(self.context, self.stack.id,
                                      self.engine_id)
 
     def cancel(self):
@@ -75,8 +78,7 @@ class StackDBLock(object):
 
     def release(self):
         """Release a stack lock"""
-        db_api.stack_lock_release(self.stack.context, self.stack.id,
-                                  self.engine_id)
+        db_api.stack_lock_release(self.context, self.stack.id, self.engine_id)
 
 
 if cfg.CONF.distributed_lock_driver == 'zookeeper':
