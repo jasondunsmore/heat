@@ -297,6 +297,30 @@ def stack_delete(context, stack_id):
     session.flush()
 
 
+def stack_lock_get(context, stack_id):
+    return model_query(context, models.StackLock).get(stack_id)
+
+
+def stack_lock_create(context, stack_id, engine_id):
+    stack_lock = models.StackLock()
+    stack_lock.update({"stack_id": stack_id,
+                       "engine_id": engine_id})
+    stack_lock.save(_session(context))
+
+
+def stack_lock_steal(context, stack_id, engine_id):
+    session = get_session()
+    session.query(models.StackLock).get(stack_id).\
+        update({"engine_id": engine_id})
+    session.commit()
+
+
+def stack_lock_release(context, stack_id):
+    session = get_session()
+    session.query(models.StackLock).get(stack_id).delete()
+    session.commit()
+
+
 def user_creds_create(context):
     values = context.to_dict()
     user_creds_ref = models.UserCreds()
@@ -521,3 +545,11 @@ def db_sync(version=None):
 def db_version():
     """Display the current database version."""
     return migration.db_version()
+
+
+def current_timestamp():
+    """Return a datetime object with the current database time."""
+    session = get_session()
+    query = sqlalchemy.select([sqlalchemy.func.current_timestamp()])
+    result = session.execute(query).fetchall()
+    return result[0][0]
