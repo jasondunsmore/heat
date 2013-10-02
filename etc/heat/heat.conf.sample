@@ -30,6 +30,9 @@
 # (integer value)
 #zk_lock_acquire_timeout=2
 
+# List of Zookeeper hosts to connect to (list value)
+#zk_hosts=127.0.0.1:2181
+
 # Number of seconds until a database lock times out (integer value)
 #db_lock_timeout=3600
 

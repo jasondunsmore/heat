@@ -1,4 +1,3 @@
-"""Stack lock"""
 
 import time
 
@@ -7,6 +6,7 @@ from oslo.config import cfg
 cfg.CONF.import_opt('db_lock_timeout', 'heat.common.config')
 cfg.CONF.import_opt('distributed_lock_driver', 'heat.common.config')
 cfg.CONF.import_opt('engine_id', 'heat.common.config')
+cfg.CONF.import_opt('zk_hosts', 'heat.common.config')
 cfg.CONF.import_opt('zk_lock_acquire_timeout', 'heat.common.config')
 
 from heat.common import exception
@@ -19,7 +19,11 @@ logger = logging.getLogger(__name__)
 if cfg.CONF.distributed_lock_driver == 'zookeeper':
     from kazoo.client import KazooClient
     from kazoo.recipe.lock import Lock as KazooLock
-    from kazoo.exceptions import LockTimeout
+    from kazoo import exceptions as kazoo_exceptions
+
+
+class ZookeeperConnectionTimeout(exception.HeatException):
+    message = _("Unable to connect to Zookeeper on: %(hosts)s")
 
 
 class StackZKLock(object):
@@ -27,8 +31,13 @@ class StackZKLock(object):
         self.context = context
         self.stack = db_api.stack_get(context, stack_identity['stack_id'])
         self.engine_id = cfg.CONF.engine_id
-        self.zk = KazooClient(hosts='127.0.0.1:2181')
-        self.zk.start()
+        zk_hosts = ",".join(cfg.CONF.zk_hosts)
+        self.zk = KazooClient(hosts=zk_hosts)
+        try:
+            self.zk.start()
+        except kazoo_exceptions.TimeoutError as exc:
+            logger.exception(exc)
+            raise ZookeeperConnectionTimeout(hosts=zk_hosts)
         self.lock_name = "%s_%s" % (self.context.tenant, self.stack.name)
         self.lock = KazooLock(self.zk, self.lock_name)
 
@@ -37,7 +46,8 @@ class StackZKLock(object):
         timeout = cfg.CONF.zk_lock_acquire_timeout
         try:
             self.lock.acquire(blocking=True, timeout=timeout)
-        except LockTimeout:
+        except kazoo_exceptions.LockTimeout as exc:
+            logger.exception(exc)
             lock = self.zk.get(self.lock_name)[1]
             logger.debug("Stack lock is owned by engine with ZK owner id %s"
                          % lock.ephemeralOwner)

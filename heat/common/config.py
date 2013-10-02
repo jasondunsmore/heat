@@ -91,6 +91,9 @@ engine_opts = [
                default=2,
                help=_('Number of seconds for Zookeeper to wait while '
                       'acquiring a lock')),
+    cfg.StrOpt('zk_hosts',
+               default=['127.0.0.1:2181'],
+               help='List of Zookeeper hosts to connect to'),
     cfg.StrOpt('db_lock_timeout',
                default=3600,
                help='Number of seconds until a database lock times out'),
