@@ -126,6 +126,7 @@ policy_template = '''
 }
 '''
 
+# TODO(jason): Mock stack locking
 
 def get_wordpress_stack(stack_name, ctx):
     t = template_format.parse(wp_template)

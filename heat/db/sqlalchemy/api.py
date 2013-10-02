@@ -302,6 +302,44 @@ def stack_delete(context, stack_id):
     session.flush()
 
 
+def stack_lock_get(context, stack_id):
+    return model_query(context, models.StackLock).get(stack_id)
+
+
+def stack_lock_create(context, stack_id, engine_id):
+    stack_lock = models.StackLock()
+    stack_lock.update({"stack_id": stack_id,
+                       "engine_id": engine_id})
+    stack_lock.save(_session(context))
+
+
+def stack_lock_steal(context, stack_id, engine_id):
+    stack_lock = stack_lock_get(context, stack_id)
+    stack_lock.update({"stack_id": stack_id,
+                       "engine_id": engine_id})
+    stack_lock.save(_session(context))
+
+
+def stack_lock_release(context, stack_id):
+    stack_lock = stack_lock_get(context, stack_id)
+    stack_lock.delete()
+
+
+def stack_lock_age(lock):
+    session = get_session()
+    if lock.updated_at:
+        changed_time = lock.updated_at
+    else:
+        changed_time = lock.created_at
+    query = sqlalchemy.select([
+        sqlalchemy.func.time_to_sec(
+            sqlalchemy.func.timediff(
+                sqlalchemy.func.current_timestamp(),
+                changed_time.strftime('%Y-%m-%d %H:%M:%S')))])
+    result = session.execute(query).fetchall()
+    return result[0][0]
+
+
 def user_creds_create(context):
     values = context.to_dict()
     user_creds_ref = models.UserCreds()

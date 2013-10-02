@@ -10,6 +10,31 @@
 # Driver to use for controlling instances (string value)
 #instance_driver=heat.engine.nova
 
+# TODO(jason): Make this a UUID
+# Engine identifier for multi-engine distributed lock (integer value).
+# Defaults to: <hostname>-<pid>
+#engine_id=1
+
+# Driver to use for multi-engine distributed lock (string value,
+# either "database" or "zookeeper")
+#distributed_lock_driver=database
+
+# Number of seconds until a database lock times out.  For example, if
+# this option is set to 3600 seconds and an engine dies during a
+# stack-create, the lock will timeout after 1 hour and other engines
+# can steal the lock.  Applies to the "database" distributed lock
+# driver (integer value)
+#db_lock_timeout=3600
+
+# TODO(jason): Document factors to consider when deciding on a value
+# Number of seconds for Zookeeper to wait while acquiring a lock.
+# Applies to the "zookeeper" distributed lock driver (integer value)
+#zk_lock_acquire_timeout=2
+
+# List of Zookeeper hosts to connect to.  Applies to the "zookeeper"
+# distributed lock driver (list value)
+#zk_hosts=127.0.0.1:2181
+
 # List of directories to search for Plugins (list value)
 #plugin_dirs=/usr/lib64/heat,/usr/lib/heat
 

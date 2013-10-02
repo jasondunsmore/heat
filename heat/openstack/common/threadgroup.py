@@ -24,6 +24,8 @@ from heat.openstack.common import loopingcall
 
 LOG = logging.getLogger(__name__)
 
+# TODO(jason): Make this a separate Heat review once
+# https://review.openstack.org/#/c/53883/ is accepted in oslo.
 
 def _thread_done(gt, *args, **kwargs):
     """Callback function to be passed to GreenThread.link() when we spawn()
@@ -47,6 +49,9 @@ class Thread(object):
 
     def wait(self):
         return self.thread.wait()
+
+    def link(self, func, *args, **kwargs):
+        self.thread.link(func, *args, **kwargs)
 
 
 class ThreadGroup(object):
@@ -79,6 +84,7 @@ class ThreadGroup(object):
         gt = self.pool.spawn(callback, *args, **kwargs)
         th = Thread(gt, self)
         self.threads.append(th)
+        return th
 
     def thread_done(self, thread):
         self.threads.remove(thread)

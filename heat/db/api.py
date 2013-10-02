@@ -138,6 +138,26 @@ def stack_delete(context, stack_id):
     return IMPL.stack_delete(context, stack_id)
 
 
+def stack_lock_get(context, stack_id):
+    return IMPL.stack_lock_get(context, stack_id)
+
+
+def stack_lock_create(context, stack_id, engine_id):
+    return IMPL.stack_lock_create(context, stack_id, engine_id)
+
+
+def stack_lock_steal(context, stack_id, engine_id):
+    return IMPL.stack_lock_steal(context, stack_id, engine_id)
+
+
+def stack_lock_release(context, stack_id):
+    return IMPL.stack_lock_release(context, stack_id)
+
+
+def stack_lock_age(lock):
+    return IMPL.stack_lock_age(lock)
+
+
 def user_creds_create(context):
     return IMPL.user_creds_create(context)
 

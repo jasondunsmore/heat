@@ -66,6 +66,8 @@ UUIDs = (UUID1, UUID2, UUID3) = sorted([uuidutils.generate_uuid()
                                         for x in range(3)])
 
 
+# TODO(jason): Add tests for stack locking
+
 class MyResource(Resource):
     properties_schema = {
         'ServerName': {'Type': 'String', 'Required': True},
