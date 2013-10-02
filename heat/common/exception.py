@@ -333,4 +333,4 @@ class StackResourceLimitExceeded(HeatException):
 
 class ActionInProgress(HeatException):
     message = _("Stack %(stack_name)s already has an action (%(action)s) "
-                "in progress")
+                "in progress.")

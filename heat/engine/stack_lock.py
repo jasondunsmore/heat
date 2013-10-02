@@ -1,38 +1,48 @@
-"""Stack """
+"""Stack lock"""
 
 import time
 
 from oslo.config import cfg
 
+cfg.CONF.import_opt('db_lock_timeout', 'heat.common.config')
 cfg.CONF.import_opt('distributed_lock_driver', 'heat.common.config')
 cfg.CONF.import_opt('engine_id', 'heat.common.config')
 cfg.CONF.import_opt('zk_lock_acquire_timeout', 'heat.common.config')
 
 from heat.common import exception
+from heat.db import api as db_api
+
+from heat.openstack.common import log as logging
+
+logger = logging.getLogger(__name__)
 
 if cfg.CONF.distributed_lock_driver == 'zookeeper':
     from kazoo.client import KazooClient
     from kazoo.recipe.lock import Lock as KazooLock
-
-from heat.db import api as db_api
+    from kazoo.exceptions import LockTimeout
 
 
 class StackZKLock(object):
-    """"""
     def __init__(self, context, stack_identity):
         self.context = context
         self.stack = db_api.stack_get(context, stack_identity['stack_id'])
         self.engine_id = cfg.CONF.engine_id
-        zk = KazooClient(hosts='127.0.0.1:2181')
-        zk.start()
-        lock_name = "%s_%s_%s" % (self.engine_id, self.context.tenant,
-                                  self.stack.name)
-        self.lock = KazooLock(zk, lock_name)
+        self.zk = KazooClient(hosts='127.0.0.1:2181')
+        self.zk.start()
+        self.lock_name = "%s_%s" % (self.context.tenant, self.stack.name)
+        self.lock = KazooLock(self.zk, self.lock_name)
 
     def acquire(self):
         """Acquire a lock on the stack"""
         timeout = cfg.CONF.zk_lock_acquire_timeout
-        self.lock.acquire(blocking=True, timeout=timeout)
+        try:
+            self.lock.acquire(blocking=True, timeout=timeout)
+        except LockTimeout:
+            lock = self.zk.get(self.lock_name)[1]
+            logger.debug("Stack lock is owned by engine with ZK owner id %s"
+                         % lock.ephemeralOwner)
+            raise exception.ActionInProgress(stack_name=self.stack.name,
+                                             action=self.stack.action)
 
     def release(self):
         """Release a stack lock"""
@@ -40,7 +50,6 @@ class StackZKLock(object):
 
 
 class StackDBLock(object):
-    """"""
     def __init__(self, context, stack_identity):
         self.context = context
         self.stack = db_api.stack_get(context, stack_identity['stack_id'])
@@ -61,11 +70,13 @@ class StackDBLock(object):
         """Acquire a lock on the stack"""
         existing_lock = db_api.stack_lock_get(self.context, self.stack.id)
         if existing_lock:
-            # TODO: Make lock timeout configurable
-            if self._lock_staleness(existing_lock) > 300:  # Lock expired
+            if self._lock_staleness(existing_lock) > cfg.CONF.db_lock_timeout:
+                # Lock expired, so grab the lock
                 db_api.stack_lock_force(self.context, self.stack.id,
                                         self.engine_id)
             else:
+                logger.debug("Stack lock is owned by engine %s"
+                             % existing_lock.engine_id)
                 raise exception.ActionInProgress(stack_name=self.stack.name,
                                                  action=self.stack.action)
         else:
@@ -79,5 +90,5 @@ class StackDBLock(object):
 
 if cfg.CONF.distributed_lock_driver == 'zookeeper':
     StackLock = StackZKLock
-elif cfg.CONF.distributed_lock_driver == 'db':
+elif cfg.CONF.distributed_lock_driver == 'database':
     StackLock = StackDBLock
