@@ -6,6 +6,7 @@ from oslo.config import cfg
 
 cfg.CONF.import_opt('distributed_lock_driver', 'heat.common.config')
 cfg.CONF.import_opt('engine_id', 'heat.common.config')
+cfg.CONF.import_opt('zk_lock_acquire_timeout', 'heat.common.config')
 
 from heat.common import exception
 
@@ -18,21 +19,20 @@ from heat.db import api as db_api
 
 class StackZKLock(object):
     """"""
-    def __init__(self, stack):
+    def __init__(self, context, stack_identity):
+        self.context = context
+        self.stack = db_api.stack_get(context, stack_identity['stack_id'])
+        self.engine_id = cfg.CONF.engine_id
         zk = KazooClient(hosts='127.0.0.1:2181')
         zk.start()
-        lock_name = "%s_%s_%s" % (cfg.CONF.engine_id, stack.context.tenant,
-                                  stack.name)
+        lock_name = "%s_%s_%s" % (self.engine_id, self.context.tenant,
+                                  self.stack.name)
         self.lock = KazooLock(zk, lock_name)
 
     def acquire(self):
         """Acquire a lock on the stack"""
-        # TODO: Make lock acquire timeout configurable
-        self.lock.acquire(blocking=True, timeout=2)
-
-    def cancel(self):
-        """Cancel a pending acquire"""
-        self.lock.cancel()
+        timeout = cfg.CONF.zk_lock_acquire_timeout
+        self.lock.acquire(blocking=True, timeout=timeout)
 
     def release(self):
         """Release a stack lock"""
@@ -71,10 +71,6 @@ class StackDBLock(object):
         else:
             db_api.stack_lock_create(self.context, self.stack.id,
                                      self.engine_id)
-
-    def cancel(self):
-        """Cancel a pending acquire.  Doesn't apply to db backend."""
-        pass
 
     def release(self):
         """Release a stack lock"""

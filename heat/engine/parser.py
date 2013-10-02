@@ -571,7 +571,10 @@ class Stack(object):
             # delete the stack
             db_api.stack_delete(self.context, self.id)
             self.id = None
-        if lock:
+
+        # Deleting a backup_stack shouldn't release the lock, so make
+        # this optional
+        if lock is not None:
             lock.release()
 
     def suspend(self, lock):
