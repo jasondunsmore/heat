@@ -60,7 +60,8 @@ chmod 600 /var/lib/cloud/seed/nocloud-net/*
 
 # Run cloud-init & cfn-init
 cloud-init start || cloud-init init
-bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1
+bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1 ||
+exit 42
 """
 
     # - Ubuntu 12.04: Verified working
@@ -271,9 +272,12 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
             ssh.connect(self.public_ip,
                         username="root",
                         key_filename=private_key_file.name)
-            stdin, stdout, stderr = ssh.exec_command(command)
+            chan = ssh.get_transport().open_session()
+            stdin, stdout, stderr = chan.exec_command(command)
             logger.debug(stdout.read())
             logger.debug(stderr.read())
+            import ipdb; ipdb.set_trace()
+            return chan.recv_exit_status()
 
     def _sftp_files(self, files):
         """Transfer files to the Cloud Server via SFTP."""
@@ -377,7 +381,13 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
 
             # Connect via SSH and run script
             cmd = "bash -ex /root/heat-script.sh > /root/heat-script.log 2>&1"
-            self._run_ssh_command(cmd)
+            exit_code = self._run_ssh_command(cmd)
+            if exit_code == 42:
+                raise exception.Error("The cfn-userdata script exited with a "
+                                      "non-zero exit status.")
+            elif exit_code != 0:
+                raise exception.Error("The heat-script.sh script exited with "
+                                      " a non-zero exit status.")
 
         return True
 
@@ -422,7 +432,11 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
 
             command = "bash -x /var/lib/cloud/data/cfn-userdata > " + \
                       "/root/cfn-userdata.log 2>&1"
-            self._run_ssh_command(command)
+            exit_code = self._run_ssh_command(command)
+            if exit_code != 0:
+                raise exception.Error("The cfn-userdata script exited with a "
+                                      "non-zero exit status.")
+
 
         if 'flavor' in prop_diff:
             self.flavor = json_snippet['Properties']['flavor']
