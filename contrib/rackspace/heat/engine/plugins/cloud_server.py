@@ -19,8 +19,8 @@ import novaclient.exceptions as novaexception
 
 from heat.common import exception
 from heat.openstack.common import log as logging
+from heat.engine import resource
 from heat.engine import scheduler
-from heat.engine.resources import instance
 from heat.engine.resources import nova_utils
 from heat.db.sqlalchemy import api as db_api
 
@@ -29,7 +29,7 @@ from . import rackspace_resource  # noqa
 logger = logging.getLogger(__name__)
 
 
-class CloudServer(instance.Instance):
+class CloudServer(resource.Resource):
     """Resource for Rackspace Cloud Servers."""
 
     properties_schema = {'flavor': {'Type': 'String', 'Required': True},
@@ -328,7 +328,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
 
     def _attach_volumes_task(self):
         tasks = (scheduler.TaskRunner(self._attach_volume, volume_id, device)
-                 for volume_id, device in self.volumes())
+                 for volume_id, device in nova_utils.volumes(self))
         return scheduler.PollingTaskGroup(tasks)
 
     def _attach_volume(self, volume_id, device):
@@ -347,7 +347,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
 
     def _detach_volumes_task(self):
         tasks = (scheduler.TaskRunner(self._detach_volume, volume_id)
-                 for volume_id, device in self.volumes())
+                 for volume_id, device in nova_utils.volumes(self))
         return scheduler.PollingTaskGroup(tasks)
 
     def _detach_volume(self, volume_id):
@@ -363,7 +363,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
 
     def check_create_complete(self, cookie):
         """Check if server creation is complete and handle server configs."""
-        if not self._check_active(cookie):
+        if not nova_utils.check_active_attach_volume(self, cookie):
             return False
 
         if self.has_userdata:
@@ -381,7 +381,6 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
 
         return True
 
-    # TODO(jason): Make this consistent with Instance and inherit
     def _delete_server(self, server):
         """Return a coroutine that deletes the Cloud Server."""
         server.delete()
@@ -396,6 +395,23 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
                                           server.name)
             except novaexception.NotFound:
                 break
+
+    def handle_delete(self):
+        '''
+        Delete a server, blocking until it is disposed by OpenStack
+        '''
+        if self.resource_id is None:
+            return
+
+        try:
+            server = self.nova().servers.get(self.resource_id)
+        except novaexception.NotFound:
+            pass
+        else:
+            delete = scheduler.TaskRunner(nova_utils.delete_server, server)
+            delete(wait_time=0.2)
+
+        self.resource_id = None
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
         """Try to update a Cloud Server's parameters.

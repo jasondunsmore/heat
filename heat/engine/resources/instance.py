@@ -360,56 +360,14 @@ class Instance(resource.Resource):
                                                 self.resource_id,
                                                 volume_id,
                                                 device)
-                        for volume_id, device in self.volumes())
+                        for volume_id, device in nova_utils.volumes(self))
         return scheduler.PollingTaskGroup(attach_tasks)
 
     def check_create_complete(self, cookie):
-        return self._check_active(cookie)
-
-    def _check_active(self, cookie):
+        result = nova_utils.check_active_attach_volume(self, cookie)
         server, volume_attach = cookie
-
-        if not volume_attach.started():
-            if server.status != 'ACTIVE':
-                server.get()
-
-            # Some clouds append extra (STATUS) strings to the status
-            short_server_status = server.status.split('(')[0]
-            if short_server_status in nova_utils.deferred_server_statuses:
-                return False
-            elif server.status == 'ACTIVE':
-                self._set_ipaddress(server.networks)
-                volume_attach.start()
-                return volume_attach.done()
-            elif server.status == 'ERROR':
-                fault = getattr(server, 'fault', {})
-                message = fault.get('message', 'Unknown')
-                code = fault.get('code', 500)
-                exc = exception.Error(_("Creation of server %(server)s "
-                                        "failed: %(message)s (%(code)s)") %
-                                      dict(server=server.name,
-                                           message=message,
-                                           code=code))
-                raise exc
-            else:
-                exc = exception.Error(_("Creation of server %(server)s failed "
-                                        "with unknown status: %(status)s") %
-                                      dict(server=server.name,
-                                           status=server.status))
-                raise exc
-        else:
-            return volume_attach.step()
-
-    def volumes(self):
-        """
-        Return an iterator over (volume_id, device) tuples for all volumes
-        that should be attached to this instance.
-        """
-        volumes = self.properties['Volumes']
-        if volumes is None:
-            return []
-
-        return ((vol['VolumeId'], vol['Device']) for vol in volumes)
+        self._set_ipaddress(server.networks)
+        return result
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
         if 'Metadata' in tmpl_diff:
@@ -482,7 +440,7 @@ class Instance(resource.Resource):
         detach_tasks = (volume.VolumeDetachTask(self.stack,
                                                 self.resource_id,
                                                 volume_id)
-                        for volume_id, device in self.volumes())
+                        for volume_id, device in nova_utils.volumes(self))
         return scheduler.PollingTaskGroup(detach_tasks)
 
     def handle_delete(self):
@@ -585,7 +543,7 @@ class Instance(resource.Resource):
             return server, scheduler.TaskRunner(self._attach_volumes_task())
 
     def check_resume_complete(self, cookie):
-        return self._check_active(cookie)
+        return nova_utils.check_active_attach_volume(self, cookie)
 
 
 def resource_mapping():
