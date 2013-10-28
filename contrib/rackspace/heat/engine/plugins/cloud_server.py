@@ -72,6 +72,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get install -y -o Dpkg::Options::="--force-confdef" -o \
   Dpkg::Options::="--force-confold" cloud-init python-boto python-pip gcc \
   python-dev
+pip install pbr==0.5.21
 pip install heat-cfntools
 cfn-create-aws-symlinks --source /usr/local/bin
 """
@@ -84,6 +85,7 @@ cfn-create-aws-symlinks --source /usr/local/bin
     # - Fedora 19: Verified working
     fedora_script = base_script % """\
 yum install -y cloud-init python-boto python-pip gcc python-devel
+pip-python install pbr==0.5.21
 pip-python install heat-cfntools
 cfn-create-aws-symlinks
 """
@@ -93,6 +95,7 @@ cfn-create-aws-symlinks
 rpm -ivh http://mirror.rackspace.com/epel/6/i386/epel-release-6-8.noarch.rpm
 yum install -y cloud-init python-boto python-pip gcc python-devel \
   python-argparse
+pip-python install pbr==0.5.21
 pip-python install heat-cfntools
 """
 
@@ -103,6 +106,7 @@ rpm -ivh http://mirror.rackspace.com/epel/6/i386/epel-release-6-8.noarch.rpm
 while fuser /var/lib/rpm/*; do sleep 1; done
 yum install -y cloud-init python-boto python-pip gcc python-devel \
   python-argparse
+pip-python install pbr==0.5.21
 pip-python install heat-cfntools
 cfn-create-aws-symlinks
 """
@@ -115,6 +119,7 @@ apt-get -t wheezy-backports install -y cloud-init
 export DEBIAN_FRONTEND=noninteractive
 apt-get install -y -o Dpkg::Options::="--force-confdef" -o \
   Dpkg::Options::="--force-confold" python-pip gcc python-dev
+pip install pbr==0.5.21
 pip install heat-cfntools
 """
 
