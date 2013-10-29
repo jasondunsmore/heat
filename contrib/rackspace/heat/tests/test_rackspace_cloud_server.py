@@ -350,6 +350,34 @@ class RackspaceCloudServerTest(HeatTestCase):
         updater = scheduler.TaskRunner(cs.update, update_template)
         self.assertRaises(resource.UpdateReplace, updater)
 
+    def test_cs_update_flavor_failed(self):
+        return_server = self.fc.servers.list()[1]
+        cs = self._create_test_cs(return_server, 'test_cs_update')
+
+        update_template = copy.deepcopy(cs.t)
+        update_template['Properties']['flavor'] = '256 MB Server'
+
+        self.m.StubOutWithMock(self.fc.servers, 'get')
+        self.fc.servers.get(1234).AndReturn(return_server)
+
+        def activate_status(cs):
+            cs.status = 'ACTIVE'
+        return_server.get = activate_status.__get__(return_server)
+
+        self.m.StubOutWithMock(self.fc.client, 'post_servers_1234_action')
+        self.fc.client.post_servers_1234_action(
+            body={'resize': {'flavorRef': 2}}).AndReturn((202, None))
+        self.m.ReplayAll()
+
+        updater = scheduler.TaskRunner(cs.update, update_template)
+        import ipdb; ipdb.set_trace()
+        error = self.assertRaises(exception.ResourceFailure, updater)
+        self.assertEqual(
+            "Error: Resizing to 'm1.small' failed, status 'ACTIVE'",
+            str(error))
+        self.assertEqual(cs.state, (cs.UPDATE, cs.FAILED))
+        self.m.VerifyAll()
+
     def test_cs_status_build(self):
         return_server = self.fc.servers.list()[0]
         cs = self._setup_test_cs(return_server, 'test_cs_status_build')
