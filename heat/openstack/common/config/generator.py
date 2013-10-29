@@ -79,7 +79,7 @@ def generate(srcfiles):
     opts_by_group = {'DEFAULT': []}
 
     for module_name in os.getenv(
-            "OSLO_CONFIG_GENERATOR_EXTRA_MODULES", "").split(','):
+            "HEAT_CONFIG_GENERATOR_EXTRA_MODULES", "").split(','):
         module = _import_module(module_name)
         if module:
             for group, opts in _list_opts(module):
@@ -94,7 +94,7 @@ def generate(srcfiles):
 
             mod_obj = _import_module(mod_str)
             if not mod_obj:
-                continue
+                raise RuntimeError("Unable to import module %s" % mod_str)
 
             for group, opts in _list_opts(mod_obj):
                 opts_by_group.setdefault(group, []).append((mod_str, opts))
@@ -221,6 +221,14 @@ def _print_opt(opt):
         sys.exit(1)
     opt_help += ' (' + OPT_TYPES[opt_type] + ')'
     print('#', "\n# ".join(textwrap.wrap(opt_help, WORDWRAP_WIDTH)))
+    if opt.deprecated_opts:
+        for deprecated_opt in opt.deprecated_opts:
+            if deprecated_opt.name:
+                deprecated_group = (deprecated_opt.group if
+                                    deprecated_opt.group else "DEFAULT")
+                print('# Deprecated group/name - [%s]/%s' %
+                      (deprecated_group,
+                       deprecated_opt.name))
     try:
         if opt_default is None:
             print('#%s=<None>' % opt_name)
