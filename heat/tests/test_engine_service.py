@@ -14,6 +14,7 @@
 
 
 import functools
+from eventlet import greenpool
 import json
 import sys
 
@@ -236,6 +237,7 @@ def stack_context(stack_name, create_res=True):
 class DummyThreadGroup(object):
     def __init__(self):
         self.threads = []
+        self.pool = greenpool.GreenPool(10)
 
     def add_timer(self, interval, callback, initial_delay=None,
                   *args, **kwargs):
@@ -243,6 +245,7 @@ class DummyThreadGroup(object):
 
     def add_thread(self, callback, *args, **kwargs):
         self.threads.append(callback)
+        return self.pool.spawn(callback, *args, **kwargs)
 
     def stop(self):
         pass
@@ -303,6 +306,9 @@ class StackServiceCreateUpdateDeleteTest(HeatTestCase):
         utils.reset_dummy_db()
         self.ctx = utils.dummy_context()
 
+        self.m.StubOutWithMock(service.EngineListener, 'start')
+        service.EngineListener.start().AndReturn(None)
+        self.m.ReplayAll()
         self.man = service.EngineService('a-host', 'a-topic')
 
     def _test_stack_create(self, stack_name):
@@ -496,6 +502,40 @@ class StackServiceCreateUpdateDeleteTest(HeatTestCase):
         self.assertIn(exception.StackResourceLimitExceeded.msg_fmt,
                       str(ex))
 
+    def test_stack_create_args(self):
+        """
+        Verify that the correct argument types are passed to
+        _start_thread_with_lock in the create_stack method.
+        """
+        params = {'foo': 'bar'}
+        template = '{ "Template": "data" }'
+        stack_name = 'service_create_test_stack_args'
+
+        stack = get_wordpress_stack(stack_name, self.ctx)
+
+        self.m.StubOutWithMock(parser, 'Template')
+        self.m.StubOutWithMock(environment, 'Environment')
+        self.m.StubOutWithMock(parser, 'Stack')
+
+        parser.Template(template, files=None).AndReturn(stack.t)
+        environment.Environment(params).AndReturn(stack.env)
+        parser.Stack(self.ctx, stack.name,
+                     stack.t, stack.env).AndReturn(stack)
+
+        self.m.StubOutWithMock(stack, 'validate')
+        stack.validate().AndReturn(None)
+
+        self.m.StubOutWithMock(service.EngineService,
+                               '_start_thread_with_lock')
+        service.EngineService._start_thread_with_lock(self.ctx, stack,
+                                                      mox.IgnoreArg(),
+                                                      stack).AndReturn(None)
+
+        self.m.ReplayAll()
+
+        self.man.create_stack(self.ctx, stack_name, template, params, None, {})
+        self.m.VerifyAll()
+
     def test_stack_validate(self):
         stack_name = 'service_create_test_validate'
         stack = get_wordpress_stack(stack_name, self.ctx)
@@ -589,6 +629,48 @@ class StackServiceCreateUpdateDeleteTest(HeatTestCase):
         self.assertEqual(old_stack.identifier(), result)
         self.assertTrue(isinstance(result, dict))
         self.assertTrue(result['stack_id'])
+        self.m.VerifyAll()
+
+    def test_stack_update_args(self):
+        """
+        Verify that the correct argument types are passed to
+        _start_thread_with_lock in the update_stack method.
+        """
+        stack_name = 'service_update_test_stack'
+        params = {'foo': 'bar'}
+        template = '{ "Template": "data" }'
+
+        old_stack = get_wordpress_stack(stack_name, self.ctx)
+        sid = old_stack.store()
+        s = db_api.stack_get(self.ctx, sid)
+
+        stack = get_wordpress_stack(stack_name, self.ctx)
+
+        self.m.StubOutWithMock(parser, 'Stack')
+        self.m.StubOutWithMock(parser.Stack, 'load')
+        parser.Stack.load(self.ctx, stack=s).AndReturn(old_stack)
+
+        self.m.StubOutWithMock(parser, 'Template')
+        self.m.StubOutWithMock(environment, 'Environment')
+
+        parser.Template(template, files=None).AndReturn(stack.t)
+        environment.Environment(params).AndReturn(stack.env)
+        parser.Stack(self.ctx, stack.name,
+                     stack.t, stack.env).AndReturn(stack)
+
+        self.m.StubOutWithMock(stack, 'validate')
+        stack.validate().AndReturn(None)
+
+        self.m.StubOutWithMock(service.EngineService,
+                               '_start_thread_with_lock')
+        service.EngineService._start_thread_with_lock(self.ctx, old_stack,
+                                                      mox.IgnoreArg(), stack)\
+                             .AndReturn(None)
+
+        self.m.ReplayAll()
+
+        self.man.update_stack(self.ctx, old_stack.identifier(),
+                              template, params, None, {})
         self.m.VerifyAll()
 
     def test_stack_update_equals(self):
@@ -815,6 +897,10 @@ class StackServiceUpdateNotSupportedTest(HeatTestCase):
         utils.setup_dummy_db()
         utils.reset_dummy_db()
         self.ctx = utils.dummy_context()
+
+        self.m.StubOutWithMock(service.EngineListener, 'start')
+        service.EngineListener.start().AndReturn(None)
+        self.m.ReplayAll()
         self.man = service.EngineService('a-host', 'a-topic')
 
     def test_stack_update_during(self):
@@ -851,6 +937,9 @@ class StackServiceSuspendResumeTest(HeatTestCase):
         utils.setup_dummy_db()
         self.ctx = utils.dummy_context()
 
+        self.m.StubOutWithMock(service.EngineListener, 'start')
+        service.EngineListener.start().AndReturn(None)
+        self.m.ReplayAll()
         self.man = service.EngineService('a-host', 'a-topic')
 
     def test_stack_suspend(self):
@@ -862,15 +951,40 @@ class StackServiceSuspendResumeTest(HeatTestCase):
         self.m.StubOutWithMock(parser.Stack, 'load')
         parser.Stack.load(self.ctx, stack=s).AndReturn(stack)
 
+        thread = self.m.CreateMockAnything()
+        thread.link(mox.IgnoreArg()).AndReturn(None)
         self.m.StubOutWithMock(service.EngineService, '_start_in_thread')
         service.EngineService._start_in_thread(sid,
                                                mox.IgnoreArg(),
-                                               stack).AndReturn(None)
+                                               stack).AndReturn(thread)
         self.m.ReplayAll()
 
         result = self.man.stack_suspend(self.ctx, stack.identifier())
         self.assertEqual(None, result)
 
+        self.m.VerifyAll()
+
+    def test_stack_suspend_args(self):
+        """
+        Verify that the correct argument types are passed to
+        _start_thread_with_lock in the stack_suspend method.
+        """
+        stack_name = 'service_suspend_test_stack'
+        stack = get_wordpress_stack(stack_name, self.ctx)
+        sid = stack.store()
+        s = db_api.stack_get(self.ctx, sid)
+
+        self.m.StubOutWithMock(parser.Stack, 'load')
+        parser.Stack.load(self.ctx, stack=s).AndReturn(stack)
+
+        self.m.StubOutWithMock(service.EngineService,
+                               '_start_thread_with_lock')
+        service.EngineService._start_thread_with_lock(self.ctx, stack,
+                                                      mox.IgnoreArg(), stack)\
+                             .AndReturn(None)
+        self.m.ReplayAll()
+
+        self.man.stack_suspend(self.ctx, stack.identifier())
         self.m.VerifyAll()
 
     @stack_context('service_resume_test_stack', False)
@@ -879,14 +993,39 @@ class StackServiceSuspendResumeTest(HeatTestCase):
         parser.Stack.load(self.ctx,
                           stack=mox.IgnoreArg()).AndReturn(self.stack)
 
+        thread = self.m.CreateMockAnything()
+        thread.link(mox.IgnoreArg()).AndReturn(None)
         self.m.StubOutWithMock(service.EngineService, '_start_in_thread')
         service.EngineService._start_in_thread(self.stack.id,
                                                mox.IgnoreArg(),
-                                               self.stack).AndReturn(None)
+                                               self.stack).AndReturn(thread)
+
         self.m.ReplayAll()
 
         result = self.man.stack_resume(self.ctx, self.stack.identifier())
         self.assertEqual(None, result)
+        self.m.VerifyAll()
+
+    @stack_context('service_resume_test_stack', False)
+    def test_stack_resume_args(self):
+        """
+        Verify that the correct argument types are passed to
+        _start_thread_with_lock in the stack_resume method.
+        """
+        self.m.StubOutWithMock(parser.Stack, 'load')
+        parser.Stack.load(self.ctx,
+                          stack=mox.IgnoreArg()).AndReturn(self.stack)
+
+        self.m.StubOutWithMock(service.EngineService,
+                               '_start_thread_with_lock')
+        service.EngineService._start_thread_with_lock(self.ctx, self.stack,
+                                                      mox.IgnoreArg(),
+                                                      self.stack)\
+                             .AndReturn(None)
+
+        self.m.ReplayAll()
+
+        self.man.stack_resume(self.ctx, self.stack.identifier())
         self.m.VerifyAll()
 
     def test_stack_suspend_nonexist(self):
@@ -916,6 +1055,11 @@ class StackServiceTest(HeatTestCase):
         super(StackServiceTest, self).setUp()
 
         self.ctx = utils.dummy_context(tenant_id='stack_service_test_tenant')
+
+        self.m.StubOutWithMock(service.EngineListener, 'start')
+        service.EngineListener.start().AndReturn(None)
+        self.m.ReplayAll()
+
         self.eng = service.EngineService('a-host', 'a-topic')
         cfg.CONF.set_default('heat_stack_user_role', 'stack_user_role')
         _register_class('ResourceWithPropsType',
@@ -1021,8 +1165,12 @@ class StackServiceTest(HeatTestCase):
         rsrs._register_class('GenericResourceType',
                              generic_rsrc.GenericResource)
 
+        thread = self.m.CreateMockAnything()
+        thread.link(mox.IgnoreArg()).AndReturn(None)
+
         def run(stack_id, func, *args):
             func(*args)
+            return thread
         self.eng._start_in_thread = run
 
         new_tmpl = {'Resources': {'AResource': {'Type':
