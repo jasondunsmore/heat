@@ -14,6 +14,7 @@
 
 
 import functools
+from eventlet import greenpool
 import json
 import sys
 
@@ -235,6 +236,7 @@ def stack_context(stack_name, create_res=True):
 class DummyThreadGroup(object):
     def __init__(self):
         self.threads = []
+        self.pool = greenpool.GreenPool(10)
 
     def add_timer(self, interval, callback, initial_delay=None,
                   *args, **kwargs):
@@ -242,6 +244,7 @@ class DummyThreadGroup(object):
 
     def add_thread(self, callback, *args, **kwargs):
         self.threads.append(callback)
+        return self.pool.spawn(callback, *args, **kwargs)
 
     def stop(self):
         pass
@@ -863,9 +866,11 @@ class StackServiceSuspendResumeTest(HeatTestCase):
         parser.Stack.load(self.ctx, stack=s).AndReturn(stack)
 
         self.m.StubOutWithMock(service.EngineService, '_start_in_thread')
+        thread = self.m.CreateMockAnything()
+        thread.link(mox.IgnoreArg()).AndReturn(None)
         service.EngineService._start_in_thread(sid,
                                                mox.IgnoreArg(),
-                                               stack).AndReturn(None)
+                                               stack).AndReturn(thread)
         self.m.ReplayAll()
 
         result = self.man.stack_suspend(self.ctx, stack.identifier())
@@ -880,9 +885,12 @@ class StackServiceSuspendResumeTest(HeatTestCase):
                           stack=mox.IgnoreArg()).AndReturn(self.stack)
 
         self.m.StubOutWithMock(service.EngineService, '_start_in_thread')
+        thread = self.m.CreateMockAnything()
+        thread.link(mox.IgnoreArg()).AndReturn(None)
         service.EngineService._start_in_thread(self.stack.id,
                                                mox.IgnoreArg(),
-                                               self.stack).AndReturn(None)
+                                               self.stack).AndReturn(thread)
+
         self.m.ReplayAll()
 
         result = self.man.stack_resume(self.ctx, self.stack.identifier())
@@ -1021,8 +1029,12 @@ class StackServiceTest(HeatTestCase):
         rsrs._register_class('GenericResourceType',
                              generic_rsrc.GenericResource)
 
+        thread = self.m.CreateMockAnything()
+        thread.link(mox.IgnoreArg()).AndReturn(None)
+
         def run(stack_id, func, *args):
             func(*args)
+            return thread
         self.eng._start_in_thread = run
 
         new_tmpl = {'Resources': {'AResource': {'Type':
