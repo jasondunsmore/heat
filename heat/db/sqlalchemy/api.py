@@ -356,6 +356,30 @@ def stack_delete(context, stack_id):
     session.flush()
 
 
+def stack_lock_create(stack_id, engine_id):
+    session = get_session()
+    stack_lock = models.StackLock(stack_id=stack_id, engine_id=engine_id)
+    with session.begin():
+        session.add(stack_lock)
+    return stack_lock
+
+
+def stack_lock_steal(stack_id, old_engine_id, new_engine_id):
+    session = get_session()
+    with session.begin():
+        return session.query(models.StackLock).\
+            filter_by(stack_id=stack_id, engine_id=old_engine_id).\
+            update({"engine_id": new_engine_id})
+
+
+def stack_lock_release(stack_id):
+    session = get_session()
+    with session.begin():
+        return session.query(models.StackLock).\
+            filter_by(stack_id=stack_id).\
+            delete()
+
+
 def user_creds_create(context):
     values = context.to_dict()
     user_creds_ref = models.UserCreds()

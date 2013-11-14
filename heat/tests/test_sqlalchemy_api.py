@@ -31,6 +31,7 @@ from heat.engine import parser
 from heat.engine import scheduler
 from heat.openstack.common import timeutils
 from heat.openstack.common import uuidutils
+from heat.openstack.common.db import exception as db_exception
 from heat.tests.common import HeatTestCase
 from heat.tests import utils
 
@@ -473,6 +474,10 @@ def create_resource_data(ctx, resource, **kwargs):
     return db_api.resource_data_set(resource, **values)
 
 
+def create_stack_lock(stack_id, engine_id):
+    return db_api.stack_lock_create(stack_id, engine_id)
+
+
 def create_event(ctx, **kwargs):
     values = {
         'stack_id': 'test_stack_id',
@@ -853,6 +858,47 @@ class DBAPIResourceTest(HeatTestCase):
 
         self.assertRaises(exception.NotFound, db_api.resource_get_all_by_stack,
                           self.ctx, self.stack2.id)
+
+
+class DBAPIStackLockTest(HeatTestCase):
+    def setUp(self):
+        super(DBAPIStackLockTest, self).setUp()
+        self.ctx = utils.dummy_context()
+        utils.setup_dummy_db()
+        utils.reset_dummy_db()
+        self.template = create_raw_template(self.ctx)
+        self.user_creds = create_user_creds(self.ctx)
+        self.stack = create_stack(self.ctx, self.template, self.user_creds)
+
+    def test_stack_lock_create_success(self):
+        lock = create_stack_lock(self.stack.id, UUID1)
+        self.assertEqual(UUID1, lock['engine_id'])
+
+    def test_stack_lock_create_fail(self):
+        create_stack_lock(self.stack.id, UUID1)
+        self.assertRaises(db_exception.DBDuplicateEntry, create_stack_lock,
+                          self.stack.id, UUID1)
+
+    def test_stack_lock_steal_success(self):
+        create_stack_lock(self.stack.id, UUID1)
+        rows = db_api.stack_lock_steal(self.stack.id, UUID1, UUID2)
+        self.assertEqual(rows, 1)
+
+    def test_stack_lock_steal_fail(self):
+        create_stack_lock(self.stack.id, UUID1)
+        rows = db_api.stack_lock_steal(self.stack.id, UUID3, UUID2)
+        self.assertEqual(rows, 0)
+
+    def test_stack_lock_release_success(self):
+        create_stack_lock(self.stack.id, UUID1)
+        rows = db_api.stack_lock_release(self.stack.id)
+        self.assertEqual(rows, 1)
+
+    def test_stack_lock_release_fail(self):
+        create_stack_lock(self.stack.id, UUID1)
+        db_api.stack_lock_release(self.stack.id)
+        rows = db_api.stack_lock_release(self.stack.id)
+        self.assertEqual(rows, 0)
 
 
 class DBAPIResourceDataTest(HeatTestCase):
