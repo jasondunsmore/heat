@@ -31,6 +31,7 @@ from heat.common import exception
 from heat.db.sqlalchemy import filters as db_filters
 from heat.db.sqlalchemy import migration
 from heat.db.sqlalchemy import models
+from heat.openstack.common.db import exception as db_exception
 from heat.openstack.common.db.sqlalchemy import session as db_session
 from heat.openstack.common.db.sqlalchemy import utils
 
@@ -359,6 +360,40 @@ def stack_delete(context, stack_id):
     s.soft_delete(session=session)
 
     session.flush()
+
+
+def stack_lock_create(stack_id, engine_id):
+    session = get_session()
+    session.begin()
+    # Test 1: Stack lock already exists
+    session.add(models.StackLock(stack_id=stack_id, engine_id=engine_id))
+    # Test 2: Remove lock here
+    lock = session.query(models.StackLock).get(stack_id)
+    session.commit()
+    # except db_exception.DBDuplicateEntry:
+    #     return lock.engine_id
+
+
+def stack_lock_steal(stack_id, old_engine_id, new_engine_id):
+    session = get_session()
+    with session.begin():
+        rows_affected = session.query(models.StackLock).\
+            filter_by(stack_id=stack_id, engine_id=old_engine_id).\
+            update({"engine_id": new_engine_id})
+    if rows_affected == 1:
+        return True
+    else:
+        lock = session.query(models.StackLock).get(stack_id)
+        if lock is not None:
+            return lock.engine_id
+
+
+def stack_lock_release(stack_id, engine_id):
+    session = get_session()
+    with session.begin():
+        return session.query(models.StackLock).\
+            filter_by(stack_id=stack_id, engine_id=engine_id).\
+            delete()
 
 
 def user_creds_create(context):
