@@ -17,6 +17,7 @@ import fixtures
 from json import loads
 from json import dumps
 import mox
+from testtools import matchers
 
 
 from heat.db.sqlalchemy import api as db_api
@@ -117,7 +118,7 @@ class SqlAlchemyTest(HeatTestCase):
                           userdata=mox.IgnoreArg(), scheduler_hints=None,
                           meta=None, nics=None,
                           availability_zone=None).MultipleTimes().AndReturn(
-                              fc.servers.list()[4])
+                              fc.servers.list()[-1])
         return fc
 
     def _mock_delete(self, mocks):
@@ -416,6 +417,10 @@ def create_resource_data(ctx, resource, **kwargs):
     }
     values.update(kwargs)
     return db_api.resource_data_set(resource, **values)
+
+
+def create_stack_lock(ctx, stack_id, engine_id):
+    return db_api.stack_lock_create(ctx, stack_id, engine_id)
 
 
 def create_event(ctx, **kwargs):
@@ -798,6 +803,34 @@ class DBAPIResourceTest(HeatTestCase):
 
         self.assertRaises(exception.NotFound, db_api.resource_get_all_by_stack,
                           self.ctx, self.stack2.id)
+
+
+class DBAPIStackLockTest(HeatTestCase):
+    def setUp(self):
+        super(DBAPIStackLockTest, self).setUp()
+        self.ctx = utils.dummy_context()
+        utils.setup_dummy_db()
+        utils.reset_dummy_db()
+        self.template = create_raw_template(self.ctx)
+        self.user_creds = create_user_creds(self.ctx)
+        self.stack = create_stack(self.ctx, self.template, self.user_creds)
+
+    def test_stack_lock_create_get(self):
+        create_stack_lock(self.ctx, self.stack.id, UUID1)
+        lock = db_api.stack_lock_get(self.ctx, self.stack.id)
+        self.assertEqual(UUID1, lock['engine_id'])
+
+    def test_stack_lock_steal(self):
+        create_stack_lock(self.ctx, self.stack.id, UUID1)
+        db_api.stack_lock_steal(self.ctx, self.stack.id, UUID2)
+        lock = db_api.stack_lock_get(self.ctx, self.stack.id)
+        self.assertEqual(UUID2, lock['engine_id'])
+
+    def test_stack_lock_release(self):
+        create_stack_lock(self.ctx, self.stack.id, UUID1)
+        db_api.stack_lock_release(self.ctx, self.stack.id)
+        lock = db_api.stack_lock_get(self.ctx, self.stack.id)
+        self.assertIsNone(lock)
 
 
 class DBAPIResourceDataTest(HeatTestCase):
