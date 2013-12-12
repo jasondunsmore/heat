@@ -351,3 +351,9 @@ class FakeHTTPClient(base_client.HTTPClient):
 
     def get_os_availability_zone(self, *kw):
         return (200, {"availabilityZoneInfo": [{'zoneName': 'nova1'}]})
+
+    #
+    # Limits
+    #
+    def get_limits(self, *kw):
+        return (200, {'limits': {'absolute': {'maxServerMeta': 3}}})
