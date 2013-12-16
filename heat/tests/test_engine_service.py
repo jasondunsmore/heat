@@ -17,6 +17,7 @@ import functools
 from eventlet import greenpool
 import json
 import sys
+import uuid
 
 import mock
 import mox
@@ -42,9 +43,11 @@ from heat.engine import resource as res
 from heat.engine.resources import instance as instances
 from heat.engine.resources import nova_utils
 from heat.engine import resource as rsrs
+from heat.engine import stack_lock
 from heat.engine import watchrule
 from heat.openstack.common import threadgroup
 from heat.openstack.common.rpc import common as rpc_common
+from heat.openstack.common.rpc import proxy
 from heat.tests.common import HeatTestCase
 from heat.tests import generic_resource as generic_rsrc
 from heat.tests import utils
@@ -559,6 +562,99 @@ class StackServiceCreateUpdateDeleteTest(HeatTestCase):
                           self.ctx, stack.identifier())
         self.m.VerifyAll()
 
+    def test_stack_delete_acquired_lock(self):
+        stack_name = 'service_delete_test_stack'
+        stack = get_wordpress_stack(stack_name, self.ctx)
+        sid = stack.store()
+
+        st = db_api.stack_get(self.ctx, sid)
+        self.m.StubOutWithMock(parser.Stack, 'load')
+        parser.Stack.load(self.ctx, stack=st).AndReturn(stack)
+        self.man.tg = DummyThreadGroup()
+
+        self.m.StubOutWithMock(stack_lock.StackLock, 'try_acquire')
+        stack_lock.StackLock.try_acquire().AndReturn(self.man.engine_id)
+        self.m.ReplayAll()
+
+        self.assertIsNone(self.man.delete_stack(self.ctx, stack.identifier()))
+        self.m.VerifyAll()
+
+    def test_stack_delete_current_engine_active_lock(self):
+        stack_name = 'service_delete_test_stack'
+        stack = get_wordpress_stack(stack_name, self.ctx)
+        sid = stack.store()
+
+        # Insert a fake lock into the db
+        db_api.stack_lock_create(stack.id, self.man.engine_id)
+
+        # Create a fake ThreadGroup too
+        self.man.thread_group_mgr.groups[stack.id] = DummyThreadGroup()
+
+        st = db_api.stack_get(self.ctx, sid)
+        self.m.StubOutWithMock(parser.Stack, 'load')
+        parser.Stack.load(self.ctx, stack=st).MultipleTimes().AndReturn(stack)
+
+        self.m.StubOutWithMock(stack_lock.StackLock, 'try_acquire')
+        stack_lock.StackLock.try_acquire().AndReturn(self.man.engine_id)
+        self.m.ReplayAll()
+
+        self.assertIsNone(self.man.delete_stack(self.ctx, stack.identifier()))
+        self.m.VerifyAll()
+
+    def test_stack_delete_other_engine_active_lock_failed(self):
+        stack_name = 'service_delete_test_stack'
+        stack = get_wordpress_stack(stack_name, self.ctx)
+        sid = stack.store()
+
+        # Insert a fake lock into the db
+        db_api.stack_lock_create(stack.id, "other-engine-fake-uuid")
+
+        st = db_api.stack_get(self.ctx, sid)
+        self.m.StubOutWithMock(parser.Stack, 'load')
+        parser.Stack.load(self.ctx, stack=st).AndReturn(stack)
+
+        self.m.StubOutWithMock(stack_lock.StackLock, 'try_acquire')
+        stack_lock.StackLock.try_acquire().AndReturn("other-engine-fake-uuid")
+
+        rpc = proxy.RpcProxy("other-engine-fake-uuid", "1.0")
+        msg = rpc.make_msg("stop_stack", stack_identity=mox.IgnoreArg())
+        self.m.StubOutWithMock(proxy.RpcProxy, 'call')
+        proxy.RpcProxy.call(self.ctx, msg, topic='other-engine-fake-uuid')\
+            .AndRaise(rpc_common.Timeout)
+        self.m.ReplayAll()
+
+        self.assertRaises(exception.StopActionFailed,
+                          self.man.delete_stack, self.ctx, stack.identifier())
+        self.m.VerifyAll()
+
+    def test_stack_delete_other_engine_active_lock_succeeded(self):
+        stack_name = 'service_delete_test_stack'
+        stack = get_wordpress_stack(stack_name, self.ctx)
+        sid = stack.store()
+
+        # Insert a fake lock into the db
+        db_api.stack_lock_create(stack.id, "other-engine-fake-uuid")
+
+        st = db_api.stack_get(self.ctx, sid)
+        self.m.StubOutWithMock(parser.Stack, 'load')
+        parser.Stack.load(self.ctx, stack=st).AndReturn(stack)
+
+        self.m.StubOutWithMock(stack_lock.StackLock, 'try_acquire')
+        stack_lock.StackLock.try_acquire().AndReturn("other-engine-fake-uuid")
+
+        rpc = proxy.RpcProxy("other-engine-fake-uuid", "1.0")
+        msg = rpc.make_msg("stop_stack", stack_identity=mox.IgnoreArg())
+        self.m.StubOutWithMock(proxy.RpcProxy, 'call')
+        proxy.RpcProxy.call(self.ctx, msg, topic='other-engine-fake-uuid')\
+            .AndReturn(None)
+
+        self.m.StubOutWithMock(stack_lock.StackLock, 'acquire')
+        stack_lock.StackLock.acquire().AndReturn(None)
+        self.m.ReplayAll()
+
+        self.assertIsNone(self.man.delete_stack(self.ctx, stack.identifier()))
+        self.m.VerifyAll()
+
     def test_stack_update(self):
         stack_name = 'service_update_test_stack'
         params = {'foo': 'bar'}
@@ -877,10 +973,9 @@ class StackServiceSuspendResumeTest(HeatTestCase):
 
         thread = self.m.CreateMockAnything()
         thread.link(mox.IgnoreArg()).AndReturn(None)
-        self.m.StubOutWithMock(service.EngineService, '_start_in_thread')
-        service.EngineService._start_in_thread(sid,
-                                               mox.IgnoreArg(),
-                                               stack).AndReturn(thread)
+        self.m.StubOutWithMock(service.ThreadGroupManager, 'start')
+        service.ThreadGroupManager.start(sid, mox.IgnoreArg(),
+                                         stack).AndReturn(thread)
         self.m.ReplayAll()
 
         result = self.man.stack_suspend(self.ctx, stack.identifier())
@@ -896,10 +991,9 @@ class StackServiceSuspendResumeTest(HeatTestCase):
 
         thread = self.m.CreateMockAnything()
         thread.link(mox.IgnoreArg()).AndReturn(None)
-        self.m.StubOutWithMock(service.EngineService, '_start_in_thread')
-        service.EngineService._start_in_thread(self.stack.id,
-                                               mox.IgnoreArg(),
-                                               self.stack).AndReturn(thread)
+        self.m.StubOutWithMock(service.ThreadGroupManager, 'start')
+        service.ThreadGroupManager.start(self.stack.id, mox.IgnoreArg(),
+                                         self.stack).AndReturn(thread)
 
         self.m.ReplayAll()
 
@@ -1050,7 +1144,7 @@ class StackServiceTest(HeatTestCase):
         def run(stack_id, func, *args):
             func(*args)
             return thread
-        self.eng._start_in_thread = run
+        self.eng.thread_group_mgr.start = run
 
         new_tmpl = {'Resources': {'AResource': {'Type':
                                                 'GenericResourceType'}}}
@@ -1673,9 +1767,10 @@ class StackServiceTest(HeatTestCase):
 
     @stack_context('periodic_watch_task_not_created')
     def test_periodic_watch_task_not_created(self):
-        self.eng.stg[self.stack.id] = DummyThreadGroup()
+        self.eng.thread_group_mgr.groups[self.stack.id] = DummyThreadGroup()
         self.eng._start_watch_task(self.stack.id, self.ctx)
-        self.assertEqual([], self.eng.stg[self.stack.id].threads)
+        self.assertEqual(
+            [], self.eng.thread_group_mgr.groups[self.stack.id].threads)
 
     def test_periodic_watch_task_created(self):
         stack = get_stack('period_watch_task_created',
@@ -1685,10 +1780,11 @@ class StackServiceTest(HeatTestCase):
         self.m.ReplayAll()
         stack.store()
         stack.create()
-        self.eng.stg[stack.id] = DummyThreadGroup()
+        self.eng.thread_group_mgr.groups[stack.id] = DummyThreadGroup()
         self.eng._start_watch_task(stack.id, self.ctx)
-        self.assertEqual([self.eng._periodic_watcher_task],
-                         self.eng.stg[stack.id].threads)
+        expected = [self.eng._periodic_watcher_task]
+        observed = self.eng.thread_group_mgr.groups[stack.id].threads
+        self.assertEqual(expected, observed)
         self.stack.delete()
 
     def test_periodic_watch_task_created_nested(self):
@@ -1705,10 +1801,10 @@ class StackServiceTest(HeatTestCase):
         self.m.ReplayAll()
         stack.store()
         stack.create()
-        self.eng.stg[stack.id] = DummyThreadGroup()
+        self.eng.thread_group_mgr.groups[stack.id] = DummyThreadGroup()
         self.eng._start_watch_task(stack.id, self.ctx)
         self.assertEqual([self.eng._periodic_watcher_task],
-                         self.eng.stg[stack.id].threads)
+                         self.eng.thread_group_mgr.groups[stack.id].threads)
         self.stack.delete()
 
     @stack_context('service_show_watch_test_stack', False)
@@ -1843,7 +1939,7 @@ class StackServiceTest(HeatTestCase):
 
         # Replace the real stack threadgroup with a dummy one, so we can
         # check the function returned on ALARM is correctly scheduled
-        self.eng.stg[self.stack.id] = DummyThreadGroup()
+        self.eng.thread_group_mgr.groups[self.stack.id] = DummyThreadGroup()
 
         self.m.ReplayAll()
 
@@ -1852,22 +1948,25 @@ class StackServiceTest(HeatTestCase):
                                           watch_name="OverrideAlarm",
                                           state=state)
         self.assertEqual(state, result[engine_api.WATCH_STATE_VALUE])
-        self.assertEqual([], self.eng.stg[self.stack.id].threads)
+        self.assertEqual(
+            [], self.eng.thread_group_mgr.groups[self.stack.id].threads)
 
         state = watchrule.WatchRule.NORMAL
         result = self.eng.set_watch_state(self.ctx,
                                           watch_name="OverrideAlarm",
                                           state=state)
         self.assertEqual(state, result[engine_api.WATCH_STATE_VALUE])
-        self.assertEqual([], self.eng.stg[self.stack.id].threads)
+        self.assertEqual(
+            [], self.eng.thread_group_mgr.groups[self.stack.id].threads)
 
         state = watchrule.WatchRule.ALARM
         result = self.eng.set_watch_state(self.ctx,
                                           watch_name="OverrideAlarm",
                                           state=state)
         self.assertEqual(state, result[engine_api.WATCH_STATE_VALUE])
-        self.assertEqual([DummyAction.signal],
-                         self.eng.stg[self.stack.id].threads)
+        self.assertEqual(
+            [DummyAction.signal],
+            self.eng.thread_group_mgr.groups[self.stack.id].threads)
 
         self.m.VerifyAll()
 

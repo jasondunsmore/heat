@@ -326,3 +326,8 @@ class StackResourceLimitExceeded(HeatException):
 class ActionInProgress(HeatException):
     msg_fmt = _("Stack %(stack_name)s already has an action (%(action)s) "
                 "in progress.")
+
+
+class StopActionFailed(HeatException):
+    msg_fmt = _("Failed to stop stack (%(stack_name)s) action on other "
+                "engine (%(engine_id)s)")
