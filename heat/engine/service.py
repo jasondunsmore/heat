@@ -210,7 +210,6 @@ class EngineService(service.Service):
         self.thread_group_mgr = ThreadGroupManager()
         self.listener = EngineListener(host, self.engine_id,
                                        self.thread_group_mgr)
-        logger.debug(_("Starting listener for engine %s") % self.engine_id)
         self.listener.start()
 
     def _start_watch_task(self, stack_id, cnxt):

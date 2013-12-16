@@ -12,6 +12,7 @@
 #    under the License.
 
 import uuid
+
 from oslo.config import cfg
 
 cfg.CONF.import_opt('engine_life_check_timeout', 'heat.common.config')
@@ -34,8 +35,8 @@ class StackLock(object):
         self.engine_id = engine_id
         self.listener = None
 
-    def _engine_alive(self, engine_id):
-        topic = engine_id
+    def _engine_alive(self, remote_engine_id):
+        topic = remote_engine_id
         rpc = proxy.RpcProxy(topic, "1.0")
         msg = rpc.make_msg("listening")
         try:
@@ -69,16 +70,18 @@ class StackLock(object):
             logger.debug(_("Engine %(engine)s acquired lock on stack "
                            "%(stack)s") % {'engine': self.engine_id,
                                            'stack': self.stack.id})
-            return
+            return None
 
-        if lock_engine_id == self.engine_id or \
-           self._engine_alive(lock_engine_id):
+        elif lock_engine_id == self.engine_id:
+            logger.debug(_("Lock on stack %(stack)s is owned by the current "
+                           "engine") % {'stack': self.stack.id})
+
+        elif self._engine_alive(lock_engine_id):
             logger.debug(_("Lock on stack %(stack)s is owned by engine "
                            "%(engine)s") % {'stack': self.stack.id,
                                             'engine': lock_engine_id})
-            raise exception.ActionInProgress(stack_name=self.stack.name,
-                                             action=self.stack.action)
-        else:
+
+        else:  # Stale lock, try to steal
             logger.info(_("Stale lock detected on stack %(stack)s.  Engine "
                           "%(engine)s will attempt to steal the lock")
                         % {'stack': self.stack.id, 'engine': self.engine_id})
@@ -106,12 +109,11 @@ class StackLock(object):
                             % {'stack': self.stack.id,
                                'engine': new_lock_engine_id})
 
-            raise exception.ActionInProgress(
-                stack_name=self.stack.name, action=self.stack.action)
+        raise exception.ActionInProgress(stack_name=self.stack.name,
+                                         action=self.stack.action)
 
     def release(self):
         """Release a stack lock."""
-        # Only the engine that owns the lock will be releasing it.
         result = db_api.stack_lock_release(self.stack.id, self.engine_id)
         if result is True:
             if self.stack.id is not None:
