@@ -48,6 +48,13 @@ class StackLock(object):
     def generate_engine_id():
         return str(uuid.uuid4())
 
+    def try_acquire(self):
+        """
+        Try to acquire a stack lock, but don't raise an ActionInProgress
+        exception or try to steal lock.
+        """
+        return db_api.stack_lock_create(self.stack.id, self.engine_id)
+
     @rpc_common.client_exceptions(exception.ActionInProgress)
     def acquire(self, retry=True):
         """
@@ -107,8 +114,9 @@ class StackLock(object):
         # Only the engine that owns the lock will be releasing it.
         result = db_api.stack_lock_release(self.stack.id, self.engine_id)
         if result is True:
-            logger.warning(_("Lock was already released on stack %s!")
-                           % self.stack.id)
+            if self.stack.id is not None:
+                logger.warning(_("Lock was already released on stack %s!")
+                               % self.stack.id)
         else:
             logger.debug(_("Engine %(engine)s released lock on stack "
                            "%(stack)s") % {'engine': self.engine_id,

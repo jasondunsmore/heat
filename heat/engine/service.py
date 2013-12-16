@@ -46,11 +46,11 @@ from heat.engine import watchrule
 from heat.openstack.common import log as logging
 from heat.openstack.common import threadgroup
 from heat.openstack.common.gettextutils import _
-from heat.openstack.common.rpc import service
 from heat.openstack.common.rpc import common as rpc_common
+from heat.openstack.common.rpc import proxy
+from heat.openstack.common.rpc import service
 from heat.openstack.common import excutils
 from heat.openstack.common import uuidutils
-
 
 logger = logging.getLogger(__name__)
 
@@ -149,18 +149,44 @@ class ThreadGroupManager(object):
         self.groups[stack_id].add_timer(cfg.CONF.periodic_interval,
                                         func, *args, **kwargs)
 
+    def stop(self, stack_id):
+        '''Stop any active threads on a stack.'''
+        if stack_id in self.groups:
+            self.groups[stack_id].stop()
+
+            # Wait for the threadgroup threads to be killed before
+            # proceeding.  Otherwise, if lock.acquire() is called
+            # immediately after this method, there will be a race
+            # between the greenthread-linked release function and
+            # lock.acquire().
+            self.groups[stack_id].wait()
+
+            del self.groups[stack_id]
+
 
 class EngineListener(service.Service):
     '''
-    Listen on an AMQP queue while a stack action is in-progress and
-    respond to stack-related questions.  Used for multi-engine support.
+    Listen on an AMQP queue named for the engine.  Allows individual
+    engines to communicate with each other for multi-engine support.
     '''
-    def listening(self, ctxt):
+    def __init__(self, host, engine_id, thread_group_mgr):
+        logger.debug(_("Starting listener for engine %s") % engine_id)
+        super(EngineListener, self).__init__(host, engine_id)
+
+        self.thread_group_mgr = thread_group_mgr
+        self.engine_id = engine_id
+
+    def listening(self, context):
         '''
         Respond affirmatively to confirm that the engine performing the
         action is still alive.
         '''
         return True
+
+    def stop_stack(self, context, stack_identity):
+        '''Stop any active threads on a stack.'''
+        stack_id = stack_identity['stack_id']
+        self.thread_group_mgr.stop(stack_id)
 
 
 class EngineService(service.Service):
@@ -182,7 +208,8 @@ class EngineService(service.Service):
 
         self.engine_id = stack_lock.StackLock.generate_engine_id()
         self.thread_group_mgr = ThreadGroupManager()
-        self.listener = EngineListener(host, self.engine_id)
+        self.listener = EngineListener(host, self.engine_id,
+                                       self.thread_group_mgr)
         logger.debug(_("Starting listener for engine %s") % self.engine_id)
         self.listener.start()
 
@@ -243,6 +270,13 @@ class EngineService(service.Service):
             raise exception.StackNotFound(stack_name=stack_name)
 
     def _get_stack(self, cnxt, stack_identity, show_deleted=False):
+        '''
+        Get stack from the database.
+
+        :param cnxt: RPC context.
+        :param stack_identity: Name of the stack you want to see.
+        :param show_deleted: Show soft-deleted stacks.
+        '''
         identity = identifier.HeatIdentifier(**stack_identity)
 
         if identity.tenant != cnxt.tenant_id:
@@ -538,11 +572,46 @@ class EngineService(service.Service):
         :param cnxt: RPC context.
         :param stack_identity: Name of the stack you want to delete.
         """
+        def remote_stop(lock_engine_id):
+            rpc = proxy.RpcProxy(lock_engine_id, "1.0")
+            msg = rpc.make_msg("stop_stack", stack_identity=stack_identity)
+            try:
+                rpc.call(cnxt, msg, topic=lock_engine_id)
+            except rpc_common.Timeout:
+                return False
+
         st = self._get_stack(cnxt, stack_identity)
-
-        logger.info(_('deleting stack %s') % st.name)
-
+        logger.info(_('Deleting stack %s') % st.name)
         stack = parser.Stack.load(cnxt, stack=st)
+
+        lock = stack_lock.StackLock(cnxt, stack, self.engine_id)
+        acquire_result = lock.try_acquire()
+
+        if acquire_result is None:
+            self.thread_group_mgr.start_with_acquired_lock(stack, lock,
+                                                           stack.delete)
+            return
+
+        elif acquire_result == self.engine_id:  # Current engine has the lock
+            self.thread_group_mgr.stop(stack.id)
+
+            # If the lock isn't released here, then the call to
+            # start_with_lock below will raise an ActionInProgress
+            # exception
+            db_api.stack_lock_release(stack.id, self.engine_id)
+
+            # TODO(jason): Find a way to ensure that release() is called
+            # before the next call to lock.acquire().
+
+        else:  # Another engine has the lock
+            other_engine_id = acquire_result
+            stop_result = remote_stop(other_engine_id)
+            if stop_result is None:
+                logger.debug(_("Successfully stopped remote task on engine %s")
+                             % other_engine_id)
+            else:
+                raise exception.StopActionFailed(stack_name=stack.name,
+                                                 engine_id=other_engine_id)
 
         self.thread_group_mgr.start_with_lock(cnxt, stack, self.engine_id,
                                               stack.delete)
