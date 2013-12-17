@@ -430,7 +430,7 @@ class Instance(resource.Resource):
             return res
 
         # check validity of key
-        key_name = self.properties.get('KeyName', None)
+        key_name = self.properties.get('KeyName')
         if key_name:
             nova_utils.get_keypair(self.nova(), key_name)
 

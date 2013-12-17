@@ -83,7 +83,7 @@ class NetworkInterface(resource.Resource):
 
         if self.properties['GroupSet']:
             sgs = neutron.NeutronResource.get_secgroup_uuids(
-                self.properties.get('GroupSet', []), self.neutron())
+                self.properties.get('GroupSet'), self.neutron())
             props['security_groups'] = sgs
         port = client.create_port({'port': props})['port']
         self.resource_id_set(port['id'])
