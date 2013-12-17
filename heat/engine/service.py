@@ -46,6 +46,7 @@ from heat.engine import watchrule
 from heat.openstack.common import log as logging
 from heat.openstack.common import threadgroup
 from heat.openstack.common.gettextutils import _
+from heat.openstack.common.rpc import common as rpc_common
 from heat.openstack.common.rpc import service
 from heat.openstack.common import excutils
 from heat.openstack.common import uuidutils
@@ -191,6 +192,7 @@ class EngineService(service.Service):
             self._start_watch_task(s.id, admin_context)
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def identify_stack(self, cnxt, stack_name):
         """
         The identify_stack method returns the full stack identifier for a
@@ -228,6 +230,7 @@ class EngineService(service.Service):
         return s
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def show_stack(self, cnxt, stack_identity):
         """
         Return detailed information about one or all stacks.
@@ -251,6 +254,7 @@ class EngineService(service.Service):
         return cfg.CONF.revision['heat_revision']
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def list_stacks(self, cnxt, limit=None, marker=None, sort_keys=None,
                     sort_dir=None, filters=None):
         """
@@ -306,6 +310,7 @@ class EngineService(service.Service):
             raise exception.MissingCredentialError(required='X-Auth-Key')
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def create_stack(self, cnxt, stack_name, template, params, files, args):
         """
         The create_stack method creates a new stack using the template
@@ -363,6 +368,7 @@ class EngineService(service.Service):
         return dict(stack.identifier())
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def update_stack(self, cnxt, stack_identity, template, params,
                      files, args):
         """
@@ -482,6 +488,7 @@ class EngineService(service.Service):
         return clients.Clients(cnxt).authenticated()
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def get_template(self, cnxt, stack_identity):
         """
         Get the template.
@@ -495,6 +502,7 @@ class EngineService(service.Service):
         return None
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def delete_stack(self, cnxt, stack_identity):
         """
         The delete_stack method deletes a given stack.
@@ -512,6 +520,7 @@ class EngineService(service.Service):
         return None
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def abandon_stack(self, cnxt, stack_identity):
         """
         The abandon_stack method abandons a given stack.
@@ -537,6 +546,7 @@ class EngineService(service.Service):
         """
         return list(resource.get_types())
 
+    @rpc_common.client_exceptions(exception.HeatException)
     def resource_schema(self, cnxt, type_name):
         """
         Return the schema of the specified type.
@@ -566,6 +576,7 @@ class EngineService(service.Service):
             rpc_api.RES_SCHEMA_ATTRIBUTES: dict(attributes_schema()),
         }
 
+    @rpc_common.client_exceptions(exception.HeatException)
     def generate_template(self, cnxt, type_name):
         """
         Generate a template based on the specified type.
@@ -580,6 +591,7 @@ class EngineService(service.Service):
             raise exception.ResourceTypeNotFound(type_name=type_name)
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def list_events(self, cnxt, stack_identity):
         """
         The list_events method lists all events associated with a given stack.
@@ -643,6 +655,7 @@ class EngineService(service.Service):
         return False
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def describe_stack_resource(self, cnxt, stack_identity, resource_name):
         s = self._get_stack(cnxt, stack_identity)
         stack = parser.Stack.load(cnxt, stack=s)
@@ -664,6 +677,7 @@ class EngineService(service.Service):
         return api.format_stack_resource(stack[resource_name])
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def resource_signal(self, cnxt, stack_identity, resource_name, details):
         s = self._get_stack(cnxt, stack_identity)
 
@@ -686,6 +700,7 @@ class EngineService(service.Service):
             stack[resource_name].signal(details)
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def find_physical_resource(self, cnxt, physical_resource_id):
         """
         Return an identifier for the resource with the specified physical
@@ -706,6 +721,7 @@ class EngineService(service.Service):
         return dict(resource.identifier())
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def describe_stack_resources(self, cnxt, stack_identity, resource_name):
         s = self._get_stack(cnxt, stack_identity)
 
@@ -716,6 +732,7 @@ class EngineService(service.Service):
                 if resource_name is None or name == resource_name]
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def list_stack_resources(self, cnxt, stack_identity):
         s = self._get_stack(cnxt, stack_identity)
 
@@ -725,6 +742,7 @@ class EngineService(service.Service):
                 for resource in stack.values()]
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def stack_suspend(self, cnxt, stack_identity):
         '''
         Handle request to perform suspend action on a stack
@@ -739,6 +757,7 @@ class EngineService(service.Service):
         self._start_thread_with_lock(cnxt, stack, _stack_suspend, stack)
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def stack_resume(self, cnxt, stack_identity):
         '''
         Handle request to perform a resume action on a stack
@@ -762,6 +781,7 @@ class EngineService(service.Service):
         return stored_context
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def metadata_update(self, cnxt, stack_identity,
                         resource_name, metadata):
         """
@@ -844,6 +864,7 @@ class EngineService(service.Service):
         self._check_stack_watches(sid)
 
     @request_context
+    @rpc_common.client_exceptions(exception.HeatException)
     def create_watch_data(self, cnxt, watch_name, stats_data):
         '''
         This could be used by CloudWatch and WaitConditions
