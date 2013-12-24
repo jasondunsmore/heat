@@ -17,11 +17,57 @@
 
 .. glossary::
 
-   OpenStack
-     Open source software for building private and public clouds.
-
    API server
      HTTP REST API service for heat.
 
-   orchestrate
-     Arrange or direct the elements of (a situation) to produce a desired effect.
+   CFN
+     An abbreviated form of "Cloud Formation".
+
+   Constraint
+
+   Dependency
+
+   Environment file
+
+   HOT
+     An acronym for "Heat Orchestration Template".
+
+   Multi-region
+     
+
+   Nested stack
+
+   OpenStack
+     Open source software for building private and public clouds.
+
+   Orchestrate
+     Arrange or direct the elements of (a situation) to produce a
+     desired effect.
+
+   Outputs
+     Output parameters
+
+   Parameters
+     Input parameters
+
+   Resource
+     The pluggable part of Heat that interacts with the outside world
+     to build the physical :term:`stack`.  Resources are defined in
+     the top-level section of a template named `resources`.  A
+     resource has inputs which are called :term:`attributes` and
+     outputs which are called ":term:`outputs`".
+
+   Resource attributes
+     Sometimes referred to as "attributes".  Can be passed in via
+     a template as input parameters.
+
+   Stack
+     
+
+   Stack resource
+
+   Template
+
+   Wait condition
+
+   Watch rule
