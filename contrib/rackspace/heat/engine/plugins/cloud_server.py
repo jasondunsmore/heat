@@ -196,6 +196,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
 
     def __init__(self, name, json_snippet, stack):
         super(CloudServer, self).__init__(name, json_snippet, stack)
+        self.stack = stack
         self._private_key = None
         self._server = None
         self._distro = None
@@ -313,6 +314,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
                         username="root",
                         key_filename=private_key_file.name)
             chan = ssh.get_transport().open_session()
+            chan.settimeout(self.stack.timeout_mins * 60.0)
             chan.exec_command(command)
             return chan.recv_exit_status()
 
