@@ -38,13 +38,13 @@ class Server(resource.Resource):
         FLAVOR_UPDATE_POLICY, IMAGE_UPDATE_POLICY, KEY_NAME,
         ADMIN_USER, AVAILABILITY_ZONE, SECURITY_GROUPS, NETWORKS,
         SCHEDULER_HINTS, METADATA, USER_DATA_FORMAT, USER_DATA,
-        RESERVATION_ID, CONFIG_DRIVE, DISK_CONFIG,
+        RESERVATION_ID, CONFIG_DRIVE, DISK_CONFIG, PERSONALITY_FILES,
     ) = (
         'name', 'image', 'block_device_mapping', 'flavor',
         'flavor_update_policy', 'image_update_policy', 'key_name',
         'admin_user', 'availability_zone', 'security_groups', 'networks',
         'scheduler_hints', 'metadata', 'user_data_format', 'user_data',
-        'reservation_id', 'config_drive', 'diskConfig',
+        'reservation_id', 'config_drive', 'diskConfig', 'personality_files',
     )
 
     _BLOCK_DEVICE_MAPPING_KEYS = (
@@ -229,6 +229,15 @@ class Server(resource.Resource):
                 constraints.AllowedValues(['AUTO', 'MANUAL']),
             ]
         ),
+        PERSONALITY_FILES: properties.Schema(
+            properties.Schema.MAP,
+            _('A map of files to overwrite on the server upon '
+              'boot. Keys are file names and values are the '
+              'file contents (either as a string or as a '
+              'file-like object). A maximum of five entries is '
+              'allowed, and each file must be 10k or less.'),
+            default={}
+        )
     }
 
     attributes_schema = {
@@ -265,6 +274,9 @@ class Server(resource.Resource):
             return name
 
         return super(Server, self).physical_resource_name()
+
+    def _personality_files(self):
+        return self.properties.get('personality_files')
 
     def handle_create(self):
         security_groups = self.properties.get(self.SECURITY_GROUPS)
@@ -319,7 +331,8 @@ class Server(resource.Resource):
                 block_device_mapping=block_device_mapping,
                 reservation_id=reservation_id,
                 config_drive=config_drive,
-                disk_config=disk_config)
+                disk_config=disk_config,
+                files=self._personality_files())
         finally:
             # Avoid a race condition where the thread could be cancelled
             # before the ID is stored
@@ -566,6 +579,13 @@ class Server(resource.Resource):
                 msg = _('Instance metadata must not contain greater than %s '
                         'entries.  This is the maximum number allowed by your '
                         'service provider') % limits['maxServerMeta']
+                raise exception.StackValidationFailed(message=msg)
+
+        personality_files = self._personality_files()
+        if personality_files is not None:
+            if len(personality_files) > 5:
+                msg = _("The personality_files property may not contain "
+                        "greater than five entries.")
                 raise exception.StackValidationFailed(message=msg)
 
     def handle_delete(self):

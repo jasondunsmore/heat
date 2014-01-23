@@ -104,7 +104,7 @@ class ServersTest(HeatTestCase):
                 userdata=mox.IgnoreArg(), scheduler_hints=None,
                 meta=None, nics=None, availability_zone=None,
                 block_device_mapping=None, config_drive=None,
-                disk_config=None, reservation_id=None).AndReturn(
+                disk_config=None, reservation_id=None, files={}).AndReturn(
                     return_server)
 
         return server
@@ -163,7 +163,7 @@ class ServersTest(HeatTestCase):
             userdata=mox.IgnoreArg(), scheduler_hints=None,
             meta=instance_meta, nics=None, availability_zone=None,
             block_device_mapping=None, config_drive=None,
-            disk_config=None, reservation_id=None).AndReturn(
+            disk_config=None, reservation_id=None, files={}).AndReturn(
                 return_server)
 
         self.m.StubOutWithMock(server, 'nova')
@@ -319,7 +319,7 @@ class ServersTest(HeatTestCase):
             userdata='wordpress', scheduler_hints=None,
             meta=None, nics=None, availability_zone=None,
             block_device_mapping=None, config_drive=None,
-            disk_config=None, reservation_id=None).AndReturn(
+            disk_config=None, reservation_id=None, files={}).AndReturn(
                 return_server)
 
         self.m.ReplayAll()
@@ -1201,6 +1201,52 @@ class ServersTest(HeatTestCase):
         limits.absolute = [max_server_meta]
         self.m.StubOutWithMock(self.fc.limits, 'get')
         self.fc.limits.get().AndReturn(limits)
+
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
+        self.m.ReplayAll()
+
+        self.assertIsNone(server.validate())
+        self.m.VerifyAll()
+
+    def test_server_validate_too_many_personality_files(self):
+        stack_name = 'srv_val'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        # create an server with non exist image Id
+        t['Resources']['WebServer']['Properties']['personality_files'] = \
+            {"/fake/path1": "fake contents1",
+             "/fake/path2": "fake_contents2",
+             "/fake/path3": "fake_contents3",
+             "/fake/path4": "fake_contents4",
+             "/fake/path5": "fake_contents5",
+             "/fake/path6": "fake_contents6"}
+        server = servers.Server('server_create_image_err',
+                                t['Resources']['WebServer'], stack)
+
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
+        self.m.ReplayAll()
+
+        exc = self.assertRaises(exception.StackValidationFailed,
+                                server.validate)
+        self.assertEqual("The personality_files property may not contain "
+                         "greater than five entries.", str(exc))
+        self.m.VerifyAll()
+
+    def test_server_validate_personality_files_okay(self):
+        stack_name = 'srv_val'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        # create an server with non exist image Id
+        t['Resources']['WebServer']['Properties']['personality_files'] = \
+            {"/fake/path1": "fake contents1",
+             "/fake/path2": "fake_contents2",
+             "/fake/path3": "fake_contents3",
+             "/fake/path4": "fake_contents4",
+             "/fake/path5": "fake_contents5"}
+        server = servers.Server('server_create_image_err',
+                                t['Resources']['WebServer'], stack)
 
         self.m.StubOutWithMock(server, 'nova')
         server.nova().MultipleTimes().AndReturn(self.fc)
