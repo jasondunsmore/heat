@@ -131,6 +131,7 @@ class ServersTest(HeatTestCase):
             server.FnGetAtt('networks')['public'][0], public_ip)
 
         private_ip = return_server.networks['private'][0]
+        self.assertEqual(server.FnGetAtt('privateIPv4'), private_ip)
         self.assertEqual(
             server.FnGetAtt('addresses')['private'][0]['addr'], private_ip)
         self.assertEqual(

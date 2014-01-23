@@ -87,6 +87,14 @@ def get_image_id(nova_client, image_identifier):
     return image_id
 
 
+def get_ip(server, ip_type, ip_version):
+    """Return the server's IP of the given type and version."""
+    if ip_type in server.addresses:
+        for ip in server.addresses[ip_type]:
+            if ip['version'] == ip_version:
+                return ip['addr']
+
+
 def get_flavor_id(nova_client, flavor):
     '''
     Get the id for the specified flavor name.

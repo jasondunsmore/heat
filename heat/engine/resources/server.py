@@ -257,6 +257,7 @@ class Server(resource.Resource):
                         'address of the server.'),
         'accessIPv6': _('The manually assigned alternative public IPv6 '
                         'address of the server.'),
+        'privateIPv4': _('The private IPv4 address of the server.'),
     }
 
     update_allowed_keys = ('Metadata', 'Properties')
@@ -433,6 +434,8 @@ class Server(resource.Resource):
             return server.accessIPv4
         if name == 'accessIPv6':
             return server.accessIPv6
+        if name == 'privateIPv4':
+            return nova_utils.get_ip(server, 'private', 4)
         if name == 'show':
             return server._info
 
