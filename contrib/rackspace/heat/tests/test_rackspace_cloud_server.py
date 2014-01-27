@@ -11,45 +11,46 @@
 #    under the License.
 
 import copy
-import uuid
 
 import mox
 import paramiko
 import novaclient
 
 from heat.db import api as db_api
+from heat.engine import environment
 from heat.tests.v1_1 import fakes
-from heat.common import template_format
 from heat.common import exception
+from heat.common import template_format
 from heat.engine import parser
 from heat.engine import resource
 from heat.engine import scheduler
+from heat.engine.resources import nova_utils
+from heat.openstack.common import uuidutils
+from heat.openstack.common.gettextutils import _
 from heat.tests.common import HeatTestCase
 from heat.tests import utils
+from novaclient import exceptions
 
-from heat.engine import clients
 from ..engine.plugins import cloud_server  # noqa
-
 
 wp_template = '''
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
   "Description" : "WordPress",
   "Parameters" : {
-    "flavor" : {
-      "Description" : "Rackspace Cloud Server flavor",
+    "key_name" : {
+      "Description" : "key_name",
       "Type" : "String",
-      "Default" : "m1.small",
-      "AllowedValues" : ["256 MB Server", "m1.small", "m1.large", "invalid"],
-      "ConstraintDescription" : "must be a valid Rackspace Cloud Server flavor"
-    },
+      "Default" : "test"
+    }
   },
   "Resources" : {
     "WebServer": {
       "Type": "Rackspace::Cloud::Server",
       "Properties": {
-        "image"      : "CentOS 5.2",
-        "flavor"         : "256 MB Server",
+        "image" : "CentOS 5.2",
+        "flavor"   : "256 MB Server",
+        "key_name"   : "test",
         "user_data"       : "wordpress"
       }
     }
@@ -75,9 +76,9 @@ gDZkz7KcZC7TkO0NYVRssA6/84mCqx6QHpKaYNG9kg==
 """
 
 
-class RackspaceCloudServerTest(HeatTestCase):
+class CloudServersTest(HeatTestCase):
     def setUp(self):
-        super(RackspaceCloudServerTest, self).setUp()
+        super(CloudServersTest, self).setUp()
         self.fc = fakes.FakeClient()
         utils.setup_dummy_db()
         # Test environment may not have pyrax client library installed and if
@@ -85,14 +86,6 @@ class RackspaceCloudServerTest(HeatTestCase):
         # So register resource provider class explicitly for unit testing.
         resource._register_class("Rackspace::Cloud::Server",
                                  cloud_server.CloudServer)
-
-    def _setup_test_stack(self, stack_name):
-        t = template_format.parse(wp_template)
-        template = parser.Template(t)
-        stack = parser.Stack(utils.dummy_context(), stack_name, template,
-                             {},
-                             stack_id=str(uuid.uuid4()))
-        return (t, stack)
 
     def _mock_ssh_sftp(self, exit_code=0):
         # SSH
@@ -132,343 +125,1343 @@ class RackspaceCloudServerTest(HeatTestCase):
         sftp.close()
         transport.close()
 
-    def _setup_test_cs(self, return_server, name, exit_code=0):
-        stack_name = '%s_stack' % name
+    def _setup_test_stack(self, stack_name):
+        t = template_format.parse(wp_template)
+        template = parser.Template(t)
+        stack = parser.Stack(utils.dummy_context(), stack_name, template,
+                             environment.Environment({'key_name': 'test'}),
+                             stack_id=uuidutils.generate_uuid())
+        return (t, stack)
+
+    def _setup_test_server(self, return_server, name, image_id=None,
+                           override_name=False, stub_create=True, exit_code=0):
+        stack_name = '%s_s' % name
         (t, stack) = self._setup_test_stack(stack_name)
+
+        t['Resources']['WebServer']['Properties']['image'] = \
+            image_id or 'CentOS 5.2'
+        t['Resources']['WebServer']['Properties']['flavor'] = \
+            '256 MB Server'
+
+        server_name = '%s' % name
+        if override_name:
+            t['Resources']['WebServer']['Properties']['name'] = \
+                server_name
+
+        server = cloud_server.CloudServer(server_name,
+                                          t['Resources']['WebServer'], stack)
 
         self.m.StubOutWithMock(cloud_server.CloudServer, "nova")
         cloud_server.CloudServer.nova().MultipleTimes().AndReturn(self.fc)
 
-        t['Resources']['WebServer']['Properties']['image'] = 'CentOS 5.2'
-        t['Resources']['WebServer']['Properties']['flavor'] = '256 MB Server'
-
-        cs = cloud_server.CloudServer('%s_name' % name,
-                                      t['Resources']['WebServer'], stack)
-        cs._private_key = rsa_key
-        cs.t = cs.stack.resolve_runtime_data(cs.t)
-
-        self.m.StubOutWithMock(self.fc.servers, 'create')
-        name_limit = cloud_server.CloudServer.physical_resource_name_limit
-        server_name = utils.PhysName(stack_name, cs.name, limit=name_limit)
-        self.fc.servers.create(server_name, 1, 1,
-                               files=mox.IgnoreArg()).AndReturn(return_server)
         return_server.adminPass = "foobar"
+        server._private_key = rsa_key
+        server.t = server.stack.resolve_runtime_data(server.t)
+
+        if stub_create:
+            self.m.StubOutWithMock(self.fc.servers, 'create')
+            self.fc.servers.create(
+                image=1,
+                flavor=1,
+                key_name='test',
+                name=override_name and server.name or utils.PhysName(
+                    stack_name, server.name),
+                security_groups=[],
+                userdata=mox.IgnoreArg(),
+                scheduler_hints=None,
+                meta=None,
+                nics=None,
+                availability_zone=None,
+                block_device_mapping=None,
+                config_drive=None,
+                disk_config=None,
+                reservation_id=None,
+                files=mox.IgnoreArg()).AndReturn(return_server)
 
         self.m.StubOutWithMock(cloud_server.CloudServer, 'script')
         cloud_server.CloudServer.script = "foobar"
 
         self._mock_ssh_sftp(exit_code)
-        return cs
+        return server
 
-    def _create_test_cs(self, return_server, name, exit_code=0):
-        cs = self._setup_test_cs(return_server, name, exit_code)
-
+    def _create_test_server(self, return_server, name, override_name=False,
+                            stub_create=True, exit_code=0):
+        server = self._setup_test_server(return_server, name,
+                                         stub_create=stub_create,
+                                         exit_code=exit_code)
         self.m.ReplayAll()
-        scheduler.TaskRunner(cs.create)()
-        return cs
+        scheduler.TaskRunner(server.create)()
+        return server
 
-    def _update_test_cs(self, return_server, name, exit_code=0):
+    def _update_test_server(self, return_server, name, exit_code=0):
         self._mock_ssh_sftp(exit_code)
-        self.m.StubOutWithMock(clients.OpenStackClients, "nova")
-        clients.OpenStackClients.nova(
-            mox.IgnoreArg()).MultipleTimes().AndReturn(self.fc)
-
-    def test_cs_create(self):
-        return_server = self.fc.servers.list()[1]
-        cs = self._create_test_cs(return_server, 'test_cs_create')
-        # this makes sure the auto increment worked on cloud server creation
-        self.assertTrue(cs.id > 0)
-
-        expected_public = return_server.networks['public'][0]
-        expected_private = return_server.networks['private'][0]
-        self.assertEqual(expected_public, cs.FnGetAtt('PublicIp'))
-        self.assertEqual(expected_private, cs.FnGetAtt('PrivateIp'))
-        self.assertEqual(expected_public, cs.FnGetAtt('PublicDnsName'))
-        self.assertEqual(expected_public, cs.FnGetAtt('PrivateDnsName'))
-
-        self.m.VerifyAll()
-
-    def test_cs_create_with_image_name(self):
-        return_server = self.fc.servers.list()[1]
-        cs = self._setup_test_cs(return_server, 'test_cs_create_image_id')
-
-        self.m.ReplayAll()
-        scheduler.TaskRunner(cs.create)()
-
-        # this makes sure the auto increment worked on cloud server creation
-        self.assertTrue(cs.id > 0)
-
-        expected_public = return_server.networks['public'][0]
-        expected_private = return_server.networks['private'][0]
-        self.assertEqual(expected_public, cs.FnGetAtt('PublicIp'))
-        self.assertEqual(expected_private, cs.FnGetAtt('PrivateIp'))
-        self.assertEqual(expected_public, cs.FnGetAtt('PublicDnsName'))
-        self.assertEqual(expected_public, cs.FnGetAtt('PrivateDnsName'))
-        self.assertRaises(exception.InvalidTemplateAttribute,
-                          cs.FnGetAtt, 'foo')
-        self.m.VerifyAll()
-
-    def test_cs_create_image_name_err(self):
         self.m.StubOutWithMock(cloud_server.CloudServer, "nova")
         cloud_server.CloudServer.nova().MultipleTimes().AndReturn(self.fc)
-        stack_name = 'test_cs_create_image_name_err_stack'
+
+    def _mock_metadata_os_distro(self):
+        image_data = self.m.CreateMockAnything()
+        image_data.metadata = {'os_distro': 'centos'}
+        self.m.StubOutWithMock(self.fc.images, 'get')
+        self.fc.images.get(mox.IgnoreArg()).MultipleTimes().\
+            AndReturn(image_data)
+
+    def test_server_create(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'test_server_create')
+        # this makes sure the auto increment worked on server creation
+        self.assertTrue(server.id > 0)
+
+        public_ip = return_server.networks['public'][0]
+        self.assertEqual(public_ip,
+                         server.FnGetAtt('addresses')['public'][0]['addr'])
+        self.assertEqual(public_ip,
+                         server.FnGetAtt('networks')['public'][0])
+
+        private_ip = return_server.networks['private'][0]
+        self.assertEqual(private_ip,
+                         server.FnGetAtt('privateIPv4'))
+        self.assertEqual(private_ip,
+                         server.FnGetAtt('addresses')['private'][0]['addr'])
+        self.assertEqual(private_ip,
+                         server.FnGetAtt('networks')['private'][0])
+        self.assertIn(
+            server.FnGetAtt('first_address'), (private_ip, public_ip))
+
+        self.assertEqual(return_server._info, server.FnGetAtt('show'))
+        self.assertEqual('sample-server2', server.FnGetAtt('instance_name'))
+        self.assertEqual('192.0.2.0', server.FnGetAtt('accessIPv4'))
+        self.assertEqual('::babe:4317:0A83', server.FnGetAtt('accessIPv6'))
+        self.m.VerifyAll()
+
+    def test_server_create_with_image_id(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._setup_test_server(return_server,
+                                         'test_server_create_image_id',
+                                         image_id='1',
+                                         override_name=True)
+        self.m.StubOutWithMock(uuidutils, "is_uuid_like")
+        uuidutils.is_uuid_like('1').AndReturn(True)
+
+        self.m.ReplayAll()
+        scheduler.TaskRunner(server.create)()
+
+        # this makes sure the auto increment worked on server creation
+        self.assertTrue(server.id > 0)
+
+        public_ip = return_server.networks['public'][0]
+        self.assertEqual(
+            server.FnGetAtt('addresses')['public'][0]['addr'], public_ip)
+        self.assertEqual(
+            server.FnGetAtt('networks')['public'][0], public_ip)
+
+        private_ip = return_server.networks['private'][0]
+        self.assertEqual(
+            server.FnGetAtt('addresses')['private'][0]['addr'], private_ip)
+        self.assertEqual(
+            server.FnGetAtt('networks')['private'][0], private_ip)
+        self.assertIn(
+            server.FnGetAtt('first_address'), (private_ip, public_ip))
+
+        self.m.VerifyAll()
+
+    def test_server_create_image_name_err(self):
+        stack_name = 'img_name_err'
         (t, stack) = self._setup_test_stack(stack_name)
 
-        # create a cloud server with non exist image name
+        # create an server with non exist image name
         t['Resources']['WebServer']['Properties']['image'] = 'Slackware'
+        server = cloud_server.CloudServer('server_create_image_err',
+                                          t['Resources']['WebServer'], stack)
 
-        # Mock flavors
-        cloud_server.CloudServer.script = None
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
         self.m.ReplayAll()
 
-        cs = cloud_server.CloudServer('cs_create_image_err',
-                                      t['Resources']['WebServer'], stack)
+        self.assertRaises(exception.ImageNotFound, server.handle_create)
 
-        self.assertRaises(exception.ImageNotFound, cs.validate)
         self.m.VerifyAll()
 
-    def test_cs_create_image_name_okay(self):
-        self.m.StubOutWithMock(cloud_server.CloudServer, "nova")
-        cloud_server.CloudServer.nova().MultipleTimes().AndReturn(self.fc)
-        stack_name = 'test_cs_create_image_name_err_stack'
+    def test_server_create_duplicate_image_name_err(self):
+        stack_name = 'img_dup_err'
         (t, stack) = self._setup_test_stack(stack_name)
 
-        # create a cloud server with non exist image name
+        # create an server with a non unique image name
         t['Resources']['WebServer']['Properties']['image'] = 'CentOS 5.2'
-        t['Resources']['WebServer']['Properties']['user_data'] = ''
+        server = cloud_server.CloudServer('server_create_image_err',
+                                          t['Resources']['WebServer'], stack)
 
-        cloud_server.CloudServer.script = None
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
+        self.m.StubOutWithMock(self.fc.client, "get_images_detail")
+        self.fc.client.get_images_detail().AndReturn((
+            200, {'images': [{'id': 1, 'name': 'CentOS 5.2'},
+                             {'id': 4, 'name': 'CentOS 5.2'}]}))
         self.m.ReplayAll()
 
-        cs = cloud_server.CloudServer('cs_create_image_err',
-                                      t['Resources']['WebServer'], stack)
+        self.assertRaises(exception.PhysicalResourceNameAmbiguity,
+                          server.handle_create)
 
-        self.assertIsNone(cs.validate())
         self.m.VerifyAll()
 
-    def test_cs_create_heatscript_nonzero_exit_status(self):
-        return_server = self.fc.servers.list()[1]
-        cs = self._setup_test_cs(return_server, 'test_cs_create_image_id',
-                                 exit_code=1)
-        self.m.ReplayAll()
-        create = scheduler.TaskRunner(cs.create)
-        exc = self.assertRaises(exception.ResourceFailure, create)
-        self.assertIn("The heat-script.sh script exited", str(exc))
-        self.m.VerifyAll()
-
-    def test_cs_create_cfnuserdata_nonzero_exit_status(self):
-        return_server = self.fc.servers.list()[1]
-        cs = self._setup_test_cs(return_server, 'test_cs_create_image_id',
-                                 exit_code=42)
-        self.m.ReplayAll()
-        create = scheduler.TaskRunner(cs.create)
-        exc = self.assertRaises(exception.ResourceFailure, create)
-        self.assertIn("The cfn-userdata script exited", str(exc))
-        self.m.VerifyAll()
-
-    def test_cs_update_cfnuserdata_nonzero_exit_status(self):
-        return_server = self.fc.servers.list()[1]
-        cs = self._create_test_cs(return_server,
-                                  'test_cs_update_cfnuserdata_nonzero_exit')
-        self.m.UnsetStubs()
-        self._update_test_cs(return_server,
-                             'test_cs_update_cfnuserdata_nonzero_exit',
-                             exit_code=1)
-        self.m.ReplayAll()
-        update_template = copy.deepcopy(cs.t)
-        update_template['Metadata'] = {'test': 123}
-        update = scheduler.TaskRunner(cs.update, update_template)
-        exc = self.assertRaises(exception.ResourceFailure, update)
-        self.assertIn("The cfn-userdata script exited", str(exc))
-
-    def test_cs_create_flavor_err(self):
-        """validate() should throw an if the flavor is invalid."""
-        self.m.StubOutWithMock(cloud_server.CloudServer, "nova")
-        cloud_server.CloudServer.nova().MultipleTimes().AndReturn(self.fc)
-        stack_name = 'test_cs_create_flavor_err_stack'
+    def test_server_create_image_id_err(self):
+        stack_name = 'img_id_err'
         (t, stack) = self._setup_test_stack(stack_name)
 
-        # create a cloud server with non exist image name
-        t['Resources']['WebServer']['Properties']['flavor'] = 'invalid'
+        # create an server with non exist image Id
+        t['Resources']['WebServer']['Properties']['image'] = '1'
+        server = cloud_server.CloudServer('server_create_image_err',
+                                          t['Resources']['WebServer'], stack)
 
-        # Mock flavors
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
+        self.m.StubOutWithMock(uuidutils, "is_uuid_like")
+        uuidutils.is_uuid_like('1').AndReturn(True)
+        self.m.StubOutWithMock(self.fc.client, "get_images_1")
+        self.fc.client.get_images_1().AndRaise(
+            novaclient.exceptions.NotFound(404))
         self.m.ReplayAll()
 
-        cs = cloud_server.CloudServer('cs_create_flavor_err',
-                                      t['Resources']['WebServer'], stack)
-
-        self.assertRaises(exception.FlavorMissing, cs.validate)
+        self.assertRaises(exception.ImageNotFound, server.handle_create)
 
         self.m.VerifyAll()
 
-    def test_cs_create_delete(self):
+    def test_server_create_unexpected_status(self):
         return_server = self.fc.servers.list()[1]
-        cs = self._create_test_cs(return_server,
-                                  'test_cs_create_delete')
-        cs.resource_id = 1234
+        server = self._create_test_server(return_server,
+                                          'cr_unexp_sts')
+        return_server.get = lambda: None
+        return_server.status = 'BOGUS'
+        self.assertRaises(exception.Error,
+                          server.check_create_complete,
+                          return_server)
 
-        # this makes sure the auto-increment worked on cloud server creation
-        self.assertTrue(cs.id > 0)
+    def test_server_create_error_status(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'cr_err_sts')
+        return_server.status = 'ERROR'
+        return_server.fault = {
+            'message': 'NoValidHost',
+            'code': 500,
+            'created': '2013-08-14T03:12:10Z'
+        }
+        self.m.StubOutWithMock(return_server, 'get')
+        return_server.get()
+        self.m.ReplayAll()
+
+        self.assertRaises(exception.Error,
+                          server.check_create_complete,
+                          return_server)
+
+        self.m.VerifyAll()
+
+    def test_server_script_raw_userdata(self):
+        stack_name = 'raw_userdata_s'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        t['Resources']['WebServer']['Properties']['user_data_format'] = \
+            'RAW'
+
+        server = cloud_server.CloudServer('WebServer',
+                                          t['Resources']['WebServer'], stack)
+
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
+        self._mock_metadata_os_distro()
+        self.m.ReplayAll()
+
+        self.assertNotIn("/var/lib/cloud/data/cfn-userdata", server.script)
+        self.m.VerifyAll()
+
+    def test_server_script_cfntools_userdata(self):
+        stack_name = 'raw_userdata_s'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        t['Resources']['WebServer']['Properties']['user_data_format'] = \
+            'HEAT_CFNTOOLS'
+
+        server = cloud_server.CloudServer('WebServer',
+                                          t['Resources']['WebServer'], stack)
+
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
+        self._mock_metadata_os_distro()
+        self.m.ReplayAll()
+
+        self.assertIn("/var/lib/cloud/data/cfn-userdata", server.script)
+        self.m.VerifyAll()
+
+    def test_server_validate(self):
+        stack_name = 'srv_val'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        # create an server with non exist image Id
+        t['Resources']['WebServer']['Properties']['image'] = '1'
+        server = cloud_server.CloudServer('server_create_image_err',
+                                          t['Resources']['WebServer'], stack)
+
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
+
+        self._mock_metadata_os_distro()
+
+        self.m.StubOutWithMock(uuidutils, "is_uuid_like")
+        uuidutils.is_uuid_like('1').MultipleTimes().AndReturn(True)
+        self.m.ReplayAll()
+
+        self.assertIsNone(server.validate())
+
+        self.m.VerifyAll()
+
+    def test_server_validate_no_script_okay(self):
+        stack_name = 'srv_val'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        # create an server with non exist image Id
+        t['Resources']['WebServer']['Properties']['image'] = '1'
+        server = cloud_server.CloudServer('server_create_image_err',
+                                          t['Resources']['WebServer'], stack)
+
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
+
+        self.m.StubOutWithMock(server.__class__, 'script')
+        server.script = None
+
+        self.m.StubOutWithMock(server.__class__, 'has_userdata')
+        server.has_userdata = False
+
+        self.m.StubOutWithMock(uuidutils, "is_uuid_like")
+        uuidutils.is_uuid_like('1').MultipleTimes().AndReturn(True)
+        self.m.ReplayAll()
+
+        self.assertIsNone(server.validate())
+
+        self.m.VerifyAll()
+
+    def test_server_validate_too_many_personality(self):
+        stack_name = 'srv_val'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        # create an server with non exist image Id
+        t['Resources']['WebServer']['Properties']['personality'] = \
+            {"/fake/path1": "fake contents1",
+             "/fake/path2": "fake_contents2",
+             "/fake/path3": "fake_contents3",
+             "/fake/path4": "fake_contents4",
+             "/fake/path5": "fake_contents5"}
+        server = cloud_server.CloudServer('server_create_image_err',
+                                          t['Resources']['WebServer'], stack)
+
+        self.m.StubOutWithMock(server.__class__, 'script')
+        server.script = None
+
+        self.m.StubOutWithMock(server.__class__, 'has_userdata')
+        server.has_userdata = False
+
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
+        self.m.ReplayAll()
+
+        exc = self.assertRaises(exception.StackValidationFailed,
+                                server.validate)
+        self.assertEqual("The personality property may not contain "
+                         "greater than 4 entries.", str(exc))
+        self.m.VerifyAll()
+
+    def test_server_validate_disallowed_personality(self):
+        stack_name = 'srv_val'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        # create an server with non exist image Id
+        t['Resources']['WebServer']['Properties']['personality'] = \
+            {"/fake/path1": "fake contents1",
+             "/fake/path2": "fake_contents2",
+             "/fake/path3": "fake_contents3",
+             "/root/.ssh/authorized_keys": "fake_contents4"}
+        server = cloud_server.CloudServer('server_create_image_err',
+                                          t['Resources']['WebServer'], stack)
+
+        self.m.StubOutWithMock(server.__class__, 'script')
+        server.script = None
+
+        self.m.StubOutWithMock(server.__class__, 'has_userdata')
+        server.has_userdata = False
+
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
+        self.m.ReplayAll()
+
+        exc = self.assertRaises(exception.StackValidationFailed,
+                                server.validate)
+        self.assertEqual("The personality property may not contain a "
+                         "key of \"/root/.ssh/authorized_keys\"", str(exc))
+        self.m.VerifyAll()
+
+    def test_server_validate_personality_okay(self):
+        stack_name = 'srv_val'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        # create an server with non exist image Id
+        t['Resources']['WebServer']['Properties']['personality'] = \
+            {"/fake/path1": "fake contents1",
+             "/fake/path2": "fake_contents2",
+             "/fake/path3": "fake_contents3",
+             "/fake/path4": "fake_contents4"}
+        server = cloud_server.CloudServer('server_create_image_err',
+                                          t['Resources']['WebServer'], stack)
+
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
+
+        self.m.StubOutWithMock(server.__class__, 'script')
+        server.script = None
+
+        self.m.StubOutWithMock(server.__class__, 'has_userdata')
+        server.has_userdata = False
+        self.m.ReplayAll()
+
+        self.assertIsNone(server.validate())
+        self.m.VerifyAll()
+
+    def test_server_validate_no_script_not_okay(self):
+        stack_name = 'srv_val'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        # create a server with non-existent image ID
+        t['Resources']['WebServer']['Properties']['image'] = '1'
+        server = cloud_server.CloudServer('server_create_image_err',
+                                          t['Resources']['WebServer'], stack)
+
+        self.m.StubOutWithMock(server.__class__, 'script')
+        server.script = None
+
+        self.m.StubOutWithMock(server.__class__, 'has_userdata')
+        server.has_userdata = True
+        self.m.ReplayAll()
+
+        exc = self.assertRaises(exception.StackValidationFailed,
+                                server.validate)
+        self.assertIn("user_data is not supported", str(exc))
+        self.m.VerifyAll()
+
+    def test_server_validate_with_bootable_vol_and_userdata(self):
+        stack_name = 'srv_val'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        # create a server without an image
+        del t['Resources']['WebServer']['Properties']['image']
+        t['Resources']['WebServer']['Properties']['block_device_mapping'] = \
+            [{
+                "device_name": u'vda',
+                "volume_id": "5d7e27da-6703-4f7e-9f94-1f67abef734c",
+                "delete_on_termination": False
+            }]
+        server = cloud_server.CloudServer('server_create_image_err',
+                                          t['Resources']['WebServer'], stack)
+
+        self.m.StubOutWithMock(server.__class__, 'has_userdata')
+        server.has_userdata = True
+
+        self.m.StubOutWithMock(cloud_server.CloudServer, "nova")
+        cloud_server.CloudServer.nova().MultipleTimes().AndReturn(self.fc)
+        self.m.ReplayAll()
+
+        exc = self.assertRaises(exception.StackValidationFailed,
+                                server.validate)
+        self.assertIn("user_data scripts are not supported with bootable "
+                      "volumes", str(exc))
+        self.m.VerifyAll()
+
+    def test_server_validate_with_bootable_vol(self):
+        stack_name = 'srv_val_bootvol'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        # create an server with bootable volume
+        web_server = t['Resources']['WebServer']
+        del web_server['Properties']['image']
+        del web_server['Properties']['user_data']
+
+        def create_server(device_name):
+            web_server['Properties']['block_device_mapping'] = [{
+                "device_name": device_name,
+                "volume_id": "5d7e27da-6703-4f7e-9f94-1f67abef734c",
+                "delete_on_termination": False
+            }]
+            server = cloud_server.CloudServer('server_with_bootable_volume',
+                                              web_server, stack)
+            return server
+
+        self.m.StubOutWithMock(cloud_server.CloudServer, "nova")
+        cloud_server.CloudServer.nova().MultipleTimes().AndReturn(self.fc)
+        self.m.ReplayAll()
+
+        server = create_server(u'vda')
+        self.assertIsNone(server.validate())
+
+        server = create_server('vda')
+        self.assertIsNone(server.validate())
+
+        server = create_server('vdb')
+        ex = self.assertRaises(exception.StackValidationFailed,
+                               server.validate)
+        self.assertEqual('Neither image nor bootable volume is specified for '
+                         'instance server_with_bootable_volume', str(ex))
+        self.m.VerifyAll()
+
+    def test_server_validate_delete_policy(self):
+        stack_name = 'srv_val_delpol'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        # create an server with non exist image Id
+        t['Resources']['WebServer']['DeletionPolicy'] = 'SelfDestruct'
+        server = cloud_server.CloudServer('server_create_image_err',
+                                          t['Resources']['WebServer'], stack)
+
+        self.m.StubOutWithMock(cloud_server.CloudServer, "nova")
+        cloud_server.CloudServer.nova().MultipleTimes().AndReturn(self.fc)
+
+        self._mock_metadata_os_distro()
+        self.m.ReplayAll()
+
+        ex = self.assertRaises(exception.StackValidationFailed,
+                               server.validate)
+        self.assertEqual('Invalid DeletionPolicy SelfDestruct',
+                         str(ex))
+
+        self.m.VerifyAll()
+
+    def test_server_validate_with_networks(self):
+        stack_name = 'srv_net'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        network_name = 'public'
+        # create an server with 'uuid' and 'network' properties
+        t['Resources']['WebServer']['Properties']['networks'] = (
+            [{'uuid': 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+              'network': network_name}])
+
+        server = cloud_server.CloudServer('server_validate_with_networks',
+                                          t['Resources']['WebServer'], stack)
+
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
+        self._mock_metadata_os_distro()
+        self.m.ReplayAll()
+
+        ex = self.assertRaises(exception.StackValidationFailed,
+                               server.validate)
+        self.assertIn(_('Properties "uuid" and "network" are both set to '
+                        'the network "%(network)s" for the server '
+                        '"%(server)s". The "uuid" property is deprecated. '
+                        'Use only "network" property.'
+                        '') % dict(network=network_name, server=server.name),
+                      str(ex))
+        self.m.VerifyAll()
+
+    def test_server_delete(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'create_delete')
+        server.resource_id = 1234
+
+        # this makes sure the auto increment worked on server creation
+        self.assertTrue(server.id > 0)
+
+        server_get = self.fc.client.get_servers_1234()
+        self.m.StubOutWithMock(self.fc.client, 'get_servers_1234')
+        get = self.fc.client.get_servers_1234
+        get().AndReturn(server_get)
+        get().AndRaise(novaclient.exceptions.NotFound(404))
+        mox.Replay(get)
+        self.m.ReplayAll()
+
+        scheduler.TaskRunner(server.delete)()
+        self.assertIsNone(server.resource_id)
+        self.assertEqual((server.DELETE, server.COMPLETE), server.state)
+        self.m.VerifyAll()
+
+    def test_server_delete_notfound(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'create_delete2')
+        server.resource_id = 1234
+
+        # this makes sure the auto increment worked on server creation
+        self.assertTrue(server.id > 0)
 
         self.m.StubOutWithMock(self.fc.client, 'get_servers_1234')
         get = self.fc.client.get_servers_1234
         get().AndRaise(novaclient.exceptions.NotFound(404))
         mox.Replay(get)
 
-        scheduler.TaskRunner(cs.delete)()
-        self.assertIsNone(cs.resource_id)
-        self.assertEqual((cs.DELETE, cs.COMPLETE), cs.state)
+        scheduler.TaskRunner(server.delete)()
+        self.assertIsNone(server.resource_id)
+        self.assertEqual((server.DELETE, server.COMPLETE), server.state)
         self.m.VerifyAll()
 
-    def test_cs_update_metadata(self):
+        server.state_set(server.CREATE, server.COMPLETE, 'to delete again')
+        scheduler.TaskRunner(server.delete)()
+        self.assertEqual((server.DELETE, server.COMPLETE), server.state)
+        self.m.VerifyAll()
+
+    def test_server_update_metadata(self):
         return_server = self.fc.servers.list()[1]
-        cs = self._create_test_cs(return_server, 'test_cs_metadata_update')
-        self.m.UnsetStubs()
-        self._update_test_cs(return_server, 'test_cs_metadata_update')
-        self.m.ReplayAll()
-        update_template = copy.deepcopy(cs.t)
+        server = self._create_test_server(return_server,
+                                          'md_update')
+
+        update_template = copy.deepcopy(server.t)
         update_template['Metadata'] = {'test': 123}
-        scheduler.TaskRunner(cs.update, update_template)()
-        self.assertEqual({'test': 123}, cs.metadata)
+        self.m.UnsetStubs()
+        self._mock_ssh_sftp()
+        self.m.ReplayAll()
+        scheduler.TaskRunner(server.update, update_template)()
+        self.assertEqual({'test': 123}, server.metadata)
 
-    def test_cs_update_replace(self):
+        server.t['Metadata'] = {'test': 456}
+        server.metadata_update()
+        self.assertEqual({'test': 456}, server.metadata)
+
+    def test_server_update_nova_metadata(self):
         return_server = self.fc.servers.list()[1]
-        cs = self._create_test_cs(return_server, 'test_cs_update')
+        server = self._create_test_server(return_server,
+                                          'md_update')
 
-        update_template = copy.deepcopy(cs.t)
-        update_template['Notallowed'] = {'test': 123}
-        updater = scheduler.TaskRunner(cs.update, update_template)
+        new_meta = {'test': 123}
+        self.m.StubOutWithMock(self.fc.servers, 'set_meta')
+        self.fc.servers.set_meta(return_server,
+                                 nova_utils.meta_serialize(
+                                     new_meta)).AndReturn(None)
+        self.m.ReplayAll()
+        update_template = copy.deepcopy(server.t)
+        update_template['Properties']['metadata'] = new_meta
+        scheduler.TaskRunner(server.update, update_template)()
+        self.assertEqual((server.UPDATE, server.COMPLETE), server.state)
+        self.m.VerifyAll()
+
+    def test_server_update_nova_metadata_complex(self):
+        """
+        Test that complex metadata values are correctly serialized
+        to JSON when sent to Nova.
+        """
+
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'md_update')
+
+        new_meta = {'test': {'testkey': 'testvalue'}}
+        self.m.StubOutWithMock(self.fc.servers, 'set_meta')
+
+        # If we're going to call set_meta() directly we
+        # need to handle the serialization ourselves.
+        self.fc.servers.set_meta(return_server,
+                                 nova_utils.meta_serialize(
+                                     new_meta)).AndReturn(None)
+        self.m.ReplayAll()
+        update_template = copy.deepcopy(server.t)
+        update_template['Properties']['metadata'] = new_meta
+        scheduler.TaskRunner(server.update, update_template)()
+        self.assertEqual((server.UPDATE, server.COMPLETE), server.state)
+        self.m.VerifyAll()
+
+    def test_server_update_nova_metadata_with_delete(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'md_update')
+
+        # part one, add some metadata
+        new_meta = {'test': '123', 'this': 'that'}
+        self.m.StubOutWithMock(self.fc.servers, 'set_meta')
+        self.fc.servers.set_meta(return_server,
+                                 new_meta).AndReturn(None)
+        self.m.ReplayAll()
+        update_template = copy.deepcopy(server.t)
+        update_template['Properties']['metadata'] = new_meta
+        scheduler.TaskRunner(server.update, update_template)()
+        self.assertEqual((server.UPDATE, server.COMPLETE), server.state)
+        self.m.VerifyAll()
+        self.m.UnsetStubs()
+
+        # part two change the metadata (test removing the old key)
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
+        new_meta = {'new_key': 'yeah'}
+
+        self.m.StubOutWithMock(self.fc.servers, 'delete_meta')
+        new_return_server = self.fc.servers.list()[5]
+        self.fc.servers.delete_meta(new_return_server,
+                                    ['test', 'this']).AndReturn(None)
+
+        self.m.StubOutWithMock(self.fc.servers, 'set_meta')
+        self.fc.servers.set_meta(new_return_server,
+                                 new_meta).AndReturn(None)
+        self.m.ReplayAll()
+        update_template = copy.deepcopy(server.t)
+        update_template['Properties']['metadata'] = new_meta
+
+        # new fake with the correct metadata
+        server.resource_id = '56789'
+
+        scheduler.TaskRunner(server.update, update_template)()
+        self.assertEqual((server.UPDATE, server.COMPLETE), server.state)
+        self.m.VerifyAll()
+
+    def test_server_update_server_flavor(self):
+        """
+        handle_update supports changing the flavor, and makes
+        the change making a resize API call against Nova.
+        """
+        return_server = self.fc.servers.list()[1]
+        return_server.id = 1234
+        server = self._create_test_server(return_server,
+                                          'srv_update')
+
+        update_template = copy.deepcopy(server.t)
+        update_template['Properties']['flavor'] = 'm1.small'
+
+        self.m.StubOutWithMock(self.fc.servers, 'get')
+        self.fc.servers.get(1234).AndReturn(return_server)
+
+        def activate_status(server):
+            server.status = 'VERIFY_RESIZE'
+        return_server.get = activate_status.__get__(return_server)
+
+        self.m.StubOutWithMock(self.fc.client, 'post_servers_1234_action')
+        self.fc.client.post_servers_1234_action(
+            body={'resize': {'flavorRef': 2}}).AndReturn((202, None))
+        self.fc.client.post_servers_1234_action(
+            body={'confirmResize': None}).AndReturn((202, None))
+        self.m.ReplayAll()
+
+        scheduler.TaskRunner(server.update, update_template)()
+        self.assertEqual((server.UPDATE, server.COMPLETE), server.state)
+        self.m.VerifyAll()
+
+    def test_server_update_server_flavor_failed(self):
+        """
+        If the status after a resize is not VERIFY_RESIZE, it means the resize
+        call failed, so we raise an explicit error.
+        """
+        return_server = self.fc.servers.list()[1]
+        return_server.id = 1234
+        server = self._create_test_server(return_server,
+                                          'srv_update2')
+
+        update_template = copy.deepcopy(server.t)
+        update_template['Properties']['flavor'] = 'm1.small'
+
+        self.m.StubOutWithMock(self.fc.servers, 'get')
+        self.fc.servers.get(1234).AndReturn(return_server)
+
+        def activate_status(server):
+            server.status = 'ACTIVE'
+        return_server.get = activate_status.__get__(return_server)
+
+        self.m.StubOutWithMock(self.fc.client, 'post_servers_1234_action')
+        self.fc.client.post_servers_1234_action(
+            body={'resize': {'flavorRef': 2}}).AndReturn((202, None))
+        self.m.ReplayAll()
+
+        updater = scheduler.TaskRunner(server.update, update_template)
+        error = self.assertRaises(exception.ResourceFailure, updater)
+        self.assertEqual(
+            "Error: Resizing to 'm1.small' failed, status 'ACTIVE'",
+            str(error))
+        self.assertEqual((server.UPDATE, server.FAILED), server.state)
+        self.m.VerifyAll()
+
+    def test_server_update_server_flavor_replace(self):
+        stack_name = 'update_flvrep'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        t['Resources']['WebServer']['Properties'][
+            'flavor_update_policy'] = 'REPLACE'
+        server = cloud_server.CloudServer('server_server_update_flavor_repl',
+                                          t['Resources']['WebServer'], stack)
+
+        update_template = copy.deepcopy(server.t)
+        update_template['Properties']['flavor'] = 'm1.smigish'
+        updater = scheduler.TaskRunner(server.update, update_template)
         self.assertRaises(resource.UpdateReplace, updater)
 
-    def test_cs_update_properties(self):
-        return_server = self.fc.servers.list()[1]
-        cs = self._create_test_cs(return_server, 'test_cs_update')
+    def test_server_update_server_flavor_policy_update(self):
+        stack_name = 'update_flvpol'
+        (t, stack) = self._setup_test_stack(stack_name)
 
-        update_template = copy.deepcopy(cs.t)
-        update_template['Properties']['user_data'] = 'mustreplace'
-        updater = scheduler.TaskRunner(cs.update, update_template)
+        server = cloud_server.CloudServer(
+            'server_server_update_flavor_replace',
+            t['Resources']['WebServer'], stack)
+
+        update_template = copy.deepcopy(server.t)
+        # confirm that when flavor_update_policy is changed during
+        # the update then the updated policy is followed for a flavor
+        # update
+        update_template['Properties']['flavor_update_policy'] = 'REPLACE'
+        update_template['Properties']['flavor'] = 'm1.smigish'
+        updater = scheduler.TaskRunner(server.update, update_template)
         self.assertRaises(resource.UpdateReplace, updater)
 
-    def test_cs_status_build(self):
+    def test_server_update_image_replace(self):
+        stack_name = 'update_imgrep'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        t['Resources']['WebServer']['Properties'][
+            'image_update_policy'] = 'REPLACE'
+        server = cloud_server.CloudServer('server_update_image_replace',
+                                          t['Resources']['WebServer'], stack)
+
+        update_template = copy.deepcopy(server.t)
+        update_template['Properties']['image'] = self.getUniqueString()
+        updater = scheduler.TaskRunner(server.update, update_template)
+        self.assertRaises(resource.UpdateReplace, updater)
+
+    def _test_server_update_image_rebuild(self, status, policy='REBUILD'):
+        # handle_update supports changing the image, and makes
+        # the change making a rebuild API call against Nova.
+        return_server = self.fc.servers.list()[1]
+        return_server.id = 1234
+        server = self._create_test_server(return_server,
+                                          'srv_updimgrbld')
+
+        new_image = 'F17-x86_64-gold'
+        update_template = copy.deepcopy(server.t)
+        update_template['Properties']['image'] = new_image
+        server.t['Properties']['image_update_policy'] = policy
+
+        self.m.StubOutWithMock(self.fc.servers, 'get')
+        self.fc.servers.get(1234).MultipleTimes().AndReturn(return_server)
+        self.m.StubOutWithMock(self.fc.servers, 'rebuild')
+        if 'REBUILD' == policy:
+            self.fc.servers.rebuild(
+                return_server, 744, password=None, preserve_ephemeral=False)
+        else:
+            self.fc.servers.rebuild(
+                return_server, 744, password=None, preserve_ephemeral=True)
+        self.m.StubOutWithMock(self.fc.client, 'post_servers_1234_action')
+        for stat in status:
+            def activate_status(serv):
+                serv.status = stat
+            return_server.get = activate_status.__get__(return_server)
+
+        self.m.ReplayAll()
+        scheduler.TaskRunner(server.update, update_template)()
+        self.assertEqual((server.UPDATE, server.COMPLETE), server.state)
+        self.m.VerifyAll()
+
+    def test_server_update_image_rebuild_status_rebuild(self):
+        # Normally we will see 'REBUILD' first and then 'ACTIVE".
+        self._test_server_update_image_rebuild(status=('REBUILD', 'ACTIVE'))
+
+    def test_server_update_image_rebuild_status_active(self):
+        # It is possible for us to miss the REBUILD status.
+        self._test_server_update_image_rebuild(status=('ACTIVE',))
+
+    def test_server_update_image_rebuild_status_rebuild_keep_ephemeral(self):
+        # Normally we will see 'REBUILD' first and then 'ACTIVE".
+        self._test_server_update_image_rebuild(
+            policy='REBUILD_PRESERVE_EPHEMERAL', status=('REBUILD', 'ACTIVE'))
+
+    def test_server_update_image_rebuild_status_active_keep_ephemeral(self):
+        # It is possible for us to miss the REBUILD status.
+        self._test_server_update_image_rebuild(
+            policy='REBUILD_PRESERVE_EPHEMERAL', status=('ACTIVE'))
+
+    def test_server_update_image_rebuild_failed(self):
+        # If the status after a rebuild is not REBUILD or ACTIVE, it means the
+        # rebuild call failed, so we raise an explicit error.
+        return_server = self.fc.servers.list()[1]
+        return_server.id = 1234
+        server = self._create_test_server(return_server,
+                                          'srv_updrbldfail')
+
+        new_image = 'F17-x86_64-gold'
+        update_template = copy.deepcopy(server.t)
+        update_template['Properties']['image'] = new_image
+        server.t['Properties']['image_update_policy'] = 'REBUILD'
+
+        self.m.StubOutWithMock(self.fc.servers, 'get')
+        self.fc.servers.get(1234).MultipleTimes().AndReturn(return_server)
+        self.m.StubOutWithMock(self.fc.servers, 'rebuild')
+        # 744 is a static lookup from the fake images list
+        self.fc.servers.rebuild(
+            return_server, 744, password=None, preserve_ephemeral=False)
+        self.m.StubOutWithMock(self.fc.client, 'post_servers_1234_action')
+
+        def activate_status(server):
+            server.status = 'REBUILD'
+        return_server.get = activate_status.__get__(return_server)
+
+        def activate_status2(server):
+            server.status = 'ERROR'
+        return_server.get = activate_status2.__get__(return_server)
+        self.m.ReplayAll()
+        updater = scheduler.TaskRunner(server.update, update_template)
+        error = self.assertRaises(exception.ResourceFailure, updater)
+        self.assertEqual(
+            "Error: Rebuilding server failed, status 'ERROR'",
+            str(error))
+        self.assertEqual((server.UPDATE, server.FAILED), server.state)
+        self.m.VerifyAll()
+
+    def test_server_update_attr_replace(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'update_rep')
+
+        update_template = copy.deepcopy(server.t)
+        update_template['UpdatePolicy'] = {'test': 123}
+        updater = scheduler.TaskRunner(server.update, update_template)
+        self.assertRaises(resource.UpdateReplace, updater)
+
+    def test_server_update_properties(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'update_prop')
+
+        update_template = copy.deepcopy(server.t)
+        update_template['Properties']['key_name'] = 'mustreplace'
+        updater = scheduler.TaskRunner(server.update, update_template)
+        self.assertRaises(resource.UpdateReplace, updater)
+
+    def test_server_status_build(self):
         return_server = self.fc.servers.list()[0]
-        cs = self._setup_test_cs(return_server, 'test_cs_status_build')
-        cs.resource_id = 1234
+        server = self._setup_test_server(return_server,
+                                         'sts_build')
+        server.resource_id = 1234
 
-        # Bind fake get method which cs.check_create_complete will call
+        # Bind fake get method which check_create_complete will call
         def activate_status(server):
             server.status = 'ACTIVE'
         return_server.get = activate_status.__get__(return_server)
         self.m.ReplayAll()
 
-        scheduler.TaskRunner(cs.create)()
-        self.assertEqual((cs.CREATE, cs.COMPLETE), cs.state)
+        scheduler.TaskRunner(server.create)()
+        self.assertEqual((server.CREATE, server.COMPLETE), server.state)
 
-    def test_cs_status_hard_reboot(self):
-        self._test_cs_status_not_build_active('HARD_REBOOT')
+    def test_server_status_suspend_no_resource_id(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'srv_sus1')
 
-    def test_cs_status_password(self):
-        self._test_cs_status_not_build_active('PASSWORD')
+        server.resource_id = None
+        self.m.ReplayAll()
 
-    def test_cs_status_reboot(self):
-        self._test_cs_status_not_build_active('REBOOT')
+        ex = self.assertRaises(exception.ResourceFailure,
+                               scheduler.TaskRunner(server.suspend))
+        self.assertEqual('Error: Cannot suspend srv_sus1, '
+                         'resource_id not set',
+                         str(ex))
+        self.assertEqual((server.SUSPEND, server.FAILED), server.state)
 
-    def test_cs_status_rescue(self):
-        self._test_cs_status_not_build_active('RESCUE')
+        self.m.VerifyAll()
 
-    def test_cs_status_resize(self):
-        self._test_cs_status_not_build_active('RESIZE')
+    def test_server_status_suspend_not_found(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'srv_sus2')
 
-    def test_cs_status_revert_resize(self):
-        self._test_cs_status_not_build_active('REVERT_RESIZE')
+        server.resource_id = 1234
+        self.m.StubOutWithMock(self.fc.client, 'get_servers_1234')
+        get = self.fc.client.get_servers_1234
+        get().AndRaise(novaclient.exceptions.NotFound(404))
+        mox.Replay(get)
+        self.m.ReplayAll()
 
-    def test_cs_status_shutoff(self):
-        self._test_cs_status_not_build_active('SHUTOFF')
+        ex = self.assertRaises(exception.ResourceFailure,
+                               scheduler.TaskRunner(server.suspend))
+        self.assertEqual('NotFound: Failed to find server 1234',
+                         str(ex))
+        self.assertEqual((server.SUSPEND, server.FAILED), server.state)
 
-    def test_cs_status_suspended(self):
-        self._test_cs_status_not_build_active('SUSPENDED')
+        self.m.VerifyAll()
 
-    def test_cs_status_verify_resize(self):
-        self._test_cs_status_not_build_active('VERIFY_RESIZE')
+    def test_server_status_suspend_immediate(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'srv_suspend3')
 
-    def _test_cs_status_not_build_active(self, uncommon_status):
+        server.resource_id = 1234
+        self.m.ReplayAll()
+
+        # Override the get_servers_1234 handler status to SUSPENDED
+        d = {'server': self.fc.client.get_servers_detail()[1]['servers'][0]}
+        d['server']['status'] = 'SUSPENDED'
+        self.m.StubOutWithMock(self.fc.client, 'get_servers_1234')
+        get = self.fc.client.get_servers_1234
+        get().AndReturn((200, d))
+        mox.Replay(get)
+
+        scheduler.TaskRunner(server.suspend)()
+        self.assertEqual((server.SUSPEND, server.COMPLETE), server.state)
+
+        self.m.VerifyAll()
+
+    def test_server_status_resume_immediate(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'srv_resume1')
+
+        server.resource_id = 1234
+        self.m.ReplayAll()
+
+        # Override the get_servers_1234 handler status to SUSPENDED
+        d = {'server': self.fc.client.get_servers_detail()[1]['servers'][0]}
+        d['server']['status'] = 'ACTIVE'
+        self.m.StubOutWithMock(self.fc.client, 'get_servers_1234')
+        get = self.fc.client.get_servers_1234
+        get().AndReturn((200, d))
+        mox.Replay(get)
+        server.state_set(server.SUSPEND, server.COMPLETE)
+
+        scheduler.TaskRunner(server.resume)()
+        self.assertEqual((server.RESUME, server.COMPLETE), server.state)
+
+        self.m.VerifyAll()
+
+    def test_server_status_suspend_wait(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'srv_susp_w')
+
+        server.resource_id = 1234
+        self.m.ReplayAll()
+
+        # Override the get_servers_1234 handler status to SUSPENDED, but
+        # return the ACTIVE state first (twice, so we sleep)
+        d1 = {'server': self.fc.client.get_servers_detail()[1]['servers'][0]}
+        d2 = copy.deepcopy(d1)
+        d1['server']['status'] = 'ACTIVE'
+        d2['server']['status'] = 'SUSPENDED'
+        self.m.StubOutWithMock(self.fc.client, 'get_servers_1234')
+        get = self.fc.client.get_servers_1234
+        get().AndReturn((200, d1))
+        get().AndReturn((200, d1))
+        get().AndReturn((200, d2))
+        self.m.ReplayAll()
+
+        scheduler.TaskRunner(server.suspend)()
+        self.assertEqual((server.SUSPEND, server.COMPLETE), server.state)
+
+        self.m.VerifyAll()
+
+    def test_server_status_suspend_unknown_status(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'srv_susp_uk')
+
+        server.resource_id = 1234
+        self.m.ReplayAll()
+
+        # Override the get_servers_1234 handler status to SUSPENDED, but
+        # return the ACTIVE state first (twice, so we sleep)
+        d1 = {'server': self.fc.client.get_servers_detail()[1]['servers'][0]}
+        d2 = copy.deepcopy(d1)
+        d1['server']['status'] = 'ACTIVE'
+        d2['server']['status'] = 'TRANSMOGRIFIED'
+        self.m.StubOutWithMock(self.fc.client, 'get_servers_1234')
+        get = self.fc.client.get_servers_1234
+        get().AndReturn((200, d1))
+        get().AndReturn((200, d1))
+        get().AndReturn((200, d2))
+        self.m.ReplayAll()
+
+        ex = self.assertRaises(exception.ResourceFailure,
+                               scheduler.TaskRunner(server.suspend))
+        self.assertEqual('Error: Suspend of server sample-server failed '
+                         'with unknown status: TRANSMOGRIFIED',
+                         str(ex))
+        self.assertEqual((server.SUSPEND, server.FAILED), server.state)
+
+        self.m.VerifyAll()
+
+    def test_server_status_resume_wait(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'srv_res_w')
+
+        server.resource_id = 1234
+        self.m.ReplayAll()
+
+        # Override the get_servers_1234 handler status to ACTIVE, but
+        # return the SUSPENDED state first (twice, so we sleep)
+        d1 = {'server': self.fc.client.get_servers_detail()[1]['servers'][0]}
+        d2 = copy.deepcopy(d1)
+        d1['server']['status'] = 'SUSPENDED'
+        d2['server']['status'] = 'ACTIVE'
+        self.m.StubOutWithMock(self.fc.client, 'get_servers_1234')
+        get = self.fc.client.get_servers_1234
+        get().AndReturn((200, d1))
+        get().AndReturn((200, d1))
+        get().AndReturn((200, d2))
+        self.m.ReplayAll()
+
+        server.state_set(server.SUSPEND, server.COMPLETE)
+
+        scheduler.TaskRunner(server.resume)()
+        self.assertEqual((server.RESUME, server.COMPLETE), server.state)
+
+        self.m.VerifyAll()
+
+    def test_server_status_resume_no_resource_id(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'srv_susp_norid')
+
+        server.resource_id = None
+        self.m.ReplayAll()
+
+        server.state_set(server.SUSPEND, server.COMPLETE)
+        ex = self.assertRaises(exception.ResourceFailure,
+                               scheduler.TaskRunner(server.resume))
+        self.assertEqual('Error: Cannot resume srv_susp_norid, '
+                         'resource_id not set',
+                         str(ex))
+        self.assertEqual((server.RESUME, server.FAILED), server.state)
+
+        self.m.VerifyAll()
+
+    def test_server_status_resume_not_found(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'srv_res_nf')
+
+        server.resource_id = 1234
+        self.m.ReplayAll()
+
+        # Override the get_servers_1234 handler status to ACTIVE, but
+        # return the SUSPENDED state first (twice, so we sleep)
+        self.m.StubOutWithMock(self.fc.client, 'get_servers_1234')
+        get = self.fc.client.get_servers_1234
+        get().AndRaise(novaclient.exceptions.NotFound(404))
+        self.m.ReplayAll()
+
+        server.state_set(server.SUSPEND, server.COMPLETE)
+
+        ex = self.assertRaises(exception.ResourceFailure,
+                               scheduler.TaskRunner(server.resume))
+        self.assertEqual('NotFound: Failed to find server 1234',
+                         str(ex))
+        self.assertEqual((server.RESUME, server.FAILED), server.state)
+
+        self.m.VerifyAll()
+
+    def test_server_status_build_spawning(self):
+        self._test_server_status_not_build_active('BUILD(SPAWNING)')
+
+    def test_server_status_hard_reboot(self):
+        self._test_server_status_not_build_active('HARD_REBOOT')
+
+    def test_server_status_password(self):
+        self._test_server_status_not_build_active('PASSWORD')
+
+    def test_server_status_reboot(self):
+        self._test_server_status_not_build_active('REBOOT')
+
+    def test_server_status_rescue(self):
+        self._test_server_status_not_build_active('RESCUE')
+
+    def test_server_status_resize(self):
+        self._test_server_status_not_build_active('RESIZE')
+
+    def test_server_status_revert_resize(self):
+        self._test_server_status_not_build_active('REVERT_RESIZE')
+
+    def test_server_status_shutoff(self):
+        self._test_server_status_not_build_active('SHUTOFF')
+
+    def test_server_status_suspended(self):
+        self._test_server_status_not_build_active('SUSPENDED')
+
+    def test_server_status_verify_resize(self):
+        self._test_server_status_not_build_active('VERIFY_RESIZE')
+
+    def _test_server_status_not_build_active(self, uncommon_status):
         return_server = self.fc.servers.list()[0]
-        cs = self._setup_test_cs(return_server, 'test_cs_status_build')
-        cs.resource_id = 1234
+        server = self._setup_test_server(return_server,
+                                         'srv_sts_bld')
+        server.resource_id = 1234
 
-        # Bind fake get method which cs.check_create_complete will call
+        check_iterations = [0]
+
+        # Bind fake get method which check_create_complete will call
         def activate_status(server):
-            if hasattr(server, '_test_check_iterations'):
-                server._test_check_iterations += 1
-            else:
-                server._test_check_iterations = 1
-            if server._test_check_iterations == 1:
+            check_iterations[0] += 1
+            if check_iterations[0] == 1:
                 server.status = uncommon_status
-            if server._test_check_iterations > 2:
+            if check_iterations[0] > 2:
                 server.status = 'ACTIVE'
         return_server.get = activate_status.__get__(return_server)
         self.m.ReplayAll()
 
-        scheduler.TaskRunner(cs.create)()
-        self.assertEqual((cs.CREATE, cs.COMPLETE), cs.state)
+        scheduler.TaskRunner(server.create)()
+        self.assertEqual((server.CREATE, server.COMPLETE), server.state)
 
         self.m.VerifyAll()
 
-    def mock_get_ip(self, cs):
-        self.m.UnsetStubs()
-        self.m.StubOutWithMock(cloud_server.CloudServer, "server")
-        cloud_server.CloudServer.server = cs
+    def test_build_nics(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._create_test_server(return_server,
+                                          'test_server_create')
+        self.assertIsNone(server._build_nics([]))
+        self.assertIsNone(server._build_nics(None))
+        self.assertEqual([{'port-id': 'aaaabbbb'},
+                          {'v4-fixed-ip': '192.0.2.0'}],
+                         server._build_nics([{'port': 'aaaabbbb'},
+                                             {'fixed_ip': '192.0.2.0'}]))
+
+        self.assertEqual([{'net-id': '1234abcd'}],
+                         server._build_nics([{'uuid': '1234abcd'}]))
+
+        self.assertEqual([{'net-id': 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'}],
+                         server._build_nics(
+                             [{'network':
+                               'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'}]
+                         ))
+
+        self.assertEqual([{'net-id': 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'}],
+                         server._build_nics([{'network': 'public'}]))
+
+        self.assertRaises(exceptions.NoUniqueMatch, server._build_nics,
+                          ([{'network': 'foo'}]))
+
+        self.assertRaises(exceptions.NotFound, server._build_nics,
+                          ([{'network': 'bar'}]))
+
+    def test_server_without_ip_address(self):
+        return_server = self.fc.servers.list()[3]
+        server = self._create_test_server(return_server,
+                                          'wo_ipaddr')
+
+        self.assertEqual({'empty_net': []}, server.FnGetAtt('addresses'))
+        self.assertEqual({'empty_net': []}, server.FnGetAtt('networks'))
+        self.assertEqual('', server.FnGetAtt('first_address'))
+
+    def test_build_block_device_mapping(self):
+        self.assertEqual(
+            None, cloud_server.CloudServer._build_block_device_mapping([]))
+        self.assertEqual(
+            None, cloud_server.CloudServer._build_block_device_mapping(None))
+
+        self.assertEqual({
+            'vda': '1234:',
+            'vdb': '1234:snap',
+        }, cloud_server.CloudServer._build_block_device_mapping([
+            {'device_name': 'vda', 'volume_id': '1234'},
+            {'device_name': 'vdb', 'snapshot_id': '1234'},
+        ]))
+
+        self.assertEqual({
+            'vdc': '1234::10',
+            'vdd': '1234:snap:0:True'
+        }, cloud_server.CloudServer._build_block_device_mapping([
+            {
+                'device_name': 'vdc',
+                'volume_id': '1234',
+                'volume_size': '10'
+            },
+            {
+                'device_name': 'vdd',
+                'snapshot_id': '1234',
+                'delete_on_termination': True
+            }
+        ]))
+
+    def test_validate_conflict_block_device_mapping_props(self):
+        stack_name = 'val_blkdev1'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        bdm = [{'device_name': 'vdb', 'snapshot_id': '1234',
+                'volume_id': '1234'}]
+        t['Resources']['WebServer']['Properties']['block_device_mapping'] = bdm
+        server = cloud_server.CloudServer('server_create_image_err',
+                                          t['Resources']['WebServer'], stack)
+        self.m.StubOutWithMock(cloud_server.CloudServer, "nova")
+        cloud_server.CloudServer.nova().MultipleTimes().AndReturn(self.fc)
+
+        self._mock_metadata_os_distro()
         self.m.ReplayAll()
 
-    def test_cs_get_ip(self):
-        stack_name = 'test_cs_get_ip_err'
-        (t, stack) = self._setup_test_stack(stack_name)
-        cs = cloud_server.CloudServer('cs_create_image_err',
-                                      t['Resources']['WebServer'],
-                                      stack)
-        cs.addresses = {'public': [{'version': 4, 'addr': '4.5.6.7'},
-                                   {'version': 6, 'addr': 'fake:ip::6'}],
-                        'private': [{'version': 4, 'addr': '10.13.12.13'}]}
-        self.mock_get_ip(cs)
-        self.assertEqual('4.5.6.7', cs.public_ip)
-        self.mock_get_ip(cs)
-        self.assertEqual('10.13.12.13', cs.private_ip)
+        self.assertRaises(exception.ResourcePropertyConflict, server.validate)
+        self.m.VerifyAll()
 
-        cs.addresses = {'public': [],
-                        'private': []}
-        self.mock_get_ip(cs)
-        self.assertRaises(exception.Error, cs._get_ip, 'public')
+    def test_validate_insufficient_block_device_mapping_props(self):
+        stack_name = 'val_blkdev2'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        bdm = [{'device_name': 'vdb', 'volume_size': '1',
+                'delete_on_termination': True}]
+        t['Resources']['WebServer']['Properties']['block_device_mapping'] = bdm
+        server = cloud_server.CloudServer('server_create_image_err',
+                                          t['Resources']['WebServer'], stack)
+        self.m.StubOutWithMock(cloud_server.CloudServer, "nova")
+        cloud_server.CloudServer.nova().MultipleTimes().AndReturn(self.fc)
+
+        self._mock_metadata_os_distro()
+        self.m.ReplayAll()
+
+        ex = self.assertRaises(exception.StackValidationFailed,
+                               server.validate)
+        msg = 'Either volume_id or snapshot_id must be specified for device' +\
+              ' mapping vdb'
+        self.assertEqual(msg, str(ex))
+
+        self.m.VerifyAll()
+
+    def test_validate_without_image_or_bootable_volume(self):
+        stack_name = 'val_imgvol'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        del t['Resources']['WebServer']['Properties']['image']
+        bdm = [{'device_name': 'vdb', 'volume_id': '1234'}]
+        t['Resources']['WebServer']['Properties']['block_device_mapping'] = bdm
+        server = cloud_server.CloudServer('server_create_image_err',
+                                          t['Resources']['WebServer'], stack)
+        self.m.StubOutWithMock(cloud_server.CloudServer, "nova")
+        cloud_server.CloudServer.nova().MultipleTimes().AndReturn(self.fc)
+        self.m.ReplayAll()
+
+        ex = self.assertRaises(exception.StackValidationFailed,
+                               server.validate)
+        msg = 'Neither image nor bootable volume is specified for instance %s'\
+            % server.name
+        self.assertEqual(msg, str(ex))
+
+        self.m.VerifyAll()
 
     def test_private_key(self):
         stack_name = 'test_private_key'
         (t, stack) = self._setup_test_stack(stack_name)
-        cs = cloud_server.CloudServer('cs_private_key',
-                                      t['Resources']['WebServer'],
-                                      stack)
+        server = cloud_server.CloudServer('server_private_key',
+                                          t['Resources']['WebServer'],
+                                          stack)
 
         # This gives the fake cloud server an id and created_time attribute
-        cs._store_or_update(cs.CREATE, cs.IN_PROGRESS, 'test_store')
+        server._store_or_update(server.CREATE, server.IN_PROGRESS,
+                                'test_store')
 
-        cs.private_key = 'fake private key'
+        server.private_key = 'fake private key'
         self.ctx = utils.dummy_context()
         rs = db_api.resource_get_by_name_and_stack(self.ctx,
-                                                   'cs_private_key',
+                                                   'server_private_key',
                                                    stack.id)
         encrypted_key = rs.data[0]['value']
         self.assertNotEqual(encrypted_key, "fake private key")
-        # Test private_key property returns decrypted value
-        self.assertEqual("fake private key", cs.private_key)
+        decrypted_key = server.private_key
+        self.assertEqual("fake private key", decrypted_key)
 
     def test_rackconnect_deployed(self):
         return_server = self.fc.servers.list()[1]
         return_server.metadata = {'rackconnect_automation_status': 'DEPLOYED'}
         self.m.StubOutWithMock(return_server, 'get')
         return_server.get()
-        cs = self._setup_test_cs(return_server, 'test_rackconnect_deployed')
-        cs.context.roles = ['rack_connect']
+        server = self._setup_test_server(return_server,
+                                         'test_rackconnect_deployed')
+        server.context.roles = ['rack_connect']
         self.m.ReplayAll()
-        scheduler.TaskRunner(cs.create)()
-        self.assertEqual('CREATE', cs.action)
-        self.assertEqual('COMPLETE', cs.status)
+        scheduler.TaskRunner(server.create)()
+        self.assertEqual('CREATE', server.action)
+        self.assertEqual('COMPLETE', server.status)
         self.m.VerifyAll()
 
     def test_rackconnect_failed(self):
@@ -476,10 +1469,11 @@ class RackspaceCloudServerTest(HeatTestCase):
         return_server.metadata = {'rackconnect_automation_status': 'FAILED'}
         self.m.StubOutWithMock(return_server, 'get')
         return_server.get()
-        cs = self._setup_test_cs(return_server, 'test_rackconnect_failed')
-        cs.context.roles = ['rack_connect']
+        server = self._setup_test_server(return_server,
+                                         'test_rackconnect_failed')
+        server.context.roles = ['rack_connect']
         self.m.ReplayAll()
-        create = scheduler.TaskRunner(cs.create)
+        create = scheduler.TaskRunner(server.create)
         exc = self.assertRaises(exception.ResourceFailure, create)
         self.assertEqual('Error: RackConnect automation FAILED', str(exc))
 
@@ -491,13 +1485,13 @@ class RackspaceCloudServerTest(HeatTestCase):
                                   'Fake reason'}
         self.m.StubOutWithMock(return_server, 'get')
         return_server.get()
-        cs = self._setup_test_cs(return_server,
-                                 'test_rackconnect_unprocessable')
-        cs.context.roles = ['rack_connect']
+        server = self._setup_test_server(return_server,
+                                         'test_rackconnect_unprocessable')
+        server.context.roles = ['rack_connect']
         self.m.ReplayAll()
-        scheduler.TaskRunner(cs.create)()
-        self.assertEqual('CREATE', cs.action)
-        self.assertEqual('COMPLETE', cs.status)
+        scheduler.TaskRunner(server.create)()
+        self.assertEqual('CREATE', server.action)
+        self.assertEqual('COMPLETE', server.status)
         self.m.VerifyAll()
 
     def test_rackconnect_unknown(self):
@@ -505,25 +1499,97 @@ class RackspaceCloudServerTest(HeatTestCase):
         return_server.metadata = {'rackconnect_automation_status': 'FOO'}
         self.m.StubOutWithMock(return_server, 'get')
         return_server.get()
-        cs = self._setup_test_cs(return_server, 'test_rackconnect_unknown')
-        cs.context.roles = ['rack_connect']
+        server = self._setup_test_server(return_server,
+                                         'test_rackconnect_unknown')
+        server.context.roles = ['rack_connect']
         self.m.ReplayAll()
-        create = scheduler.TaskRunner(cs.create)
+        create = scheduler.TaskRunner(server.create)
         exc = self.assertRaises(exception.ResourceFailure, create)
         self.assertEqual('Error: Unknown RackConnect automation status: FOO',
                          str(exc))
 
-    def test_managed_cloud_complete(self):
-        return_server = self.fc.servers.list()[1]
-        return_server.metadata = {'rax_service_level_automation': 'Complete'}
-        self.m.StubOutWithMock(return_server, 'get')
-        return_server.get()
-        cs = self._setup_test_cs(return_server, 'test_managed_cloud_complete')
-        cs.context.roles = ['rax_managed']
+    def test_rackconnect_deploying(self):
+        return_server = self.fc.servers.list()[0]
+        server = self._setup_test_server(return_server,
+                                         'srv_sts_bld')
+        server.resource_id = 1234
+        server.context.roles = ['rack_connect']
+
+        check_iterations = [0]
+
+        # Bind fake get method which check_create_complete will call
+        def activate_status(server):
+            check_iterations[0] += 1
+            if check_iterations[0] == 1:
+                server.metadata['rackconnect_automation_status'] = 'DEPLOYING'
+            if check_iterations[0] == 2:
+                server.status = 'ACTIVE'
+            if check_iterations[0] > 3:
+                server.metadata['rackconnect_automation_status'] = 'DEPLOYED'
+        return_server.get = activate_status.__get__(return_server)
         self.m.ReplayAll()
-        scheduler.TaskRunner(cs.create)()
-        self.assertEqual('CREATE', cs.action)
-        self.assertEqual('COMPLETE', cs.status)
+
+        scheduler.TaskRunner(server.create)()
+        self.assertEqual((server.CREATE, server.COMPLETE), server.state)
+
+        self.m.VerifyAll()
+
+    def test_server_status_rackconnect_no_status(self):
+        return_server = self.fc.servers.list()[0]
+        server = self._setup_test_server(return_server,
+                                         'srv_sts_bld')
+        server.resource_id = 1234
+        server.context.roles = ['rack_connect']
+
+        check_iterations = [0]
+
+        # Bind fake get method which check_create_complete will call
+        def activate_status(server):
+            check_iterations[0] += 1
+            if check_iterations[0] == 1:
+                server.status = 'ACTIVE'
+            if check_iterations[0] == 2:
+                server.metadata = {}
+            if check_iterations[0] > 2:
+                server.metadata['rackconnect_automation_status'] = 'DEPLOYED'
+        return_server.get = activate_status.__get__(return_server)
+        self.m.ReplayAll()
+
+        scheduler.TaskRunner(server.create)()
+        self.assertEqual((server.CREATE, server.COMPLETE), server.state)
+
+        self.m.VerifyAll()
+
+    def test_managed_cloud_lifecycle(self):
+        return_server = self.fc.servers.list()[0]
+        server = self._setup_test_server(return_server,
+                                         'srv_sts_bld')
+        server.resource_id = 1234
+        server.context.roles = ['rack_connect', 'rax_managed']
+
+        check_iterations = [0]
+
+        # Bind fake get method which check_create_complete will call
+        def activate_status(server):
+            check_iterations[0] += 1
+            if check_iterations[0] == 1:
+                server.status = 'ACTIVE'
+            if check_iterations[0] == 2:
+                server.metadata = {'rackconnect_automation_status': 'DEPLOYED'}
+            if check_iterations[0] == 3:
+                server.metadata = {
+                    'rackconnect_automation_status': 'DEPLOYED',
+                    'rax_service_level_automation': 'In Progress'}
+            if check_iterations[0] > 3:
+                server.metadata = {
+                    'rackconnect_automation_status': 'DEPLOYED',
+                    'rax_service_level_automation': 'Complete'}
+        return_server.get = activate_status.__get__(return_server)
+        self.m.ReplayAll()
+
+        scheduler.TaskRunner(server.create)()
+        self.assertEqual((server.CREATE, server.COMPLETE), server.state)
+
         self.m.VerifyAll()
 
     def test_managed_cloud_build_error(self):
@@ -532,11 +1598,11 @@ class RackspaceCloudServerTest(HeatTestCase):
                                   'Build Error'}
         self.m.StubOutWithMock(return_server, 'get')
         return_server.get()
-        cs = self._setup_test_cs(return_server,
-                                 'test_managed_cloud_build_error')
-        cs.context.roles = ['rax_managed']
+        server = self._setup_test_server(return_server,
+                                         'test_managed_cloud_build_error')
+        server.context.roles = ['rax_managed']
         self.m.ReplayAll()
-        create = scheduler.TaskRunner(cs.create)
+        create = scheduler.TaskRunner(server.create)
         exc = self.assertRaises(exception.ResourceFailure, create)
         self.assertEqual('Error: Managed Cloud automation failed', str(exc))
 
@@ -545,10 +1611,31 @@ class RackspaceCloudServerTest(HeatTestCase):
         return_server.metadata = {'rax_service_level_automation': 'FOO'}
         self.m.StubOutWithMock(return_server, 'get')
         return_server.get()
-        cs = self._setup_test_cs(return_server, 'test_managed_cloud_unknown')
-        cs.context.roles = ['rax_managed']
+        server = self._setup_test_server(return_server,
+                                         'test_managed_cloud_unknown')
+        server.context.roles = ['rax_managed']
         self.m.ReplayAll()
-        create = scheduler.TaskRunner(cs.create)
+        create = scheduler.TaskRunner(server.create)
         exc = self.assertRaises(exception.ResourceFailure, create)
         self.assertEqual('Error: Unknown Managed Cloud automation status: FOO',
                          str(exc))
+
+    def test_create_heatscript_nonzero_exit_status(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._setup_test_server(return_server, 'test_create_image_id',
+                                         exit_code=1)
+        self.m.ReplayAll()
+        create = scheduler.TaskRunner(server.create)
+        exc = self.assertRaises(exception.ResourceFailure, create)
+        self.assertIn("The heat-script.sh script exited", str(exc))
+        self.m.VerifyAll()
+
+    def test_create_cfnuserdata_nonzero_exit_status(self):
+        return_server = self.fc.servers.list()[1]
+        server = self._setup_test_server(return_server, 'test_create_image_id',
+                                         exit_code=42)
+        self.m.ReplayAll()
+        create = scheduler.TaskRunner(server.create)
+        exc = self.assertRaises(exception.ResourceFailure, create)
+        self.assertIn("The cfn-userdata script exited", str(exc))
+        self.m.VerifyAll()
