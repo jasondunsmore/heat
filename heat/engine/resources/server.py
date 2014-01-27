@@ -20,6 +20,7 @@ cfg.CONF.import_opt('instance_user', 'heat.common.config')
 from heat.common import exception
 from heat.engine import clients
 from heat.engine import scheduler
+from heat.engine.resources import nova_keypair
 from heat.engine.resources import nova_utils
 from heat.engine import constraints
 from heat.engine import properties
@@ -511,10 +512,22 @@ class Server(resource.Resource):
         '''
         super(Server, self).validate()
 
+        def is_nova_keypair(key_name):
+            for res in self.stack.resources.values():
+                if res.has_interface.im_class == nova_keypair.KeyPair and \
+                   key_name == res.properties.get(nova_keypair.KeyPair.NAME):
+                    return True
+            return False
+
         # check validity of key
         key_name = self.properties.get(self.KEY_NAME)
-        if key_name:
-            nova_utils.get_keypair(self.nova(), key_name)
+        if key_name and not is_nova_keypair(key_name):
+            try:
+                nova_utils.get_keypair(self.nova(), key_name)
+            except exception.UserKeyPairMissing:
+                msg = _("The Key (%s) could not be found in Nova or in any of "
+                        "the stack's Nova Key Pair resources.") % key_name
+                raise exception.StackValidationFailed(message=msg)
 
         # either volume_id or snapshot_id needs to be specified, but not both
         # for block device mapping.

@@ -52,6 +52,12 @@ wp_template = '''
         "key_name"        : "test",
         "user_data"       : "wordpress"
       }
+    },
+    "SSHKey": {
+      "Type": "OS::Nova::KeyPair",
+      "Properties": {
+        "name": "my_key"
+      }
     }
   }
 }
@@ -393,6 +399,47 @@ class ServersTest(HeatTestCase):
                                server.validate)
         self.assertEqual('Neither image nor bootable volume is specified for '
                          'instance server_with_bootable_volume', str(ex))
+        self.m.VerifyAll()
+
+    def test_server_validate_with_nova_keypair_resource(self):
+        stack_name = 'srv_val_test'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        web_server = t['Resources']['WebServer']
+
+        # Make the ssh key use the name of the OS::Nova::KeyPair resource
+        web_server['Properties']['key_name'] = 'my_key'
+
+        server = servers.Server('server_validate_test',
+                                t['Resources']['WebServer'], stack)
+
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
+        self.m.ReplayAll()
+
+        self.assertIsNone(server.validate())
+        self.m.VerifyAll()
+
+    def test_server_validate_with_invalid_ssh_key(self):
+        stack_name = 'srv_val_test'
+        (t, stack) = self._setup_test_stack(stack_name)
+
+        web_server = t['Resources']['WebServer']
+
+        # Make the ssh key have an invalid name
+        web_server['Properties']['key_name'] = 'test2'
+
+        server = servers.Server('server_validate_test',
+                                t['Resources']['WebServer'], stack)
+
+        self.m.StubOutWithMock(server, 'nova')
+        server.nova().MultipleTimes().AndReturn(self.fc)
+        self.m.ReplayAll()
+
+        ex = self.assertRaises(exception.StackValidationFailed,
+                               server.validate)
+        self.assertIn("The Key (test2) could not be found in Nova or in any "
+                      "of the stack's Nova Key Pair resources.", str(ex))
         self.m.VerifyAll()
 
     def test_server_validate_delete_policy(self):
