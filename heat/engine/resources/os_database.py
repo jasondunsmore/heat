@@ -13,19 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-try:
-    from troveclient.openstack.common.apiclient.exceptions import NotFound
-except ImportError:
-    #Setup fake exception for unit testing without troveclient
-    class NotFound(Exception):
-        pass
-
 from heat.common import exception
 from heat.engine import constraints
 from heat.engine import properties
 from heat.engine import resource
+from heat.engine.clients import troveclient
 from heat.engine.resources import nova_utils
 from heat.openstack.common import log as logging
+from heat.openstack.common.gettextutils import _
 
 
 logger = logging.getLogger(__name__)
@@ -169,6 +164,10 @@ class OSDBInstance(resource.Resource):
         ),
     }
 
+    OVERLIMIT_WARNING_MSG = _("Stack %(name)s (%(id)s) received an OverLimit "
+                              "response from API during a call to "
+                              "OSDBInstance.%(method)s().")
+
     attributes_schema = {
         "hostname": _("Hostname of the instance"),
         "href": _("Api endpoint reference of the instance")
@@ -230,7 +229,14 @@ class OSDBInstance(resource.Resource):
         '''
         Check if cloud DB instance creation is complete.
         '''
-        instance.get()  # get updated attributes
+        try:
+            instance.get()  # get updated attributes
+        except troveclient.exceptions.RequestEntityTooLarge:
+            logger.warning(self.OVERLIMIT_WARNING_MSG %
+                           {'name': self.stack.name,
+                            'id': self.stack.id,
+                            'method': "check_create_complete"})
+
         if instance.status == 'ERROR':
             raise exception.Error(_("Database instance creation failed."))
 
@@ -254,7 +260,7 @@ class OSDBInstance(resource.Resource):
         instance = None
         try:
             instance = self.trove().instances.get(self.resource_id)
-        except NotFound:
+        except troveclient.exceptions.NotFound:
             logger.debug(_("Database instance %s not found.") %
                          self.resource_id)
             self.resource_id_set(None)
@@ -271,9 +277,14 @@ class OSDBInstance(resource.Resource):
 
         try:
             instance.get()
-        except NotFound:
+        except troveclient.exceptions.NotFound:
             self.resource_id_set(None)
             return True
+        except troveclient.exceptions.RequestEntityTooLarge:
+            logger.warning(self.OVERLIMIT_WARNING_MSG %
+                           {'name': self.stack.name,
+                            'id': self.stack.id,
+                            'method': "check_delete_complete"})
 
         return False
 
