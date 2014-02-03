@@ -335,7 +335,10 @@ class Server(resource.Resource):
     def _check_active(self, server):
 
         if server.status != 'ACTIVE':
-            server.get()
+            try:
+                server.get()
+            except clients.novaclient.exceptions.OverLimit:
+                logger.warning(_("OverLimit reached"))
 
         # Some clouds append extra (STATUS) strings to the status
         short_server_status = server.status.split('(')[0]
