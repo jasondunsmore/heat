@@ -120,6 +120,10 @@ class KeyPair(resource.Resource):
                    'public_key': self.public_key}
         return unicode(attr_fn[key])
 
+    def FnGetRefId(self):
+        if self.id:
+            return self.properties[self.NAME]
+
 
 def resource_mapping():
     return {'OS::Nova::KeyPair': KeyPair}
