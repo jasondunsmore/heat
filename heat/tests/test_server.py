@@ -20,6 +20,7 @@ from heat.engine import environment
 from heat.tests.v1_1 import fakes
 from heat.common import exception
 from heat.common import template_format
+from heat.engine import clients
 from heat.engine import parser
 from heat.engine import resource
 from heat.engine import scheduler
@@ -159,6 +160,32 @@ class ServersTest(HeatTestCase):
         self.assertEqual('sample-server2', server.FnGetAtt('instance_name'))
         self.assertEqual('192.0.2.0', server.FnGetAtt('accessIPv4'))
         self.assertEqual('::babe:4317:0A83', server.FnGetAtt('accessIPv6'))
+        self.m.VerifyAll()
+
+    def test_server_create_500_error(self):
+        return_server = self.fc.servers.list()[0]
+        server = self._setup_test_server(return_server, 'test_create_500')
+        server.resource_id = 1234
+
+        check_iterations = [0]
+
+        # Bind fake get method which Server.check_create_complete will call
+        def activate_status(server):
+            check_iterations[0] += 1
+            if check_iterations[0] == 1:
+                server.status = 'BUILD'
+            elif check_iterations[0] == 2:
+                msg = ("ClientException: The server has either erred or is "
+                       "incapable of performing the requested operation.")
+                raise clients.novaclient.exceptions.ClientException(500, msg)
+            elif check_iterations[0] > 2:
+                server.status = 'ACTIVE'
+        return_server.get = activate_status.__get__(return_server)
+
+        self.m.ReplayAll()
+        scheduler.TaskRunner(server.create)()
+        self.assertEqual('CREATE', server.action)
+        self.assertEqual('COMPLETE', server.status)
         self.m.VerifyAll()
 
     def test_server_create_metadata(self):
