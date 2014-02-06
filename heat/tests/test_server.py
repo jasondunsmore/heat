@@ -146,25 +146,23 @@ class ServersTest(HeatTestCase):
         self.assertEqual('::babe:4317:0A83', server.FnGetAtt('accessIPv6'))
         self.m.VerifyAll()
 
-    def test_server_create_500_error(self):
+    def _test_server_error_during_create(self, exception):
         return_server = self.fc.servers.list()[0]
         server = self._setup_test_server(return_server, 'test_create_500')
         server.resource_id = 1234
 
-        check_iterations = [0]
-
-        # Bind fake get method which Server.check_create_complete will call
-        def activate_status(server):
-            check_iterations[0] += 1
-            if check_iterations[0] == 1:
-                server.status = 'BUILD'
-            elif check_iterations[0] == 2:
-                msg = ("ClientException: The server has either erred or is "
-                       "incapable of performing the requested operation.")
-                raise clients.novaclient.exceptions.ClientException(500, msg)
-            elif check_iterations[0] > 2:
-                server.status = 'ACTIVE'
-        return_server.get = activate_status.__get__(return_server)
+        # Override the get_servers_1234 handler
+        d1 = {'server': self.fc.client.get_servers_detail()[1]['servers'][0]}
+        d2 = copy.deepcopy(d1)
+        d1['server']['status'] = 'BUILD'
+        d2['server']['status'] = 'ACTIVE'
+        self.m.StubOutWithMock(self.fc.client, 'get_servers_1234')
+        get = self.fc.client.get_servers_1234
+        get().AndReturn((200, d1))
+        get().AndReturn((200, d1))
+        get().AndRaise(exception)
+        get().AndReturn((200, d2))
+        self.m.ReplayAll()
 
         self.m.ReplayAll()
         scheduler.TaskRunner(server.create)()
@@ -172,7 +170,23 @@ class ServersTest(HeatTestCase):
         self.assertEqual('COMPLETE', server.status)
         self.m.VerifyAll()
 
-    def test_server_suspend_500_error(self):
+    def test_server_create_500_error(self):
+        msg = ("ClientException: The server has either erred or is "
+               "incapable of performing the requested operation.")
+        exc = clients.novaclient.exceptions.ClientException(500, msg)
+        self._test_server_error_during_create(exc)
+
+    def test_server_create_overlimit_error(self):
+        kwargs = {
+            'code': 413,
+            'method': None,
+            'url': "http://foo.com",
+            'request_id': None,
+        }
+        exc = clients.novaclient.exceptions.OverLimit(retry_after=0, **kwargs)
+        self._test_server_error_during_create(exc)
+
+    def _test_server_error_during_suspend(self, exception):
         return_server = self.fc.servers.list()[1]
         server = self._create_test_server(return_server, 'test_suspend_500')
         server.resource_id = 1234
@@ -186,9 +200,7 @@ class ServersTest(HeatTestCase):
         get = self.fc.client.get_servers_1234
         get().AndReturn((200, d1))
         get().AndReturn((200, d1))
-        msg = ("ClientException: The server has either erred or is "
-               "incapable of performing the requested operation.")
-        get().AndRaise(clients.novaclient.exceptions.ClientException(500, msg))
+        get().AndRaise(exception)
         get().AndReturn((200, d2))
         self.m.ReplayAll()
 
@@ -196,6 +208,22 @@ class ServersTest(HeatTestCase):
         self.assertEqual('SUSPEND', server.action)
         self.assertEqual('COMPLETE', server.status)
         self.m.VerifyAll()
+
+    def test_server_suspend_500_error(self):
+        msg = ("ClientException: The server has either erred or is "
+               "incapable of performing the requested operation.")
+        exc = clients.novaclient.exceptions.ClientException(500, msg)
+        self._test_server_error_during_suspend(exc)
+
+    def test_server_suspend_overlimit_error(self):
+        kwargs = {
+            'code': 413,
+            'method': None,
+            'url': "http://foo.com",
+            'request_id': None,
+        }
+        exc = clients.novaclient.exceptions.OverLimit(retry_after=0, **kwargs)
+        self._test_server_error_during_suspend(exc)
 
     def test_server_create_metadata(self):
         return_server = self.fc.servers.list()[1]

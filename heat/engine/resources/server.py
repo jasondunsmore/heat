@@ -335,6 +335,12 @@ class Server(resource.Resource):
     def _refresh_server(self, server):
         try:
             server.get()
+        except clients.novaclient.exceptions.OverLimit as exc:
+            msg = _("Stack %(name)s (%(id)s) received an OverLimit "
+                    "response during server.get(): %(exception)s")
+            logger.warning(msg % {'name': self.stack.name,
+                                  'id': self.stack.id,
+                                  'exception': str(exc)})
         except clients.novaclient.exceptions.ClientException as exc:
             if exc.code == 500:
                 msg = _("Stack %(name)s (%(id)s) received the following "
