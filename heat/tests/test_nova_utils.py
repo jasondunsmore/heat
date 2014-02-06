@@ -88,6 +88,21 @@ class NovaUtilsTests(HeatTestCase):
 
 class NovaUtilsRefreshServerTests(HeatTestCase):
 
+    def test_overlimit_error(self):
+        server = self.m.CreateMockAnything()
+        kwargs = {
+            'code': 413,
+            'method': None,
+            'url': "http://foo.com",
+            'request_id': None,
+        }
+        server.get().AndRaise(
+            clients.novaclient.exceptions.OverLimit(retry_after=0, **kwargs))
+        self.m.ReplayAll()
+
+        self.assertIsNone(nova_utils.refresh_server(server))
+        self.m.VerifyAll()
+
     def test_500_error(self):
         server = self.m.CreateMockAnything()
         msg = ("ClientException: The server has either erred or is "
