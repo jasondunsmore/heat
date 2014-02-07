@@ -427,7 +427,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
             return False
 
         server = cookie[0]
-        server.get()
+        nova_utils.refresh_server(server)
         if 'rack_connect' in self.context.roles:  # Account has RackConnect
             if 'rackconnect_automation_status' not in server.metadata:
                 logger.debug(_("RackConnect server does not have the "
@@ -514,7 +514,7 @@ zypper --non-interactive in cloud-init python-boto python-pip gcc python-devel
         while True:
             yield
             try:
-                server.get()
+                nova_utils.refresh_server(server)
                 if server.status == "DELETED":
                     break
                 elif server.status == "ERROR":

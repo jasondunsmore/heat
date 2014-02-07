@@ -468,7 +468,7 @@ class Instance(resource.Resource):
 
     def _check_active(self, server):
         if server.status != 'ACTIVE':
-            server.get()
+            nova_utils.refresh_server(server)
 
         if server.status == 'ACTIVE':
             return True
@@ -572,7 +572,7 @@ class Instance(resource.Resource):
             yield
 
             try:
-                server.get()
+                nova_utils.refresh_server(server)
                 if server.status == "DELETED":
                     self.resource_id_set(None)
                     break
@@ -655,7 +655,7 @@ class Instance(resource.Resource):
                 if server.status == 'SUSPENDED':
                     return True
 
-                server.get()
+                nova_utils.refresh_server(server)
                 logger.debug("%s check_suspend_complete status = %s" %
                              (self.name, server.status))
                 if server.status in list(nova_utils.deferred_server_statuses +
