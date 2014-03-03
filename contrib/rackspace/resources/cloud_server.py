@@ -13,6 +13,7 @@
 import socket
 import copy
 import tempfile
+import time
 
 from Crypto.PublicKey import RSA
 import paramiko
@@ -130,6 +131,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1 ||
         self._server = None
         self._distro = None
         self._image = None
+        self._retry_until = None
 
     @property
     def server(self):
@@ -267,11 +269,25 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1 ||
 
     def _sftp_files(self, files):
         """Transfer files to the Cloud Server via SFTP."""
+
+        logger.debug("time.time(): %s" % time.time())
+        logger.debug("self._retry_until: %s" % self._retry_until)
+
+        if self._retry_until is None:
+            self._retry_until = time.time() + 30
+        elif time.time() > self._retry_until:
+            raise exception.Error(_("Failed to get SSH transport after 30s"))
+
         with tempfile.NamedTemporaryFile() as private_key_file:
             private_key_file.write(self.private_key)
             private_key_file.seek(0)
             pkey = paramiko.RSAKey.from_private_key_file(private_key_file.name)
-            transport = paramiko.Transport((self.server.accessIPv4, 22))
+            try:
+                import ipdb; ipdb.set_trace()
+                transport = paramiko.Transport((self.server.accessIPv4, 22))
+            except paramiko.SSHException:
+                logger.debug("Failed to get SSH transport, will retry")
+                return False
             transport.connect(hostkey=None, username="root", pkey=pkey)
             sftp = paramiko.SFTPClient.from_transport(transport)
             try:
@@ -375,7 +391,8 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1 ||
 
         files = [{'path': "/tmp/userdata", 'data': userdata},
                  {'path': "/root/heat-script.sh", 'data': self.script}]
-        self._sftp_files(files)
+        if self._sftp_files(files) is False:
+            return False
 
         # Connect via SSH and run script
         cmd = "bash -ex /root/heat-script.sh > /root/heat-script.log 2>&1"
@@ -405,7 +422,7 @@ bash -x /var/lib/cloud/data/cfn-userdata > /root/cfn-userdata.log 2>&1 ||
             return False
 
         if self.has_userdata:
-            self._run_userdata()
+            return self._run_userdata()
 
         return True
 
