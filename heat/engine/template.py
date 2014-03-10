@@ -24,8 +24,6 @@ from heat.engine import plugin_manager
 __all__ = ['Template']
 
 
-DEFAULT_VERSION = ('HeatTemplateFormatVersion', '2012-12-12')
-
 _template_classes = None
 
 
@@ -60,8 +58,6 @@ def get_version(template_data, available_versions):
                          isinstance(v, basestring))
 
     keys_present = version_keys & candidate_keys
-    if not keys_present:
-        return DEFAULT_VERSION
 
     if len(keys_present) > 1:
         explanation = _('Ambiguous versions (%s)') % ', '.join(keys_present)
