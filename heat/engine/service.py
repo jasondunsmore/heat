@@ -366,8 +366,9 @@ class EngineService(service.Service):
         return cfg.CONF.revision['heat_revision']
 
     @request_context
-    def list_stacks(self, cnxt, limit=None, marker=None, sort_keys=None,
-                    sort_dir=None, filters=None, tenant_safe=True):
+    def list_stacks(self, cnxt, params={}, limit=None, marker=None,
+                    sort_keys=None, sort_dir=None, filters=None,
+                    tenant_safe=True):
         """
         The list_stacks method returns attributes of all stacks.  It supports
         pagination (``limit`` and ``marker``), sorting (``sort_keys`` and
@@ -382,6 +383,12 @@ class EngineService(service.Service):
         :param tenant_safe: if true, scope the request by the current tenant
         :returns: a list of formatted stacks
         """
+        def show_deleted():
+            if params:
+                common_params = api.extract_args(params)
+                if rpc_api.PARAM_SHOW_DELETED in common_params:
+                    return common_params[rpc_api.PARAM_SHOW_DELETED]
+            return False
 
         def format_stack_details(stacks):
             for s in stacks:
@@ -396,7 +403,8 @@ class EngineService(service.Service):
                     yield api.format_stack(stack)
 
         stacks = db_api.stack_get_all(cnxt, limit, sort_keys, marker,
-                                      sort_dir, filters, tenant_safe) or []
+                                      sort_dir, filters, tenant_safe,
+                                      show_deleted()) or []
         return list(format_stack_details(stacks))
 
     @request_context

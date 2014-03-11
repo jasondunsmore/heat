@@ -161,6 +161,7 @@ class StackController(object):
             'marker': 'single',
             'sort_dir': 'single',
             'sort_keys': 'multi',
+            'show_deleted': 'single',
         }
         params = util.get_allowed_params(req.params, whitelist)
         filter_params = util.get_allowed_params(req.params, filter_whitelist)
@@ -168,7 +169,7 @@ class StackController(object):
         if not filter_params:
             filter_params = None
 
-        stacks = self.rpc_client.list_stacks(req.context,
+        stacks = self.rpc_client.list_stacks(req.context, params,
                                              filters=filter_params,
                                              tenant_safe=tenant_safe,
                                              **params)

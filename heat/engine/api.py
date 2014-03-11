@@ -37,17 +37,23 @@ def extract_args(params):
         if timeout_mins > 0:
             kwargs[api.PARAM_TIMEOUT] = timeout_mins
 
-    if api.PARAM_DISABLE_ROLLBACK in params:
-        disable_rollback = params.get(api.PARAM_DISABLE_ROLLBACK)
-        if str(disable_rollback).lower() == 'true':
-            kwargs[api.PARAM_DISABLE_ROLLBACK] = True
-        elif str(disable_rollback).lower() == 'false':
-            kwargs[api.PARAM_DISABLE_ROLLBACK] = False
+    def extract_bool(param):
+        if param in params:
+            param_value = params.get(param)
+        if str(param_value).lower() == 'true':
+            return True
+        elif str(param_value).lower() == 'false':
+            return False
         else:
             raise ValueError(_('Unexpected value for parameter'
                                ' %(name)s : %(value)s') %
-                             dict(name=api.PARAM_DISABLE_ROLLBACK,
-                                  value=disable_rollback))
+                             dict(name=param,
+                                  value=param_value))
+
+    disable_rollback = api.PARAM_DISABLE_ROLLBACK
+    kwargs[disable_rollback] = extract_bool(disable_rollback)
+
+    kwargs[api.PARAM_SHOW_DELETED] = extract_bool(api.PARAM_SHOW_DELETED)
 
     adopt_data = params.get(api.PARAM_ADOPT_STACK_DATA)
     if adopt_data:
