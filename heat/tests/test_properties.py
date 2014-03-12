@@ -571,6 +571,14 @@ class PropertyTest(testtools.TestCase):
         p = properties.Property({'Type': 'String'})
         self.assertFalse(p.required())
 
+    def test_required_with_default(self):
+        pr = properties.Property({'Type': 'String', 'Required': True,
+                                  'Default': 'foo'})
+        p2 = properties.Property({'Type': 'String',
+                                 'Default': 'foo'})
+        import ipdb; ipdb.set_trace()
+        self.assertFalse(p.required())
+
     def test_required_false(self):
         p = properties.Property({'Type': 'String', 'Required': False})
         self.assertFalse(p.required())

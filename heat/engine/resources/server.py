@@ -87,7 +87,9 @@ class Server(stack_user.StackUser):
         NAME: properties.Schema(
             properties.Schema.STRING,
             _('Server name.'),
-            update_allowed=True
+            update_allowed=True,
+            required=True,
+            default='foobar'
         ),
         IMAGE: properties.Schema(
             properties.Schema.STRING,
