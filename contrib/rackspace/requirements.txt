@@ -1,1 +1,3 @@
 pyrax>=1.9.2
+-e git+https://github.com/jasondunsmore/paramiko.git@bug413#egg=paramiko
+psutil
