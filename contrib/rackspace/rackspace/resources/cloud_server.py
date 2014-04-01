@@ -180,6 +180,9 @@ class CloudServer(server.Server):
             return nova_utils.get_ip(self.server, 'private', 4)
         return super(CloudServer, self)._resolve_attribute(name)
 
+    def FnGetRefId(self):
+        return self.resource_id
+
 
 def resource_mapping():
     return {'Rackspace::Cloud::Server': CloudServer}
