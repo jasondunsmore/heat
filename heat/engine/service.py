@@ -552,32 +552,42 @@ class EngineService(service.Service):
             msg = _('Updating a stack when it is suspended')
             raise exception.NotSupported(feature=msg)
 
-        if current_stack.status == current_stack.IN_PROGRESS:
-            msg = _('Updating a stack when another action is in progress')
-            raise exception.NotSupported(feature=msg)
+        lock = stack_lock.StackLock(cnxt, current_stack, self.engine_id)
+        acquire_result = lock.try_acquire()
 
-        # Now parse the template and any parameters for the updated
-        # stack definition.
-        tmpl = parser.Template(template, files=files)
-        if len(tmpl[tmpl.RESOURCES]) > cfg.CONF.max_resources_per_stack:
-            raise exception.RequestLimitExceeded(
-                message=exception.StackResourceLimitExceeded.msg_fmt)
-        stack_name = current_stack.name
-        common_params = api.extract_args(args)
-        common_params.setdefault(rpc_api.PARAM_TIMEOUT,
-                                 current_stack.timeout_mins)
-        env = environment.Environment(params)
-        updated_stack = parser.Stack(cnxt, stack_name, tmpl,
-                                     env, **common_params)
-        updated_stack.parameters.set_stack_id(current_stack.identifier())
+        if (acquire_result and
+                (acquire_result == self.engine_id or
+                 stack_lock.StackLock.engine_alive(cnxt, acquire_result))):
+            raise exception.ActionInProgress(stack_name=current_stack.name,
+                                             action=current_stack.action)
 
-        self._validate_deferred_auth_context(cnxt, updated_stack)
-        updated_stack.validate()
+        try:
+            # Now parse the template and any parameters for the updated
+            # stack definition.
+            tmpl = parser.Template(template, files=files)
+            if len(tmpl[tmpl.RESOURCES]) > cfg.CONF.max_resources_per_stack:
+                raise exception.RequestLimitExceeded(
+                    message=exception.StackResourceLimitExceeded.msg_fmt)
+            stack_name = current_stack.name
+            common_params = api.extract_args(args)
+            common_params.setdefault(rpc_api.PARAM_TIMEOUT,
+                                     current_stack.timeout_mins)
+            env = environment.Environment(params)
+            updated_stack = parser.Stack(cnxt, stack_name, tmpl,
+                                         env, **common_params)
+            updated_stack.parameters.set_stack_id(current_stack.identifier())
 
-        self.thread_group_mgr.start_with_lock(cnxt, current_stack,
-                                              self.engine_id,
-                                              current_stack.update,
-                                              updated_stack)
+            self._validate_deferred_auth_context(cnxt, updated_stack)
+            updated_stack.validate()
+
+        except:
+            with excutils.save_and_reraise_exception():
+                lock.release(current_stack.id)
+
+        self.thread_group_mgr.start_with_acquired_lock(current_stack,
+                                                       lock,
+                                                       current_stack.update,
+                                                       updated_stack)
 
         return dict(current_stack.identifier())
 
