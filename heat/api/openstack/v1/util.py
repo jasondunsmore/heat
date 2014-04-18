@@ -127,16 +127,8 @@ def extract_args(params):
                 raise ValueError(_('Invalid timeout value %s') % timeout)
 
     if api.PARAM_DISABLE_ROLLBACK in params:
-        disable_rollback = params.get(api.PARAM_DISABLE_ROLLBACK)
-        if str(disable_rollback).lower() == 'true':
-            kwargs[api.PARAM_DISABLE_ROLLBACK] = True
-        elif str(disable_rollback).lower() == 'false':
-            kwargs[api.PARAM_DISABLE_ROLLBACK] = False
-        else:
-            raise ValueError(_('Unexpected value for parameter'
-                               ' %(name)s : %(value)s') %
-                             dict(name=api.PARAM_DISABLE_ROLLBACK,
-                                  value=disable_rollback))
+        disable_rollback = extract_bool(api.PARAM_DISABLE_ROLLBACK, params)
+        kwargs[api.PARAM_DISABLE_ROLLBACK] = disable_rollback
 
     adopt_data = params.get(api.PARAM_ADOPT_STACK_DATA)
     if adopt_data:
@@ -148,3 +140,19 @@ def extract_args(params):
         kwargs[api.PARAM_ADOPT_STACK_DATA] = adopt_data
 
     return kwargs
+
+
+def extract_bool(param, params):
+    '''
+    Convert any true/false string to its corresponding boolean value,
+    regardless of case.
+    '''
+    param_value = params.get(param)
+    if str(param_value).lower() == 'true':
+        return True
+    elif str(param_value).lower() == 'false':
+        return False
+    else:
+        raise ValueError(_('Unexpected value for parameter: %(name)s : '
+                           '%(value)s') % dict(name=param,
+                                               value=param_value))
