@@ -66,6 +66,10 @@ class EnvironmentTest(common.HeatTestCase):
         info = env.get_resource_info('OS::DBInstance', 'my_db_server')
         self.assertEqual('db.yaml', info.value)
 
+    def test_get_resource_info_not_in_global_env(self):
+        self.g_env.get_resource_info('db.yaml', 'db.yaml')
+        self.assertNotIn('db.yaml', self.g_env.global_registry_as_dict())
+
     def test_map_all_resources_of_type(self):
         self.g_env.register_class('OS::Nova::FloatingIP',
                                   generic_resource.GenericResource)

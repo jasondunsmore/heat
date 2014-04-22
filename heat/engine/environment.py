@@ -11,6 +11,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
 import glob
 import itertools
 import os.path
@@ -56,6 +57,9 @@ class ResourceInfo(object):
         self.name = path[-1]
         self.value = value
         self.user_resource = True
+
+    def __deepcopy__(self, memo):
+        return ResourceInfo(self.registry, self.path, self.value)
 
     def __eq__(self, other):
         if other is None:
@@ -152,6 +156,15 @@ class ResourceRegistry(object):
     def __init__(self, global_registry):
         self._registry = {'resources': {}}
         self.global_registry = global_registry
+        # import ipdb; ipdb.set_trace()
+        # print global_registry
+        # if global_registry:
+        #     self._registry = {}
+        #     for resource, class_info in global_registry._registry.items():
+        #         #import ipdb; ipdb.set_trace()
+        #         self._registry[resource] = copy.deepcopy(class_info)
+        # else:
+        #     self._registry = {'resources': {}}
 
     def load(self, json_snippet):
         self._load_registry([], json_snippet)
@@ -222,6 +235,7 @@ class ResourceRegistry(object):
             # we dynamically create an entry as it has not been registered.
             if resource_type not in self._registry:
                 res = ResourceInfo(self, [resource_type], None)
+                #yield res
                 self._register_info([resource_type], res)
             yield self._registry[resource_type]
 
@@ -341,11 +355,15 @@ class Environment(object):
         :param env: the json environment
         :param user_env: boolean, if false then we manage python resources too.
         """
+        self.user_env = user_env
+
         if env is None:
             env = {}
         if user_env:
             from heat.engine import resources
-            global_registry = resources.global_env().registry
+            global_registry = ResourceRegistry(None)
+            for resource, class_info in resources.global_env().registry._registry.items():
+                global_registry._registry[resource] = copy.deepcopy(class_info)
         else:
             global_registry = None
 
@@ -365,11 +383,18 @@ class Environment(object):
 
     def user_env_as_dict(self):
         """Get the environment as a dict, ready for storing in the db."""
-        return {RESOURCE_REGISTRY: self.registry.as_dict(),
-                PARAMETERS: self.params}
+        if self.user_env:
+            return {RESOURCE_REGISTRY: self.registry.as_dict(),
+                    PARAMETERS: self.params}
+
+    def global_registry_as_dict(self):
+        return self.registry._registry
 
     def register_class(self, resource_type, resource_class):
         self.registry.register_class(resource_type, resource_class)
+
+    # def register_info(self, path, info):
+    #     self.registry.register_info(path, info)
 
     def register_constraint(self, constraint_name, constraint):
         self.constraints[constraint_name] = constraint
