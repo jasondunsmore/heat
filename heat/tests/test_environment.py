@@ -44,6 +44,7 @@ class EnvironmentTest(common.HeatTestCase):
                    u'resource_registry': {u'OS::Food': u'fruity.yaml',
                                           u'resources': {}}}
         env = environment.Environment(new_env)
+        #import ipdb; ipdb.set_trace()
         self.assertEqual(new_env, env.user_env_as_dict())
 
     def test_global_registry(self):

@@ -48,7 +48,9 @@ def get_class(resource_type, resource_name=None):
 
 
 def _register_class(resource_type, resource_class):
+    resources.global_env().log(1)
     resources.global_env().register_class(resource_type, resource_class)
+    resources.global_env().log(2)
 
 
 class UpdateReplace(Exception):

@@ -11,7 +11,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import copy
+import inspect
 import glob
 import itertools
 import os.path
@@ -154,13 +154,6 @@ class ResourceRegistry(object):
         self._registry = {'resources': {}}
         self.global_registry = global_registry
 
-    def __deepcopy__(self, memo):
-        from heat.engine import resources
-        global_registry = resources.global_env().registry
-        registry_copy = ResourceRegistry(global_registry)
-        registry_copy._registry = global_registry._registry
-        return registry_copy
-
     def load(self, json_snippet):
         self._load_registry([], json_snippet)
 
@@ -182,6 +175,7 @@ class ResourceRegistry(object):
         """place the new info in the correct location in the registry.
         path: a list of keys ['resources', 'my_server', 'OS::Nova::Server']
         """
+        print path
         descriptive_path = '/'.join(path)
         name = path[-1]
         # create the structure if needed
@@ -190,6 +184,7 @@ class ResourceRegistry(object):
             if key not in registry:
                 registry[key] = {}
             registry = registry[key]
+            print "Added key:%s to registry" % key
 
         if info is None:
             if name.endswith('*'):
@@ -222,7 +217,10 @@ class ResourceRegistry(object):
                 'path': descriptive_path,
                 'value': str(info.value)})
         info.user_resource = (self.global_registry is not None)
+        if path == ["http://dunsmor.com/pastebin/1398191864.template"]:
+            import ipdb; ipdb.set_trace()
         registry[name] = info
+        print "Added name:%s to registry" % name
 
     def iterable_by(self, resource_type, resource_name=None):
         if resource_type.endswith(('.yaml', '.template')):
@@ -317,6 +315,7 @@ class ResourceRegistry(object):
                     tmp[k] = v.value
             return tmp
 
+        #print _as_dict(self._registry)
         return _as_dict(self._registry)
 
     def get_types(self, support_status):
@@ -341,6 +340,16 @@ SECTIONS = (PARAMETERS, RESOURCE_REGISTRY) = \
 
 class Environment(object):
 
+    def log(self, prefix):
+        if self.global_registry is None:
+            return
+        reg = self.global_registry._registry
+        if "http://dunsmor.com/pastebin/1398191864.template" in reg:
+            print prefix, "yes"
+            #import ipdb; ipdb.set_trace()
+        else:
+            print prefix, "no"
+
     def __init__(self, env=None, user_env=True):
         """Create an Environment from a dict of varying format.
         1) old-school flat parameters
@@ -353,10 +362,13 @@ class Environment(object):
             env = {}
         if user_env:
             from heat.engine import resources
-            global_registry = copy.deepcopy(resources.global_env().registry)
+            global_registry = resources.global_env().registry
+            #import ipdb; ipdb.set_trace()
         else:
             global_registry = None
 
+        self.global_registry = global_registry
+        self.log(1)
         self.registry = ResourceRegistry(global_registry)
         self.registry.load(env.get(RESOURCE_REGISTRY, {}))
 
@@ -366,6 +378,7 @@ class Environment(object):
             self.params = dict((k, v) for (k, v) in env.iteritems()
                                if k != RESOURCE_REGISTRY)
         self.constraints = {}
+        self.log(2)
 
     def load(self, env_snippet):
         self.registry.load(env_snippet.get(RESOURCE_REGISTRY, {}))
@@ -395,6 +408,11 @@ class Environment(object):
 
     def get_constraint(self, name):
         return self.constraints.get(name)
+
+    # def __setattr__(self, name, value):
+    #     print inspect.stack()[1][1:]
+    #     #print inspect.stack()
+    #     super(Environment, self).__setattr__(name, value)
 
 
 def read_global_environment(env, env_dir=None):

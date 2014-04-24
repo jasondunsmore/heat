@@ -19,7 +19,6 @@ def _register_resources(env, type_pairs):
     for res_name, res_class in type_pairs:
         env.register_class(res_name, res_class)
 
-
 def _register_constraints(env, type_pairs):
     for constraint_name, constraint in type_pairs:
         env.register_constraint(constraint_name, constraint)
@@ -29,12 +28,15 @@ _environment = None
 
 
 def global_env():
+    "returning global environment"
     if _environment is None:
         initialise()
     return _environment
 
 
 def initialise():
+    print "initializing global env"
+    #import ipdb; ipdb.set_trace()
     global _environment
     if _environment is not None:
         return
@@ -45,6 +47,7 @@ def initialise():
 
 
 def _load_global_environment(env):
+    print "loading global environment"
     _load_global_resources(env)
     environment.read_global_environment(env)
 

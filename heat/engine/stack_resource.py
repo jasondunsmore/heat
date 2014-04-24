@@ -125,11 +125,23 @@ class StackResource(resource.Resource):
             message = exception.StackResourceLimitExceeded.msg_fmt
             raise exception.RequestLimitExceeded(message=message)
 
+    def log(self, prefix, reg):
+        if reg is None:
+            return
+        reg = reg._registry
+        if "http://dunsmor.com/pastebin/1398191864.template" in reg:
+            print prefix, "yes"
+            #import ipdb; ipdb.set_trace()
+        else:
+            print prefix, "no"
+
     def create_with_template(self, child_template, user_params,
                              timeout_mins=None, adopt_data=None):
         '''
         Handle the creation of the nested stack from a given JSON template.
         '''
+        #from heat.engine import resources
+        #self.log(1, resources.global_env().registry)
         if self.recursion_depth >= cfg.CONF.max_nested_stack_depth:
             msg = _("Recursion depth exceeds %d.") % \
                 cfg.CONF.max_nested_stack_depth
@@ -152,6 +164,7 @@ class StackResource(resource.Resource):
                               parent_resource=self,
                               owner_id=self.stack.id,
                               adopt_stack_data=adopt_data)
+        #self.log(2, resources.global_env().registry)
         nested.validate()
         self._nested = nested
         nested_id = self._nested.store()
@@ -164,6 +177,7 @@ class StackResource(resource.Resource):
         stack_creator = scheduler.TaskRunner(self._nested.stack_task,
                                              action=action)
         stack_creator.start(timeout=self._nested.timeout_secs())
+        #self.log(3, resources.global_env().registry)
         return stack_creator
 
     def check_create_complete(self, stack_creator):

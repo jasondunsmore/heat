@@ -514,6 +514,7 @@ class EngineService(service.Service):
         stack = parser.Stack(cnxt, stack_name, tmpl,
                              env, **common_params)
 
+        #import ipdb; ipdb.set_trace()
         self._validate_deferred_auth_context(cnxt, stack)
 
         stack.validate()
