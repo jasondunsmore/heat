@@ -112,9 +112,9 @@ class ProviderTemplateTest(HeatTestCase):
             }
 
         env = environment.Environment()
-        resource._register_class('DummyResource', DummyResource)
+        resource._register_class('DummyResource1', DummyResource)
         env.load({'resource_registry':
-                  {'DummyResource': 'test_resource.template'}})
+                  {'DummyResource1': 'test_resource.template'}})
         stack = parser.Stack(utils.dummy_context(), 'test_stack',
                              parser.Template({}, files=files), env=env,
                              stack_id=str(uuid.uuid4()))
@@ -128,7 +128,7 @@ class ProviderTemplateTest(HeatTestCase):
             }
         }
         json_snippet = {
-            "Type": "DummyResource",
+            "Type": "DummyResource1",
             "Properties": {
                 "Foo": "Bar",
                 "AList": ["one", "two", "three"],
@@ -171,15 +171,15 @@ class ProviderTemplateTest(HeatTestCase):
             attributes_schema = {"Foo": "A test attribute"}
 
         env = environment.Environment()
-        resource._register_class('DummyResource', DummyResource)
+        resource._register_class('DummyResource2', DummyResource)
         env.load({'resource_registry':
-                  {'DummyResource': 'test_resource.template'}})
+                  {'DummyResource2': 'test_resource.template'}})
         stack = parser.Stack(utils.dummy_context(), 'test_stack',
                              parser.Template({}, files=files), env=env,
                              stack_id=str(uuid.uuid4()))
 
         json_snippet = {
-            "Type": "DummyResource",
+            "Type": "DummyResource2",
         }
 
         temp_res = template_resource.TemplateResource('test_t_res',
@@ -232,16 +232,16 @@ class ProviderTemplateTest(HeatTestCase):
             attributes_schema = {}
 
         json_snippet = {
-            "Type": "DummyResource",
+            "Type": "DummyResource3",
             "Properties": {
                 "Foo": "bar",
             },
         }
 
         env = environment.Environment()
-        resource._register_class('DummyResource', DummyResource)
+        resource._register_class('DummyResource3', DummyResource)
         env.load({'resource_registry':
-                  {'DummyResource': 'test_resource.template'}})
+                  {'DummyResource3': 'test_resource.template'}})
         stack = parser.Stack(utils.dummy_context(), 'test_stack',
                              parser.Template({}, files=files), env=env,
                              stack_id=str(uuid.uuid4()))
@@ -428,6 +428,8 @@ class ProviderTemplateTest(HeatTestCase):
             {'WordPress_Single_Instance.yaml':
              'WordPress_Single_Instance.yaml', 'resources': {}},
             stack.env.user_env_as_dict()["resource_registry"])
+        self.assertNotIn('WordPress_Single_Instance.yaml',
+                         resources.global_env().registry._registry)
 
     def test_persisted_unregistered_provider_templates(self):
         """

@@ -11,6 +11,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
 import glob
 import itertools
 import os.path
@@ -152,6 +153,12 @@ class ResourceRegistry(object):
     def __init__(self, global_registry):
         self._registry = {'resources': {}}
         self.global_registry = global_registry
+
+    def __deepcopy__(self, memo):
+        reg_copy = ResourceRegistry(None)
+        for resource, class_info in self._registry.items():
+            reg_copy._registry[resource] = class_info
+        return reg_copy
 
     def load(self, json_snippet):
         self._load_registry([], json_snippet)
@@ -345,7 +352,7 @@ class Environment(object):
             env = {}
         if user_env:
             from heat.engine import resources
-            global_registry = resources.global_env().registry
+            global_registry = copy.deepcopy(resources.global_env().registry)
         else:
             global_registry = None
 
