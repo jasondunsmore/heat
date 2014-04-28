@@ -139,6 +139,7 @@ class ProviderTemplateTest(HeatTestCase):
         }
         temp_res = template_resource.TemplateResource('test_t_res',
                                                       json_snippet, stack)
+        import ipdb; ipdb.set_trace()
         temp_res.validate()
         converted_params = temp_res.child_params()
         self.assertTrue(converted_params)
@@ -428,6 +429,8 @@ class ProviderTemplateTest(HeatTestCase):
             {'WordPress_Single_Instance.yaml':
              'WordPress_Single_Instance.yaml', 'resources': {}},
             stack.env.user_env_as_dict()["resource_registry"])
+        self.assertNotIn('WordPress_Single_Instance.yaml',
+                         resources.global_env().registry._registry)
 
     def test_persisted_unregistered_provider_templates(self):
         """
@@ -456,8 +459,7 @@ class ProviderTemplateTest(HeatTestCase):
                                    'Resources': {}})
         self.m.StubOutWithMock(urlfetch, "get")
         urlfetch.get(test_templ_name,
-                     allowed_schemes=('http', 'https',
-                                      'file')).AndReturn(minimal_temp)
+                     allowed_schemes=('http', 'https')).AndReturn(minimal_temp)
         self.m.ReplayAll()
 
         temp_res = template_resource.TemplateResource('test_t_res',
@@ -499,8 +501,7 @@ class ProviderTemplateTest(HeatTestCase):
 
         self.m.StubOutWithMock(urlfetch, "get")
         urlfetch.get(test_templ_name,
-                     allowed_schemes=('http', 'https',
-                                      'file'))\
+                     allowed_schemes=('http', 'https'))\
             .AndRaise(urlfetch.URLFetchError(_('Failed to retrieve template')))
         self.m.ReplayAll()
 
