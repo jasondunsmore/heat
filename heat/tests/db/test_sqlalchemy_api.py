@@ -124,6 +124,7 @@ class SqlAlchemyTest(common.HeatTestCase):
         fc.servers.create(image=744, flavor=3, key_name='test',
                           name=mox.IgnoreArg(),
                           security_groups=None,
+                          config_drive=mox.IgnoreArg(),
                           userdata=mox.IgnoreArg(), scheduler_hints=None,
                           meta=None, nics=None,
                           availability_zone=None,

@@ -34,6 +34,13 @@ LOG = logging.getLogger(__name__)
 
 
 class Instance(resource.Resource):
+    """
+    Implementation of AWS::EC2::Instance that will create and manage Nova
+    compute instances.
+
+    *Note* that if Metadata is used for instance configuration, `heat-cfntools`
+    must be present in the target image.
+    """
 
     PROPERTIES = (
         IMAGE_ID, INSTANCE_TYPE, KEY_NAME, AVAILABILITY_ZONE,
@@ -552,14 +559,18 @@ class Instance(resource.Resource):
             instance_user = 'ec2-user'
 
         try:
+            builder = self.client_plugin().build_userdata
+            ud_format = 'HEAT_CFNTOOLS' if self.metadata_get() else "RAW"
+            user_data = builder(self.metadata_get(), userdata, instance_user,
+                                user_data_format=ud_format)
             server = self.nova().servers.create(
                 name=self.physical_resource_name(),
                 image=image_id,
                 flavor=flavor_id,
+                config_drive=bool(user_data and len(user_data.strip())),
                 key_name=self.properties[self.KEY_NAME],
                 security_groups=security_groups,
-                userdata=self.client_plugin().build_userdata(
-                    self.metadata_get(), userdata, instance_user),
+                userdata=user_data,
                 meta=self._get_nova_metadata(self.properties),
                 scheduler_hints=scheduler_hints,
                 nics=nics,
