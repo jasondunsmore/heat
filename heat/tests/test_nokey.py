@@ -81,6 +81,7 @@ class nokeyTest(common.HeatTestCase):
             image=1, flavor=1, key_name=None,
             name=utils.PhysName(stack_name, instance.name),
             security_groups=None,
+            config_drive=bool(len(server_userdata.strip())),
             userdata=server_userdata, scheduler_hints=None,
             meta=None, nics=None, availability_zone=None,
             block_device_mapping=None).AndReturn(
