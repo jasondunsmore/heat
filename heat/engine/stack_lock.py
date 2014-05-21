@@ -11,12 +11,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import contextlib
 import uuid
 
 from oslo.config import cfg
 
 from heat.common import exception
 from heat.db import api as db_api
+from heat.openstack.common import excutils
 from heat.openstack.common.gettextutils import _
 from heat.openstack.common import log as logging
 from heat.openstack.common.rpc import common as rpc_common
@@ -120,3 +122,23 @@ class StackLock(object):
             logger.debug("Engine %(engine)s released lock on stack "
                          "%(stack)s" % {'engine': self.engine_id,
                                         'stack': stack_id})
+
+    @contextlib.contextmanager
+    def thread_lock(self, stack_id):
+        try:
+            self.acquire()
+            yield
+        except:
+            with excutils.save_and_reraise_exception():
+                self.release(stack_id)
+
+    @contextlib.contextmanager
+    def try_lock(self, stack_id):
+        try:
+            result = self.try_acquire()
+            yield result
+        except:
+            if result is None:
+                with excutils.save_and_reraise_exception():
+                    self.release(stack_id)
+            raise
