@@ -12,17 +12,15 @@
 #    under the License.
 
 
-from testtools import skipIf
+import swiftclient.client as swiftclient
 
 from heat.common import exception
 from heat.common import template_format
 from heat.engine.resources import s3
 from heat.engine import scheduler
-from heat.openstack.common.importutils import try_import
 from heat.tests.common import HeatTestCase
 from heat.tests import utils
 
-swiftclient = try_import('swiftclient.client')
 
 swift_template = '''
 {
@@ -65,7 +63,6 @@ swift_template = '''
 
 
 class s3Test(HeatTestCase):
-    @skipIf(swiftclient is None, 'unable to import swiftclient')
     def setUp(self):
         super(s3Test, self).setUp()
         self.m.CreateMock(swiftclient.Connection)

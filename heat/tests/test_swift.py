@@ -13,16 +13,14 @@
 
 
 import mox
-from testtools import skipIf
+import swiftclient.client as swiftclient
 
 from heat.common import template_format
 from heat.engine.resources import swift
 from heat.engine import scheduler
-from heat.openstack.common.importutils import try_import
 from heat.tests.common import HeatTestCase
 from heat.tests import utils
 
-swiftclient = try_import('swiftclient.client')
 
 swift_template = '''
 {
@@ -66,7 +64,6 @@ swift_template = '''
 
 
 class swiftTest(HeatTestCase):
-    @skipIf(swiftclient is None, 'unable to import swiftclient')
     def setUp(self):
         super(swiftTest, self).setUp()
         self.m.CreateMock(swiftclient.Connection)
