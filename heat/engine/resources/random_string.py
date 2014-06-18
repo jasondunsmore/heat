@@ -16,10 +16,13 @@ import string
 
 from six.moves import xrange
 
+from heat.common import exception
 from heat.engine import attributes
 from heat.engine import constraints
 from heat.engine import properties
 from heat.engine import resource
+from heat.engine import support
+from heat.openstack.common.gettextutils import _
 
 
 class RandomString(resource.Resource):
@@ -29,9 +32,24 @@ class RandomString(resource.Resource):
     This is useful for configuring passwords and secrets on services.
     '''
     PROPERTIES = (
-        LENGTH, SEQUENCE, SALT,
+        LENGTH, SEQUENCE, CHARACTER_CLASSES, CHARACTER_SEQUENCES,
+        SALT,
     ) = (
-        'length', 'sequence', 'salt',
+        'length', 'sequence', 'character_classes', 'character_sequences',
+        'salt',
+    )
+
+    _CHARACTER_CLASSES_KEYS = (
+        CHARACTER_CLASSES_CLASS, CHARACTER_CLASSES_MIN, CHARACTER_CLASSES_MAX,
+    ) = (
+        'class', 'min', 'max',
+    )
+
+    _CHARACTER_SEQUENCES = (
+        CHARACTER_SEQUENCES_SEQUENCE, CHARACTER_SEQUENCES_MIN,
+        CHARACTER_SEQUENCES_MAX,
+    ) = (
+        'sequence', 'min', 'max',
     )
 
     ATTRIBUTES = (
@@ -52,13 +70,83 @@ class RandomString(resource.Resource):
         SEQUENCE: properties.Schema(
             properties.Schema.STRING,
             _('Sequence of characters to build the random string from.'),
-            default='lettersdigits',
             constraints=[
                 constraints.AllowedValues(['lettersdigits', 'letters',
                                            'lowercase', 'uppercase',
                                            'digits', 'hexdigits',
                                            'octdigits']),
-            ]
+            ],
+            support_status=support.SupportStatus(
+                support.DEPRECATED,
+                _('Use property %s.') % CHARACTER_CLASSES
+            ),
+            required=False
+        ),
+        CHARACTER_CLASSES: properties.Schema(
+            properties.Schema.LIST,
+            _('A list of character class and their constraints to generate '
+              'the random string from.'),
+            schema=properties.Schema(
+                properties.Schema.MAP,
+                schema={
+                    CHARACTER_CLASSES_CLASS: properties.Schema(
+                        properties.Schema.STRING,
+                        _('A character class and its corresponding min and max '
+                          'constraints to generate the random string from.'),
+                        constraints=[
+                            constraints.AllowedValues(
+                                ['lettersdigits', 'letters', 'lowercase',
+                                 'uppercase', 'digits', 'hexdigits',
+                                 'octdigits', 'punctuation']),
+                        ],
+                        default='lettersdigits'),
+                    CHARACTER_CLASSES_MIN: properties.Schema(
+                        properties.Schema.INTEGER,
+                        _('The minimum number of characters from this '
+                          'character class that will be in the generated '
+                          'string.'),
+                        default=1
+                    ),
+                    CHARACTER_CLASSES_MAX: properties.Schema(
+                        properties.Schema.INTEGER,
+                        _('The maximum number of characters from this '
+                          'character class that will be in the generated '
+                          'string.'),
+                        required=False
+                    ),
+                }
+            ),
+            required=False
+        ),
+        CHARACTER_SEQUENCES: properties.Schema(
+            properties.Schema.LIST,
+            _('A list of character sequences and their constraints to '
+              'generate the random string from.'),
+            schema=properties.Schema(
+                properties.Schema.MAP,
+                schema={
+                    CHARACTER_SEQUENCES_SEQUENCE: properties.Schema(
+                        properties.Schema.STRING,
+                        _('A character sequence and its corresponding min and '
+                          'max constraints to generate the random string '
+                          'from.'),
+                        required=True),
+                    CHARACTER_SEQUENCES_MIN: properties.Schema(
+                        properties.Schema.INTEGER,
+                        _('The minimum number of characters from this '
+                          'sequence that will be in the generated '
+                          'string.'),
+                        required=True
+                    ),
+                    CHARACTER_SEQUENCES_MAX: properties.Schema(
+                        properties.Schema.INTEGER,
+                        _('The maximum number of characters from this '
+                          'sequence that will be in the generated '
+                          'string.'),
+                        required=False
+                    ),
+                }
+            )
         ),
         SALT: properties.Schema(
             properties.Schema.STRING,
@@ -83,7 +171,8 @@ class RandomString(resource.Resource):
         'uppercase': string.ascii_uppercase,
         'digits': string.digits,
         'hexdigits': string.digits + 'ABCDEF',
-        'octdigits': string.octdigits
+        'octdigits': string.octdigits,
+        'punctuation': string.punctuation
     }
 
     @staticmethod
@@ -91,10 +180,46 @@ class RandomString(resource.Resource):
         rand = random.SystemRandom()
         return ''.join(rand.choice(sequence) for x in xrange(length))
 
+    @staticmethod
+    def _random_string(char_sequences, char_classes, length):
+        string = ""
+        if char_sequences:
+            for char_seq in char_sequences:
+                seq = char_seq[self.CHARACTER_SEQUENCES_SEQUENCE]
+                seq_min = char_seq[self.CHARACTER_SEQUENCES_MIN]
+                seq_max = char_seq[self.CHARACTER_SEQUENCES_MAX]
+                length = random.randrange(seq_min, seq_max + 1)
+                for char in range(length):
+                    
+
+        if char_classes:
+            pass
+
+    def validate(self):
+        sequence = self._sequences[self.properties.get(self.SEQUENCE)]
+        char_sequences = self.properties.get(self.CHARACTER_SEQUENCES)
+        char_classes = self.properties.get(self.CHARACTER_CLASSES)
+
+        if sequence and (char_sequences or char_classes):
+            msg = _("Cannot use deprecated 'sequence' property along with "
+                    "'character_sequences' or 'character_classes' properties")
+            raise exception.StackValidationFailed(message=msg)
+
     def handle_create(self):
         length = self.properties.get(self.LENGTH)
         sequence = self._sequences[self.properties.get(self.SEQUENCE)]
-        random_string = self._generate_random_string(sequence, length)
+        char_sequences = self.properties.get(self.CHARACTER_SEQUENCES)
+        char_classes = self.properties.get(self.CHARACTER_CLASSES)
+
+        if sequence:  # Deprecated property was provided
+            random_string = self._generate_random_string(sequence, length)
+        elif char_sequences or char_classes:
+            random_string = self._random_string(char_sequences, char_classes,
+                                                length)
+        else:  # Maintain old behavior
+            random_string = self._generate_random_string("lettersdigits",
+                                                         length)
+
         self.data_set('value', random_string, redact=True)
         self.resource_id_set(random_string)
 
