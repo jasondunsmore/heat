@@ -243,7 +243,9 @@ class KeystoneClientV2(object):
     # ###################### #
 
     def create_trust_context(self):
-        raise exception.NotSupported(feature='Keystone Trusts')
+        LOG.debug("Returning fake trust context.")
+        return self.context
 
     def delete_trust(self, trust_id):
-        raise exception.NotSupported(feature='Keystone Trusts')
+        LOG.debug("Fake deleting trust.")
+        return
