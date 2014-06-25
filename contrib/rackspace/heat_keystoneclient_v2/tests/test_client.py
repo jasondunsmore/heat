@@ -264,11 +264,9 @@ class KeystoneClientTest(common.HeatTestCase):
 
     def test_create_trust_context(self):
         heat_ks_client = heat_keystoneclient.KeystoneClientV2(self.ctx)
-        self.assertRaises(exception.NotSupported,
-                          heat_ks_client.create_trust_context)
+        self.assertEqual(self.ctx, 
+                         heat_ks_client.create_trust_context())
 
     def test_delete_trust(self):
         heat_ks_client = heat_keystoneclient.KeystoneClientV2(self.ctx)
-        self.assertRaises(exception.NotSupported,
-                          heat_ks_client.delete_trust,
-                          'fake_trust_id')
+        self.assertIsNone(heat_ks_client.delete_trust('fake_trust_id'))
