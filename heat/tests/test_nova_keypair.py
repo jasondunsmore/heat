@@ -14,6 +14,9 @@
 import collections
 import copy
 
+from novaclient.openstack.common.apiclient import exceptions as nova_api_exc
+
+from heat.common import exception
 from heat.engine.clients.os import nova
 from heat.engine.resources import nova_keypair
 from heat.engine import scheduler
@@ -89,6 +92,51 @@ class NovaKeyPairTest(HeatTestCase):
                          tp_test.FnGetAtt('public_key'))
         self.assertEqual((tp_test.CREATE, tp_test.COMPLETE), tp_test.state)
         self.assertEqual(tp_test.resource_id, created_key.name)
+        self.m.VerifyAll()
+
+    def test_create_key_retries_success(self):
+        """Test basic create."""
+        key_name = "generate_no_save"
+
+        template = copy.deepcopy(self.kp_template)
+        template['resources']['kp']['properties']['name'] = key_name
+        gen_pk = "generated test public key"
+        created_key = self._mock_key(key_name, gen_pk)
+        tp_test = self._get_test_resource(template)
+        for n in xrange(3):
+            self.fake_keypairs.create(key_name,
+                                      public_key=None).AndRaise(
+                                          nova_api_exc.InternalServerError)
+        self.fake_keypairs.create(key_name,
+                                  public_key=None).AndReturn(created_key)
+        self.fake_keypairs.get(key_name).AndReturn(created_key)
+        self.m.ReplayAll()
+        scheduler.TaskRunner(tp_test.create)()
+        self.assertEqual("", tp_test.FnGetAtt('private_key'))
+        self.assertEqual("generated test public key",
+                         tp_test.FnGetAtt('public_key'))
+        self.assertEqual((tp_test.CREATE, tp_test.COMPLETE), tp_test.state)
+        self.assertEqual(tp_test.resource_id, created_key.name)
+        self.m.VerifyAll()
+
+    def test_create_key_retries_failed(self):
+        """Test basic create."""
+        key_name = "generate_no_save"
+
+        template = copy.deepcopy(self.kp_template)
+        template['resources']['kp']['properties']['name'] = key_name
+        tp_test = self._get_test_resource(template)
+
+        for n in xrange(10):
+            self.fake_keypairs.create(key_name,
+                                      public_key=None).AndRaise(
+                                          nova_api_exc.InternalServerError)
+        self.m.ReplayAll()
+
+        create = scheduler.TaskRunner(tp_test.create)
+        exc = self.assertRaises(exception.ResourceFailure, create)
+        self.assertEqual("Error: The Nova keypair creation failed after 10 "
+                         "attempts", str(exc))
         self.m.VerifyAll()
 
     def test_delete_key(self):

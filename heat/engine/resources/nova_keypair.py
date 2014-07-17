@@ -12,6 +12,7 @@
 #    under the License.
 
 from novaclient import exceptions as nova_exceptions
+from novaclient.openstack.common.apiclient import exceptions as nova_api_exc
 
 from heat.common import exception
 from heat.engine import attributes
@@ -104,8 +105,18 @@ class KeyPair(resource.Resource):
 
     def handle_create(self):
         pub_key = self.properties[self.PUBLIC_KEY] or None
-        new_keypair = self.nova().keypairs.create(self.properties[self.NAME],
-                                                  public_key=pub_key)
+        retries = 10
+        for n in xrange(retries):
+            try:
+                new_keypair = self.nova().keypairs.create(
+                    self.properties[self.NAME], public_key=pub_key)
+            except nova_api_exc.InternalServerError:
+                continue
+            else:
+                break
+        else:
+            raise exception.Error(_("The Nova keypair creation failed after "
+                                    "%s attempts") % retries)
         if (self.properties[self.SAVE_PRIVATE_KEY] and
                 hasattr(new_keypair, 'private_key')):
             self.data_set('private_key',
