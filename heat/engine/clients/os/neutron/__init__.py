@@ -33,7 +33,10 @@ class NeutronClientPlugin(client_plugin.ClientPlugin):
 
         endpoint_type = self._get_client_option('neutron', 'endpoint_type')
         endpoint = self.url_for(service_type=self.NETWORK,
-                                endpoint_type=endpoint_type)
+                                endpoint_type=endpoint_type,
+                                region_name=cfg.CONF.region_name_for_services)
+
+        endpoint = endpoint.rsplit("v2.0")[0]
 
         args = {
             'auth_url': con.auth_url,

@@ -24,7 +24,7 @@ class TroveClientPlugin(client_plugin.ClientPlugin):
 
     exceptions_module = exceptions
 
-    service_types = [DATABASE] = ['database']
+    service_types = [DATABASE] = ['rax:database']
 
     def _create(self):
 

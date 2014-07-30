@@ -12,6 +12,7 @@
 #    under the License.
 
 from oslo_log import log as logging
+from oslo_config import cfg
 
 from heat.common.i18n import _LE
 
@@ -27,7 +28,7 @@ class ZaqarClientPlugin(client_plugin.ClientPlugin):
 
     exceptions_module = zaqar_errors
 
-    service_types = [MESSAGING] = ['messaging']
+    service_types = [MESSAGING] = ['rax:queues']
 
     DEFAULT_TTL = 3600
 
@@ -49,9 +50,12 @@ class ZaqarClientPlugin(client_plugin.ClientPlugin):
         auth_opts = {'backend': 'keystone',
                      'options': opts}
         conf = {'auth_opts': auth_opts}
-        endpoint = self.url_for(service_type=self.MESSAGING)
+        endpoint = self.url_for(service_type=self.MESSAGING,
+                                region_name=cfg.CONF.region_name_for_services)
 
-        client = zaqarclient.Client(url=endpoint, conf=conf, version=1.1)
+        endpoint = endpoint.rsplit('v1')[0]
+
+        client = zaqarclient.Client(url=endpoint, conf=conf, version=1)
 
         return client
 
