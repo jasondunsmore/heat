@@ -12,6 +12,7 @@
 #    under the License.
 
 from oslo_log import log as logging
+from oslo.config import cfg
 
 from heat.common.i18n import _LE
 
@@ -47,7 +48,10 @@ class ZaqarClientPlugin(client_plugin.ClientPlugin):
         auth_opts = {'backend': 'keystone',
                      'options': opts}
         conf = {'auth_opts': auth_opts}
-        endpoint = self.url_for(service_type='messaging')
+        endpoint = self.url_for(service_type='rax:queues',
+                                region_name=cfg.CONF.region_name_for_services)
+        
+        endpoint = endpoint.rsplit('v1')[0]
 
         client = zaqarclient.Client(url=endpoint, conf=conf)
 
