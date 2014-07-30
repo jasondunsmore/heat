@@ -16,6 +16,8 @@ from neutronclient.neutron import v2_0 as neutronV20
 from neutronclient.v2_0 import client as nc
 from oslo_utils import uuidutils
 
+from oslo.config import cfg
+
 from heat.common import exception
 from heat.engine.clients import client_plugin
 from heat.engine import constraints
@@ -31,7 +33,10 @@ class NeutronClientPlugin(client_plugin.ClientPlugin):
 
         endpoint_type = self._get_client_option('neutron', 'endpoint_type')
         endpoint = self.url_for(service_type='network',
-                                endpoint_type=endpoint_type)
+                                endpoint_type=endpoint_type,
+                                region_name=cfg.CONF.region_name_for_services)
+
+        endpoint = endpoint.rsplit("v2.0")[0]
 
         args = {
             'auth_url': con.auth_url,
