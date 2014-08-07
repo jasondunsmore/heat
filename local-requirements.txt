@@ -1,0 +1,2 @@
+-e git+git@github.rackspace.com:andr5956/impacket.git#egg=impacket
+MySQL-python
