@@ -259,4 +259,5 @@ class TestHeatMigrationsPostgreSQL(HeatMigrationsCheckers,
 
 class TestHeatMigrationsSQLite(HeatMigrationsCheckers,
                                test_base.DbTestCase):
-    pass
+    def _check_045(self, engine, data):
+        self.assertColumnExists(engine, 'resource', 'properties_data')
