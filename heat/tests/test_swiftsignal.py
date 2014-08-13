@@ -210,7 +210,7 @@ class SwiftSignalTest(HeatTestCase):
         st.create()
         self.assertEqual(('CREATE', 'COMPLETE'), st.state)
 
-    @mock.patch.object(swiftsignal.SwiftSignalHandle, '_get_signal_url')
+    @mock.patch.object(swift.SwiftClientPlugin, '_get_signal_url')
     def test_validate_handle_url_bad_tempurl(self, mock_handle_url):
         mock_handle_url.return_value = (
             "http://fake-host.com:8080/v1/my-container/"
@@ -223,7 +223,7 @@ class SwiftSignalTest(HeatTestCase):
         self.assertIn('not a valid SwiftSignalHandle.  The Swift TempURL path',
                       six.text_type(st.status_reason))
 
-    @mock.patch.object(swiftsignal.SwiftSignalHandle, '_get_signal_url')
+    @mock.patch.object(swift.SwiftClientPlugin, '_get_signal_url')
     def test_validate_handle_url_bad_container_name(self, mock_handle_url):
         mock_handle_url.return_value = (
             "http://fake-host.com:8080/v1/AUTH_test_tenant/my-container/"
@@ -236,7 +236,7 @@ class SwiftSignalTest(HeatTestCase):
         self.assertIn('not a valid SwiftSignalHandle.  The container name',
                       six.text_type(st.status_reason))
 
-    @mock.patch.object(swiftsignal.SwiftSignalHandle, '_get_signal_url')
+    @mock.patch.object(swift.SwiftClientPlugin, '_get_signal_url')
     def test_validate_handle_url_bad_tenant(self, mock_handle_url):
         stack_id = '1234'
         mock_handle_url.return_value = (

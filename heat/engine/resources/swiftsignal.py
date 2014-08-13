@@ -11,28 +11,23 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import hashlib
 import json
-import random
 import urlparse
 
 from swiftclient import client as swiftclient_client
-from swiftclient import utils as swiftclient_utils
 
 from heat.common import exception
 from heat.engine import attributes
+from heat.engine.clients.os import swift
 from heat.engine import constraints
 from heat.engine import properties
 from heat.engine import resource
-from heat.engine.resources import swift_utils
 from heat.engine.resources import wait_condition
 from heat.engine import scheduler
 from heat.openstack.common.gettextutils import _
 from heat.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
-
-IN_PROGRESS = 'in progress'
 
 
 class SwiftSignalFailure(wait_condition.WaitConditionFailure):
@@ -89,33 +84,8 @@ class SwiftSignalHandle(resource.Resource):
         'data', 'reason', 'status', 'id'
     )
 
-    def _get_signal_url(self):
-        '''
-        Turn on object versioning so we can use a single TempURL for
-        multiple signals
-        '''
-        headers = {'x-versions-location': self.stack.id}
-        obj_name = "%s-%s" % (self.stack.name, self.name)
-        self.swift().put_container(self.stack.id, headers=headers)
-        self.swift().put_object(self.stack.id, obj_name, IN_PROGRESS)
-
-        if 'x-account-meta-temp-url-key' in self.swift().head_account():
-            key = self.swift().head_account()['x-account-meta-temp-url-key']
-        else:
-            key = hashlib.sha224(str(random.getrandbits(256))).hexdigest()[:32]
-            self.swift().post_account({'x-account-meta-temp-url-key': key})
-
-        method = 'PUT'
-        path = '/v1/AUTH_%s/%s/%s' % (self.context.tenant_id, self.stack.id,
-                                      obj_name)
-        secs = self.stack.timeout_secs()
-        tempurl = swiftclient_utils.generate_temp_url(path, secs, key, method)
-        sw_url = urlparse.urlparse(self.swift().url)
-        signal_url = '%s://%s%s' % (sw_url.scheme, sw_url.netloc, tempurl)
-        return signal_url
-
     def handle_create(self):
-        url = self._get_signal_url()
+        url = self.client_plugin('swift')._get_signal_url(self.stack, self.name)
         self.data_set('endpoint', url)
         self.resource_id_set(url)
 
@@ -148,7 +118,7 @@ class SwiftSignalHandle(resource.Resource):
                 raise exc
 
             body = signal[1]
-            if body == IN_PROGRESS:  # Ignore the initial object
+            if body == swift.IN_PROGRESS:  # Ignore the initial object
                 continue
             if body == "":
                 obj_bodies.append({})
@@ -275,7 +245,7 @@ class SwiftSignal(resource.Resource):
         parts = self.url.path.split('/')
         msg = _('"%(url)s" is not a valid SwiftSignalHandle.  The %(part)s '
                 'is invalid')
-        if not swift_utils.valid_temp_url_path(self.url.path):
+        if not self.client_plugin('swift').valid_temp_url_path(self.url.path):
             raise ValueError(msg % {'url': self.url.path,
                                     'part': 'Swift TempURL path'})
         if not parts[2].endswith(self.context.tenant_id):

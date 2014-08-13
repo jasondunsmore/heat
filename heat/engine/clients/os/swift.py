@@ -14,6 +14,7 @@
 import hashlib
 import random
 import urlparse
+import time
 
 from swiftclient import client as sc
 from swiftclient import exceptions
@@ -97,7 +98,8 @@ class SwiftClientPlugin(client_plugin.ClientPlugin):
         method = 'PUT'
         path = '/v1/AUTH_%s/%s/%s' % (self.context.tenant_id, stack.id,
                                       obj_name)
-        secs = stack.timeout_secs()
+        max_epoch = 2147483647
+        secs = max_epoch - 60 - time.time()
         tempurl = swiftclient_utils.generate_temp_url(path, secs, key, method)
         sw_url = urlparse.urlparse(self.client().url)
         signal_url = '%s://%s%s' % (sw_url.scheme, sw_url.netloc, tempurl)
