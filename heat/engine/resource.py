@@ -21,6 +21,7 @@ from oslo.utils import encodeutils
 from oslo.utils import excutils
 import six
 
+from heat.common import crypt
 from heat.common import exception
 from heat.common.i18n import _
 from heat.common.i18n import _LE
@@ -916,6 +917,15 @@ class Resource(object):
     def _store(self):
         '''Create the resource in the database.'''
         metadata = self.metadata_get()
+
+        encrypted_properties = {}
+        if cfg.CONF.encrypt_parameters_and_properties:
+            for prop_name, prop_value in self._stored_properties_data.items():
+                encrypted_properties[prop_name] = crypt.encrypt(prop_value)
+
+        if encrypted_properties:
+            import ipdb; ipdb.set_trace()
+
         try:
             rs = {'action': self.action,
                   'status': self.status,
@@ -924,7 +934,7 @@ class Resource(object):
                   'nova_instance': self.resource_id,
                   'name': self.name,
                   'rsrc_metadata': metadata,
-                  'properties_data': self._stored_properties_data,
+                  'properties_data': encrypted_properties,
                   'stack_name': self.stack.name}
 
             new_rs = db_api.resource_create(self.context, rs)
