@@ -1119,6 +1119,9 @@ class ResourceTest(common.HeatTestCase):
         })
         self._test_skip_validation_if_custom_constraint(tmpl)
 
+    def test_properties_data_stored_encrypted_decrypted_on_load(self):
+        pass
+
 
 class ResourceAdoptTest(common.HeatTestCase):
     def setUp(self):

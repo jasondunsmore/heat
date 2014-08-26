@@ -21,6 +21,7 @@ from oslo.utils import encodeutils
 from oslo.utils import excutils
 import six
 
+from heat.common import crypt
 from heat.common import exception
 from heat.common.i18n import _
 from heat.common.i18n import _LE
@@ -215,7 +216,16 @@ class Resource(object):
         except exception.NotFound:
             self._data = {}
         self._rsrc_metadata = resource.rsrc_metadata
-        self._stored_properties_data = resource.properties_data
+
+        # Decrypt properties data
+        resource.properties_data = {}
+        for prop_name, prop_value in self._stored_properties_data.items():
+            decrypt_function_name = prop_value[0]
+            decrypt_function = getattr(crypt, decrypt_function_name, None)
+            decrypted_val = decrypt_function(prop_value[1])
+            decoded_val = encodeutils.safe_decode(decrypted_val)
+            resource.properties_data[prop_name] = decoded_val
+
         self.created_time = resource.created_at
         self.updated_time = resource.updated_at
 
@@ -916,6 +926,13 @@ class Resource(object):
     def _store(self):
         '''Create the resource in the database.'''
         metadata = self.metadata_get()
+
+        encrypted_properties = {}
+        if cfg.CONF.encrypt_parameters_and_properties:
+            for prop_name, prop_value in self._stored_properties_data.items():
+                encoded_value = encodeutils.safe_encode(prop_value)
+                encrypted_properties[prop_name] = crypt.encrypt(encoded_value)
+
         try:
             rs = {'action': self.action,
                   'status': self.status,
@@ -924,7 +941,7 @@ class Resource(object):
                   'nova_instance': self.resource_id,
                   'name': self.name,
                   'rsrc_metadata': metadata,
-                  'properties_data': self._stored_properties_data,
+                  'properties_data': encrypted_properties,
                   'stack_name': self.stack.name}
 
             new_rs = db_api.resource_create(self.context, rs)
