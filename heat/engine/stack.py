@@ -23,6 +23,8 @@ from osprofiler import profiler
 import six
 
 from heat.common import context as common_context
+from heat.common import crypt
+from heat.common import environment_format as env_fmt
 from heat.common import exception
 from heat.common.exception import StackValidationFailed
 from heat.common.i18n import _
@@ -279,7 +281,20 @@ class Stack(collections.Mapping):
                  use_stored_context=False):
         template = Template.load(
             context, stack.raw_template_id, stack.raw_template)
-        env = environment.Environment(stack.parameters)
+        params = stack.parameters
+        encrypted_params = stack.encrypted_params.get('parameters', {})
+
+        # If any of the parameters were encrypted, then decrypt them
+        parameters = params[env_fmt.PARAMETERS]
+        for param_name in encrypted_params:
+            decrypt_function_name = parameters[param_name][0]
+            decrypt_function = getattr(crypt, decrypt_function_name, None)
+            decrypted_val = decrypt_function(parameters[param_name][1])
+            parameters[param_name] = encodeutils.safe_decode(decrypted_val)
+
+        params[env_fmt.PARAMETERS] = parameters
+
+        env = environment.Environment(params)
         return cls(context, stack.name, template, env,
                    stack.id, stack.action, stack.status, stack.status_reason,
                    stack.timeout, resolve_data, stack.disable_rollback,
@@ -297,10 +312,27 @@ class Stack(collections.Mapping):
         Store the stack in the database and return its ID
         If self.id is set, we update the existing stack
         '''
+        params = self.env.user_env_as_dict()
+
+        # Encrypt parameters that were marked as hidden
+        encrypted_params = []
+        if cfg.CONF.encrypt_parameters_and_properties:
+            parameters = params[env_fmt.PARAMETERS]
+            for param_name, param in self.parameters.params.items():
+                if not param.hidden():
+                    continue
+
+                clear_text_val = self.parameters.get(param_name)
+                encoded_val = encodeutils.safe_encode(clear_text_val)
+                parameters[param_name] = crypt.encrypt(encoded_val)
+                encrypted_params.append(param_name)
+
+            params[env_fmt.PARAMETERS] = parameters
+
         s = {
             'name': self._backup_name() if backup else self.name,
             'raw_template_id': self.t.store(self.context),
-            'parameters': self.env.user_env_as_dict(),
+            'parameters': params,
             'owner_id': self.owner_id,
             'username': self.username,
             'tenant': self.tenant_id,
@@ -313,7 +345,8 @@ class Stack(collections.Mapping):
             'updated_at': self.updated_time,
             'user_creds_id': self.user_creds_id,
             'backup': backup,
-            'nested_depth': self.nested_depth
+            'nested_depth': self.nested_depth,
+            'encrypted_params': {'parameters': encrypted_params}
         }
         if self.id:
             db_api.stack_update(self.context, self.id, s)

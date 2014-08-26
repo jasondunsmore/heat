@@ -88,6 +88,11 @@
 # Deprecated. (string value)
 #onready=<None>
 
+# Encrypt template parameters that were marked as hidden and
+# also all the resource properties before storing them in
+# database. (boolean value)
+#encrypt_parameters_and_properties=true
+
 
 #
 # Options defined in heat.common.config
