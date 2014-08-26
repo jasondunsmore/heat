@@ -142,6 +142,8 @@ class Stack(BASE, HeatBase, SoftDelete, StateAware):
     # created/modified. (bug #1193269)
     updated_at = sqlalchemy.Column(sqlalchemy.DateTime)
 
+    encrypted_params = sqlalchemy.Column('encrypted_params', types.Json)
+
 
 class StackLock(BASE, HeatBase):
     """Store stack locks for deployments with multiple-engines."""

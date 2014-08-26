@@ -4489,3 +4489,75 @@ class StackTest(common.HeatTestCase):
 
         self.assertEqual(
             'foo', self.stack.resources['A'].properties['a_string'])
+
+    def test_encrypt_parameters_false_parameters_stored_plaintext(self):
+        '''
+        Test stack loading with disabled parameter value validation.
+        '''
+        tmpl = template_format.parse('''
+        heat_template_version: 2013-05-23
+        parameters:
+            param1:
+                type: string
+                description: value1.
+            param2:
+                type: string
+                description: value2.
+                hidden: true
+        resources:
+            a_resource:
+                type: GenericResourceType
+        ''')
+
+        self.stack = parser.Stack(self.ctx, 'test',
+                                  template.Template(tmpl),
+                                  environment.Environment({'param1': 'foo',
+                                                           'param2': 'bar'}))
+        cfg.CONF.set_override('encrypt_parameters_and_properties', False)
+
+        # Verify that hidden parameters stored in plain text
+        self.stack.store()
+        stack = db_api.stack_get(self.ctx, self.stack.id)
+        self.assertEqual('foo',
+                         stack.parameters['parameters']['param1'])
+        self.assertEqual('bar',
+                         stack.parameters['parameters']['param2'])
+
+    def test_parameters_stored_encrypted_decrypted_on_load(self):
+        '''
+        Test stack loading with disabled parameter value validation.
+        '''
+        tmpl = template_format.parse('''
+        heat_template_version: 2013-05-23
+        parameters:
+            param1:
+                type: string
+                description: value1.
+            param2:
+                type: string
+                description: value2.
+                hidden: true
+        resources:
+            a_resource:
+                type: GenericResourceType
+        ''')
+
+        self.stack = parser.Stack(self.ctx, 'test',
+                                  template.Template(tmpl),
+                                  environment.Environment({'param1': 'foo',
+                                                           'param2': 'bar'}))
+        cfg.CONF.set_override('encrypt_parameters_and_properties', True)
+
+        # Verify that hidden parameters stored encrypted
+        self.stack.store()
+        stack = db_api.stack_get(self.ctx, self.stack.id)
+        self.assertEqual('foo',
+                         stack.parameters['parameters']['param1'])
+        self.assertEqual('oslo_decrypt_v1',
+                         stack.parameters['parameters']['param2'][0])
+        self.assertIsNotNone(stack.parameters['parameters']['param2'][1])
+
+        # Verify that loaded stack has decrypted paramters
+        loaded_stack = parser.Stack.load(self.ctx, stack_id=self.stack.id)
+        self.assertEqual('foo', loaded_stack.parameters.get('param1'))
+        self.assertEqual('bar', loaded_stack.parameters.get('param2'))

@@ -155,7 +155,12 @@ engine_opts = [
                 default=False,
                 help=_('Enable the preview Stack Adopt feature.')),
     cfg.StrOpt('onready',
-               help=_('Deprecated.'))]
+               help=_('Deprecated.')),
+    cfg.BoolOpt('encrypt_parameters_and_properties',
+                default=True,
+                help=_('Encrypt template parameters that were marked as'
+                       ' hidden and also all the resource properties before'
+                       ' storing them in database.'))]
 
 rpc_opts = [
     cfg.StrOpt('host',

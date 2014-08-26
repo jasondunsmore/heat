@@ -309,6 +309,61 @@ class HeatMigrationsCheckers(test_migrations.WalkVersionsMixin,
     def _check_049(self, engine, data):
         self.assertColumnExists(engine, 'user_creds', 'region_name')
 
+    def _pre_upgrade_051(self, engine):
+        raw_template = utils.get_table(engine, 'raw_template')
+        templ = '''{"HeatTemplateFormatVersion" : "2012-12-12",
+        "Parameters" : {
+          "foo" : { "Type" : "String", "NoEcho": "True" },
+          "bar" : { "Type" : "String", "NoEcho": "True", "Default": "abc" },
+          "blarg" : { "Type" : "String", "Default": "quux" }
+          }
+        }'''
+        temp = [dict(id=4, template=templ, files='{}')]
+        engine.execute(raw_template.insert(), temp)
+
+        user_creds = utils.get_table(engine, 'user_creds')
+        user = [dict(id=5, username='testuser', password='notthis',
+                     tenant='mine', auth_url='bla',
+                     tenant_id=str(uuid.uuid4()),
+                     trust_id='',
+                     trustor_user_id='')]
+        engine.execute(user_creds.insert(), user)
+
+        event = utils.get_table(engine, 'event')
+        engine.execute(event.delete())
+        stack = utils.get_table(engine, 'stack')
+        engine.execute(stack.delete())
+        stack_ids = ['967aaefb-152e-405d-b13a-35d4c816390a',
+                     '9e9deba9-a303-4f29-84d3-c8165647c47b',
+                     '9a4bd1ec-8b21-46cd-964a-f66cb1cfa2fd']
+        parameters = '{"parameters": {"foo": "test"}}'
+        data = [dict(id=ll_id, name='fruity',
+                     raw_template_id=temp[0]['id'],
+                     user_creds_id=user[0]['id'],
+                     username='testuser', disable_rollback=True,
+                     parameters=parameters)
+                for ll_id in stack_ids]
+
+        engine.execute(stack.insert(), data)
+        return data
+
+    def _check_051(self, engine, data):
+        stack_table = utils.get_table(engine, 'stack')
+        stacks_in_db = list(stack_table.select().execute())
+
+        def stack_from_db(id):
+            for stack in stacks_in_db:
+                if stack['id'] == id:
+                    return stack
+            return None
+
+        for stack in data:
+            # since hidden parameters are encrypted, parameters of test data
+            # stack and parameters of stack from database should not match
+            self.assertNotEqual(stack['parameters'],
+                                stack_from_db(stack['id'])['parameters'])
+
+
 
 class TestHeatMigrationsMySQL(HeatMigrationsCheckers,
                               test_base.MySQLOpportunisticTestCase):
