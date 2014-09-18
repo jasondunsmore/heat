@@ -18,6 +18,7 @@ import sys
 from oslo_config import cfg
 from oslo_db.sqlalchemy import session as db_session
 from oslo_db.sqlalchemy import utils
+from oslo_utils import encodeutils
 from oslo_utils import timeutils
 import osprofiler.sqlalchemy
 import six
@@ -31,6 +32,7 @@ from heat.common.i18n import _
 from heat.db.sqlalchemy import filters as db_filters
 from heat.db.sqlalchemy import migration
 from heat.db.sqlalchemy import models
+from heat.engine import template
 from heat.rpc import api as rpc_api
 
 CONF = cfg.CONF
@@ -1041,3 +1043,54 @@ def db_sync(engine, version=None):
 def db_version(engine):
     """Display the current database version."""
     return migration.db_version(engine)
+
+
+def db_crypt_parameters_and_properties(ctxt, operation, encryption_key):
+    if operation == "encrypt":
+        session = get_session()
+        session.begin()
+
+        raw_templates = session.query(models.RawTemplate).all()
+
+        for raw_template in raw_templates:
+            tmpl = template.Template.load(None, raw_template.id, raw_template)
+
+            encrypted_params = []
+            for param_name, param in tmpl.param_schemata().items():
+                if (param_name in encrypted_params) or (not param.hidden):
+                    continue
+
+                try:
+                    param_val = raw_template.environment['parameters'][
+                        param_name]
+                except KeyError:
+                    param_val = param.default
+
+                encoded_val = encodeutils.safe_encode(param_val)
+                encrypted_val = crypt.encrypt(encoded_val)
+                raw_template.environment['parameters'][param_name] = \
+                    encrypted_val
+                encrypted_params.append(param_name)
+
+            raw_template.environment['encrypted_param_names'] = \
+                encrypted_params
+
+        session.commit()
+
+    elif operation == "decrypt":
+        session = get_session()
+        session.begin()
+        raw_templates = session.query(models.RawTemplate).all()
+
+        for raw_template in raw_templates:
+            parameters = raw_template.environment['parameters']
+            encrypted_params = raw_template.environment[
+                'encrypted_param_names']
+            for param_name in encrypted_params:
+                decrypt_function_name = parameters[param_name][0]
+                decrypt_function = getattr(crypt, decrypt_function_name, None)
+                decrypted_val = decrypt_function(parameters[param_name][1])
+                parameters[param_name] = encodeutils.safe_decode(decrypted_val)
+            raw_template.environment['encrypted_param_names'] = []
+
+        session.commit()

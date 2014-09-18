@@ -45,3 +45,7 @@ IMPL = LazyPluggable('backend',
 
 def purge_deleted(age, granularity='days'):
     IMPL.purge_deleted(age, granularity)
+
+
+def update_encryption(operation, encryption_key):
+    IMPL.db_update_encryption(operation, encryption_key)
