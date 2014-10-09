@@ -57,6 +57,10 @@ class SwiftClientPlugin(client_plugin.ClientPlugin):
         return (isinstance(ex, exceptions.ClientException) and
                 ex.http_status == 404)
 
+    def is_conflict(self, ex):
+        return (isinstance(ex, exceptions.ClientException) and
+                ex.http_status == 409)
+
     def is_over_limit(self, ex):
         return (isinstance(ex, exceptions.ClientException) and
                 ex.http_status == 413)
