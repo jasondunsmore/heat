@@ -34,8 +34,8 @@ except ImportError:
     #Setup fake exception for testing without pyrax
     class NotFound(Exception):
         pass
-
     PYRAX_INSTALLED = False
+
 
 LOG = logging.getLogger(__name__)
 
@@ -172,7 +172,8 @@ class CloudLoadBalancer(resource.Resource):
 
     properties_schema = {
         NAME: properties.Schema(
-            properties.Schema.STRING
+            properties.Schema.STRING,
+            update_allowed=True
         ),
         NODES: properties.Schema(
             properties.Schema.LIST,
@@ -229,7 +230,8 @@ class CloudLoadBalancer(resource.Resource):
                                            'MYSQL', 'POP3', 'POP3S', 'SMTP',
                                            'TCP', 'TCP_CLIENT_FIRST', 'UDP',
                                            'UDP_STREAM', 'SFTP']),
-            ]
+            ],
+            update_allowed=True
         ),
         ACCESS_LIST: properties.Schema(
             properties.Schema.LIST,
@@ -251,29 +253,34 @@ class CloudLoadBalancer(resource.Resource):
             )
         ),
         HALF_CLOSED: properties.Schema(
-            properties.Schema.BOOLEAN
+            properties.Schema.BOOLEAN,
+            update_allowed=True
         ),
         ALGORITHM: properties.Schema(
             properties.Schema.STRING,
             constraints=[
                 constraints.AllowedValues(ALGORITHMS)
-            ]
+            ],
+            update_allowed=True
         ),
         CONNECTION_LOGGING: properties.Schema(
             properties.Schema.BOOLEAN
         ),
         METADATA: properties.Schema(
-            properties.Schema.MAP
+            properties.Schema.MAP,
+            update_allowed=True
         ),
         PORT: properties.Schema(
             properties.Schema.NUMBER,
-            required=True
+            required=True,
+            update_allowed=True
         ),
         TIMEOUT: properties.Schema(
             properties.Schema.NUMBER,
             constraints=[
                 constraints.Range(1, 120),
-            ]
+            ],
+            update_allowed=True
         ),
         CONNECTION_THROTTLE: properties.Schema(
             properties.Schema.MAP,
@@ -308,7 +315,8 @@ class CloudLoadBalancer(resource.Resource):
             properties.Schema.STRING,
             constraints=[
                 constraints.AllowedValues(['HTTP_COOKIE', 'SOURCE_IP']),
-            ]
+            ],
+            update_allowed=True
         ),
         VIRTUAL_IPS: properties.Schema(
             properties.Schema.LIST,
@@ -355,7 +363,8 @@ class CloudLoadBalancer(resource.Resource):
         ),
         HEALTH_MONITOR: properties.Schema(
             properties.Schema.MAP,
-            schema=_health_monitor_schema
+            schema=_health_monitor_schema,
+            update_allowed=True
         ),
         SSL_TERMINATION: properties.Schema(
             properties.Schema.MAP,
@@ -382,7 +391,8 @@ class CloudLoadBalancer(resource.Resource):
                     properties.Schema.BOOLEAN,
                     default=False
                 ),
-            }
+            },
+            update_allowed=True
         ),
         ERROR_PAGE: properties.Schema(
             properties.Schema.STRING
@@ -518,6 +528,10 @@ class CloudLoadBalancer(resource.Resource):
             'connectionLogging': connection_logging,
         }
 
+        ssl_termination = self.properties.get(self.SSL_TERMINATION)
+        if ssl_termination:
+            lb_body['sslTermination'] = ssl_termination
+
         lb_name = (self.properties.get(self.NAME) or
                    self.physical_resource_name())
         LOG.debug("Creating loadbalancer: %s" % {lb_name: lb_body})
@@ -540,16 +554,19 @@ class CloudLoadBalancer(resource.Resource):
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
         """Add and remove nodes specified in the prop_diff."""
-        loadbalancer = self.clb.get(self.resource_id)
+        lb = self.clb.get(self.resource_id)
+        checkers = []
+
         if self.NODES in prop_diff:
-            current_nodes = loadbalancer.nodes
+            current_nodes = lb.nodes
             diff_nodes = self._process_nodes(prop_diff[self.NODES])
-            #Loadbalancers can be uniquely identified by address and port.
-            #Old is a dict of all nodes the loadbalancer currently knows about.
+            # Loadbalancers can be uniquely identified by address and
+            # port.  Old is a dict of all nodes the loadbalancer
+            # currently knows about.
             old = dict(("{0.address}{0.port}".format(node), node)
                        for node in current_nodes)
-            #New is a dict of the nodes the loadbalancer will know about after
-            #this update.
+            # New is a dict of the nodes the loadbalancer will know
+            # about after this update.
             new = dict(("%s%s" % (node["address"],
                                   node[self.NODE_PORT]), node)
                        for node in diff_nodes)
@@ -569,16 +586,18 @@ class CloudLoadBalancer(resource.Resource):
             Add before delete to avoid deleting the last node and getting in
             an invalid state.
             """
-            new_nodes = [self.clb.Node(**new[lb_node])
-                         for lb_node in added]
+            new_nodes = [self.clb.Node(**new[lb_node]) for lb_node in added]
             if new_nodes:
-                loadbalancer.add_nodes(new_nodes)
+                checker = scheduler.TaskRunner(lb.add_nodes, new_nodes)
+                checkers.append(checker)
 
-            #Delete loadbalancers in the old dict that are not in the new dict.
+            # Delete loadbalancers in the old dict that are not in the
+            # new dict.
             for node in deleted:
-                old[node].delete()
+                checker = scheduler.TaskRunner(old[node].delete)
+                checkers.append(checker)
 
-            #Update nodes that have been changed
+            # Update nodes that have been changed
             for node in updated:
                 node_changed = False
                 for attribute in new[node].keys():
@@ -586,7 +605,182 @@ class CloudLoadBalancer(resource.Resource):
                         node_changed = True
                         setattr(old[node], attribute, new[node][attribute])
                 if node_changed:
-                    old[node].update()
+                    checker = scheduler.TaskRunner(old[node].update)
+                    checkers.append(checker)
+
+        def lb_immutable(exc):
+            if 'immutable' in str(exc):
+                return True
+            return False
+
+        def lb_updater(kwargs):
+            while True:
+                yield
+                try:
+                    lb.update(**kwargs)
+                # Pyrax can raise ClientException,
+                # InvalidLoadBalancerParameters, or BadRequest for the
+                # same immutable load balancer error, so check the
+                # exception message instead of the exception type
+                except Exception as exc:
+                    if lb_immutable(exc):
+                        continue
+                    raise
+                else:
+                    break
+
+        update_props = (self.NAME, self.ALGORITHM, self.PROTOCOL,
+                        self.HALF_CLOSED, self.PORT, self.TIMEOUT)
+        kwargs = {}
+        for prop in prop_diff.keys():
+            if prop in update_props:
+                kwargs[prop] = prop_diff[prop]
+        if kwargs:
+            checker = scheduler.TaskRunner(lb_updater, kwargs)
+            checkers.append(checker)
+
+        def health_monitor_adder():
+            while True:
+                yield
+                try:
+                    lb.add_health_monitor(**prop_diff[self.HEALTH_MONITOR])
+                except Exception as exc:
+                    if lb_immutable(exc):
+                        continue
+                    raise
+                else:
+                    break
+
+        def health_monitor_deleter():
+            while True:
+                yield
+                try:
+                    lb.delete_health_monitor()
+                except Exception as exc:
+                    if lb_immutable(exc):
+                        continue
+                    raise
+                else:
+                    break
+
+        if self.HEALTH_MONITOR in prop_diff:
+            if prop_diff[self.HEALTH_MONITOR] is None:
+                checker = scheduler.TaskRunner(health_monitor_deleter)
+            else:
+                # Adding a health monitor is a destructive, so there's
+                # no need to delete, then add
+                checker = scheduler.TaskRunner(health_monitor_adder)
+            checkers.append(checker)
+
+        def session_persistence_adder():
+            sp_mgr = lb.session_persistence()
+            sp = sp_mgr.resource(
+                persistenceType=prop_diff[self.SESSION_PERSISTENCE])
+            while True:
+                yield
+                try:
+                    sp_mgr.add(sp)
+                except Exception as exc:
+                    if lb_immutable(exc):
+                        continue
+                    raise
+                else:
+                    break
+
+        def session_persistence_deleter():
+            sp_mgr = lb.session_persistence()
+            while True:
+                yield
+                try:
+                    sp_mgr.delete()
+                except Exception as exc:
+                    if lb_immutable(exc):
+                        continue
+                    raise
+                else:
+                    break
+
+        if self.SESSION_PERSISTENCE in prop_diff:
+            if prop_diff[self.SESSION_PERSISTENCE] is None:
+                checker = scheduler.TaskRunner(session_persistence_deleter)
+            else:
+                # Adding session persistence is destructive
+                checker = scheduler.TaskRunner(session_persistence_adder)
+            checkers.append(checker)
+
+        def ssl_termination_deleter():
+            while True:
+                yield
+                try:
+                    lb.delete_ssl_termination()
+                except Exception as exc:
+                    if lb_immutable(exc):
+                        continue
+                    raise
+                else:
+                    break
+
+        def ssl_termination_adder():
+            while True:
+                yield
+                try:
+                    lb.add_ssl_termination(**prop_diff[self.SSL_TERMINATION])
+                except Exception as exc:
+                    if lb_immutable(exc):
+                        continue
+                    raise
+                else:
+                    break
+
+        if self.SSL_TERMINATION in prop_diff:
+            if prop_diff[self.SSL_TERMINATION] is None:
+                checker = scheduler.TaskRunner(ssl_termination_deleter)
+            else:
+                # Adding SSL termination is destructive
+                checker = scheduler.TaskRunner(ssl_termination_adder)
+            checkers.append(checker)
+
+        def metadata_deleter():
+            while True:
+                yield
+                try:
+                    lb.delete_metadata()
+                except Exception as exc:
+                    if lb_immutable(exc):
+                        continue
+                    raise
+                else:
+                    break
+
+        def metadata_adder():
+            while True:
+                yield
+                try:
+                    lb.set_metadata(prop_diff[self.METADATA])
+                except Exception as exc:
+                    if lb_immutable(exc):
+                        continue
+                    raise
+                else:
+                    break
+
+        if self.METADATA in prop_diff:
+            if prop_diff[self.METADATA] is None:
+                checker = scheduler.TaskRunner(metadata_deleter)
+            else:
+                checker = scheduler.TaskRunner(metadata_adder)
+            checkers.append(checker)
+
+        return checkers
+
+    def check_update_complete(self, checkers):
+        '''Push all checkers to completion in list order.'''
+        for checker in checkers:
+            if not checker.started():
+                checker.start()
+            if not checker.step():
+                return False
+        return True
 
     def handle_delete(self):
         if self.resource_id is None:
