@@ -202,11 +202,9 @@ class RackspaceSwiftClient(swift.SwiftClientPlugin):
         '''
         Return a Swift TempURL.
         '''
-        def tenant_uuid():
-            access = self.context.auth_token_info['access']
-            for role in access['user']['roles']:
-                if role['name'] == 'object-store:default':
-                    return role['tenantId']
+        
+        sw_url = parse.urlparse(self.client().url)
+        tenant_uuid = sw_url.path.split("/")[-1]
 
         key_header = 'x-account-meta-temp-url-key'
         if key_header in self.client().head_account():
@@ -215,12 +213,11 @@ class RackspaceSwiftClient(swift.SwiftClientPlugin):
             key = hashlib.sha224(str(random.getrandbits(256))).hexdigest()[:32]
             self.client().post_account({key_header: key})
 
-        path = '/v1/%s/%s/%s' % (tenant_uuid(), container_name, obj_name)
+        path = '/v1/%s/%s/%s' % (tenant_uuid, container_name, obj_name)
         if timeout is None:
             timeout = swift.MAX_EPOCH - 60 - time.time()
         tempurl = swiftclient_utils.generate_temp_url(path, timeout, key,
                                                       method)
-        sw_url = parse.urlparse(self.client().url)
         return '%s://%s%s' % (sw_url.scheme, sw_url.netloc, tempurl)
 
 
