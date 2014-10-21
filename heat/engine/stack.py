@@ -462,6 +462,7 @@ class Stack(collections.Mapping):
             raise StackValidationFailed(message=_("Duplicate names %s") %
                                         dup_names)
 
+        import ipdb; ipdb.set_trace()
         for res in self.dependencies:
             try:
                 result = res.validate()

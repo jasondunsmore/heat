@@ -132,6 +132,18 @@ class KeyPair(resource.Resource):
     def FnGetRefId(self):
         return self.resource_id
 
+    def validate(self):
+        super(KeyPair, self).validate()
+        name = self.properties[self.NAME]
+        try:
+            self.client_plugin().get_keypair(name)
+        except exception.UserKeyPairMissing:
+            pass
+        else:
+            msg = _('Cannot create KeyPair resource with a name of "%s" (a '
+                    'keypair with that name already exists)') % name
+            raise exception.StackValidationFailed(message=msg)
+
 
 class KeypairConstraint(constraints.BaseCustomConstraint):
 

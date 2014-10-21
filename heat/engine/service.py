@@ -728,6 +728,7 @@ class EngineService(service.Service):
         updated_stack.parameters.set_stack_id(current_stack.identifier())
 
         self._validate_deferred_auth_context(cnxt, updated_stack)
+        import ipdb; ipdb.set_trace()
         updated_stack.validate()
 
         event = eventlet.event.Event()

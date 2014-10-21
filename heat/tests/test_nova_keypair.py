@@ -15,6 +15,8 @@ import collections
 import copy
 import six
 
+import mox
+
 from heat.common import exception
 from heat.engine.clients.os import nova
 from heat.engine.resources import nova_keypair
@@ -177,6 +179,30 @@ class NovaKeyPairTest(HeatTestCase):
                          tp_test.FnGetAtt('public_key'))
         self.assertEqual((tp_test.CREATE, tp_test.COMPLETE), tp_test.state)
         self.assertEqual(tp_test.resource_id, created_key.name)
+        self.m.VerifyAll()
+
+    def test_validate_okay(self):
+        stack = utils.parse_stack(self.kp_template)
+        definition = stack.t.resource_definitions(stack)['kp']
+        test_res = nova_keypair.KeyPair('kp', definition, stack)
+        self.m.StubOutWithMock(nova.NovaClientPlugin, 'get_keypair')
+        nova.NovaClientPlugin.get_keypair('key_pair').AndRaise(
+            exception.UserKeyPairMissing(key_name='foo'))
+        self.m.ReplayAll()
+        self.assertIsNone(test_res.validate())
+        self.m.VerifyAll()
+
+    def test_validate_failure_key_exists(self):
+        stack = utils.parse_stack(self.kp_template)
+        definition = stack.t.resource_definitions(stack)['kp']
+        test_res = nova_keypair.KeyPair('kp', definition, stack)
+        self.m.StubOutWithMock(nova.NovaClientPlugin, 'get_keypair')
+        nova.NovaClientPlugin.get_keypair('key_pair').AndReturn('foo')
+        self.m.ReplayAll()
+        exc = self.assertRaises(exception.StackValidationFailed,
+                                test_res.validate)
+        self.assertIn('Cannot create KeyPair resource with a name of '
+                      '"key_pair"', str(exc))
         self.m.VerifyAll()
 
 
