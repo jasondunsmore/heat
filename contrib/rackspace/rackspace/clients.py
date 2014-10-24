@@ -10,10 +10,10 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
 """Client Libraries for Rackspace Resources."""
 
 import hashlib
+import itertools
 import random
 import time
 
@@ -27,6 +27,7 @@ from troveclient import client as tc
 from heat.common import exception
 from heat.common.i18n import _LI
 from heat.common.i18n import _LW
+from heat.engine import constraints
 from heat.engine.clients import client_plugin
 from heat.engine.clients.os import cinder
 from heat.engine.clients.os import glance
@@ -45,30 +46,39 @@ except ImportError:
 
 class RackspaceClientPlugin(client_plugin.ClientPlugin):
 
-    pyrax = None
+    if pyrax is not None:
+        exceptions_module = pyrax.exceptions
+
+    rax_auth = None
 
     def _get_client(self, name):
-        if self.pyrax is None:
+        if self.rax_auth is None:
             self._authenticate()
-        return self.pyrax.get_client(
+        return self.rax_auth.get_client(
             name, cfg.CONF.region_name_for_services)
 
     def _authenticate(self):
         """Create an authenticated client context."""
-        self.pyrax = pyrax.create_context("rackspace")
-        self.pyrax.auth_endpoint = self.context.auth_url
+        self.rax_auth = pyrax.create_context("rackspace")
+        self.rax_auth.auth_endpoint = self.context.auth_url
         LOG.info(_LI("Authenticating username: %s") %
                  self.context.username)
         tenant = self.context.tenant_id
         tenant_name = self.context.tenant
-        self.pyrax.auth_with_token(self.context.auth_token,
-                                   tenant_id=tenant,
-                                   tenant_name=tenant_name)
-        if not self.pyrax.authenticated:
+        self.rax_auth.auth_with_token(self.context.auth_token,
+                                      tenant_id=tenant,
+                                      tenant_name=tenant_name)
+        if not self.rax_auth.authenticated:
             LOG.warn(_LW("Pyrax Authentication Failed."))
             raise exception.AuthorizationFailure()
         LOG.info(_LI("User %s authenticated successfully."),
                  self.context.username)
+
+    def is_not_found(self, ex):
+        return isinstance(ex, self.exceptions_module.NotFound)
+
+    def is_over_limit(self, ex):
+        return isinstance(ex, self.exceptions_module.OverLimit)
 
 
 class RackspaceAutoScaleClient(RackspaceClientPlugin):
@@ -102,7 +112,6 @@ class RackspaceNovaClient(nova.NovaClientPlugin,
             client = super(RackspaceNovaClient, self)._create()
         return client
 
-
 class RackspaceCloudNetworksClient(RackspaceClientPlugin):
 
     def _create(self):
@@ -113,15 +122,15 @@ class RackspaceCloudNetworksClient(RackspaceClientPlugin):
         in 1.8, it still doesn't work for contexts because of caching of the
         nova client.
         """
-        if not self.pyrax:
+        if self.rax_auth is None:
             self._authenticate()
         # need special handling now since the contextual
         # pyrax doesn't handle "networks" not being in
         # the catalog
         ep = pyrax._get_service_endpoint(
-            self.pyrax, "compute", region=cfg.CONF.region_name_for_services)
+            self.rax_auth, "compute", region=cfg.CONF.region_name_for_services)
         cls = pyrax._client_classes['compute:network']
-        client = cls(self.pyrax,
+        client = cls(self.rax_auth,
                      region_name=cfg.CONF.region_name_for_services,
                      management_url=ep)
         return client
@@ -247,3 +256,51 @@ class RackspaceGlanceClient(glance.GlanceClientPlugin):
             'insecure': self._get_client_option('glance', 'insecure')
         }
         return gc.Client('2', endpoint, **args)
+
+
+class RackspaceMonitoringClient(RackspaceClientPlugin):
+
+    def _create(self):
+        return self._get_client("cloud_monitoring")
+
+
+class CheckTypeConstraint(constraints.BaseCustomConstraint):
+
+    if pyrax is not None:
+        expected_exceptions = (pyrax.exceptions.NotFound,)
+
+    def validate_with_client(self, clients, value):
+        types = [t.id for t
+                 in clients.client("cloud_monitoring").list_check_types()]
+        if value not in types:
+            raise pyrax.exceptions.NotFound(404, message="Invalid check type; "
+                                            "must be one of %s" % types)
+
+
+class NotificationTypeConstraint(constraints.BaseCustomConstraint):
+
+    if pyrax is not None:
+        expected_exceptions = (pyrax.exceptions.NotFound,)
+
+    def validate_with_client(self, clients, value):
+        types = [t.id for t in
+                 clients.client("cloud_monitoring").list_notification_types()]
+        if value not in types:
+            raise pyrax.exceptions.NotFound(404, message="Invalid notification "
+                                            "type; must be one of %s" % types)
+
+class MonitoringZoneConstraint(constraints.BaseCustomConstraint):
+
+    if pyrax is not None:
+        expected_exceptions = (pyrax.exceptions.NotFound,)
+
+    def validate_with_client(self, clients, value):
+        m_zones = clients.client("cloud_monitoring").list_monitoring_zones()
+        zones = itertools.chain.from_iterable([(z.id, z.label)
+                                               for z in m_zones])
+        if value not in list(zones):
+            raise pyrax.exceptions.NotFound(404, message="%s is not a valid "
+                                            "monitoring zone." % value)
+        
+            
+        
