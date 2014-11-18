@@ -76,10 +76,17 @@ def soft_delete_aware_query(context, *args, **kwargs):
 
     query = model_query(context, *args)
     show_deleted = kwargs.get('show_deleted') or context.show_deleted
+    show_hidden = kwargs.get('show_hidden')
+
+    criteria = {}
+
+    if not show_hidden:
+        criteria['hidden'] = False
 
     if not show_deleted:
-        query = query.filter_by(deleted_at=None)
-    return query
+        criteria['deleted_at'] = None
+
+    return query.filter_by(**criteria)
 
 
 def _session(context):
@@ -352,14 +359,16 @@ def _paginate_query(context, query, model, limit=None, sort_keys=None,
 
 
 def _query_stack_get_all(context, tenant_safe=True, show_deleted=False,
-                         show_nested=False):
+                         show_hidden=False, show_nested=False):
     if show_nested:
         query = soft_delete_aware_query(context, models.Stack,
-                                        show_deleted=show_deleted).\
+                                        show_deleted=show_deleted,
+                                        show_hidden=show_hidden).\
             filter_by(backup=False)
     else:
         query = soft_delete_aware_query(context, models.Stack,
-                                        show_deleted=show_deleted).\
+                                        show_deleted=show_deleted,
+                                        show_hidden=show_hidden).\
             filter_by(owner_id=None)
 
     if tenant_safe:
@@ -369,9 +378,10 @@ def _query_stack_get_all(context, tenant_safe=True, show_deleted=False,
 
 def stack_get_all(context, limit=None, sort_keys=None, marker=None,
                   sort_dir=None, filters=None, tenant_safe=True,
-                  show_deleted=False, show_nested=False):
+                  show_deleted=False, show_hidden=False, show_nested=False):
     query = _query_stack_get_all(context, tenant_safe,
                                  show_deleted=show_deleted,
+                                 show_hidden=show_hidden,
                                  show_nested=show_nested)
     return _filter_and_page_query(context, query, limit, sort_keys,
                                   marker, sort_dir, filters).all()
@@ -394,9 +404,10 @@ def _filter_and_page_query(context, query, limit=None, sort_keys=None,
 
 
 def stack_count_all(context, filters=None, tenant_safe=True,
-                    show_deleted=False, show_nested=False):
+                    show_deleted=False, show_hidden=False, show_nested=False):
     query = _query_stack_get_all(context, tenant_safe=tenant_safe,
                                  show_deleted=show_deleted,
+                                 show_hidden=show_hidden,
                                  show_nested=show_nested)
     query = db_filters.exact_filter(query, models.Stack, filters)
     return query.count()

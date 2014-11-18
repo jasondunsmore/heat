@@ -79,7 +79,7 @@ class Stack(collections.Mapping):
                  adopt_stack_data=None, stack_user_project_id=None,
                  created_time=None, updated_time=None,
                  user_creds_id=None, tenant_id=None,
-                 use_stored_context=False, username=None,
+                 use_stored_context=False, username=None, hidden=False,
                  nested_depth=0):
         '''
         Initialise from a context, name, Template object and (optionally)
@@ -114,6 +114,7 @@ class Stack(collections.Mapping):
         self.created_time = created_time
         self.updated_time = updated_time
         self.user_creds_id = user_creds_id
+        self.hidden = hidden
         self.nested_depth = nested_depth
 
         if use_stored_context:
@@ -266,11 +267,12 @@ class Stack(collections.Mapping):
     @classmethod
     def load_all(cls, context, limit=None, marker=None, sort_keys=None,
                  sort_dir=None, filters=None, tenant_safe=True,
-                 show_deleted=False, resolve_data=True,
+                 show_deleted=False, resolve_data=True, show_hidden=False,
                  show_nested=False):
         stacks = db_api.stack_get_all(context, limit, sort_keys, marker,
                                       sort_dir, filters, tenant_safe,
-                                      show_deleted, show_nested) or []
+                                      show_deleted, show_hidden,
+                                      show_nested) or []
         for stack in stacks:
             yield cls._from_db(context, stack, resolve_data=resolve_data)
 
@@ -313,7 +315,8 @@ class Stack(collections.Mapping):
             'updated_at': self.updated_time,
             'user_creds_id': self.user_creds_id,
             'backup': backup,
-            'nested_depth': self.nested_depth
+            'nested_depth': self.nested_depth,
+            'hidden': self.hidden
         }
         if self.id:
             db_api.stack_update(self.context, self.id, s)

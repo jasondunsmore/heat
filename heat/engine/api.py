@@ -48,6 +48,10 @@ def extract_args(params):
             params[api.PARAM_DISABLE_ROLLBACK])
         kwargs[api.PARAM_DISABLE_ROLLBACK] = disable_rollback
 
+    if api.PARAM_HIDDEN in params:
+        hidden = param_utils.extract_bool(params[api.PARAM_HIDDEN])
+        kwargs[api.PARAM_HIDDEN] = hidden
+
     if api.PARAM_SHOW_DELETED in params:
         params[api.PARAM_SHOW_DELETED] = param_utils.extract_bool(
             params[api.PARAM_SHOW_DELETED])
