@@ -79,7 +79,7 @@ class Stack(collections.Mapping):
                  adopt_stack_data=None, stack_user_project_id=None,
                  created_time=None, updated_time=None,
                  user_creds_id=None, tenant_id=None,
-                 use_stored_context=False, username=None,
+                 use_stored_context=False, username=None, hidden=False,
                  nested_depth=0):
         '''
         Initialise from a context, name, Template object and (optionally)
@@ -114,6 +114,7 @@ class Stack(collections.Mapping):
         self.created_time = created_time
         self.updated_time = updated_time
         self.user_creds_id = user_creds_id
+        self.hidden = hidden
         self.nested_depth = nested_depth
 
         if use_stored_context:
@@ -569,7 +570,7 @@ class Stack(collections.Mapping):
             self.stack_task, action=self.CREATE,
             reverse=False, post_func=rollback,
             error_wait_time=cfg.CONF.error_wait_time)
-        creator(timeout=self.timeout_secs())
+        creator(timeout=self.timeout_secs(), hidden=self.hidden)
 
     def _adopt_kwargs(self, resource):
         data = self.adopt_stack_data

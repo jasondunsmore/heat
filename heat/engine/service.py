@@ -524,7 +524,7 @@ class EngineService(service.Service):
 
     @request_context
     def count_stacks(self, cnxt, filters=None, tenant_safe=True,
-                     show_deleted=False, show_nested=False):
+                     show_deleted=False, show_hidden=False, show_nested=False):
         """
         Return the number of stacks that match the given filters
         :param cnxt: RPC context.
@@ -537,6 +537,7 @@ class EngineService(service.Service):
         return db_api.stack_count_all(cnxt, filters=filters,
                                       tenant_safe=tenant_safe,
                                       show_deleted=show_deleted,
+                                      show_hidden=show_hidden,
                                       show_nested=show_nested)
 
     def _validate_deferred_auth_context(self, cnxt, stack):

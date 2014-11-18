@@ -184,6 +184,7 @@ class StackController(object):
             'sort_dir': 'single',
             'sort_keys': 'multi',
             'show_deleted': 'single',
+            'show_hidden': 'single',
             'show_nested': 'single',
         }
         params = util.get_allowed_params(req.params, whitelist)
@@ -194,6 +195,11 @@ class StackController(object):
             params[engine_api.PARAM_SHOW_DELETED] = param_utils.extract_bool(
                 params[engine_api.PARAM_SHOW_DELETED])
             show_deleted = params[engine_api.PARAM_SHOW_DELETED]
+        show_hidden = False
+        if engine_api.PARAM_SHOW_HIDDEN in params:
+            params[engine_api.PARAM_SHOW_HIDDEN] = param_utils.extract_bool(
+                params[engine_api.PARAM_SHOW_HIDDEN])
+            show_hidden = params[engine_api.PARAM_SHOW_HIDDEN]
         show_nested = False
         if engine_api.PARAM_SHOW_NESTED in params:
             params[engine_api.PARAM_SHOW_NESTED] = param_utils.extract_bool(
@@ -222,6 +228,7 @@ class StackController(object):
                                                      filters=filter_params,
                                                      tenant_safe=tenant_safe,
                                                      show_deleted=show_deleted,
+                                                     show_hidden=show_hidden,
                                                      show_nested=show_nested)
             except AttributeError as exc:
                 LOG.warn(_LW("Old Engine Version: %s") % exc)
