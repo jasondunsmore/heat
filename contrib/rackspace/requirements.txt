@@ -1,3 +1,4 @@
-pyrax>=1.9.2
+# pyrax>=1.9.2
+-e git+https://github.com/rackerlabs/heat-pyrax.git@temp-patch-deploy#egg=pyrax
 -e git+https://github.com/jasondunsmore/paramiko.git@bug413#egg=paramiko
 psutil
