@@ -289,6 +289,7 @@ class NotificationTypeConstraint(constraints.BaseCustomConstraint):
             raise pyrax.exceptions.NotFound(404, message="Invalid notification "
                                             "type; must be one of %s" % types)
 
+
 class MonitoringZoneConstraint(constraints.BaseCustomConstraint):
 
     if pyrax is not None:
@@ -303,4 +304,35 @@ class MonitoringZoneConstraint(constraints.BaseCustomConstraint):
                                             "monitoring zone." % value)
         
             
-        
+class RackspaceRackConnectClient(RackspaceClientPlugin):
+
+    def _create(self):
+        """Rackspace RackConnect client."""
+        return self._get_client("rackconnect")
+
+
+class RackconnectNetworkConstraint(constraints.BaseCustomConstraint):
+
+    if pyrax:
+        expected_exceptions = (pyrax.exceptions.NotFound,)
+    
+    def validate_with_client(self, clients, value):
+        nets = clients.client("rackconnect").list_networks()
+        vals = itertools.chain.from_iterable([(n.id, n.name) for n in nets])
+        if value not in list(vals):
+            raise pyrax.exceptions.NotFound(404, message="%s is not a valid "
+                                            "Rackconnect V3 network" % value)
+
+
+class RackconnectPoolConstraint(constraints.BaseCustomConstraint):
+
+    if pyrax:
+        expected_exceptions = (pyrax.exceptions.NotFound,)
+
+    def validate_with_client(self, clients, value):
+        pools = clients.client("rackconnect").list_load_balancer_pools()
+        vals = itertools.chain.from_iterable([(p.id, p.name) for p in pools])
+        if value not in list(vals):
+            raise pyrax.exceptions.NotFound(404, message="%s is not a valid "
+                                            "Rackconnect V3 load balancer pool"
+                                            % value)
