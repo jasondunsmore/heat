@@ -188,6 +188,37 @@ def resource_data_get(resource, key):
     return result.value
 
 
+def stack_tag_get_all(stack):
+    """
+
+    """
+    tags = (model_query(stack.context, models.StackTag)
+            .filter_by(stack_id=stack.id))
+
+    if not tags:
+        raise exception.NotFound(_('No stack tags found'))
+
+    return tags
+
+
+def stack_tag_get(stack, key):
+    """
+    """
+    return stack_tag_get_by_key(stack.context, stack.id, key)
+
+
+def stack_tag_get_by_key(context, stack_id, key):
+    """
+    """
+    result = (model_query(context, models.StackTag)
+              .filter_by(stack_id=stack_id)
+              .filter_by(key=key).first())
+
+    if not result:
+        raise exception.NotFound(_('No stack tag found'))
+    return result
+
+
 def _encrypt(value):
     if value is not None:
         return crypt.encrypt(value.encode('utf-8'))

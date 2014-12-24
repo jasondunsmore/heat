@@ -1139,7 +1139,7 @@ class StackTest(common.HeatTestCase):
                               user_creds_id=stack.user_creds_id,
                               tenant_id='test_tenant_id',
                               use_stored_context=False,
-                              username=mox.IgnoreArg())
+                              username=mox.IgnoreArg(), tags=mox.IgnoreArg())
 
         self.m.ReplayAll()
         parser.Stack.load(self.ctx, stack_id=self.stack.id,
@@ -1269,6 +1269,14 @@ class StackTest(common.HeatTestCase):
         self.ctx.username = 'not foobar'
         stack = parser.Stack.load(self.ctx, stack_id=stack_id)
         self.assertEqual('foobar', stack.username)
+
+    def test_load_reads_tags(self):
+        self.stack = parser.Stack(self.ctx, 'stack_name', self.tmpl,
+                                  tags={'foo': 'bar'})
+        self.stack.store()
+        stack_id = self.stack.id
+        stack = parser.Stack.load(self.ctx, stack_id=stack_id)
+        self.assertEqual({'foo': 'bar'}, stack.tags)
 
     def test_load_all(self):
         stack1 = parser.Stack(self.ctx, 'stack1', self.tmpl)
@@ -3833,6 +3841,16 @@ class StackTest(common.HeatTestCase):
         # Store again, ID should not change
         self.stack.store()
         self.assertEqual(user_creds_id, db_stack.user_creds_id)
+
+    def test_store_saves_tags(self):
+        self.stack = parser.Stack(self.ctx, 'tags_stack', self.tmpl)
+        self.stack.store()
+        db_stack = db_api.stack_get(self.ctx, self.stack.id)
+        self.assertIsNone(db_stack.tags)
+        self.stack.tags = {'source': 'heat', 'foo': 'bar'}
+        self.stack.store()
+        db_stack = db_api.stack_get(self.ctx, self.stack.id)
+        self.assertEqual({'source': 'heat', 'foo': 'bar'}, db_stack.tags)
 
     def test_store_saves_creds_trust(self):
         """
