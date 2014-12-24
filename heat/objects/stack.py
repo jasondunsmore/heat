@@ -57,7 +57,7 @@ class Stack(
         'current_deps': heat_fields.JsonField(),
         'prev_raw_template_id': fields.IntegerField(),
         'prev_raw_template': fields.ObjectField('RawTemplate'),
-        'tag': fields.ObjectField('StackTag'),
+        'tags': heat_fields.ListField(nullable=True, default=None),
     }
 
     @staticmethod
@@ -145,6 +145,18 @@ class Stack(
     @classmethod
     def delete(cls, context, stack_id):
         return db_api.stack_delete(context, stack_id)
+
+    @classmethod
+    def tag_set(cls, context, stack_id, tags):
+        return db_api.stack_tag_set(context, stack_id, tags)
+
+    @classmethod
+    def tag_delete(cls, context, stack_id):
+        return db_api.stack_tag_delete(context, stack_id)
+
+    @classmethod
+    def tag_get(cls, context, stack_id):
+        return db_api.stack_tag_get(context, stack_id)
 
     def update_and_save(self, values):
         db_stack = self.__class__.update_by_id(self._context, self.id, values)

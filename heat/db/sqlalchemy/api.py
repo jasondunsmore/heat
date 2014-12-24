@@ -200,6 +200,35 @@ def resource_data_get(resource, key):
     return result.value
 
 
+def stack_tag_set(context, stack_id, tags):
+    session = get_session()
+    with session.begin():
+        stack_tag_delete(context, stack_id)
+        result = []
+        for tag in tags:
+            stack_tag = models.StackTag()
+            stack_tag.tag = tag
+            stack_tag.stack_id = stack_id
+            stack_tag.save(session=session)
+            result.append(stack_tag)
+        return result or None
+
+
+def stack_tag_delete(context, stack_id):
+    session = get_session()
+    with session.begin():
+        result = stack_tag_get(context, stack_id)
+        for tag in result:
+            tag.delete()
+
+
+def stack_tag_get(context, stack_id):
+    result = (model_query(context, models.StackTag)
+              .filter_by(stack_id=stack_id)
+              .all())
+    return result or None
+
+
 def _encrypt(value):
     if value is not None:
         return crypt.encrypt(value.encode('utf-8'))
