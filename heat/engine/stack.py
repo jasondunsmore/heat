@@ -79,7 +79,7 @@ class Stack(collections.Mapping):
                  created_time=None, updated_time=None,
                  user_creds_id=None, tenant_id=None,
                  use_stored_context=False, username=None,
-                 nested_depth=0, strict_validate=True):
+                 nested_depth=0, strict_validate=True, tags=None):
         '''
         Initialise from a context, name, Template object and (optionally)
         Environment object. The database ID may also be initialised, if the
@@ -118,6 +118,7 @@ class Stack(collections.Mapping):
         self.user_creds_id = user_creds_id
         self.nested_depth = nested_depth
         self.strict_validate = strict_validate
+        self.tags = tags
 
         if use_stored_context:
             self.context = self.stored_context()
@@ -294,7 +295,7 @@ class Stack(collections.Mapping):
                    updated_time=stack.updated_at,
                    user_creds_id=stack.user_creds_id, tenant_id=stack.tenant,
                    use_stored_context=use_stored_context,
-                   username=stack.username)
+                   username=stack.username, tags=stack.tags)
 
     @profiler.trace('Stack.store', hide_args=False)
     def store(self, backup=False):
@@ -318,7 +319,8 @@ class Stack(collections.Mapping):
             'updated_at': self.updated_time,
             'user_creds_id': self.user_creds_id,
             'backup': backup,
-            'nested_depth': self.nested_depth
+            'nested_depth': self.nested_depth,
+            'tags': self.tags
         }
         if self.id:
             db_api.stack_update(self.context, self.id, s)

@@ -16,11 +16,11 @@ ENGINE_TOPIC = 'engine'
 PARAM_KEYS = (
     PARAM_TIMEOUT, PARAM_DISABLE_ROLLBACK, PARAM_ADOPT_STACK_DATA,
     PARAM_SHOW_DELETED, PARAM_SHOW_NESTED, PARAM_EXISTING,
-    PARAM_CLEAR_PARAMETERS
+    PARAM_CLEAR_PARAMETERS, PARAM_TAGS
 ) = (
     'timeout_mins', 'disable_rollback', 'adopt_stack_data',
     'show_deleted', 'show_nested', 'existing',
-    'clear_parameters'
+    'clear_parameters', 'tags'
 )
 
 STACK_KEYS = (
@@ -31,7 +31,7 @@ STACK_KEYS = (
     STACK_PARAMETERS, STACK_OUTPUTS, STACK_ACTION,
     STACK_STATUS, STACK_STATUS_DATA, STACK_CAPABILITIES,
     STACK_DISABLE_ROLLBACK, STACK_TIMEOUT, STACK_OWNER,
-    STACK_PARENT, STACK_USER_PROJECT_ID
+    STACK_PARENT, STACK_USER_PROJECT_ID, STACK_TAGS
 ) = (
     'stack_name', 'stack_identity',
     'creation_time', 'updated_time', 'deletion_time',
@@ -40,7 +40,7 @@ STACK_KEYS = (
     'parameters', 'outputs', 'stack_action',
     'stack_status', 'stack_status_reason', 'capabilities',
     'disable_rollback', 'timeout_mins', 'stack_owner',
-    'parent', 'stack_user_project_id'
+    'parent', 'stack_user_project_id', 'tags'
 )
 
 STACK_OUTPUT_KEYS = (

@@ -14,6 +14,7 @@
 import collections
 
 from oslo.utils import timeutils
+import six
 
 from heat.common.i18n import _
 from heat.common.i18n import _LE
@@ -62,6 +63,16 @@ def extract_args(params):
             raise ValueError(_('Invalid adopt data: %s') % exc)
         kwargs[rpc_api.PARAM_ADOPT_STACK_DATA] = adopt_data
 
+    tags = params.get(rpc_api.PARAM_TAGS)
+    if tags:
+        if not isinstance(tags, dict):
+            raise ValueError(_('Invalid tags, not a map: %s') % tags)
+        for tag_name in tags:
+            if not isinstance(tags[tag_name], six.string_types):
+                raise ValueError(_('Invalid tags, value of "%s" is not a '
+                                   'string') % tag_name)
+        kwargs[rpc_api.PARAM_TAGS] = tags
+
     return kwargs
 
 
@@ -105,6 +116,7 @@ def format_stack(stack, preview=False):
         rpc_api.STACK_OWNER: stack.username,
         rpc_api.STACK_PARENT: stack.owner_id,
         rpc_api.STACK_USER_PROJECT_ID: stack.stack_user_project_id,
+        rpc_api.STACK_TAGS: stack.tags,
     }
 
     if not preview:

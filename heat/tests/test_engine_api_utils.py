@@ -292,6 +292,7 @@ class FormatTest(common.HeatTestCase):
             'stack_user_project_id': None,
             'template_description': 'No description',
             'timeout_mins': None,
+            'tags': None,
             'parameters': {
                 'AWS::Region': 'ap-southeast-1',
                 'AWS::StackId': aws_id,
@@ -1033,3 +1034,23 @@ class TestExtractArgs(common.HeatTestCase):
     def test_disable_rollback_extract_bad(self):
         self.assertRaises(ValueError, api.extract_args,
                           {'disable_rollback': 'bad'})
+
+    def test_tags_extract(self):
+        p = {'tags': {"foo": "bar"}}
+        args = api.extract_args(p)
+        self.assertEqual({'foo': 'bar'}, args['tags'])
+
+    def test_tags_extract_not_present(self):
+        args = api.extract_args({})
+        self.assertNotIn('tags', args)
+
+    def test_tags_extract_not_map(self):
+        p = {'tags': ["foo", "bar"]}
+        exc = self.assertRaises(ValueError, api.extract_args, p)
+        self.assertIn('Invalid tags, not a map: ', six.text_type(exc))
+
+    def test_tags_extract_not_string(self):
+        p = {'tags': {"foo": ["bar"]}}
+        exc = self.assertRaises(ValueError, api.extract_args, p)
+        self.assertIn('Invalid tags, value of "foo" is not a string',
+                      six.text_type(exc))
