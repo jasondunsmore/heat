@@ -33,6 +33,7 @@ from heat.db.sqlalchemy import models
 from heat.rpc import api as rpc_api
 
 CONF = cfg.CONF
+CONF.import_opt('hidden_stack_tags', 'heat.common.config')
 CONF.import_opt('max_events_per_stack', 'heat.common.config')
 CONF.import_group('profiler', 'heat.common.config')
 
@@ -372,12 +373,40 @@ def _query_stack_get_all(context, tenant_safe=True, show_deleted=False,
 
 def stack_get_all(context, limit=None, sort_keys=None, marker=None,
                   sort_dir=None, filters=None, tenant_safe=True,
-                  show_deleted=False, show_nested=False):
+                  show_deleted=False, show_nested=False, show_hidden=False):
     query = _query_stack_get_all(context, tenant_safe,
                                  show_deleted=show_deleted,
                                  show_nested=show_nested)
-    return _filter_and_page_query(context, query, limit, sort_keys,
-                                  marker, sort_dir, filters).all()
+    stacks = _filter_and_page_query(context, query, limit, sort_keys,
+                                    marker, sort_dir, filters).all()
+    if show_hidden:
+        return stacks
+    return _filter_hidden_stacks(stacks)
+
+
+def _filter_hidden_stacks(stacks):
+    hidden_tags = cfg.CONF.hidden_stack_tags
+    if not hidden_tags:
+        return stacks
+
+    filtered_stacks = []
+    for stack in stacks:
+
+        # Keep stacks with no tags
+        if not stack.tags:
+            filtered_stacks.append(stack)
+            continue
+
+        for key in hidden_tags.keys():
+
+            # Don't show stacks that have hidden tags
+            if key in stack.tags and hidden_tags[key] == stack.tags[key]:
+                continue
+
+            # Show stacks with non-hidden tags
+            filtered_stacks.append(stack)
+
+    return filtered_stacks
 
 
 def _filter_and_page_query(context, query, limit=None, sort_keys=None,
@@ -397,12 +426,16 @@ def _filter_and_page_query(context, query, limit=None, sort_keys=None,
 
 
 def stack_count_all(context, filters=None, tenant_safe=True,
-                    show_deleted=False, show_nested=False):
+                    show_deleted=False, show_nested=False, show_hidden=False):
     query = _query_stack_get_all(context, tenant_safe=tenant_safe,
                                  show_deleted=show_deleted,
                                  show_nested=show_nested)
     query = db_filters.exact_filter(query, models.Stack, filters)
-    return query.count()
+    stacks = query.all()
+
+    if show_hidden:
+        return len(stacks)
+    return len(_filter_hidden_stacks(stacks))
 
 
 def stack_create(context, values):

@@ -151,6 +151,9 @@ engine_opts = [
     cfg.BoolOpt('enable_stack_adopt',
                 default=False,
                 help=_('Enable the preview Stack Adopt feature.')),
+    cfg.DictOpt('hidden_stack_tags',
+                default={},
+                help=_('Stacks containing these tag names will be hidden.')),
     cfg.StrOpt('onready',
                help=_('Deprecated.'))]
 

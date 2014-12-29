@@ -273,10 +273,11 @@ class Stack(collections.Mapping):
     def load_all(cls, context, limit=None, marker=None, sort_keys=None,
                  sort_dir=None, filters=None, tenant_safe=True,
                  show_deleted=False, resolve_data=True,
-                 show_nested=False):
+                 show_nested=False, show_hidden=False):
         stacks = db_api.stack_get_all(context, limit, sort_keys, marker,
                                       sort_dir, filters, tenant_safe,
-                                      show_deleted, show_nested) or []
+                                      show_deleted, show_nested,
+                                      show_hidden) or []
         for stack in stacks:
             yield cls._from_db(context, stack, resolve_data=resolve_data)
 
