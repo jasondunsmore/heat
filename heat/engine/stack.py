@@ -770,6 +770,7 @@ class Stack(collections.Mapping):
             self.t.files = newstack.t.files
             self.disable_rollback = newstack.disable_rollback
             self.timeout_mins = newstack.timeout_mins
+            self.tags = newstack.tags
             self._set_param_stackid()
 
             try:
