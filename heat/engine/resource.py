@@ -14,6 +14,7 @@
 import base64
 import contextlib
 import datetime as dt
+import json
 import warnings
 
 from oslo_config import cfg
@@ -22,6 +23,7 @@ from oslo_utils import encodeutils
 from oslo_utils import excutils
 import six
 
+from heat.common import crypt
 from heat.common import exception
 from heat.common.i18n import _
 from heat.common.i18n import _LE
@@ -169,6 +171,7 @@ class Resource(object):
         self._data = {}
         self._rsrc_metadata = None
         self._stored_properties_data = None
+        self.properties_data_encrypted = False
         self.created_time = None
         self.updated_time = None
         self._rpc_client = None
@@ -202,7 +205,9 @@ class Resource(object):
         except exception.NotFound:
             self._data = {}
         self._rsrc_metadata = resource.rsrc_metadata
-        self._stored_properties_data = resource.properties_data
+        self._stored_properties_data = Resource._decrypt_properties_data(
+            resource.properties_data_encrypted, resource.properties_data)
+
         self.created_time = resource.created_at
         self.updated_time = resource.updated_at
         self.needed_by = resource.needed_by
@@ -723,10 +728,8 @@ class Resource(object):
         if before is None:
             before = self.frozen_definition()
 
-        before_props = before.properties(self.properties_schema,
-                                         self.context)
-        after_props = after.properties(self.properties_schema,
-                                       self.context)
+        before_props = before.properties(self.properties_schema, self.context)
+        after_props = after.properties(self.properties_schema, self.context)
 
         yield self._break_if_required(
             self.UPDATE, environment.HOOK_PRE_UPDATE)
@@ -946,8 +949,38 @@ class Resource(object):
             except Exception as ex:
                 LOG.warn(_LW('db error %s'), ex)
 
+    @staticmethod
+    def _encrypt_properties_data(data):
+        if cfg.CONF.encrypt_parameters_and_properties and data:
+            result = {}
+            for prop_name, prop_value in data.items():
+                prop_string = json.dumps(prop_value)
+                encoded_value = encodeutils.safe_encode(prop_string)
+                encrypted_value = crypt.encrypt(encoded_value)
+                result[prop_name] = encrypted_value
+            return (True, result)
+        return (False, data)
+
+    @staticmethod
+    def _decrypt_properties_data(encrypted, data):
+        if encrypted and data:
+            properties_data = {}
+            for prop_name, prop_value in data.items():
+                decrypt_function_name = prop_value[0]
+                decrypt_function = getattr(crypt, decrypt_function_name,
+                                           None)
+                decrypted_value = decrypt_function(prop_value[1])
+                decoded_value = encodeutils.safe_decode(decrypted_value)
+                prop_string = json.loads(decoded_value)
+                properties_data[prop_name] = prop_string
+            return properties_data
+        return data
+
     def _store(self, metadata=None):
         '''Create the resource in the database.'''
+
+        properties_data_encrypted, properties_data = \
+            Resource._encrypt_properties_data(self._stored_properties_data)
         try:
             rs = {'action': self.action,
                   'status': self.status,
@@ -956,7 +989,8 @@ class Resource(object):
                   'nova_instance': self.resource_id,
                   'name': self.name,
                   'rsrc_metadata': metadata,
-                  'properties_data': self._stored_properties_data,
+                  'properties_data': properties_data,
+                  'properties_data_encrypted': properties_data_encrypted,
                   'needed_by': self.needed_by,
                   'requires': self.requires,
                   'replaces': self.replaces,
@@ -986,13 +1020,16 @@ class Resource(object):
         self.status = status
         self.status_reason = reason
 
+        properties_data_encrypted, properties_data = \
+            Resource._encrypt_properties_data(self._stored_properties_data)
         data = {
             'action': self.action,
             'status': self.status,
             'status_reason': reason,
             'stack_id': self.stack.id,
             'updated_at': self.updated_time,
-            'properties_data': self._stored_properties_data,
+            'properties_data': properties_data,
+            'properties_data_encrypted': properties_data_encrypted,
             'needed_by': self.needed_by,
             'requires': self.requires,
             'replaces': self.replaces,
