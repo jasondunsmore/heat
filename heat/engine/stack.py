@@ -25,6 +25,8 @@ from osprofiler import profiler
 import six
 
 from heat.common import context as common_context
+from heat.common import crypt
+from heat.common import environment_format as env_fmt
 from heat.common import exception
 from heat.common.i18n import _
 from heat.common.i18n import _LE
@@ -377,6 +379,19 @@ class Stack(collections.Mapping):
         tags = None
         if stack.tags:
             tags = [t.tag for t in stack.tags]
+
+        parameters = stack.raw_template.environment[env_fmt.PARAMETERS]
+        encrypted_param_names = stack.raw_template.environment[
+            env_fmt.ENCRYPTED_PARAM_NAMES]
+
+        # If any of the parameters were encrypted, then decrypt them
+        for param_name in encrypted_param_names:
+            decrypt_function_name = parameters[param_name][0]
+            decrypt_function = getattr(crypt, decrypt_function_name)
+            decrypted_val = decrypt_function(parameters[param_name][1])
+            parameters[param_name] = encodeutils.safe_decode(decrypted_val)
+
+        template.env.params = parameters
         return cls(context, stack.name, template,
                    stack_id=stack.id,
                    action=stack.action, status=stack.status,
@@ -408,7 +423,6 @@ class Stack(collections.Mapping):
           status, action and status_reason.
         - We sometimes only want the DB attributes.
         """
-
         stack = {
             'owner_id': self.owner_id,
             'username': self.username,
@@ -437,6 +451,16 @@ class Stack(collections.Mapping):
 
         return stack
 
+    def encrypt_hidden_parameters(self):
+        if cfg.CONF.encrypt_parameters_and_properties:
+            for param_name, param in self.t.env.params.items():
+                if not self.t.param_schemata()[param_name].hidden:
+                    continue
+                clear_text_val = self.t.env.params.get(param_name)
+                encoded_val = encodeutils.safe_encode(clear_text_val)
+                self.t.env.params[param_name] = crypt.encrypt(encoded_val)
+                self.t.env.encrypted_param_names.append(param_name)
+
     @profiler.trace('Stack.store', hide_args=False)
     def store(self, backup=False):
         '''
@@ -448,6 +472,7 @@ class Stack(collections.Mapping):
         s['backup'] = backup
         s['updated_at'] = self.updated_time
         if self.t.id is None:
+            self.encrypt_hidden_parameters()
             s['raw_template_id'] = self.t.store(self.context)
         else:
             s['raw_template_id'] = self.t.id
