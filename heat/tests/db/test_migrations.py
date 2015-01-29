@@ -609,6 +609,37 @@ class HeatMigrationsCheckers(test_migrations.WalkVersionsMixin,
     def _check_062(self, engine, data):
         self.assertColumnExists(engine, 'stack', 'parent_resource_name')
 
+    def _pre_upgrade_063(self, engine):
+        raw_template_table = utils.get_table(engine, 'raw_template')
+        engine.execute(raw_template_table.delete())
+        template = '''{"HeatTemplateFormatVersion": "2012-12-12",
+        "Parameters": {
+            "foo": { "Type": "String", "NoEcho": "True" },
+            "bar": { "Type": "String", "NoEcho": "True", "Default": "abc" },
+            "blarg": { "Type": "String", "Default": "quux" }}}'''
+        env = ('{"parameters": {"foo": "secret1", "bar": "secret2",'
+               '"blarg": "not secret"}, "encrypted_param_names": []}')
+        data = [dict(id=40, template=template, files='{}', environment=env)]
+        engine.execute(raw_template_table.insert(), data)
+        return data
+
+    def _check_063(self, engine, data):
+        rt_table = utils.get_table(engine, 'raw_template')
+        rts_in_db = list(rt_table.select().execute())
+
+        def rt_from_db(id):
+            for rt in rts_in_db:
+                if rt['id'] == id:
+                    return rt
+            return None
+
+        for rt in data:
+            env_from_db = jsonutils.loads(rt_from_db(rt['id']).environment)
+            env = jsonutils.loads(rt['environment'])
+            # since hidden parameters are encrypted, parameters of test data
+            # stack and parameters of stack from database should not match
+            self.assertNotEqual(env['parameters'], env_from_db['parameters'])
+
 
 class TestHeatMigrationsMySQL(HeatMigrationsCheckers,
                               test_base.MySQLOpportunisticTestCase):

@@ -462,6 +462,11 @@ class Environment(object):
         else:
             self.param_defaults = {}
 
+        if env_fmt.ENCRYPTED_PARAM_NAMES in env:
+            self.encrypted_param_names = env[env_fmt.ENCRYPTED_PARAM_NAMES]
+        else:
+            self.encrypted_param_names = []
+
         if env_fmt.PARAMETERS in env:
             self.params = env[env_fmt.PARAMETERS]
         else:
@@ -494,7 +499,8 @@ class Environment(object):
         """Get the environment as a dict, ready for storing in the db."""
         return {env_fmt.RESOURCE_REGISTRY: self.registry.as_dict(),
                 env_fmt.PARAMETERS: self.params,
-                env_fmt.PARAMETER_DEFAULTS: self.param_defaults}
+                env_fmt.PARAMETER_DEFAULTS: self.param_defaults,
+                env_fmt.ENCRYPTED_PARAM_NAMES: self.encrypted_param_names}
 
     def register_class(self, resource_type, resource_class):
         self.registry.register_class(resource_type, resource_class)
