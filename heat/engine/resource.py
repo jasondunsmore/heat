@@ -14,6 +14,7 @@
 import base64
 import contextlib
 import datetime as dt
+import json
 import warnings
 
 from oslo_config import cfg
@@ -22,6 +23,7 @@ from oslo_utils import encodeutils
 from oslo_utils import excutils
 import six
 
+from heat.common import crypt
 from heat.common import exception
 from heat.common.i18n import _
 from heat.common.i18n import _LE
@@ -169,6 +171,7 @@ class Resource(object):
         self._data = {}
         self._rsrc_metadata = None
         self._stored_properties_data = None
+        self.properties_data_encrypted = False
         self.created_time = None
         self.updated_time = None
         self._rpc_client = None
@@ -190,6 +193,22 @@ class Resource(object):
 
     def _load_data(self, resource):
         '''Load the resource state from its DB representation.'''
+
+        resource = self.stack.db_resource_get(resource.name)
+        if resource.properties_data_encrypted and resource.properties_data:
+            # Decrypt properties data
+            properties_data = {}
+            for prop_name, prop_value in resource.properties_data.items():
+                decrypt_function_name = prop_value[0]
+                decrypt_function = getattr(crypt, decrypt_function_name,
+                                           None)
+                decrypted_value = decrypt_function(prop_value[1])
+                decoded_value = encodeutils.safe_decode(decrypted_value)
+                prop_string = json.loads(decoded_value)
+                properties_data[prop_name] = prop_string
+        else:
+            properties_data = resource.properties_data
+
         self.resource_id = resource.nova_instance
         self.action = resource.action
         self.status = resource.status
@@ -202,7 +221,8 @@ class Resource(object):
         except exception.NotFound:
             self._data = {}
         self._rsrc_metadata = resource.rsrc_metadata
-        self._stored_properties_data = resource.properties_data
+        self._stored_properties_data = properties_data
+
         self.created_time = resource.created_at
         self.updated_time = resource.updated_at
         self.needed_by = resource.needed_by
@@ -946,8 +966,25 @@ class Resource(object):
             except Exception as ex:
                 LOG.warn(_LW('db error %s'), ex)
 
+    def _properties_data(self):
+        if (not cfg.CONF.encrypt_parameters_and_properties or
+                not self._stored_properties_data):
+            self.properties_data_encrypted = False
+            return self._stored_properties_data
+        else:
+            # Encrypt properties data
+            properties_data = {}
+            for prop_name, prop_value in self._stored_properties_data.items():
+                prop_string = json.dumps(prop_value)
+                encoded_value = encodeutils.safe_encode(prop_string)
+                encrypted_value = crypt.encrypt(encoded_value)
+                properties_data[prop_name] = encrypted_value
+            self.properties_data_encrypted = True
+            return properties_data
+
     def _store(self, metadata=None):
         '''Create the resource in the database.'''
+
         try:
             rs = {'action': self.action,
                   'status': self.status,
@@ -956,7 +993,8 @@ class Resource(object):
                   'nova_instance': self.resource_id,
                   'name': self.name,
                   'rsrc_metadata': metadata,
-                  'properties_data': self._stored_properties_data,
+                  'properties_data': self._properties_data(),
+                  'properties_data_encrypted': self.properties_data_encrypted,
                   'needed_by': self.needed_by,
                   'requires': self.requires,
                   'replaces': self.replaces,
@@ -992,7 +1030,7 @@ class Resource(object):
             'status_reason': reason,
             'stack_id': self.stack.id,
             'updated_at': self.updated_time,
-            'properties_data': self._stored_properties_data,
+            'properties_data': self._properties_data(),
             'needed_by': self.needed_by,
             'requires': self.requires,
             'replaces': self.replaces,

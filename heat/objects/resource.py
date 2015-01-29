@@ -45,6 +45,7 @@ class Resource(
         'action': fields.StringField(nullable=True),
         'rsrc_metadata': heat_fields.JsonField(nullable=True),
         'properties_data': heat_fields.JsonField(nullable=True),
+        'properties_data_encrypted': fields.Boolean(),
         'data': fields.ListOfObjectsField(
             resource_data.ResourceData,
             nullable=True

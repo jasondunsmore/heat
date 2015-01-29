@@ -1202,6 +1202,39 @@ class ResourceTest(common.HeatTestCase):
                         property_schema_name, property_schema,
                         res_class.__name__)
 
+    def test_properties_data_stored_encrypted_decrypted_on_load(self):
+
+        tmpl = rsrc_defn.ResourceDefinition('test_resource', 'Foo')
+        res = generic_rsrc.GenericResource('test_res_enc', tmpl, self.stack)
+        res._stored_properties_data = {'prop1': 'string',
+                                       'prop2': {'a': 'dict'},
+                                       'prop3': 1,
+                                       'prop4': ['a', 'list'],
+                                       'prop5': True}
+
+        res._store_or_update(res.CREATE, res.IN_PROGRESS, 'test_store')
+        db_res = resource_objects.Resource.get_obj(res.context, res.id)
+        self.assertNotEqual('string',
+                            db_res.properties_data['prop1'])
+
+        db_res = resource_objects.Resource.get_obj(res.context, res.id)
+        self.assertEqual('oslo_decrypt_v1',
+                         db_res.properties_data['prop1'][0])
+
+        res = generic_rsrc.GenericResource('test_res_enc', tmpl, self.stack)
+        res._load_data(db_res)
+        self.assertEqual('string', res._stored_properties_data['prop1'])
+
+        db_reses = resource_objects.Resource.get_all_by_stack(res.context,
+                                                              self.stack.id)
+        db_res = db_reses['test_res_enc']
+        self.assertEqual('oslo_decrypt_v1',
+                         db_res.properties_data['prop1'][0])
+
+        res = generic_rsrc.GenericResource('test_res_enc', tmpl, self.stack)
+        res._load_data(db_res)
+        self.assertEqual('string', res._stored_properties_data['prop1'])
+
 
 class ResourceAdoptTest(common.HeatTestCase):
     def setUp(self):

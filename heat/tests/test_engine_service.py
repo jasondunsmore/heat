@@ -1298,6 +1298,7 @@ class StackServiceCreateUpdateDeleteTest(common.HeatTestCase):
 
         self.m.ReplayAll()
 
+        import ipdb; ipdb.set_trace()
         result = self.man.update_stack(self.ctx, create_stack.identifier(),
                                        tpl, {}, None, {})
 
