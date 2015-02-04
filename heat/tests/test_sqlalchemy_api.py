@@ -573,6 +573,108 @@ class SqlAlchemyTest(common.HeatTestCase):
         for stack in st_db_visible:
             self.assertNotEqual(stacks[0].id, stack.id)
 
+    def test_stack_get_all_by_tags_all(self):
+        stacks = [self._setup_test_stack('stack', x)[1] for x in UUIDs]
+        stacks[0].tags = ['tag1']
+        stacks[0].store()
+        stacks[1].tags = ['tag1', 'tag2']
+        stacks[1].store()
+        stacks[2].tags = ['tag1', 'tag2', 'tag3']
+        stacks[2].store()
+
+        st_db = db_api.stack_get_all(self.ctx, tags_all=['tag2'])
+        self.assertEqual(2, len(st_db))
+
+        st_db = db_api.stack_get_all(self.ctx, tags_all=['tag1', 'tag2'])
+        self.assertEqual(2, len(st_db))
+
+        st_db = db_api.stack_get_all(self.ctx, tags_all=['tag1', 'tag2',
+                                                         'tag3'])
+        self.assertEqual(1, len(st_db))
+
+    def test_stack_get_all_by_tags_any(self):
+        stacks = [self._setup_test_stack('stack', x)[1] for x in UUIDs]
+        stacks[0].tags = ['tag2']
+        stacks[0].store()
+        stacks[1].tags = ['tag1', 'tag2']
+        stacks[1].store()
+        stacks[2].tags = ['tag1', 'tag3']
+        stacks[2].store()
+
+        st_db = db_api.stack_get_all(self.ctx, tags_any=['tag1'])
+        self.assertEqual(2, len(st_db))
+
+        st_db = db_api.stack_get_all(self.ctx, tags_any=['tag1', 'tag2',
+                                                         'tag3'])
+        self.assertEqual(3, len(st_db))
+
+    def test_stack_get_all_by_not_tags_all(self):
+        stacks = [self._setup_test_stack('stack', x)[1] for x in UUIDs]
+        stacks[0].tags = ['tag1']
+        stacks[0].store()
+        stacks[1].tags = ['tag1', 'tag2']
+        stacks[1].store()
+        stacks[2].tags = ['tag1', 'tag2', 'tag3']
+        stacks[2].store()
+
+        st_db = db_api.stack_get_all(self.ctx, not_tags_all=['tag2'])
+        self.assertEqual(1, len(st_db))
+
+        st_db = db_api.stack_get_all(self.ctx, not_tags_all=['tag1', 'tag2'])
+        self.assertEqual(1, len(st_db))
+
+        st_db = db_api.stack_get_all(self.ctx, not_tags_all=['tag1', 'tag2',
+                                                             'tag3'])
+        self.assertEqual(2, len(st_db))
+
+    def test_stack_get_all_by_not_tags_any(self):
+        stacks = [self._setup_test_stack('stack', x)[1] for x in UUIDs]
+        stacks[0].tags = ['tag2']
+        stacks[0].store()
+        stacks[1].tags = ['tag1', 'tag2']
+        stacks[1].store()
+        stacks[2].tags = ['tag1', 'tag3']
+        stacks[2].store()
+
+        st_db = db_api.stack_get_all(self.ctx, not_tags_any=['tag1'])
+        self.assertEqual(1, len(st_db))
+
+        st_db = db_api.stack_get_all(self.ctx, not_tags_any=['tag1', 'tag2',
+                                                             'tag3'])
+        self.assertEqual(0, len(st_db))
+
+    def test_stack_get_all_by_tag_with_pagination(self):
+        stacks = [self._setup_test_stack('stack', x)[1] for x in UUIDs]
+        stacks[0].tags = ['tag1']
+        stacks[0].store()
+        stacks[1].tags = ['tag2']
+        stacks[1].store()
+        stacks[2].tags = ['tag1']
+        stacks[2].store()
+
+        st_db = db_api.stack_get_all(self.ctx, tags_all='tag1')
+        self.assertEqual(2, len(st_db))
+
+        st_db = db_api.stack_get_all(self.ctx, tags_all='tag1', limit=2)
+        self.assertEqual(2, len(st_db))
+
+    def test_stack_get_all_by_tag_with_show_hidden(self):
+        cfg.CONF.set_override('hidden_stack_tags', ['hidden'])
+
+        stacks = [self._setup_test_stack('stack', x)[1] for x in UUIDs]
+        stacks[0].tags = ['tag1']
+        stacks[0].store()
+        stacks[1].tags = ['hidden', 'tag1']
+        stacks[1].store()
+
+        st_db = db_api.stack_get_all(self.ctx, tags_all='tag1',
+                                     show_hidden=True)
+        self.assertEqual(2, len(st_db))
+
+        st_db = db_api.stack_get_all(self.ctx, tags_all='tag1',
+                                     show_hidden=False)
+        self.assertEqual(1, len(st_db))
+
     def test_stack_count_all(self):
         stacks = [self._setup_test_stack('stack', x)[1] for x in UUIDs]
 
@@ -607,6 +709,38 @@ class SqlAlchemyTest(common.HeatTestCase):
 
         st_db_visible = db_api.stack_count_all(self.ctx, show_hidden=False)
         self.assertEqual(2, st_db_visible)
+
+    def test_count_all_by_tags_all(self):
+        stacks = [self._setup_test_stack('stack', x)[1] for x in UUIDs]
+        stacks[0].tags = ['tag1']
+        stacks[0].store()
+        stacks[1].tags = ['tag2']
+        stacks[1].store()
+        stacks[2].tags = ['tag2']
+        stacks[2].store()
+
+        st_db = db_api.stack_count_all(self.ctx, tags_all='tag1')
+        self.assertEqual(1, st_db)
+
+        st_db = db_api.stack_count_all(self.ctx, tags_all='tag2')
+        self.assertEqual(2, st_db)
+
+    def test_count_all_by_tag_with_show_hidden(self):
+        cfg.CONF.set_override('hidden_stack_tags', ['hidden'])
+
+        stacks = [self._setup_test_stack('stack', x)[1] for x in UUIDs]
+        stacks[0].tags = ['tag1']
+        stacks[0].store()
+        stacks[1].tags = ['hidden', 'tag1']
+        stacks[1].store()
+
+        st_db = db_api.stack_count_all(self.ctx, tags_all='tag1',
+                                       show_hidden=True)
+        self.assertEqual(2, st_db)
+
+        st_db = db_api.stack_count_all(self.ctx, tags_all='tag1',
+                                       show_hidden=False)
+        self.assertEqual(1, st_db)
 
     def test_stack_count_all_with_filters(self):
         self._setup_test_stack('foo', UUID1)

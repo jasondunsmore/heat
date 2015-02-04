@@ -464,7 +464,9 @@ class EngineService(service.Service):
     @context.request_context
     def list_stacks(self, cnxt, limit=None, marker=None, sort_keys=None,
                     sort_dir=None, filters=None, tenant_safe=True,
-                    show_deleted=False, show_nested=False, show_hidden=False):
+                    show_deleted=False, show_nested=False, show_hidden=False,
+                    tags_all=None, tags_any=None, not_tags_all=None,
+                    not_tags_any=None):
         """
         The list_stacks method returns attributes of all stacks.  It supports
         pagination (``limit`` and ``marker``), sorting (``sort_keys`` and
@@ -480,18 +482,31 @@ class EngineService(service.Service):
         :param show_deleted: if true, show soft-deleted stacks
         :param show_nested: if true, show nested stacks
         :param show_hidden: if true, show hidden stacks
+        :param tags_all: show stacks containing these tags, combine multiple
+            tags using the boolean AND expression
+        :param tags_any: show stacks containing these tags, combine multiple
+            tags using the boolean OR expression
+        :param not_tags_all: show stacks containing these tags, combine multiple
+            tags using the boolean AND expression
+        :param not_tags_any: show stacks containing these tags, combine multiple
+            tags using the boolean OR expression
         :returns: a list of formatted stacks
         """
         stacks = parser.Stack.load_all(cnxt, limit, marker, sort_keys,
                                        sort_dir, filters, tenant_safe,
                                        show_deleted, resolve_data=False,
                                        show_nested=show_nested,
-                                       show_hidden=show_hidden)
+                                       show_hidden=show_hidden,
+                                       tags_all=tags_all, tags_any=tags_any,
+                                       not_tags_all=not_tags_all,
+                                       not_tags_any=not_tags_any)
         return [api.format_stack(stack) for stack in stacks]
 
     @context.request_context
     def count_stacks(self, cnxt, filters=None, tenant_safe=True,
-                     show_deleted=False, show_nested=False, show_hidden=False):
+                     show_deleted=False, show_nested=False, show_hidden=False,
+                     tags_all=None, tags_any=None, not_tags_all=None,
+                     not_tags_any=None):
         """
         Return the number of stacks that match the given filters
         :param cnxt: RPC context.
@@ -500,6 +515,14 @@ class EngineService(service.Service):
         :param show_deleted: if true, count will include the deleted stacks
         :param show_nested: if true, count will include nested stacks
         :param show_hidden: if true, show hidden stacks
+        :param tags_all: show stacks containing these tags, combine multiple
+            tags using the boolean AND expression
+        :param tags_any: show stacks containing these tags, combine multiple
+            tags using the boolean OR expression
+        :param not_tags_all: show stacks containing these tags, combine multiple
+            tags using the boolean AND expression
+        :param not_tags_any: show stacks containing these tags, combine multiple
+            tags using the boolean OR expression
         :returns: a integer representing the number of matched stacks
         """
         return stack_object.Stack.count_all(
@@ -508,7 +531,11 @@ class EngineService(service.Service):
             tenant_safe=tenant_safe,
             show_deleted=show_deleted,
             show_nested=show_nested,
-            show_hidden=show_hidden)
+            show_hidden=show_hidden,
+            tags_all=tags_all,
+            tags_any=tags_any,
+            not_tags_all=not_tags_all,
+            not_tags_any=not_tags_any)
 
     def _validate_deferred_auth_context(self, cnxt, stack):
         if cfg.CONF.deferred_auth_method != 'password':

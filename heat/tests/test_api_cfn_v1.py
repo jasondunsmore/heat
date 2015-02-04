@@ -162,7 +162,9 @@ class CfnStackControllerTest(common.HeatTestCase):
         default_args = {'limit': None, 'sort_keys': None, 'marker': None,
                         'sort_dir': None, 'filters': None, 'tenant_safe': True,
                         'show_deleted': False, 'show_nested': False,
-                        'show_hidden': False}
+                        'show_hidden': False, 'tags_all': None,
+                        'tags_any': None, 'not_tags_all': None,
+                        'not_tags_any': None}
         mock_call.assert_called_once_with(
             dummy_req.context, ('list_stacks', default_args))
 
