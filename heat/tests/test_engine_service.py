@@ -2011,6 +2011,7 @@ class StackServiceTest(common.HeatTestCase):
                                                    mock.ANY,
                                                    mock.ANY,
                                                    mock.ANY,
+                                                   mock.ANY,
                                                    )
 
     @mock.patch.object(stack_object.Stack, 'get_all')
@@ -2023,6 +2024,7 @@ class StackServiceTest(common.HeatTestCase):
                                                    mock.ANY,
                                                    mock.ANY,
                                                    filters,
+                                                   mock.ANY,
                                                    mock.ANY,
                                                    mock.ANY,
                                                    mock.ANY,
@@ -2042,6 +2044,7 @@ class StackServiceTest(common.HeatTestCase):
                                                    mock.ANY,
                                                    mock.ANY,
                                                    mock.ANY,
+                                                   mock.ANY,
                                                    )
 
     @mock.patch.object(stack_object.Stack, 'get_all')
@@ -2054,6 +2057,7 @@ class StackServiceTest(common.HeatTestCase):
                                                    mock.ANY,
                                                    mock.ANY,
                                                    False,
+                                                   mock.ANY,
                                                    mock.ANY,
                                                    mock.ANY,
                                                    mock.ANY,
@@ -2072,6 +2076,7 @@ class StackServiceTest(common.HeatTestCase):
                                                    mock.ANY,
                                                    True,
                                                    mock.ANY,
+                                                   mock.ANY,
                                                    )
 
     @mock.patch.object(stack_object.Stack, 'get_all')
@@ -2085,6 +2090,7 @@ class StackServiceTest(common.HeatTestCase):
                                                    mock.ANY,
                                                    mock.ANY,
                                                    True,
+                                                   mock.ANY,
                                                    mock.ANY,
                                                    mock.ANY,
                                                    )
@@ -2102,6 +2108,23 @@ class StackServiceTest(common.HeatTestCase):
                                                    mock.ANY,
                                                    mock.ANY,
                                                    True,
+                                                   mock.ANY,
+                                                   )
+
+    @mock.patch.object(db_api, 'stack_get_all')
+    def test_stack_list_tag(self, mock_stack_get_all):
+        self.eng.list_stacks(self.ctx, tag={'foo': 'bar'})
+        mock_stack_get_all.assert_called_once_with(mock.ANY,
+                                                   mock.ANY,
+                                                   mock.ANY,
+                                                   mock.ANY,
+                                                   mock.ANY,
+                                                   mock.ANY,
+                                                   mock.ANY,
+                                                   mock.ANY,
+                                                   mock.ANY,
+                                                   mock.ANY,
+                                                   {'foo': 'bar'},
                                                    )
 
     @mock.patch.object(stack_object.Stack, 'count_all')

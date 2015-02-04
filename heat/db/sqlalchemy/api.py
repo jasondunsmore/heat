@@ -22,6 +22,7 @@ from oslo_utils import timeutils
 import osprofiler.sqlalchemy
 import six
 import sqlalchemy
+from sqlalchemy import func
 from sqlalchemy import orm
 from sqlalchemy.orm import session as orm_session
 
@@ -399,7 +400,8 @@ def _paginate_query(context, query, model, limit=None, sort_keys=None,
 
 
 def _query_stack_get_all(context, tenant_safe=True, show_deleted=False,
-                         show_nested=False, show_hidden=False):
+                         show_nested=False, show_hidden=False, tags_all=None,
+                         tags_any=None, not_tags_all=None, not_tags_any=None):
     if show_nested:
         query = soft_delete_aware_query(
             context, models.Stack, show_deleted=show_deleted
@@ -412,6 +414,26 @@ def _query_stack_get_all(context, tenant_safe=True, show_deleted=False,
     if tenant_safe:
         query = query.filter_by(tenant=context.tenant_id)
 
+    import ipdb; ipdb.set_trace()
+    if tags_all:
+        query = query.filter(
+            models.Stack.tags.group_by(tags_all).having
+
+    if tags_any:
+        query = query.filter(
+            models.Stack.tags.any(
+                models.StackTag.tag.in_(tags_any)))
+
+    if not_tags_all:
+        query = query.filter(
+            models.Stack.tags.any(
+                models.StackTag.tag == tag))
+
+    if not_tags_any:
+        query = query.filter(
+            models.Stack.tags.any(
+                models.StackTag.tag == tag))
+
     if not show_hidden:
         query = query.filter(
             ~models.Stack.tags.any(
@@ -422,13 +444,28 @@ def _query_stack_get_all(context, tenant_safe=True, show_deleted=False,
 
 def stack_get_all(context, limit=None, sort_keys=None, marker=None,
                   sort_dir=None, filters=None, tenant_safe=True,
-                  show_deleted=False, show_nested=False, show_hidden=False):
+                  show_deleted=False, show_nested=False, show_hidden=False,
+                  tags_all=None, tags_any=None, not_tags_all=None,
+                  not_tags_any=None):
     query = _query_stack_get_all(context, tenant_safe,
                                  show_deleted=show_deleted,
                                  show_nested=show_nested,
-                                 show_hidden=show_hidden)
+                                 show_hidden=show_hidden, tags_all=tags_all,
+                                 tags_any=tags_any, not_tags_all=not_tags_all,
+                                 not_tags_any=not_tags_any)
     return _filter_and_page_query(context, query, limit, sort_keys,
                                   marker, sort_dir, filters).all()
+
+
+def _filter_by_tag(stacks, tag):
+    key, value = tag.items()[0]
+    filtered_stacks = []
+
+    for stack in stacks:
+        if stack.tags and key in stack.tags and stack.tags[key] == value:
+            filtered_stacks.append(stack)
+
+    return filtered_stacks
 
 
 def _filter_and_page_query(context, query, limit=None, sort_keys=None,
@@ -448,11 +485,15 @@ def _filter_and_page_query(context, query, limit=None, sort_keys=None,
 
 
 def stack_count_all(context, filters=None, tenant_safe=True,
-                    show_deleted=False, show_nested=False, show_hidden=False):
+                    show_deleted=False, show_nested=False, show_hidden=False,
+                    tags_all=None, tags_any=None, not_tags_all=None,
+                    not_tags_any=None):
     query = _query_stack_get_all(context, tenant_safe=tenant_safe,
                                  show_deleted=show_deleted,
                                  show_nested=show_nested,
-                                 show_hidden=show_hidden)
+                                 show_hidden=show_hidden, tags_all=tags_all,
+                                 tags_any=tags_any, not_tags_all=not_tags_all,
+                                 not_tags_any=not_tags_any)
     query = db_filters.exact_filter(query, models.Stack, filters)
     return query.count()
 

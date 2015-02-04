@@ -121,6 +121,7 @@ class EngineRpcAPITestCase(testtools.TestCase):
             'show_deleted': mock.ANY,
             'show_nested': mock.ANY,
             'show_hidden': mock.ANY,
+            'tag': mock.ANY,
         }
         self._test_engine_api('list_stacks', 'call', **default_args)
 
