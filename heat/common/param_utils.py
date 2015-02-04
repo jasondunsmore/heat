@@ -25,3 +25,8 @@ def extract_bool(subject):
         raise ValueError(_('Unrecognized value "%(value)s", acceptable '
                            'values are: true, false.') % {'value': subject})
     return strutils.bool_from_string(subject, strict=True)
+
+
+def extract_tag(subject):
+    # TODO: validate input
+    return dict([subject.split(':')])

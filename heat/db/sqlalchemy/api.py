@@ -373,15 +373,20 @@ def _query_stack_get_all(context, tenant_safe=True, show_deleted=False,
 
 def stack_get_all(context, limit=None, sort_keys=None, marker=None,
                   sort_dir=None, filters=None, tenant_safe=True,
-                  show_deleted=False, show_nested=False, show_hidden=False):
+                  show_deleted=False, show_nested=False, show_hidden=False,
+                  show_tag=None):
     query = _query_stack_get_all(context, tenant_safe,
                                  show_deleted=show_deleted,
                                  show_nested=show_nested)
     stacks = _filter_and_page_query(context, query, limit, sort_keys,
                                     marker, sort_dir, filters).all()
-    if show_hidden:
-        return stacks
-    return _filter_hidden_stacks(stacks)
+    if not show_hidden:
+        stacks = _filter_hidden_stacks(stacks)
+
+    if show_tag:
+        stacks = _filter_by_tag(stacks, show_tag)
+
+    return stacks
 
 
 def _filter_hidden_stacks(stacks):
@@ -409,6 +414,17 @@ def _filter_hidden_stacks(stacks):
     return filtered_stacks
 
 
+def _filter_by_tag(stacks, tag):
+    key, value = tag.items()[0]
+    filtered_stacks = []
+
+    for stack in stacks:
+        if stack.tags and key in stack.tags and stack.tags[key] == value:
+            filtered_stacks.append(stack)
+
+    return filtered_stacks
+
+
 def _filter_and_page_query(context, query, limit=None, sort_keys=None,
                            marker=None, sort_dir=None, filters=None):
     if filters is None:
@@ -426,16 +442,21 @@ def _filter_and_page_query(context, query, limit=None, sort_keys=None,
 
 
 def stack_count_all(context, filters=None, tenant_safe=True,
-                    show_deleted=False, show_nested=False, show_hidden=False):
+                    show_deleted=False, show_nested=False, show_hidden=False,
+                    show_tag=None):
     query = _query_stack_get_all(context, tenant_safe=tenant_safe,
                                  show_deleted=show_deleted,
                                  show_nested=show_nested)
     query = db_filters.exact_filter(query, models.Stack, filters)
     stacks = query.all()
 
-    if show_hidden:
-        return len(stacks)
-    return len(_filter_hidden_stacks(stacks))
+    if not show_hidden:
+        stacks = _filter_hidden_stacks(stacks)
+
+    if show_tag:
+        stacks = _filter_by_tag(stacks, show_tag)
+
+    return len(stacks)
 
 
 def stack_create(context, values):

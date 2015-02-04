@@ -186,6 +186,7 @@ class StackController(object):
             'show_deleted': 'single',
             'show_nested': 'single',
             'show_hidden': 'single',
+            'show_tag': 'single',
         }
         params = util.get_allowed_params(req.params, whitelist)
         filter_params = util.get_allowed_params(req.params, filter_whitelist)
@@ -207,6 +208,12 @@ class StackController(object):
             params[rpc_api.PARAM_SHOW_HIDDEN] = param_utils.extract_bool(
                 params[rpc_api.PARAM_SHOW_HIDDEN])
             show_hidden = params[rpc_api.PARAM_SHOW_HIDDEN]
+
+        show_tag = None
+        if rpc_api.PARAM_SHOW_TAG in params:
+            params[rpc_api.PARAM_SHOW_TAG] = param_utils.extract_tag(
+                params[rpc_api.PARAM_SHOW_TAG])
+            show_tag = params[rpc_api.PARAM_SHOW_TAG]
 
         # get the with_count value, if invalid, raise ValueError
         with_count = False
@@ -232,7 +239,8 @@ class StackController(object):
                                                      tenant_safe=tenant_safe,
                                                      show_deleted=show_deleted,
                                                      show_nested=show_nested,
-                                                     show_hidden=show_hidden)
+                                                     show_hidden=show_hidden,
+                                                     show_tag=show_tag)
             except AttributeError as exc:
                 LOG.warn(_LW("Old Engine Version: %s") % exc)
 

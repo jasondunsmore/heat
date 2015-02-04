@@ -90,7 +90,8 @@ class EngineClient(object):
 
     def list_stacks(self, ctxt, limit=None, marker=None, sort_keys=None,
                     sort_dir=None, filters=None, tenant_safe=True,
-                    show_deleted=False, show_nested=False, show_hidden=False):
+                    show_deleted=False, show_nested=False, show_hidden=False,
+                    show_tag=None):
         """
         The list_stacks method returns attributes of all stacks.  It supports
         pagination (``limit`` and ``marker``), sorting (``sort_keys`` and
@@ -115,7 +116,8 @@ class EngineClient(object):
                                        tenant_safe=tenant_safe,
                                        show_deleted=show_deleted,
                                        show_nested=show_nested,
-                                       show_hidden=show_hidden))
+                                       show_hidden=show_hidden,
+                                       show_tag=show_tag))
 
     def count_stacks(self, ctxt, filters=None, tenant_safe=True,
                      show_deleted=False, show_nested=False, show_hidden=False):
