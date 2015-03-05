@@ -143,6 +143,13 @@ class NetworkConstraint(constraints.BaseCustomConstraint):
                            exception.PhysicalResourceNameAmbiguity)
 
     def validate_with_client(self, client, value):
+        # This is temporary internal work around for RC issue
+        # (https://redmine.ohthree.com/issues/11582)
+        # Skip network  constraint validation for RC customers
+        for role in client.context.roles:
+            if "rackconnect" in role:
+                return
+
         try:
             neutron_client = client.client('neutron')
         except Exception:
