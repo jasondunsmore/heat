@@ -1,0 +1,702 @@
+****************************
+Heat Changelog
+Date: 2015-04-14 02:08:04 UTC
+Previous-Version: PRODUCTION
+Current-Version: k3-20150413-gmaster-1328
+****************************
+Commit: 8669f9a0d5baf578b1702294f0c075a62a21f693
+Author: Randall Burt
+Date: Mon Apr 13 20:20:51 2015 -0500
+Message: Add support for the httpsRedirect property
+Change-Id: I47cd1bb9cc5c1c3a9fd3e215181020fa96aff9aa
+Gerrit-Review: https://review.openstack.org/#q,I47cd1bb9cc5c1c3a9fd3e215181020fa96aff9aa,n,z
+
+Commit: 12672d282f4da16787b829a6a3a81c586a351fc1
+Author: Vijendar Komalla
+Date: Thu Mar 5 14:28:50 2015 -0600
+Message: Temp fix for RC network issue
+Change-Id: I689e29d31140fdc5dd0f9fcfbb509229dc170f84
+Gerrit-Review: https://review.openstack.org/#q,I689e29d31140fdc5dd0f9fcfbb509229dc170f84,n,z
+
+Commit: 7603acc4387177f2f82d4f5fc72d08d4324f902c
+Author: Randall Burt
+Date: Tue Mar 17 12:51:18 2015 -0500
+Message: Temp fix to workaround recent upstream change related to keystone
+Change-Id: I7f7ccd0fa1cc26d35464e03c09099daab2a4ef84
+Gerrit-Review: https://review.openstack.org/#q,I7f7ccd0fa1cc26d35464e03c09099daab2a4ef84,n,z
+
+Commit: bdd885203e925b83c1a5693cd12cb53e1519cd00
+Author: Randall Burt
+Date: Mon Jan 12 15:11:51 2015 -0600
+Message: Generate the template guide from rst
+Change-Id: I2dfd7ef4b48749c5d0d711cd1a213a625ce55c5a
+Gerrit-Review: https://review.openstack.org/#q,I2dfd7ef4b48749c5d0d711cd1a213a625ce55c5a,n,z
+
+Commit: cd7d5c9e7e43001e1a7c7354fafcb28afe5941fa
+Author: Pratik Mallya
+Date: Wed Dec 17 10:15:03 2014 -0600
+Message: Add Resource to use Rackspace RackConnect
+Change-Id: I05624450444a1cc211fc2d2c77a20be354be04b8
+Gerrit-Review: https://review.openstack.org/#q,I05624450444a1cc211fc2d2c77a20be354be04b8,n,z
+
+Commit: f7f690257a47010c1b6acda8db2a692f9cfdab44
+Author: Randall Burt
+Date: Fri Oct 24 17:51:22 2014 -0500
+Message: Rackspace cloud monitoring resources
+Change-Id: I5c831721a3ec38aedd7db6e9774eb10089afaa06
+Gerrit-Review: https://review.openstack.org/#q,I5c831721a3ec38aedd7db6e9774eb10089afaa06,n,z
+
+Commit: e6b88243885b9af2337aef75672f468f11bdeb74
+Author: Randall Burt
+Date: Tue Oct 14 20:00:39 2014 -0500
+Message: Pull account from client url
+Change-Id: I4457d880c868ccd80c2856880bbf89b808a3abe3
+Gerrit-Review: https://review.openstack.org/#q,I4457d880c868ccd80c2856880bbf89b808a3abe3,n,z
+
+Commit: c8ce827ee64ac26d7ae9bec5445588fc156a8870
+Author: Randall Burt
+Date: Tue Jun 24 20:10:56 2014 -0500
+Message: Temporarily fix need to have passwords in the context by faking trusts.
+Change-Id: If72aa3c723b2e6f512b12426375e9c1a0bda5582
+Gerrit-Review: https://review.openstack.org/#q,If72aa3c723b2e6f512b12426375e9c1a0bda5582,n,z
+
+Commit: 52a75c95a47371ce9de4dd3b08ef27f457682be5
+Author: Randall Burt
+Date: Wed Dec 3 17:26:50 2014 -0600
+Message: Restrict docker client version to be compat with CoreOS stable
+Change-Id: If7e94257d0e5097f01a6ce785ed6f64a07eaab83
+Gerrit-Review: https://review.openstack.org/#q,If7e94257d0e5097f01a6ce785ed6f64a07eaab83,n,z
+
+Commit: aca0b08914b4217abd13ae916c942bc19107d02d
+Author: Randall Burt
+Date: Wed Oct 8 14:06:18 2014 -0500
+Message: Pin clients to known working versions to avoid bugs
+
+Commit: f20b01d35c7a7192b099df3d31fd015d6e106916
+Author: Randall Burt
+Date: Thu Feb 26 14:17:14 2015 -0600
+Message: Add old ssh cloud server back as Rackspace::Cloud::Server
+Change-Id: Ica6f04d9eed7f38f230c850bcb12a26c91f4518e
+Gerrit-Review: https://review.openstack.org/#q,Ica6f04d9eed7f38f230c850bcb12a26c91f4518e,n,z
+
+Commit: ee1ed1e16b3e7437a3c2be418ba925504ca371cf
+Author: Randall Burt
+Date: Wed Nov 26 14:47:13 2014 -0600
+Message: Temporarily use patched build of pyrax to fix monitoring
+Change-Id: I1e5f34b75d7d817fc3d6f64bc840781154cd2fc8
+Gerrit-Review: https://review.openstack.org/#q,I1e5f34b75d7d817fc3d6f64bc840781154cd2fc8,n,z
+
+Commit: 4191c1b9fe9d1a94aa4485e75b1742f7849a79c3
+Author: Andrew Plunk
+Date: Mon Mar 24 16:34:54 2014 -0500
+Message: Chef solo resource
+Blueprint: chef-solo-resource
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/chef-solo-resource
+
+Commit: c8d3aafafd5a60af95a450d2d600864eccbff2ba
+Author: Randall Burt
+Date: Thu May 8 12:48:51 2014 -0500
+Message: Add support for AWS resources on Rackspace cloud
+
+Commit: e778c5fa1ba6baebe10496add8ce869e07193440
+Author: Vijendar Komalla
+Date: Tue Apr 7 14:17:42 2015 -0500
+Message: Cloud backup configuration resource
+Change-Id: I1eb8775da2befff59095f5b14c7fe132d674cf6e
+Gerrit-Review: https://review.openstack.org/#q,I1eb8775da2befff59095f5b14c7fe132d674cf6e,n,z
+
+Commit: b1cd7ebc3e598b9f175546f0d40eb259e8c9a536
+Author: Jason Dunsmore
+Date: Mon Mar 24 11:35:15 2014 -0500
+Message: Vijendar's Rackspace Windows resource
+
+Commit: 5f7fb05815eb16f88dcc7394910b5687b06d63e9
+Author: Jason Dunsmore
+Date: Thu Aug 7 11:27:32 2014 -0500
+Message: Add local requirements for tarball packaging
+Change-Id: I15456f7fb5c8bea15726c61a4e6b962f7cd1023d
+Gerrit-Review: https://review.openstack.org/#q,I15456f7fb5c8bea15726c61a4e6b962f7cd1023d,n,z
+
+Commit: 0f4455c8ab1e05109d7508ecb357cd28f372cdf8
+Author: Randall Burt
+Date: Wed Jul 30 16:33:41 2014 -0500
+Message: Remove the client plugins that should be replaced by Rackspace ones.
+
+Commit: 726098c28763f7373f3fc84ba141e357b1f7a345
+Author: Randall Burt
+Date: Wed Dec 24 09:55:37 2014 -0600
+Message: install contrib requirements for doc generation
+Change-Id: Ia4dcac1a02be452de56c5fafb03bd1ac8d3aa440
+Gerrit-Review: https://review.openstack.org/#q,Ia4dcac1a02be452de56c5fafb03bd1ac8d3aa440,n,z
+
+Commit: 41437ff8a318dbdf22a5fabcddcee5fe8aa64102
+Author: LiangChen
+Date: Thu Apr 2 10:34:29 2015 +0800
+Message: Docker plugin add cpu share property
+Closes-bug: 1439033
+Bug-Url: https://bugs.launchpad.net/bugs/1439033
+
+Commit: c31166a11cd55773a7fd9238cb0f674df05cecc5
+Author: Peter Razumovsky
+Date: Fri Mar 13 17:18:48 2015 +0300
+Message: Add version to support_status where it omitted
+Blueprint: deprecating-improvements
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/deprecating-improvements
+Change-Id: I82f9f4514142a3a66c872722b265fee365eb5de2
+Gerrit-Review: https://review.openstack.org/#q,I82f9f4514142a3a66c872722b265fee365eb5de2,n,z
+
+Commit: af6b0db444b33126150c0273662672b3736aac6a
+Author: huangtianhua
+Date: Mon Mar 30 11:33:43 2015 +0800
+Message: Make sure snapshot belongs to stack for actions
+Closes-bug: 1437602
+Bug-Url: https://bugs.launchpad.net/bugs/1437602
+
+Commit: 1a0e7bdc793f1bec2e52733dc23e7a60124bfca1
+Author: Sirushti Murugesan
+Date: Fri Apr 10 12:37:52 2015 +0530
+Message: Fix Zaqar Client's service_type
+Closes-bug: 1442489
+Bug-Url: https://bugs.launchpad.net/bugs/1442489
+
+Commit: bbb18e76f374e07d1ea8b273820d89efbc1a1e61
+Author: Angus Salkeld
+Date: Fri Apr 10 15:44:07 2015 +1000
+Message: Use helper functions stack_suspend and stack_resume
+Closes-bug: 1438717
+Bug-Url: https://bugs.launchpad.net/bugs/1438717
+
+Commit: 956adeb0ec46b084da2d2a292b2d8bad6d306196
+Author: LiangChen
+Date: Fri Apr 10 10:54:58 2015 +0800
+Message: Docker plugin add the 'support_status' for the properties of 'RESTART_POLICY','CAP_ADD' and 'CAP_DROP'
+Closes-bug: 1442444
+Bug-Url: https://bugs.launchpad.net/bugs/1442444
+
+Commit: fe645b420bd5bb6e8aad5f7a487a741c8587448a
+Author: huangtianhua
+Date: Fri Apr 10 10:49:41 2015 +0800
+Message: Add '2015.2' version for Liberty in doc
+Change-Id: I3e42c74591197b919b767a6a7f42eb3dae40fe84
+Gerrit-Review: https://review.openstack.org/#q,I3e42c74591197b919b767a6a7f42eb3dae40fe84,n,z
+
+Commit: ba1260ccc4b060a824c30d3b351129485a74739e
+Author: huangtianhua
+Date: Thu Apr 9 16:52:07 2015 +0800
+Message: Use stack_object directly in test_engine_service.py
+Change-Id: I4ffc3303644bba3e91cfecbdb40617dc3eae91a1
+Gerrit-Review: https://review.openstack.org/#q,I4ffc3303644bba3e91cfecbdb40617dc3eae91a1,n,z
+
+Commit: bf550dc37692a41fb1918c73afdf413abdbec349
+Author: huangtianhua
+Date: Thu Apr 9 16:34:31 2015 +0800
+Message: Correct stack_object.Stack get_all mock
+Change-Id: I87ecb1cc4fe8459d63389d8cd0fa2799673f28a3
+Gerrit-Review: https://review.openstack.org/#q,I87ecb1cc4fe8459d63389d8cd0fa2799673f28a3,n,z
+
+Commit: 8a40be3bf6aaa87a66e8c91400020328fc21177e
+Author: Jason Dunsmore
+Date: Tue Dec 30 16:08:48 2014 -0600
+Message: Add a "show_hidden" parameter to stack-list API
+Blueprint: stack-tags
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/stack-tags
+Change-Id: I3074282131443c8e3894f9ce9e363a4438f5a11e
+Gerrit-Review: https://review.openstack.org/#q,I3074282131443c8e3894f9ce9e363a4438f5a11e,n,z
+
+Commit: d4361580babda99debec8f1d11a684c507ecb6a8
+Author: Jason Dunsmore
+Date: Mon Dec 29 14:37:33 2014 -0600
+Message: Add ability to hide stacks based on tag
+Blueprint: stack-tags
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/stack-tags
+Change-Id: I45a5ac6d73a9a61629a56f88270e3a97fafb378a
+Gerrit-Review: https://review.openstack.org/#q,I45a5ac6d73a9a61629a56f88270e3a97fafb378a,n,z
+
+Commit: 9817ed77ef073a851d6c9a7e530c464c5cb72f8a
+Author: Jason Dunsmore
+Date: Wed Dec 24 12:34:32 2014 -0600
+Message: Database API and engine changes for stack tags
+Blueprint: stack-tags
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/stack-tags
+Change-Id: I65e1e8e87515595edae332c2ff7e0e82ded409ce
+Gerrit-Review: https://review.openstack.org/#q,I65e1e8e87515595edae332c2ff7e0e82ded409ce,n,z
+
+Commit: ad2ed9bc5f63a0b93af72b4fae34c3aa19ec3c2a
+Author: Kamil Rykowski
+Date: Wed Apr 8 17:58:06 2015 +0200
+Message: Update openstack-common reference in openstack/common/README
+Closes-bug: 1434370
+Bug-Url: https://bugs.launchpad.net/bugs/1434370
+
+Commit: 7436a003b1d033f126dbbbe188db5643e5fbf928
+Author: Rabi Mishra
+Date: Mon Apr 6 07:57:34 2015 +0530
+Message: Fix NeutronLoadBalancerTest.test_neutron_loadbalancer timeout
+Closes-bug: 1437203
+Bug-Url: https://bugs.launchpad.net/bugs/1437203
+
+Commit: 815d5b6ba5da0a384e32a45bba5d6588d424fd88
+Author: Sergey Kraynev
+Date: Mon Aug 25 09:39:44 2014 -0400
+Message: Deprecate using required=True with default value
+Change-Id: Ic6ace30742e887069f119a14ffb091f6bac9e682
+Gerrit-Review: https://review.openstack.org/#q,Ic6ace30742e887069f119a14ffb091f6bac9e682,n,z
+
+Commit: 5ea948ce9fba2b219927e6510967b1f3435486ed
+Author: Rakesh H S
+Date: Sat Apr 4 19:42:29 2015 +0530
+Message: test_resource for functional tests
+Change-Id: I3b8a1d2928553c87abaac81ee687e0faa85c9c5e
+Gerrit-Review: https://review.openstack.org/#q,I3b8a1d2928553c87abaac81ee687e0faa85c9c5e,n,z
+
+Commit: c7ed6f3ef700fe6c78bfe8398314c40f25b0ac7d
+Author: kairat_kushaev
+Date: Wed Mar 25 11:11:04 2015 +0300
+Message: Make disk property of flavor default
+Closes-bug: 1436331
+Bug-Url: https://bugs.launchpad.net/bugs/1436331
+
+Commit: 9d50fabe829da6be20e847cee29e2518b4591fcc
+Author: Peter Razumovsky
+Date: Thu Jan 15 22:16:32 2015 +0300
+Message: Add OS::Mistral::Workflow for Mistral workflows
+Blueprint: mistral-resources-for-heat
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/mistral-resources-for-heat
+
+Commit: a871b70be9f7cf271a95262e8f70bc6bc8e31c04
+Author: Peter Razumovsky
+Date: Fri Mar 20 09:30:57 2015 +0300
+Message: Fix resources allocation in documentation
+Closes-bug: 1433675
+Bug-Url: https://bugs.launchpad.net/bugs/1433675
+
+Commit: 17dc00ce33a881183e9c49b0e236d23a8a215a19
+Author: Thierry Carrez
+Date: Tue Apr 7 10:06:05 2015 +0200
+Message: Open Liberty development
+Change-Id: Ied8b9042d45301c75d18ed8f767982f4130bb559
+Gerrit-Review: https://review.openstack.org/#q,Ied8b9042d45301c75d18ed8f767982f4130bb559,n,z
+
+Commit: 6523afe8c9739a098955d462551f6da829045ce0
+Author: huangtianhua
+Date: Thu Apr 2 14:22:35 2015 +0800
+Message: To attach interface for server when using 'uuid'
+Closes-bug: 1439497
+Bug-Url: https://bugs.launchpad.net/bugs/1439497
+
+Commit: 6be7f058ade2d6bf6fa01b967ab6afaec6256c39
+Author: Pavlo Shchelokovskyy
+Date: Mon Apr 6 10:22:35 2015 +0000
+Message: Fix functional test_signal_during_suspend
+Closes-bug: 1440653
+Bug-Url: https://bugs.launchpad.net/bugs/1440653
+
+Commit: b50fb00a80b172b3904382e25447555fe1b1313b
+Author: OpenStack Proposal Bot
+Date: Mon Apr 6 06:03:22 2015 +0000
+Message: Imported Translations from Transifex
+Change-Id: Id2f3bc50ec342681224dd77122176bb380d12966
+Gerrit-Review: https://review.openstack.org/#q,Id2f3bc50ec342681224dd77122176bb380d12966,n,z
+
+Commit: 1dbb1ed98f98a8b474f4d54df6554e4e1d93a296
+Author: Kanagaraj Manickam
+Date: Mon Apr 6 10:52:57 2015 +0530
+Message: Cleans nullable=True in db model column declaration
+Closes-bug: 1439959
+Bug-Url: https://bugs.launchpad.net/bugs/1439959
+
+Commit: 39368e2f6ad7b0b77fdd0581105d399fc84c296f
+Author: Kanagaraj Manickam
+Date: Fri Apr 3 12:27:38 2015 +0530
+Message: Cleans default declaration nullable=False from heat objects
+Closes-bug: 1439957
+Bug-Url: https://bugs.launchpad.net/bugs/1439957
+
+Commit: c0f3f851c3787fc95fa450430db7a52314ee6d01
+Author: Randall Burt
+Date: Fri Apr 3 15:17:07 2015 -0500
+Message: Do not resolve neutron resource attributes when resource_id is None
+Closes-bug: 1440189
+Bug-Url: https://bugs.launchpad.net/bugs/1440189
+Change-Id: I31004c11af71e32a4388fd44cd8b98df8afbd1a5
+Gerrit-Review: https://review.openstack.org/#q,I31004c11af71e32a4388fd44cd8b98df8afbd1a5,n,z
+
+Commit: 5781b740a34c0c8551d7e653388eb7c54c084932
+Author: Pavlo Shchelokovskyy
+Date: Fri Mar 13 18:40:59 2015 +0200
+Message: Do not detach/re-attach volumes in AWS Instance
+Related-bug: 1393268
+Bug-Url: https://bugs.launchpad.net/bugs/1393268
+
+Commit: d9d68cf52bd7027e7d1cafd023a399c2a342b2c5
+Author: Michal Rostecki
+Date: Wed Mar 25 06:47:33 2015 +0100
+Message: Novaclient v2 instead of v1_1
+Closes-bug: 1437158
+Bug-Url: https://bugs.launchpad.net/bugs/1437158
+
+Commit: d5f54923cebfaa7754e99e00033947e1a3f10447
+Author: OpenStack Proposal Bot
+Date: Fri Apr 3 08:37:11 2015 +0000
+Message: Updated from global requirements
+Change-Id: I9251ecebd11f092194d40ef05f18fe73e2c9a64c
+Gerrit-Review: https://review.openstack.org/#q,I9251ecebd11f092194d40ef05f18fe73e2c9a64c,n,z
+
+Commit: 8a865d3823495dfe1b74c615822258016ead3a42
+Author: Tetiana Lashchova
+Date: Thu Apr 2 16:20:04 2015 +0300
+Message: Implement Manila client plugin
+Blueprint: add-manila-resources
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/add-manila-resources
+
+Commit: 9062453aa5aa0bb197623e80128f4ada63cd5fac
+Author: Ethan Lynn
+Date: Thu Apr 2 18:34:37 2015 +0800
+Message: Set IMAGE_UPDATE_POLICY default to REBUILD
+Closes-bug: 1439708
+Bug-Url: https://bugs.launchpad.net/bugs/1439708
+Change-Id: I023ee076682bd5febb960dc8754d61986fd9bedf
+Gerrit-Review: https://review.openstack.org/#q,I023ee076682bd5febb960dc8754d61986fd9bedf,n,z
+
+Commit: 189324a7094dc84d8b8206df38e754ae07daf1e4
+Author: Ethan Lynn
+Date: Thu Apr 2 23:40:17 2015 +0800
+Message: Fix stack update issue
+Closes-bug: 1404201
+Bug-Url: https://bugs.launchpad.net/bugs/1404201
+
+Commit: d213a2414e26b8ce26838d16548b4cfabef20da1
+Author: Rabi Mishra
+Date: Wed Apr 1 14:40:09 2015 +0530
+Message: Fix stack-update for OS::Nova::Server resource
+Closes-bug: 1439071
+Bug-Url: https://bugs.launchpad.net/bugs/1439071
+
+Commit: 163331211d20011c6181216d2cf49ec18e0c62f3
+Author: OpenStack Proposal Bot
+Date: Thu Apr 2 06:03:00 2015 +0000
+Message: Imported Translations from Transifex
+Change-Id: I94e5755be50ad2baf8bbad9d9b802a5eb49fad7f
+Gerrit-Review: https://review.openstack.org/#q,I94e5755be50ad2baf8bbad9d9b802a5eb49fad7f,n,z
+
+Commit: 6bc753582b0d5b7226a093cc96dca2bdc1e66257
+Author: Ethan Lynn
+Date: Tue Mar 31 10:08:45 2015 +0800
+Message: Set stack status to FAILED when engine is down
+Closes-bug: 1382320
+Bug-Url: https://bugs.launchpad.net/bugs/1382320
+Change-Id: Ica856bb0d56c23a4423fb9476c1986aaacf24108
+Gerrit-Review: https://review.openstack.org/#q,Ica856bb0d56c23a4423fb9476c1986aaacf24108,n,z
+
+Commit: 9468e87e417f3b0d2fde5979fc4eb5b5027a4970
+Author: Angus Salkeld
+Date: Thu Apr 2 09:14:39 2015 +1000
+Message: Create an event when signalling fails
+Partial-bug: 1334333
+Bug-Url: https://bugs.launchpad.net/bugs/1334333
+
+Commit: 5f584db8d55a6db76c4307b21cb658a2bacb0296
+Author: Steve Baker
+Date: Wed Apr 1 10:57:32 2015 +1300
+Message: Do sleep(0) for first task sleep
+Closes-bug: 1439216
+Bug-Url: https://bugs.launchpad.net/bugs/1439216
+Change-Id: I1f594963dd164e44b8d9c601610a4036a0253ece
+Gerrit-Review: https://review.openstack.org/#q,I1f594963dd164e44b8d9c601610a4036a0253ece,n,z
+
+Commit: 9b559905dda474ea2f88785288ab046a9316c50f
+Author: Randall Burt
+Date: Mon Mar 16 15:25:47 2015 -0500
+Message: Ignore migrating environments for deleted stacks
+Closes-bug: 1432795
+Bug-Url: https://bugs.launchpad.net/bugs/1432795
+
+Commit: 3d86095b766158b5effe1bf7547857b876958517
+Author: Kanagaraj Manickam
+Date: Wed Apr 1 15:28:33 2015 +0530
+Message: Fixes migrate_data utils to avoid created_at filed
+Closes-bug: 1439094
+Bug-Url: https://bugs.launchpad.net/bugs/1439094
+
+Commit: f518cfe252721553cca1d31c0980dc7aa4111a64
+Author: Pavlo Shchelokovskyy
+Date: Tue Mar 31 07:25:28 2015 +0000
+Message: Add separate requirements.txt to integration tests
+Change-Id: I914eb675e7f025e03a22719d5dff8ed741fbd37d
+Gerrit-Review: https://review.openstack.org/#q,I914eb675e7f025e03a22719d5dff8ed741fbd37d,n,z
+
+Commit: 35f964cae4adbdd8a7047186122034b3395f7111
+Author: Kanagaraj Manickam
+Date: Wed Apr 1 12:29:13 2015 +0530
+Message: Updates migrate_repo README
+Closes-bug: 1439023
+Bug-Url: https://bugs.launchpad.net/bugs/1439023
+
+Commit: 962749e35ef2ad4a458a638ad16c07f19750d360
+Author: Ethan Lynn
+Date: Mon Mar 30 23:21:06 2015 +0800
+Message: Fix typo in doc
+Change-Id: I3108464d057c9607814ff1bfc394367540cd6765
+Gerrit-Review: https://review.openstack.org/#q,I3108464d057c9607814ff1bfc394367540cd6765,n,z
+
+Commit: bafb803a7fb4d00602fa373de222da7e79272311
+Author: Angus Salkeld
+Date: Wed Apr 1 11:22:40 2015 +1000
+Message: Prove that we can't signal during a suspend
+Partial-bug: 1334333
+Bug-Url: https://bugs.launchpad.net/bugs/1334333
+
+Commit: 2b4a4010821ebb242806ae6ff4fc1ad4db62fecb
+Author: Steve Baker
+Date: Wed Apr 1 11:33:49 2015 +1300
+Message: OS::Neutron::Port default replacement_policy=AUTO
+Closes-bug: 1393376
+Bug-Url: https://bugs.launchpad.net/bugs/1393376
+
+Commit: 0c0c919044514df8195fbbf56fc8ffc6c3b5ceb0
+Author: Sergey Kraynev
+Date: Tue Mar 31 10:02:01 2015 -0400
+Message: Re-factor db sqlalchemy tests
+Change-Id: I337eeedc079e1146958ec3b4b1956d76ce7fc352
+Gerrit-Review: https://review.openstack.org/#q,I337eeedc079e1146958ec3b4b1956d76ce7fc352,n,z
+
+Commit: 82f07cc69b3c9c57e3ac772491434ddbecbf3e49
+Author: Sergey Kraynev
+Date: Tue Mar 31 09:16:04 2015 -0400
+Message: Use HeatTestCase as parent instead of testtools
+Change-Id: I8276513d6ce5a83ce1b46ff3107cc0e3223d9b4d
+Gerrit-Review: https://review.openstack.org/#q,I8276513d6ce5a83ce1b46ff3107cc0e3223d9b4d,n,z
+
+Commit: 1dbb189270cffc0edf0721815582b39ab2776031
+Author: Rajiv Kumar
+Date: Mon Mar 30 10:32:44 2015 +0530
+Message: auth_encryption_key is being checked to be 16, 24, or 32
+Closes-bug: 1415887
+Bug-Url: https://bugs.launchpad.net/bugs/1415887
+
+Commit: a6d65581f60a7405cf118e3ac876159f7e33ab4e
+Author: Deliang Fan
+Date: Mon Mar 30 14:33:15 2015 +0800
+Message: Correctly initialize copies of stack during updating stack
+Closes-bug: 1356084
+Bug-Url: https://bugs.launchpad.net/bugs/1356084
+
+Commit: 8c5b3589e2a3ff11a25f5bf2cf9ad8cff7c8dbdf
+Author: Angus Salkeld
+Date: Tue Mar 31 07:55:18 2015 +1000
+Message: Change the default num_engine_workers to get_worker_count()
+Closes-bug: 1434339
+Bug-Url: https://bugs.launchpad.net/bugs/1434339
+
+Commit: 83f0ae1590c1951479fda598426f1a6e12bb7153
+Author: Peter Razumovsky
+Date: Mon Mar 30 12:14:21 2015 +0300
+Message: Move generic resources to properties schema
+Change-Id: I558b33c304f38a5819b7b54c780181430ee7b1be
+Gerrit-Review: https://review.openstack.org/#q,I558b33c304f38a5819b7b54c780181430ee7b1be,n,z
+
+Commit: f3044ce2a93cd718f5b54e1a5c1cfc61a3116dfa
+Author: huangtianhua
+Date: Sat Mar 28 17:34:52 2015 +0800
+Message: Cleanup snapshot records when stack deletion
+Closes-bug: 1437594
+Bug-Url: https://bugs.launchpad.net/bugs/1437594
+
+Commit: 42727797d379007ebddb51d96959b08c3c80cd9b
+Author: huangtianhua
+Date: Sat Mar 28 17:05:10 2015 +0800
+Message: Make sure to delete stack when SNAPSHOT_IN_PROGRESS
+Closes-bug: 1437588
+Bug-Url: https://bugs.launchpad.net/bugs/1437588
+
+Commit: 428e6b75a7c188a8e1f8a3d9a37b2a284e2baad3
+Author: Miguel Grinberg
+Date: Fri Mar 6 11:12:38 2015 -0800
+Message: Add versions to all contrib plugins
+Closes-bug: 1428879
+Bug-Url: https://bugs.launchpad.net/bugs/1428879
+
+Commit: 29365bda1cab48aad7b98907af521130321e526a
+Author: Angus Salkeld
+Date: Fri Mar 27 12:00:42 2015 +1000
+Message: Set state to failed if we get a base exception
+Closes-bug: 1436128
+Bug-Url: https://bugs.launchpad.net/bugs/1436128
+
+Commit: b82db091ed79844400c35d00b9dbbb5a85cbcad8
+Author: Sergey Kraynev
+Date: Fri Mar 27 11:55:53 2015 -0400
+Message: Update all templates in neutron tests
+Change-Id: I0c4a14bcaf2d4950fa63c86c54b213f53da88a4b
+Gerrit-Review: https://review.openstack.org/#q,I0c4a14bcaf2d4950fa63c86c54b213f53da88a4b,n,z
+
+Commit: 087bd370e341ec9c1a0dc5417baaeddd55d6346d
+Author: Sergey Kraynev
+Date: Fri Mar 27 11:11:44 2015 -0400
+Message: Split net and subnet tests to different files
+Change-Id: I15e1dc9833cd18327baa05f0ddc63e9af71a1dec
+Gerrit-Review: https://review.openstack.org/#q,I15e1dc9833cd18327baa05f0ddc63e9af71a1dec,n,z
+
+Commit: 715f768275906c12024e4f01f9c93162fd48655e
+Author: Sergey Kraynev
+Date: Fri Mar 27 10:21:50 2015 -0400
+Message: Move provider_net test to separate file
+Change-Id: I5dc8db849829e3e5ea0b5f942ac25fc5e2b7149b
+Gerrit-Review: https://review.openstack.org/#q,I5dc8db849829e3e5ea0b5f942ac25fc5e2b7149b,n,z
+
+Commit: ca070c73752d890243a003d39251e14480b9531a
+Author: Sergey Kraynev
+Date: Fri Mar 27 09:56:51 2015 -0400
+Message: Move router tests to separate file
+Change-Id: If348fb0a151fbb396b77677abfb72fba96a07955
+Gerrit-Review: https://review.openstack.org/#q,If348fb0a151fbb396b77677abfb72fba96a07955,n,z
+
+Commit: 02730862bd60a8cb3d9d6165d16c3f25316140fe
+Author: Sergey Kraynev
+Date: Fri Mar 27 09:23:56 2015 -0400
+Message: Move floating ip test to separate file
+Change-Id: I5fac22c8acbacc007d217ae552b9a3f619839d9a
+Gerrit-Review: https://review.openstack.org/#q,I5fac22c8acbacc007d217ae552b9a3f619839d9a,n,z
+
+Commit: 80f836892a0443d17999137198fe50294b38b497
+Author: Sergey Kraynev
+Date: Fri Mar 27 07:55:53 2015 -0400
+Message: Move tests for port resource to separate file
+Change-Id: Idfb4cc039588dbf6c395d34dd616aedf6f3c2cb6
+Gerrit-Review: https://review.openstack.org/#q,Idfb4cc039588dbf6c395d34dd616aedf6f3c2cb6,n,z
+
+Commit: 0fc309592f436a5ab70a487f85256a4afbf85c43
+Author: Sergey Kraynev
+Date: Fri Mar 27 07:38:14 2015 -0400
+Message: Move constraint's tests to test_neutron_client.py
+Change-Id: I24223b5e8bc9c8aff52d7062b1c0270c4455051b
+Gerrit-Review: https://review.openstack.org/#q,I24223b5e8bc9c8aff52d7062b1c0270c4455051b,n,z
+
+Commit: 553727cfd017c7a01c8eaa24a43c807ad2202855
+Author: tyagi
+Date: Fri Mar 27 04:11:50 2015 -0700
+Message: Make 'refs' attribute of ResourceGroup resource indexable
+Closes-bug: 1434586
+Bug-Url: https://bugs.launchpad.net/bugs/1434586
+
+Commit: ee3f1e4fdc0c697f67e24565ce7c8b1de3e22f88
+Author: Sergey Kraynev
+Date: Fri Mar 27 06:35:33 2015 -0400
+Message: Move common neutron module tests to separate file
+Change-Id: I9b0b2b14eeaafc59f992933a702fc7c12e998b98
+Gerrit-Review: https://review.openstack.org/#q,I9b0b2b14eeaafc59f992933a702fc7c12e998b98,n,z
+
+Commit: 50a7bea7179bb16025a2d379b60a50a5fec816b2
+Author: Sergey Kraynev
+Date: Fri Mar 27 04:48:28 2015 -0400
+Message: Move all neutron test in separate directory
+Change-Id: Iad6aae1db7378e02329b39b496ca0fb51767a13a
+Gerrit-Review: https://review.openstack.org/#q,Iad6aae1db7378e02329b39b496ca0fb51767a13a,n,z
+
+Commit: 639e0ed20506e42434607b635befee05edb7a7ca
+Author: Kanagaraj Manickam
+Date: Fri Mar 27 11:03:29 2015 +0530
+Message: oslo-incubator sync
+Change-Id: I52c8b543294c53ab99b78d1514e9150785d066d0
+Gerrit-Review: https://review.openstack.org/#q,I52c8b543294c53ab99b78d1514e9150785d066d0,n,z
+
+Commit: 04d0e22bf8d7a13434939fc00bcb5c11635addcf
+Author: Angus Salkeld
+Date: Fri Mar 27 14:33:23 2015 +1000
+Message: Add user_identity to RequestContext.to_dict()
+Closes-bug: 1437144
+Bug-Url: https://bugs.launchpad.net/bugs/1437144
+
+Commit: c9f32bfef08e567fda6848686ff6281fa3344c69
+Author: Sergey Kraynev
+Date: Fri Mar 27 11:55:14 2015 +1000
+Message: Add dependency for FIP if used network in port
+Closes-bug: 1428434
+Bug-Url: https://bugs.launchpad.net/bugs/1428434
+
+Commit: 1b9a8ad89dfc98ce86125b116f806a29dc37469e
+Author: huangtianhua
+Date: Mon Mar 23 12:00:47 2015 +0800
+Message: Add function 'digest' doc
+Change-Id: Ia027a483c63f748437778d602eb04524a7489ea5
+Gerrit-Review: https://review.openstack.org/#q,Ia027a483c63f748437778d602eb04524a7489ea5,n,z
+
+Commit: 12ab86cfb96a92246242343b78b46c7ed4802bc4
+Author: OpenStack Proposal Bot
+Date: Thu Mar 26 06:00:40 2015 +0000
+Message: Imported Translations from Transifex
+Change-Id: I82717c53edd5fcc5f7e65ae459f3c7227c4d6dc5
+Gerrit-Review: https://review.openstack.org/#q,I82717c53edd5fcc5f7e65ae459f3c7227c4d6dc5,n,z
+
+Commit: 5af6e34d4bcdfc68eb40d7e60c28ac8abf624e83
+Author: Steve Baker
+Date: Thu Mar 26 11:17:39 2015 +1300
+Message: test_hooks remove race-prone status wait
+Change-Id: If5a97ff4d9bcb948bdec988c749fdc78329751a3
+Gerrit-Review: https://review.openstack.org/#q,If5a97ff4d9bcb948bdec988c749fdc78329751a3,n,z
+
+Commit: 664f70383bfdd704322e136de226e9627c48d1a7
+Author: Peter Razumovsky
+Date: Mon Mar 23 13:06:59 2015 +0300
+Message: Add extra check for signal during DELETE or SUSPEND
+Change-Id: Ifa9e97c19cc35c4b2aa40dbed37296d9d4a38d5b
+Gerrit-Review: https://review.openstack.org/#q,Ifa9e97c19cc35c4b2aa40dbed37296d9d4a38d5b,n,z
+
+Commit: 15c3649ec974a67cfee05bb7a71047d961286580
+Author: Robert Pothier
+Date: Wed Mar 25 09:21:47 2015 -0400
+Message: Add SupportStatus to vnic_type
+Blueprint: neutron-resource-add-pci-port
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/neutron-resource-add-pci-port
+
+Commit: 3944fe1c7ff55f8426184a15511ec8e772de4caa
+Author: LiangChen
+Date: Fri Mar 20 15:00:45 2015 +0800
+Message: Docker plugin add read_only property
+Closes-bug: 1430211
+Bug-Url: https://bugs.launchpad.net/bugs/1430211
+
+Commit: 3eb0fd17713fea8fecb16e97d6c1170176eb7812
+Author: Joe Gordon
+Date: Tue Mar 24 11:46:35 2015 -0700
+Message: Move to hacking 0.10
+Change-Id: I97965ec81e6eaf771f74b6044945f23fae395ba5
+Gerrit-Review: https://review.openstack.org/#q,I97965ec81e6eaf771f74b6044945f23fae395ba5,n,z
+
+Commit: 8e5c35d897edda7f10917885758d1a9efd6d0d40
+Author: Sirushti Murugesan
+Date: Tue Mar 24 20:25:11 2015 +0530
+Message: Remove return for rpc casts in rpc worker client
+Change-Id: I82e2ead0b350be42f808f6cb6b9b57b786aeadcf
+Gerrit-Review: https://review.openstack.org/#q,I82e2ead0b350be42f808f6cb6b9b57b786aeadcf,n,z
+
+Commit: 35b96dcf673923b1b4ce67ccbb34bf771af7855d
+Author: Angus Salkeld
+Date: Fri Mar 20 10:57:01 2015 +1000
+Message: Don't assume that there is one service per host
+Closes-bug: 1433865
+Bug-Url: https://bugs.launchpad.net/bugs/1433865
+Change-Id: If297049f62e614b955faaefeaaf67e2649934a0c
+Gerrit-Review: https://review.openstack.org/#q,If297049f62e614b955faaefeaaf67e2649934a0c,n,z
+
+Commit: 3dbff5e4314f090400734716c1f9c9e194455909
+Author: Mehdi Abaakouk
+Date: Mon Mar 23 09:57:08 2015 +0100
+Message: gnocchi: ceilometer alarm update
+Change-Id: I08e9ee707d6f268cb5a818386d7fc63c9e7db9f8
+Gerrit-Review: https://review.openstack.org/#q,I08e9ee707d6f268cb5a818386d7fc63c9e7db9f8,n,z
+
+Commit: 401fd430d1df9ec71ed55979db87c0c631ff2290
+Author: Sergey Kraynev
+Date: Wed Mar 4 11:39:31 2015 -0500
+Message: Add way to collect map of needed attributes
+Blueprint: convergence-push-data
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/convergence-push-data
+
+Commit: 11d04c8d6a7bf3fb5d6de2bd47117cea3c9fe403
+Author: Anant Patil
+Date: Thu Jan 29 13:08:46 2015 +0530
+Message: Enable SSL for EC2Tokens.
+Closes-bug: 1415223
+Bug-Url: https://bugs.launchpad.net/bugs/1415223
+
