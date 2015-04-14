@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Heat Stack Lifecycle Scheduler Hints &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="heat-stack-lifecycle-scheduler-hints">
+<h1>Heat Stack Lifecycle Scheduler Hints<a class="headerlink" href="#heat-stack-lifecycle-scheduler-hints" title="Permalink to this headline">¶</a></h1>
+<p>This is a mechanism whereby when heat processes a stack Server resource, the
+stack id, root stack id, stack resource id, stack resource name and the path
+in the stack can be passed to nova by heat as scheduler hints, to the
+configured schedulers for nova.</p>
+<div class="section" id="enabling-the-scheduler-hints">
+<h2>Enabling the scheduler hints<a class="headerlink" href="#enabling-the-scheduler-hints" title="Permalink to this headline">¶</a></h2>
+<p>By default, passing the lifecycle scheduler hints is disabled. To enable it,
+set stack_scheduler_hints to True in heat.conf.</p>
+</div>
+<div class="section" id="the-hints">
+<h2>The hints<a class="headerlink" href="#the-hints" title="Permalink to this headline">¶</a></h2>
+<p>When heat processes a stack, and the feature is enabled, the stack id, root
+stack id, stack resource id, stack resource name and the path in the stack
+(as a list of tuple, (stackresourcename, stackname)) will be passed to nova
+by heat as scheduler hints, to the configured schedulers for nova.</p>
+</div>
+<div class="section" id="purpose">
+<h2>Purpose<a class="headerlink" href="#purpose" title="Permalink to this headline">¶</a></h2>
+<p>A heat provider may have a need for custom code to examine stack requests
+prior to performing the operations to create or update a stack. After the
+custom code completes, the provider may want to provide hints to the nova
+scheduler with stack related identifiers, for processing by any custom
+scheduler plug-ins configured for nova.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="raxdox/index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Heat Stack Lifecycle Scheduler Hints</a><ul>
+<li><a class="reference internal" href="#enabling-the-scheduler-hints">Enabling the scheduler hints</a></li>
+<li><a class="reference internal" href="#the-hints">The hints</a></li>
+<li><a class="reference internal" href="#purpose">Purpose</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/schedulerhints.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

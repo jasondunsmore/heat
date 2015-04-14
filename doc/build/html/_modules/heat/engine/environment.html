@@ -1,0 +1,678 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.environment &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.engine.environment</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">fnmatch</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">oslo_config</span> <span class="kn">import</span> <span class="n">cfg</span>
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">environment_format</span> <span class="k">as</span> <span class="n">env_fmt</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LE</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LI</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LW</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">support</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="n">HOOK_TYPES</span> <span class="o">=</span> <span class="p">(</span><span class="n">HOOK_PRE_CREATE</span><span class="p">,</span> <span class="n">HOOK_PRE_UPDATE</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;pre-create&#39;</span><span class="p">,</span> <span class="s">&#39;pre-update&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="valid_hook_type"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.valid_hook_type">[docs]</a><span class="k">def</span> <span class="nf">valid_hook_type</span><span class="p">(</span><span class="n">hook</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">hook</span> <span class="ow">in</span> <span class="n">HOOK_TYPES</span>
+
+</div>
+<div class="viewcode-block" id="is_hook_definition"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.is_hook_definition">[docs]</a><span class="k">def</span> <span class="nf">is_hook_definition</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;hooks&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">valid_hook_type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Sequence</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">valid_hook_type</span><span class="p">(</span><span class="n">hook</span><span class="p">)</span> <span class="k">for</span> <span class="n">hook</span> <span class="ow">in</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">return</span> <span class="bp">False</span>
+
+</div>
+<div class="viewcode-block" id="ResourceInfo"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ResourceInfo">[docs]</a><span class="k">class</span> <span class="nc">ResourceInfo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base mapping of resource type to implementation.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">registry</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Create a new ResourceInfo of the appropriate class.&#39;&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="n">cls</span> <span class="o">!=</span> <span class="n">ResourceInfo</span><span class="p">:</span>
+            <span class="c"># Call is already for a subclass, so pass it through</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ResourceInfo</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s">&#39;.yaml&#39;</span><span class="p">,</span> <span class="s">&#39;.template&#39;</span><span class="p">)):</span>
+            <span class="c"># a template url for the resource &quot;Type&quot;</span>
+            <span class="k">return</span> <span class="n">TemplateResourceInfo</span><span class="p">(</span><span class="n">registry</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">ClassResourceInfo</span><span class="p">(</span><span class="n">registry</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">value</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s">&#39;.yaml&#39;</span><span class="p">,</span> <span class="s">&#39;.template&#39;</span><span class="p">)):</span>
+            <span class="c"># a registered template</span>
+            <span class="k">return</span> <span class="n">TemplateResourceInfo</span><span class="p">(</span><span class="n">registry</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">GlobResourceInfo</span><span class="p">(</span><span class="n">registry</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">MapResourceInfo</span><span class="p">(</span><span class="n">registry</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registry</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">registry</span> <span class="o">=</span> <span class="n">registry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_resource</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">other</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">path</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">value</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">user_resource</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">user_resource</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_resource</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">user_resource</span><span class="p">:</span>
+            <span class="c"># user resource must be sorted above system ones.</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_resource</span> <span class="o">&gt;</span> <span class="n">other</span><span class="o">.</span><span class="n">user_resource</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
+            <span class="c"># more specific (longer) path must be sorted above system ones.</span>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">path</span>
+
+    <span class="k">def</span> <span class="nf">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">other</span><span class="o">.</span><span class="n">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ResourceInfo.get_resource_info"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ResourceInfo.get_resource_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_resource_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">resource_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+</div>
+<div class="viewcode-block" id="ResourceInfo.matches"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ResourceInfo.matches">[docs]</a>    <span class="k">def</span> <span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;[</span><span class="si">%s</span><span class="s">](User:</span><span class="si">%s</span><span class="s">) </span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+                                           <span class="bp">self</span><span class="o">.</span><span class="n">user_resource</span><span class="p">,</span>
+                                           <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="ClassResourceInfo"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ClassResourceInfo">[docs]</a><span class="k">class</span> <span class="nc">ClassResourceInfo</span><span class="p">(</span><span class="n">ResourceInfo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Store the mapping of resource name to python class implementation.&quot;&quot;&quot;</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="s">&#39;Plugin&#39;</span>
+
+<div class="viewcode-block" id="ClassResourceInfo.get_class"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ClassResourceInfo.get_class">[docs]</a>    <span class="k">def</span> <span class="nf">get_class</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+
+</div></div>
+<div class="viewcode-block" id="TemplateResourceInfo"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.TemplateResourceInfo">[docs]</a><span class="k">class</span> <span class="nc">TemplateResourceInfo</span><span class="p">(</span><span class="n">ResourceInfo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Store the info needed to start a TemplateResource.&quot;&quot;&quot;</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="s">&#39;Template&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registry</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TemplateResourceInfo</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">registry</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s">&#39;.yaml&#39;</span><span class="p">,</span> <span class="s">&#39;.template&#39;</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_name</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_name</span>
+
+<div class="viewcode-block" id="TemplateResourceInfo.get_class"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.TemplateResourceInfo.get_class">[docs]</a>    <span class="k">def</span> <span class="nf">get_class</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">heat.engine.resources</span> <span class="kn">import</span> <span class="n">template_resource</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">environment</span>
+        <span class="k">return</span> <span class="n">template_resource</span><span class="o">.</span><span class="n">generate_class</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">template_name</span><span class="p">,</span>
+                                                <span class="n">env</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="MapResourceInfo"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.MapResourceInfo">[docs]</a><span class="k">class</span> <span class="nc">MapResourceInfo</span><span class="p">(</span><span class="n">ResourceInfo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Store the mapping of one resource type to another.</span>
+
+<span class="sd">    like: OS::Networking::FloatingIp -&gt; OS::Neutron::FloatingIp</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="s">&#39;Mapping&#39;</span>
+
+<div class="viewcode-block" id="MapResourceInfo.get_class"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.MapResourceInfo.get_class">[docs]</a>    <span class="k">def</span> <span class="nf">get_class</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="MapResourceInfo.get_resource_info"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.MapResourceInfo.get_resource_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_resource_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">resource_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">get_resource_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="GlobResourceInfo"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.GlobResourceInfo">[docs]</a><span class="k">class</span> <span class="nc">GlobResourceInfo</span><span class="p">(</span><span class="n">MapResourceInfo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Store the mapping (with wild cards) of one resource type to another.</span>
+
+<span class="sd">    like: OS::Networking::* -&gt; OS::Neutron::*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="s">&#39;Wildcard Mapping&#39;</span>
+
+<div class="viewcode-block" id="GlobResourceInfo.get_resource_info"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.GlobResourceInfo.get_resource_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_resource_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">resource_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">orig_prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">new_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">resource_type</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">orig_prefix</span><span class="p">):]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">get_resource_info</span><span class="p">(</span><span class="n">new_type</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GlobResourceInfo.matches"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.GlobResourceInfo.matches">[docs]</a>    <span class="k">def</span> <span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">resource_type</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+</div></div>
+<div class="viewcode-block" id="ResourceRegistry"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ResourceRegistry">[docs]</a><span class="k">class</span> <span class="nc">ResourceRegistry</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;By looking at the environment, find the resource implementation.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_registry</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;resources&#39;</span><span class="p">:</span> <span class="p">{}}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_registry</span> <span class="o">=</span> <span class="n">global_registry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">environment</span> <span class="o">=</span> <span class="n">env</span>
+
+<div class="viewcode-block" id="ResourceRegistry.load"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ResourceRegistry.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_snippet</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_registry</span><span class="p">([],</span> <span class="n">json_snippet</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ResourceRegistry.register_class"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ResourceRegistry.register_class">[docs]</a>    <span class="k">def</span> <span class="nf">register_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">resource_class</span><span class="p">):</span>
+        <span class="n">ri</span> <span class="o">=</span> <span class="n">ResourceInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="n">resource_type</span><span class="p">],</span> <span class="n">resource_class</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_register_info</span><span class="p">([</span><span class="n">resource_type</span><span class="p">],</span> <span class="n">ri</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_load_registry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">registry</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="n">registry</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_register_info</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">is_hook_definition</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_register_hook</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_load_registry</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_register_info</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="p">[</span><span class="n">k</span><span class="p">],</span>
+                                    <span class="n">ResourceInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span> <span class="o">+</span> <span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">v</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_register_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">hook</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">registry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">registry</span><span class="p">:</span>
+                <span class="n">registry</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">registry</span> <span class="o">=</span> <span class="n">registry</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="n">registry</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">hook</span>
+
+    <span class="k">def</span> <span class="nf">_register_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;place the new info in the correct location in the registry.</span>
+<span class="sd">        path: a list of keys [&#39;resources&#39;, &#39;my_server&#39;, &#39;OS::Nova::Server&#39;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">descriptive_path</span> <span class="o">=</span> <span class="s">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c"># create the structure if needed</span>
+        <span class="n">registry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">registry</span><span class="p">:</span>
+                <span class="n">registry</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">registry</span> <span class="o">=</span> <span class="n">registry</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">):</span>
+                <span class="c"># delete all matching entries.</span>
+                <span class="k">for</span> <span class="n">res_name</span> <span class="ow">in</span> <span class="n">registry</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">registry</span><span class="p">[</span><span class="n">res_name</span><span class="p">],</span> <span class="n">ResourceInfo</span><span class="p">)</span> <span class="ow">and</span>
+                            <span class="n">res_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">name</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])):</span>
+                        <span class="n">LOG</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">_LW</span><span class="p">(</span><span class="s">&#39;Removing </span><span class="si">%(item)s</span><span class="s"> from </span><span class="si">%(path)s</span><span class="s">&#39;</span><span class="p">),</span> <span class="p">{</span>
+                            <span class="s">&#39;item&#39;</span><span class="p">:</span> <span class="n">res_name</span><span class="p">,</span>
+                            <span class="s">&#39;path&#39;</span><span class="p">:</span> <span class="n">descriptive_path</span><span class="p">})</span>
+                        <span class="k">del</span> <span class="n">registry</span><span class="p">[</span><span class="n">res_name</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c"># delete this entry.</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">_LW</span><span class="p">(</span><span class="s">&#39;Removing </span><span class="si">%(item)s</span><span class="s"> from </span><span class="si">%(path)s</span><span class="s">&#39;</span><span class="p">),</span> <span class="p">{</span>
+                    <span class="s">&#39;item&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                    <span class="s">&#39;path&#39;</span><span class="p">:</span> <span class="n">descriptive_path</span><span class="p">})</span>
+                <span class="n">registry</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">registry</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">registry</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">ResourceInfo</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">registry</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">==</span> <span class="n">info</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="n">details</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s">&#39;path&#39;</span><span class="p">:</span> <span class="n">descriptive_path</span><span class="p">,</span>
+                <span class="s">&#39;was&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">registry</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
+                <span class="s">&#39;now&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">value</span><span class="p">)}</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">_LW</span><span class="p">(</span><span class="s">&#39;Changing </span><span class="si">%(path)s</span><span class="s"> from </span><span class="si">%(was)s</span><span class="s"> to </span><span class="si">%(now)s</span><span class="s">&#39;</span><span class="p">),</span>
+                     <span class="n">details</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&#39;Registering </span><span class="si">%(path)s</span><span class="s"> -&gt; </span><span class="si">%(value)s</span><span class="s">&#39;</span><span class="p">),</span> <span class="p">{</span>
+                <span class="s">&#39;path&#39;</span><span class="p">:</span> <span class="n">descriptive_path</span><span class="p">,</span>
+                <span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">value</span><span class="p">)})</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">ClassResourceInfo</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">support_status</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">support</span><span class="o">.</span><span class="n">SUPPORTED</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">support_status</span><span class="o">.</span><span class="n">message</span><span class="p">))</span>
+
+        <span class="n">info</span><span class="o">.</span><span class="n">user_resource</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_registry</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">registry</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span>
+
+<div class="viewcode-block" id="ResourceRegistry.remove_item"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ResourceRegistry.remove_item">[docs]</a>    <span class="k">def</span> <span class="nf">remove_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">TemplateResourceInfo</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="n">registry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">registry</span> <span class="o">=</span> <span class="n">registry</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">registry</span><span class="p">:</span>
+            <span class="n">registry</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="ResourceRegistry.matches_hook"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ResourceRegistry.matches_hook">[docs]</a>    <span class="k">def</span> <span class="nf">matches_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">,</span> <span class="n">hook</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return whether a resource have a hook set in the environment.</span>
+
+<span class="sd">        For a given resource and a hook type, we check to see if the the passed</span>
+<span class="sd">        group of resources has the right hook associated with the name.</span>
+
+<span class="sd">        Hooks are set in this format via `resources`:</span>
+
+<span class="sd">            {</span>
+<span class="sd">                &quot;res_name&quot;: {</span>
+<span class="sd">                    &quot;hooks&quot;: [pre-create, pre-update]</span>
+<span class="sd">                },</span>
+<span class="sd">                &quot;*_suffix&quot;: {</span>
+<span class="sd">                    &quot;hooks&quot;: pre-create</span>
+<span class="sd">                },</span>
+<span class="sd">                &quot;prefix_*&quot;: {</span>
+<span class="sd">                    &quot;hooks&quot;: pre-update</span>
+<span class="sd">                }</span>
+<span class="sd">            }</span>
+
+<span class="sd">        A hook value is either `pre-create`, `pre-update` or a list of those</span>
+<span class="sd">        values. Resources support wildcard matching. The asterisk sign matches</span>
+<span class="sd">        everything.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">ress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">[</span><span class="s">&#39;resources&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">name_pattern</span><span class="p">,</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">ress</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatchcase</span><span class="p">(</span><span class="n">resource_name</span><span class="p">,</span> <span class="n">name_pattern</span><span class="p">):</span>
+                <span class="k">if</span> <span class="s">&#39;hooks&#39;</span> <span class="ow">in</span> <span class="n">resource</span><span class="p">:</span>
+                    <span class="n">hooks</span> <span class="o">=</span> <span class="n">resource</span><span class="p">[</span><span class="s">&#39;hooks&#39;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hooks</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">hook</span> <span class="o">==</span> <span class="n">hooks</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="bp">True</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hooks</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Sequence</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">hook</span> <span class="ow">in</span> <span class="n">hooks</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="ResourceRegistry.remove_resources_except"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ResourceRegistry.remove_resources_except">[docs]</a>    <span class="k">def</span> <span class="nf">remove_resources_except</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">):</span>
+        <span class="n">ress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">[</span><span class="s">&#39;resources&#39;</span><span class="p">]</span>
+        <span class="n">new_resources</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">ress</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatchcase</span><span class="p">(</span><span class="n">resource_name</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+                <span class="n">new_resources</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource_name</span> <span class="ow">in</span> <span class="n">ress</span><span class="p">:</span>
+            <span class="n">new_resources</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ress</span><span class="p">[</span><span class="n">resource_name</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">[</span><span class="s">&#39;resources&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_resources</span>
+</div>
+<div class="viewcode-block" id="ResourceRegistry.iterable_by"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ResourceRegistry.iterable_by">[docs]</a>    <span class="k">def</span> <span class="nf">iterable_by</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">resource_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">is_templ_type</span> <span class="o">=</span> <span class="n">resource_type</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s">&#39;.yaml&#39;</span><span class="p">,</span> <span class="s">&#39;.template&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_registry</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">is_templ_type</span><span class="p">:</span>
+            <span class="c"># we only support dynamic resource types in user environments</span>
+            <span class="c"># not the global environment.</span>
+            <span class="c"># resource with a Type == a template</span>
+            <span class="c"># we dynamically create an entry as it has not been registered.</span>
+            <span class="k">if</span> <span class="n">resource_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">:</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">ResourceInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="n">resource_type</span><span class="p">],</span> <span class="bp">None</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_register_info</span><span class="p">([</span><span class="n">resource_type</span><span class="p">],</span> <span class="n">res</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">[</span><span class="n">resource_type</span><span class="p">]</span>
+
+        <span class="c"># handle a specific resource mapping.</span>
+        <span class="k">if</span> <span class="n">resource_name</span><span class="p">:</span>
+            <span class="n">impl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">[</span><span class="s">&#39;resources&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">resource_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">impl</span> <span class="ow">and</span> <span class="n">resource_type</span> <span class="ow">in</span> <span class="n">impl</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">impl</span><span class="p">[</span><span class="n">resource_type</span><span class="p">]</span>
+
+        <span class="c"># handle: &quot;OS::Nova::Server&quot; -&gt; &quot;Rackspace::Cloud::Server&quot;</span>
+        <span class="n">impl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">resource_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">impl</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">impl</span>
+
+        <span class="c"># handle: &quot;OS::*&quot; -&gt; &quot;Dreamhost::*&quot;</span>
+        <span class="k">def</span> <span class="nf">is_a_glob</span><span class="p">(</span><span class="n">resource_type</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">resource_type</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">)</span>
+        <span class="n">globs</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">ifilter</span><span class="p">(</span><span class="n">is_a_glob</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">globs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">[</span><span class="n">pattern</span><span class="p">]</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">resource_type</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">[</span><span class="n">pattern</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="ResourceRegistry.get_resource_info"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ResourceRegistry.get_resource_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_resource_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">resource_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                          <span class="n">registry_type</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find possible matches to the resource type and name.</span>
+<span class="sd">        chain the results from the global and user registry to find</span>
+<span class="sd">        a match.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># use cases</span>
+        <span class="c"># 1) get the impl.</span>
+        <span class="c">#    - filter_by(res_type=X), sort_by(res_name=W, is_user=True)</span>
+        <span class="c"># 2) in TemplateResource we need to get both the</span>
+        <span class="c">#    TemplateClass and the ResourceClass</span>
+        <span class="c">#    - filter_by(res_type=X, impl_type=TemplateResourceInfo),</span>
+        <span class="c">#      sort_by(res_name=W, is_user=True)</span>
+        <span class="c">#    - filter_by(res_type=X, impl_type=ClassResourceInfo),</span>
+        <span class="c">#      sort_by(res_name=W, is_user=True)</span>
+        <span class="c"># 3) get_types() from the api</span>
+        <span class="c">#    - filter_by(is_user=False)</span>
+        <span class="c"># 4) as_dict() to write to the db</span>
+        <span class="c">#    - filter_by(is_user=True)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_registry</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">giter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_registry</span><span class="o">.</span><span class="n">iterable_by</span><span class="p">(</span><span class="n">resource_type</span><span class="p">,</span>
+                                                     <span class="n">resource_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">giter</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">matches</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iterable_by</span><span class="p">(</span><span class="n">resource_type</span><span class="p">,</span>
+                                                   <span class="n">resource_name</span><span class="p">),</span>
+                                  <span class="n">giter</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">matches</span><span class="p">):</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get_resource_info</span><span class="p">(</span><span class="n">resource_type</span><span class="p">,</span>
+                                           <span class="n">resource_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">((</span><span class="n">registry_type</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="n">registry_type</span><span class="p">))):</span>
+                <span class="k">return</span> <span class="n">match</span>
+</div>
+<div class="viewcode-block" id="ResourceRegistry.get_class"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ResourceRegistry.get_class">[docs]</a>    <span class="k">def</span> <span class="nf">get_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">resource_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">resource_type</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Resource &quot;</span><span class="si">%s</span><span class="s">&quot; has no type&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">resource_name</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">StackValidationFailed</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">resource_type</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Non-empty resource type is required &#39;</span>
+                    <span class="s">&#39;for resource &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">resource_name</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">StackValidationFailed</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">resource_type</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Resource &quot;</span><span class="si">%s</span><span class="s">&quot; type is not a string&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">resource_name</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">StackValidationFailed</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resource_info</span><span class="p">(</span><span class="n">resource_type</span><span class="p">,</span>
+                                      <span class="n">resource_name</span><span class="o">=</span><span class="n">resource_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Unknown resource Type : </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">resource_type</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">StackValidationFailed</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">info</span><span class="o">.</span><span class="n">get_class</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="ResourceRegistry.as_dict"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ResourceRegistry.as_dict">[docs]</a>    <span class="k">def</span> <span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return user resources in a dict format.&quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">_as_dict</span><span class="p">(</span><span class="n">level</span><span class="p">):</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="n">level</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">tmp</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">_as_dict</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">is_hook_definition</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+                    <span class="n">tmp</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="k">elif</span> <span class="n">v</span><span class="o">.</span><span class="n">user_resource</span><span class="p">:</span>
+                    <span class="n">tmp</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">return</span> <span class="n">tmp</span>
+
+        <span class="k">return</span> <span class="n">_as_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ResourceRegistry.get_types"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.ResourceRegistry.get_types">[docs]</a>    <span class="k">def</span> <span class="nf">get_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">support_status</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return a list of valid resource types.&#39;&#39;&#39;</span>
+
+        <span class="k">def</span> <span class="nf">is_resource</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="p">(</span><span class="n">ClassResourceInfo</span><span class="p">,</span>
+                                                    <span class="n">TemplateResourceInfo</span><span class="p">))</span>
+
+        <span class="k">def</span> <span class="nf">status_matches</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">support_status</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span>
+                    <span class="n">cls</span><span class="o">.</span><span class="n">get_class</span><span class="p">()</span><span class="o">.</span><span class="n">support_status</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span>
+                    <span class="n">support_status</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">cls</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">is_resource</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">and</span> <span class="n">status_matches</span><span class="p">(</span><span class="n">cls</span><span class="p">)]</span>
+
+</div></div>
+<div class="viewcode-block" id="Environment"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.Environment">[docs]</a><span class="k">class</span> <span class="nc">Environment</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">user_env</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create an Environment from a dict of varying format.</span>
+<span class="sd">        1) old-school flat parameters</span>
+<span class="sd">        2) or newer {resource_registry: bla, parameters: foo}</span>
+
+<span class="sd">        :param env: the json environment</span>
+<span class="sd">        :param user_env: boolean, if false then we manage python resources too.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">env</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">env</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">user_env</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">resources</span>
+            <span class="n">global_registry</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">global_env</span><span class="p">()</span><span class="o">.</span><span class="n">registry</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">global_registry</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">registry</span> <span class="o">=</span> <span class="n">ResourceRegistry</span><span class="p">(</span><span class="n">global_registry</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">env_fmt</span><span class="o">.</span><span class="n">RESOURCE_REGISTRY</span><span class="p">,</span> <span class="p">{}))</span>
+
+        <span class="k">if</span> <span class="n">env_fmt</span><span class="o">.</span><span class="n">PARAMETER_DEFAULTS</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">param_defaults</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="n">env_fmt</span><span class="o">.</span><span class="n">PARAMETER_DEFAULTS</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">param_defaults</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">env_fmt</span><span class="o">.</span><span class="n">PARAMETERS</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="n">env_fmt</span><span class="o">.</span><span class="n">PARAMETERS</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+                               <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">env_fmt</span><span class="o">.</span><span class="n">PARAMETER_DEFAULTS</span><span class="p">,</span>
+                                            <span class="n">env_fmt</span><span class="o">.</span><span class="n">RESOURCE_REGISTRY</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack_lifecycle_plugins</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="Environment.load"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.Environment.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_snippet</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">env_snippet</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">env_fmt</span><span class="o">.</span><span class="n">RESOURCE_REGISTRY</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">env_snippet</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">env_fmt</span><span class="o">.</span><span class="n">PARAMETERS</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">param_defaults</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">env_snippet</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">env_fmt</span><span class="o">.</span><span class="n">PARAMETER_DEFAULTS</span><span class="p">,</span> <span class="p">{}))</span>
+</div>
+<div class="viewcode-block" id="Environment.patch_previous_parameters"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.Environment.patch_previous_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">patch_previous_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">previous_env</span><span class="p">,</span> <span class="n">clear_parameters</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="sd">&quot;&quot;&quot;This instance of Environment is the new environment where</span>
+<span class="sd">        we are reusing as default the previous parameter values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">previous_parameters</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">previous_env</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+        <span class="c"># clear the parameters from the previous set as requested</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">clear_parameters</span><span class="p">:</span>
+            <span class="n">previous_parameters</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="c"># patch the new set of parameters</span>
+        <span class="n">previous_parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">previous_parameters</span>
+</div>
+<div class="viewcode-block" id="Environment.user_env_as_dict"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.Environment.user_env_as_dict">[docs]</a>    <span class="k">def</span> <span class="nf">user_env_as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the environment as a dict, ready for storing in the db.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">env_fmt</span><span class="o">.</span><span class="n">RESOURCE_REGISTRY</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">as_dict</span><span class="p">(),</span>
+                <span class="n">env_fmt</span><span class="o">.</span><span class="n">PARAMETERS</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+                <span class="n">env_fmt</span><span class="o">.</span><span class="n">PARAMETER_DEFAULTS</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_defaults</span><span class="p">}</span>
+</div>
+<div class="viewcode-block" id="Environment.register_class"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.Environment.register_class">[docs]</a>    <span class="k">def</span> <span class="nf">register_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">resource_class</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">register_class</span><span class="p">(</span><span class="n">resource_type</span><span class="p">,</span> <span class="n">resource_class</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Environment.register_constraint"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.Environment.register_constraint">[docs]</a>    <span class="k">def</span> <span class="nf">register_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraint_name</span><span class="p">,</span> <span class="n">constraint</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="n">constraint_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">constraint</span>
+</div>
+<div class="viewcode-block" id="Environment.register_stack_lifecycle_plugin"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.Environment.register_stack_lifecycle_plugin">[docs]</a>    <span class="k">def</span> <span class="nf">register_stack_lifecycle_plugin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack_lifecycle_name</span><span class="p">,</span>
+                                        <span class="n">stack_lifecycle_class</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack_lifecycle_plugins</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">stack_lifecycle_name</span><span class="p">,</span>
+                                             <span class="n">stack_lifecycle_class</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Environment.get_class"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.Environment.get_class">[docs]</a>    <span class="k">def</span> <span class="nf">get_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">resource_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">get_class</span><span class="p">(</span><span class="n">resource_type</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Environment.get_types"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.Environment.get_types">[docs]</a>    <span class="k">def</span> <span class="nf">get_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">support_status</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">get_types</span><span class="p">(</span><span class="n">support_status</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Environment.get_resource_info"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.Environment.get_resource_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_resource_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">resource_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                          <span class="n">registry_type</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">get_resource_info</span><span class="p">(</span><span class="n">resource_type</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">,</span>
+                                               <span class="n">registry_type</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Environment.get_constraint"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.Environment.get_constraint">[docs]</a>    <span class="k">def</span> <span class="nf">get_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Environment.get_stack_lifecycle_plugins"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.Environment.get_stack_lifecycle_plugins">[docs]</a>    <span class="k">def</span> <span class="nf">get_stack_lifecycle_plugins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_lifecycle_plugins</span>
+
+</div></div>
+<div class="viewcode-block" id="get_child_environment"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.get_child_environment">[docs]</a><span class="k">def</span> <span class="nf">get_child_environment</span><span class="p">(</span><span class="n">parent_env</span><span class="p">,</span> <span class="n">child_params</span><span class="p">,</span> <span class="n">item_to_remove</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                          <span class="n">child_resource_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Build a child environment using the parent environment and params.</span>
+
+<span class="sd">    This is built from the child_params and the parent env so some</span>
+<span class="sd">    resources can use user-provided parameters as if they come from an</span>
+<span class="sd">    environment.</span>
+
+<span class="sd">    1. resource_registry must be merged (child env should be loaded after the</span>
+<span class="sd">       parent env to take presdence).</span>
+<span class="sd">    2. child parameters must overwrite the parent&#39;s as they won&#39;t be relevant</span>
+<span class="sd">       in the child template.</span>
+
+<span class="sd">    If `child_resource_name` is provided, resources in the registry will be</span>
+<span class="sd">    replaced with the contents of the matching child resource plus anything</span>
+<span class="sd">    that passes a wildcard match.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">is_flat_params</span><span class="p">(</span><span class="n">env_or_param</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">env_or_param</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">sect</span> <span class="ow">in</span> <span class="n">env_fmt</span><span class="o">.</span><span class="n">SECTIONS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sect</span> <span class="ow">in</span> <span class="n">env_or_param</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+    <span class="n">child_env</span> <span class="o">=</span> <span class="n">parent_env</span><span class="o">.</span><span class="n">user_env_as_dict</span><span class="p">()</span>
+    <span class="n">child_env</span><span class="p">[</span><span class="n">env_fmt</span><span class="o">.</span><span class="n">PARAMETERS</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">flat_params</span> <span class="o">=</span> <span class="n">is_flat_params</span><span class="p">(</span><span class="n">child_params</span><span class="p">)</span>
+    <span class="n">new_env</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">flat_params</span> <span class="ow">and</span> <span class="n">child_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">child_env</span><span class="p">[</span><span class="n">env_fmt</span><span class="o">.</span><span class="n">PARAMETERS</span><span class="p">]</span> <span class="o">=</span> <span class="n">child_params</span>
+
+    <span class="n">new_env</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">child_env</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">flat_params</span> <span class="ow">and</span> <span class="n">child_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">new_env</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">child_params</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">item_to_remove</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">new_env</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">remove_item</span><span class="p">(</span><span class="n">item_to_remove</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">child_resource_name</span><span class="p">:</span>
+        <span class="n">new_env</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">remove_resources_except</span><span class="p">(</span><span class="n">child_resource_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_env</span>
+
+</div>
+<div class="viewcode-block" id="read_global_environment"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.environment.html#heat.engine.environment.read_global_environment">[docs]</a><span class="k">def</span> <span class="nf">read_global_environment</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">env_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">env_dir</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">import_opt</span><span class="p">(</span><span class="s">&#39;environment_dir&#39;</span><span class="p">,</span> <span class="s">&#39;heat.common.config&#39;</span><span class="p">)</span>
+        <span class="n">env_dir</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">environment_dir</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">env_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">env_dir</span><span class="p">,</span> <span class="s">&#39;*&#39;</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">osex</span><span class="p">:</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">_LE</span><span class="p">(</span><span class="s">&#39;Failed to read </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">),</span> <span class="n">env_dir</span><span class="p">)</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">osex</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">for</span> <span class="n">file_path</span> <span class="ow">in</span> <span class="n">env_files</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">env_fd</span><span class="p">:</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&#39;Loading </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">),</span> <span class="n">file_path</span><span class="p">)</span>
+                <span class="n">env_body</span> <span class="o">=</span> <span class="n">env_fmt</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">env_fd</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+                <span class="n">env_fmt</span><span class="o">.</span><span class="n">default_for_missing</span><span class="p">(</span><span class="n">env_body</span><span class="p">)</span>
+                <span class="n">env</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">env_body</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">vex</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">_LE</span><span class="p">(</span><span class="s">&#39;Failed to parse </span><span class="si">%(file_path)s</span><span class="s">&#39;</span><span class="p">),</span> <span class="p">{</span>
+                      <span class="s">&#39;file_path&#39;</span><span class="p">:</span> <span class="n">file_path</span><span class="p">})</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">vex</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">ioex</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">_LE</span><span class="p">(</span><span class="s">&#39;Failed to read </span><span class="si">%(file_path)s</span><span class="s">&#39;</span><span class="p">),</span> <span class="p">{</span>
+                      <span class="s">&#39;file_path&#39;</span><span class="p">:</span> <span class="n">file_path</span><span class="p">})</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">ioex</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

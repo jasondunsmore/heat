@@ -1,0 +1,280 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.update &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.engine.update</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span> <span class="k">as</span> <span class="n">logging</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LI</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">dependencies</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">resource</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">scheduler</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">resource</span> <span class="k">as</span> <span class="n">resource_objects</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="StackUpdate"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.update.html#heat.engine.update.StackUpdate">[docs]</a><span class="k">class</span> <span class="nc">StackUpdate</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A Task to perform the update of an existing stack to a new template.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">existing_stack</span><span class="p">,</span> <span class="n">new_stack</span><span class="p">,</span> <span class="n">previous_stack</span><span class="p">,</span>
+                 <span class="n">rollback</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">error_wait_time</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise with the existing stack and the new stack.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span> <span class="o">=</span> <span class="n">existing_stack</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_stack</span> <span class="o">=</span> <span class="n">new_stack</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">previous_stack</span> <span class="o">=</span> <span class="n">previous_stack</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rollback</span> <span class="o">=</span> <span class="n">rollback</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_wait_time</span> <span class="o">=</span> <span class="n">error_wait_time</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">existing_snippets</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">frozen_definition</span><span class="p">())</span>
+                                      <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rollback</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> Rollback&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> Update&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span><span class="p">)</span>
+
+    <span class="nd">@scheduler.wrappertask</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a co-routine that updates the stack.&quot;&quot;&quot;</span>
+
+        <span class="n">cleanup_prev</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">DependencyTaskGroup</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">previous_stack</span><span class="o">.</span><span class="n">dependencies</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_remove_backup_resource</span><span class="p">,</span>
+            <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">updater</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">DependencyTaskGroup</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_resource_update</span><span class="p">,</span>
+            <span class="n">error_wait_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">error_wait_time</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">rollback</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">cleanup_prev</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">updater</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">previous_stack</span><span class="o">.</span><span class="n">reset_dependencies</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_resource_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_stack</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_stack</span><span class="p">[</span><span class="n">res</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="ow">is</span> <span class="n">res</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_new_resource_update</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_existing_resource_update</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
+    <span class="nd">@scheduler.wrappertask</span>
+    <span class="k">def</span> <span class="nf">_remove_backup_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prev_res</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">prev_res</span><span class="o">.</span><span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">((</span><span class="n">prev_res</span><span class="o">.</span><span class="n">INIT</span><span class="p">,</span> <span class="n">prev_res</span><span class="o">.</span><span class="n">COMPLETE</span><span class="p">),</span>
+                                  <span class="p">(</span><span class="n">prev_res</span><span class="o">.</span><span class="n">DELETE</span><span class="p">,</span> <span class="n">prev_res</span><span class="o">.</span><span class="n">COMPLETE</span><span class="p">)):</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Deleting backup resource </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">prev_res</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">prev_res</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_exchange_stacks</span><span class="p">(</span><span class="n">existing_res</span><span class="p">,</span> <span class="n">prev_res</span><span class="p">):</span>
+        <span class="n">resource_objects</span><span class="o">.</span><span class="n">Resource</span><span class="o">.</span><span class="n">exchange_stacks</span><span class="p">(</span><span class="n">existing_res</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">context</span><span class="p">,</span>
+                                                  <span class="n">existing_res</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">prev_res</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">prev_stack</span><span class="p">,</span> <span class="n">existing_stack</span> <span class="o">=</span> <span class="n">prev_res</span><span class="o">.</span><span class="n">stack</span><span class="p">,</span> <span class="n">existing_res</span><span class="o">.</span><span class="n">stack</span>
+        <span class="n">prev_stack</span><span class="o">.</span><span class="n">add_resource</span><span class="p">(</span><span class="n">existing_res</span><span class="p">)</span>
+        <span class="n">existing_stack</span><span class="o">.</span><span class="n">add_resource</span><span class="p">(</span><span class="n">prev_res</span><span class="p">)</span>
+
+    <span class="nd">@scheduler.wrappertask</span>
+    <span class="k">def</span> <span class="nf">_create_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_res</span><span class="p">):</span>
+        <span class="n">res_name</span> <span class="o">=</span> <span class="n">new_res</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="c"># Clean up previous resource</span>
+        <span class="k">if</span> <span class="n">res_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">previous_stack</span><span class="p">:</span>
+            <span class="n">prev_res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">previous_stack</span><span class="p">[</span><span class="n">res_name</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">prev_res</span><span class="o">.</span><span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">((</span><span class="n">prev_res</span><span class="o">.</span><span class="n">INIT</span><span class="p">,</span> <span class="n">prev_res</span><span class="o">.</span><span class="n">COMPLETE</span><span class="p">),</span>
+                                      <span class="p">(</span><span class="n">prev_res</span><span class="o">.</span><span class="n">DELETE</span><span class="p">,</span> <span class="n">prev_res</span><span class="o">.</span><span class="n">COMPLETE</span><span class="p">)):</span>
+                <span class="c"># Swap in the backup resource if it is in a valid state,</span>
+                <span class="c"># instead of creating a new resource</span>
+                <span class="k">if</span> <span class="n">prev_res</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">prev_res</span><span class="o">.</span><span class="n">COMPLETE</span><span class="p">:</span>
+                    <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Swapping in backup Resource </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">res_name</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_exchange_stacks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span><span class="p">[</span><span class="n">res_name</span><span class="p">],</span>
+                                          <span class="n">prev_res</span><span class="p">)</span>
+                    <span class="k">return</span>
+
+                <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Deleting backup Resource </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">res_name</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">prev_res</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+
+        <span class="c"># Back up existing resource</span>
+        <span class="k">if</span> <span class="n">res_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Backing up existing Resource </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">res_name</span><span class="p">)</span>
+            <span class="n">existing_res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span><span class="p">[</span><span class="n">res_name</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">previous_stack</span><span class="o">.</span><span class="n">add_resource</span><span class="p">(</span><span class="n">existing_res</span><span class="p">)</span>
+            <span class="n">existing_res</span><span class="o">.</span><span class="n">state_set</span><span class="p">(</span><span class="n">existing_res</span><span class="o">.</span><span class="n">UPDATE</span><span class="p">,</span> <span class="n">existing_res</span><span class="o">.</span><span class="n">COMPLETE</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span><span class="o">.</span><span class="n">add_resource</span><span class="p">(</span><span class="n">new_res</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">new_res</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+
+    <span class="nd">@scheduler.wrappertask</span>
+    <span class="k">def</span> <span class="nf">_process_new_resource_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_res</span><span class="p">):</span>
+        <span class="n">res_name</span> <span class="o">=</span> <span class="n">new_res</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">res_type</span> <span class="o">=</span> <span class="n">new_res</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">res_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span> <span class="ow">and</span>
+                <span class="n">res_type</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span><span class="p">[</span><span class="n">res_name</span><span class="p">]</span><span class="o">.</span><span class="n">type</span><span class="p">()):</span>
+            <span class="n">existing_res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span><span class="p">[</span><span class="n">res_name</span><span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_in_place</span><span class="p">(</span><span class="n">existing_res</span><span class="p">,</span>
+                                            <span class="n">new_res</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">resource</span><span class="o">.</span><span class="n">UpdateReplace</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&quot;Resource </span><span class="si">%(res_name)s</span><span class="s"> for stack </span><span class="si">%(stack_name)s</span><span class="s"> &quot;</span>
+                             <span class="s">&quot;updated&quot;</span><span class="p">),</span>
+                         <span class="p">{</span><span class="s">&#39;res_name&#39;</span><span class="p">:</span> <span class="n">res_name</span><span class="p">,</span>
+                          <span class="s">&#39;stack_name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span><span class="o">.</span><span class="n">name</span><span class="p">})</span>
+                <span class="k">return</span>
+
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_resource</span><span class="p">(</span><span class="n">new_res</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_update_in_place</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">existing_res</span><span class="p">,</span> <span class="n">new_res</span><span class="p">):</span>
+        <span class="n">existing_snippet</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">existing_snippets</span><span class="p">[</span><span class="n">existing_res</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+        <span class="n">prev_res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">previous_stack</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">new_res</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="c"># Note the new resource snippet is resolved in the context</span>
+        <span class="c"># of the existing stack (which is the stack being updated)</span>
+        <span class="c"># but with the template of the new stack (in case the update</span>
+        <span class="c"># is switching template implementations)</span>
+        <span class="n">new_snippet</span> <span class="o">=</span> <span class="n">new_res</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">reparse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">new_stack</span><span class="o">.</span><span class="n">t</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">existing_res</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">new_snippet</span><span class="p">,</span> <span class="n">existing_snippet</span><span class="p">,</span>
+                                   <span class="n">prev_resource</span><span class="o">=</span><span class="n">prev_res</span><span class="p">)</span>
+
+    <span class="nd">@scheduler.wrappertask</span>
+    <span class="k">def</span> <span class="nf">_process_existing_resource_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">existing_res</span><span class="p">):</span>
+        <span class="n">res_name</span> <span class="o">=</span> <span class="n">existing_res</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="k">if</span> <span class="n">res_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">previous_stack</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remove_backup_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">previous_stack</span><span class="p">[</span><span class="n">res_name</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">res_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_stack</span><span class="p">:</span>
+            <span class="n">new_res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_stack</span><span class="p">[</span><span class="n">res_name</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">new_res</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="p">(</span><span class="n">new_res</span><span class="o">.</span><span class="n">INIT</span><span class="p">,</span> <span class="n">new_res</span><span class="o">.</span><span class="n">COMPLETE</span><span class="p">):</span>
+                <span class="c"># Already updated in-place</span>
+                <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">existing_res</span><span class="o">.</span><span class="n">stack</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">previous_stack</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">existing_res</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">res_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_stack</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span><span class="o">.</span><span class="n">remove_resource</span><span class="p">(</span><span class="n">res_name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="StackUpdate.dependencies"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.update.html#heat.engine.update.StackUpdate.dependencies">[docs]</a>    <span class="k">def</span> <span class="nf">dependencies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Return a Dependencies object representing the dependencies between</span>
+<span class="sd">        update operations to move from an existing stack definition to a new</span>
+<span class="sd">        one.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">existing_deps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span><span class="o">.</span><span class="n">dependencies</span>
+        <span class="n">new_deps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_stack</span><span class="o">.</span><span class="n">dependencies</span>
+
+        <span class="k">def</span> <span class="nf">edges</span><span class="p">():</span>
+            <span class="c"># Create/update the new stack&#39;s resources in create order</span>
+            <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">new_deps</span><span class="o">.</span><span class="n">graph</span><span class="p">()</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+                <span class="k">yield</span> <span class="n">e</span>
+            <span class="c"># Destroy/cleanup the old stack&#39;s resources in delete order</span>
+            <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">existing_deps</span><span class="o">.</span><span class="n">graph</span><span class="p">(</span><span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+                <span class="k">yield</span> <span class="n">e</span>
+            <span class="c"># Don&#39;t cleanup old resources until after they have been replaced</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">existing_stack</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_stack</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_stack</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">dependencies</span><span class="o">.</span><span class="n">Dependencies</span><span class="p">(</span><span class="n">edges</span><span class="p">())</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

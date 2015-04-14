@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat-db-setup &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="heat-db-setup">
+<h1>heat-db-setup<a class="headerlink" href="#heat-db-setup" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="synopsis">
+<h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">heat-db-setup</span> <span class="pre">[COMMANDS]</span> <span class="pre">[OPTIONS]</span></tt></p>
+</div>
+<div class="section" id="description">
+<h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>heat-db-setup is a tool which configures the local MySQL database for
+heat. Typically distro-specific tools would provide this functionality
+so please read the distro-specific documentation for configuring Heat.</p>
+</div>
+<div class="section" id="commands">
+<h2>COMMANDS<a class="headerlink" href="#commands" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">rpm</span></tt></p>
+<blockquote>
+<div>Indicate the distribution is a RPM packaging based distribution.</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">deb</span></tt></p>
+<blockquote>
+<div>Indicate the distribution is a DEB packaging based distribution.</div></blockquote>
+</div>
+<div class="section" id="options">
+<h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<dl class="cmdoption">
+<dt id="cmdoption-heat-db-setup-h">
+<span id="cmdoption-heat-db-setup--help"></span><tt class="descname">-h</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--help</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-heat-db-setup-h" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print usage information.</p>
+</dd></dl>
+
+<dl class="cmdoption">
+<dt id="cmdoption-heat-db-setup-p">
+<span id="cmdoption-heat-db-setup--password"></span><tt class="descname">-p</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--password</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-heat-db-setup-p" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify the password for the &#8216;heat&#8217; MySQL user that the script will use to connect to the &#8216;heat&#8217; MySQL database. By default, the password &#8216;heat&#8217; will be used.</p>
+</dd></dl>
+
+<dl class="cmdoption">
+<dt id="cmdoption-heat-db-setup-r">
+<span id="cmdoption-heat-db-setup--rootpw"></span><tt class="descname">-r</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--rootpw</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-heat-db-setup-r" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify the root MySQL password. If the script installs the MySQL server, it will set the root password to this value instead of prompting for a password. If the MySQL server is already installed, this password will be used to connect to the database instead of having to prompt for it.</p>
+</dd></dl>
+
+<dl class="cmdoption">
+<dt id="cmdoption-heat-db-setup-y">
+<span id="cmdoption-heat-db-setup--yes"></span><tt class="descname">-y</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--yes</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-heat-db-setup-y" title="Permalink to this definition">¶</a></dt>
+<dd><p>In cases where the script would normally ask for confirmation before doing something, such as installing mysql-server, just assume yes. This is useful if you want to run the script non-interactively.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="examples">
+<h2>EXAMPLES<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>heat-db-setup rpm -p heat_password -r mysql_pwd -y</p>
+<p>heat-db-setup deb -p heat_password -r mysql_pwd -y</p>
+<p>heat-db-setup rpm</p>
+</div></blockquote>
+</div>
+<div class="section" id="bugs">
+<h2>BUGS<a class="headerlink" href="#bugs" title="Permalink to this headline">¶</a></h2>
+<p>Heat bugs are managed through Launchpad <a class="reference external" href="https://bugs.launchpad.net/heat">OpenStack Heat Bugs</a></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../raxdox/index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">heat-db-setup</a><ul>
+<li><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
+<li><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li><a class="reference internal" href="#commands">COMMANDS</a></li>
+<li><a class="reference internal" href="#options">OPTIONS</a></li>
+<li><a class="reference internal" href="#examples">EXAMPLES</a></li>
+<li><a class="reference internal" href="#bugs">BUGS</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/man/heat-db-setup.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

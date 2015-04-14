@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.objects.stack_tag Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-objects-stack-tag-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.objects.stack_tag</span></tt> Module<a class="headerlink" href="#the-heat-objects-stack-tag-module" title="Permalink to this headline">¶</a></h1>
+<p>StackTag object</p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.objects.stack_tag.</tt><tt class="descname">StackTag</tt><big>(</big><em>context=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/objects/stack_tag.html#StackTag"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">oslo_versionedobjects.base.VersionedObject</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">oslo_versionedobjects.base.VersionedObjectDictCompat</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">oslo_versionedobjects.base.ComparableVersionedObject</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">fields</tt><em class="property"> = {'stack_id': String(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=False), 'created_at': DateTime(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=False), 'tag': String(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=True), 'id': Integer(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=False), 'updated_at': DateTime(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=True)}</em></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><tt class="descname">get_obj</tt><big>(</big><em>context</em>, <em>tag</em><big>)</big><a class="reference internal" href="../../_modules/heat/objects/stack_tag.html#StackTag.get_obj"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.objects.stack_tag.</tt><tt class="descname">StackTagList</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/objects/stack_tag.html#StackTagList"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">oslo_versionedobjects.base.VersionedObject</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">oslo_versionedobjects.base.ObjectListBase</span></tt></p>
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><tt class="descname">delete</tt><big>(</big><em>context</em>, <em>stack_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/objects/stack_tag.html#StackTagList.delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">fields</tt><em class="property"> = {'objects': List(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=False)}</em></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><tt class="descname">get</tt><big>(</big><em>context</em>, <em>stack_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/objects/stack_tag.html#StackTagList.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><tt class="descname">set</tt><big>(</big><em>context</em>, <em>stack_id</em>, <em>tags</em><big>)</big><a class="reference internal" href="../../_modules/heat/objects/stack_tag.html#StackTagList.set"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.objects.stack_tag.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

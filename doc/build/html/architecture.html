@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Heat Architecture &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="heat-architecture">
+<h1>Heat Architecture<a class="headerlink" href="#heat-architecture" title="Permalink to this headline">¶</a></h1>
+<p>Heat is a service to orchestrate multiple composite cloud applications using the .. _AWS CloudFormation: <a class="reference external" href="http://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/Welcome.html?r=7078">http://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/Welcome.html?r=7078</a> template format, through both an OpenStack-native ReST API and a CloudFormation-compatible Query API.</p>
+<div class="section" id="detailed-description">
+<h2>Detailed Description<a class="headerlink" href="#detailed-description" title="Permalink to this headline">¶</a></h2>
+<p>What is the purpose of the project and vision for it?</p>
+<p><em>Heat provides an AWS CloudFormation implementation for OpenStack that orchestrates an AWS CloudFormation template describing a cloud application by executing appropriate OpenStack API calls to generate running cloud applications.</em></p>
+<p>Describe the relevance of the project to other OpenStack projects and the OpenStack mission to provide a ubiquitous cloud computing platform:</p>
+<p><em>The software integrates other core components of OpenStack into a one-file template system. The templates allow creation of most OpenStack resource types (such as instances, floating ips, volumes, security groups, users, etc), as well as some more advanced functionality such as instance high availability, instance autoscaling, and nested stacks. By providing very tight integration with other OpenStack core projects, all OpenStack core projects could receive a larger user base.</em>
+<em>Currently no other CloudFormation implementation exists for OpenStack. The developers believe cloud developers have a strong desire to move workloads from AWS to OpenStack deployments. Given the missing gap of a well-implemented and integrated CloudFormation API in OpenStack, we provide a high quality implementation of this gap improving the ubiquity of OpenStack.</em></p>
+</div>
+<div class="section" id="heat-services">
+<h2>Heat Services<a class="headerlink" href="#heat-services" title="Permalink to this headline">¶</a></h2>
+<p>The developers are focused on creating an OpenStack style project using OpenStack design tenets, implemented in Python. We have started with full integration with Keystone. We have a number of components.</p>
+<p>As the developers have only started development in March 2012, the architecture is evolving rapidly.</p>
+<div class="section" id="heat">
+<h3>heat<a class="headerlink" href="#heat" title="Permalink to this headline">¶</a></h3>
+<p>The heat tool is a CLI which communicates with the heat-api to execute AWS CloudFormation APIs. End developers could also use the heat REST API directly.</p>
+</div>
+<div class="section" id="heat-api">
+<h3>heat-api<a class="headerlink" href="#heat-api" title="Permalink to this headline">¶</a></h3>
+<p>The heat-api component provides an OpenStack-native REST API that processes API requests by sending them to the heat-engine over RPC.</p>
+</div>
+<div class="section" id="heat-api-cfn">
+<h3>heat-api-cfn<a class="headerlink" href="#heat-api-cfn" title="Permalink to this headline">¶</a></h3>
+<p>The heat-api-cfn component provides an AWS Query API that is compatible with AWS CloudFormation and processes API requests by sending them to the heat-engine over RPC.</p>
+</div>
+<div class="section" id="heat-engine">
+<h3>heat-engine<a class="headerlink" href="#heat-engine" title="Permalink to this headline">¶</a></h3>
+<p>The heat engine&#8217;s main responsibility is to orchestrate the launching of templates and provide events back to the API consumer.</p>
+<p>The templates integrate well with .. _Puppet: <a class="reference external" href="https://s3.amazonaws.com/cloudformation-examples/IntegratingAWSCloudFormationWithPuppet.pdf">https://s3.amazonaws.com/cloudformation-examples/IntegratingAWSCloudFormationWithPuppet.pdf</a> and .. _Chef: <a class="reference external" href="http://www.full360.com/2011/02/27/integrating-aws-cloudformation-and-chef.html">http://www.full360.com/2011/02/27/integrating-aws-cloudformation-and-chef.html</a></p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="raxdox/index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Heat Architecture</a><ul>
+<li><a class="reference internal" href="#detailed-description">Detailed Description</a></li>
+<li><a class="reference internal" href="#heat-services">Heat Services</a><ul>
+<li><a class="reference internal" href="#heat">heat</a></li>
+<li><a class="reference internal" href="#heat-api">heat-api</a></li>
+<li><a class="reference internal" href="#heat-api-cfn">heat-api-cfn</a></li>
+<li><a class="reference internal" href="#heat-engine">heat-engine</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/architecture.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

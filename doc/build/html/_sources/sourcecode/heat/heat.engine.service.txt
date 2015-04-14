@@ -1,0 +1,8 @@
+=====================================
+The :mod:`heat.engine.service` Module
+=====================================
+.. automodule:: heat.engine.service
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

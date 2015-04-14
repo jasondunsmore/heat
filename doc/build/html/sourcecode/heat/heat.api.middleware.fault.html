@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.api.middleware.fault Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-api-middleware-fault-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.api.middleware.fault</span></tt> Module<a class="headerlink" href="#the-heat-api-middleware-fault-module" title="Permalink to this headline">¶</a></h1>
+<p>A middleware that turns exceptions into parsable string. Inspired by
+Cinder&#8217;s faultwrapper</p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.api.middleware.fault.</tt><tt class="descname">Fault</tt><big>(</big><em>error</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/middleware/fault.html#Fault"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.api.middleware.fault.</tt><tt class="descname">FaultWrapper</tt><big>(</big><em>application</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/middleware/fault.html#FaultWrapper"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.common.wsgi.Middleware</span></tt></p>
+<p>Replace error body with something the client can parse.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">error_map</tt><em class="property"> = {'InvalidSchemaError': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'EventSendFailed': &lt;class 'webob.exc.HTTPInternalServerError'&gt;, 'SnapshotNotFound': &lt;class 'webob.exc.HTTPNotFound'&gt;, 'ReadOnlyFieldError': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'MissingCredentialError': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'UnsupportedObjectError': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'ResourceTypeNotFound': &lt;class 'webob.exc.HTTPNotFound'&gt;, 'InvalidTemplateReference': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'RequestLimitExceeded': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'InvalidTenant': &lt;class 'webob.exc.HTTPForbidden'&gt;, 'Invalid': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'ServerBuildFailed': &lt;class 'webob.exc.HTTPInternalServerError'&gt;, 'InvalidTemplateParameter': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'ResourceNotFound': &lt;class 'webob.exc.HTTPNotFound'&gt;, 'ResourceNotAvailable': &lt;class 'webob.exc.HTTPNotFound'&gt;, 'IncompatibleObjectVersion': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'OrphanedObjectError': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'InvalidTemplateSection': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'ResourceActionNotSupported': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'NotFound': &lt;class 'webob.exc.HTTPNotFound'&gt;, 'ActionInProgress': &lt;class 'webob.exc.HTTPConflict'&gt;, 'StackValidationFailed': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'RevertFailed': &lt;class 'webob.exc.HTTPInternalServerError'&gt;, 'Forbidden': &lt;class 'webob.exc.HTTPForbidden'&gt;, 'StackNotFound': &lt;class 'webob.exc.HTTPNotFound'&gt;, 'PropertyUnspecifiedError': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'ObjectActionError': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'ResourcePropertyConflict': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'StopActionFailed': &lt;class 'webob.exc.HTTPInternalServerError'&gt;, 'UnknownUserParameter': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'StackExists': &lt;class 'webob.exc.HTTPConflict'&gt;, 'UserParameterMissing': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'ObjectFieldInvalid': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'InvalidTemplateVersion': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'PhysicalResourceNotFound': &lt;class 'webob.exc.HTTPNotFound'&gt;, 'NotSupported': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'AttributeError': &lt;class 'webob.exc.HTTPBadRequest'&gt;, 'ValueError': &lt;class 'webob.exc.HTTPBadRequest'&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">process_request</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/middleware/fault.html#FaultWrapper.process_request"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.api.middleware.fault.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

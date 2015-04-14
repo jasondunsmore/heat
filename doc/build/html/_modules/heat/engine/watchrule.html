@@ -1,0 +1,480 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.watchrule &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.engine.watchrule</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span> <span class="k">as</span> <span class="n">logging</span>
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">timeutils</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LI</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LW</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">stack</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">timestamp</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">stack</span> <span class="k">as</span> <span class="n">stack_object</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">watch_data</span> <span class="k">as</span> <span class="n">watch_data_objects</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">watch_rule</span> <span class="k">as</span> <span class="n">watch_rule_objects</span>
+<span class="kn">from</span> <span class="nn">heat.rpc</span> <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">rpc_api</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="WatchRule"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule">[docs]</a><span class="k">class</span> <span class="nc">WatchRule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">WATCH_STATES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ALARM</span><span class="p">,</span>
+        <span class="n">NORMAL</span><span class="p">,</span>
+        <span class="n">NODATA</span><span class="p">,</span>
+        <span class="n">SUSPENDED</span><span class="p">,</span>
+        <span class="n">CEILOMETER_CONTROLLED</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_ALARM</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_OK</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_NODATA</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_SUSPENDED</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_CEILOMETER_CONTROLLED</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ACTION_MAP</span> <span class="o">=</span> <span class="p">{</span><span class="n">ALARM</span><span class="p">:</span> <span class="s">&#39;AlarmActions&#39;</span><span class="p">,</span>
+                  <span class="n">NORMAL</span><span class="p">:</span> <span class="s">&#39;OKActions&#39;</span><span class="p">,</span>
+                  <span class="n">NODATA</span><span class="p">:</span> <span class="s">&#39;InsufficientDataActions&#39;</span><span class="p">}</span>
+
+    <span class="n">created_at</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">watch_rule_objects</span><span class="o">.</span><span class="n">WatchRule</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">,</span>
+                                     <span class="s">&#39;created_at&#39;</span><span class="p">)</span>
+    <span class="n">updated_at</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">watch_rule_objects</span><span class="o">.</span><span class="n">WatchRule</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">,</span>
+                                     <span class="s">&#39;updated_at&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">watch_name</span><span class="p">,</span> <span class="n">rule</span><span class="p">,</span> <span class="n">stack_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">state</span><span class="o">=</span><span class="n">NODATA</span><span class="p">,</span> <span class="n">wid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">watch_data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">last_evaluated</span><span class="o">=</span><span class="n">timeutils</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">=</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">watch_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule</span> <span class="o">=</span> <span class="n">rule</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack_id</span> <span class="o">=</span> <span class="n">stack_id</span>
+        <span class="n">period</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="s">&#39;Period&#39;</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">:</span>
+            <span class="n">period</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;Period&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="s">&#39;period&#39;</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">:</span>
+            <span class="n">period</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;period&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeperiod</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">period</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">wid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">watch_data</span> <span class="o">=</span> <span class="n">watch_data</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_evaluated</span> <span class="o">=</span> <span class="n">last_evaluated</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="WatchRule.load"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">watch_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">watch</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Load the watchrule object, either by name or via an existing DB object</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">watch</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">watch</span> <span class="o">=</span> <span class="n">watch_rule_objects</span><span class="o">.</span><span class="n">WatchRule</span><span class="o">.</span><span class="n">get_by_name</span><span class="p">(</span><span class="n">context</span><span class="p">,</span>
+                                                                 <span class="n">watch_name</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">_LW</span><span class="p">(</span><span class="s">&#39;WatchRule.load (</span><span class="si">%(watch_name)s</span><span class="s">) db error &#39;</span>
+                             <span class="s">&#39;</span><span class="si">%(ex)s</span><span class="s">&#39;</span><span class="p">),</span> <span class="p">{</span><span class="s">&#39;watch_name&#39;</span><span class="p">:</span> <span class="n">watch_name</span><span class="p">,</span> <span class="s">&#39;ex&#39;</span><span class="p">:</span> <span class="n">ex</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">watch</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">WatchRuleNotFound</span><span class="p">(</span><span class="n">watch_name</span><span class="o">=</span><span class="n">watch_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span>
+                       <span class="n">watch_name</span><span class="o">=</span><span class="n">watch</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                       <span class="n">rule</span><span class="o">=</span><span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="p">,</span>
+                       <span class="n">stack_id</span><span class="o">=</span><span class="n">watch</span><span class="o">.</span><span class="n">stack_id</span><span class="p">,</span>
+                       <span class="n">state</span><span class="o">=</span><span class="n">watch</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+                       <span class="n">wid</span><span class="o">=</span><span class="n">watch</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                       <span class="n">watch_data</span><span class="o">=</span><span class="n">watch</span><span class="o">.</span><span class="n">watch_data</span><span class="p">,</span>
+                       <span class="n">last_evaluated</span><span class="o">=</span><span class="n">watch</span><span class="o">.</span><span class="n">last_evaluated</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WatchRule.store"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.store">[docs]</a>    <span class="k">def</span> <span class="nf">store</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Store the watchrule in the database and return its ID</span>
+<span class="sd">        If self.id is set, we update the existing rule</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">wr_values</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s">&#39;rule&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">,</span>
+            <span class="s">&#39;state&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+            <span class="s">&#39;stack_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_id</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
+            <span class="n">wr</span> <span class="o">=</span> <span class="n">watch_rule_objects</span><span class="o">.</span><span class="n">WatchRule</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="n">wr_values</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">wr</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">watch_rule_objects</span><span class="o">.</span><span class="n">WatchRule</span><span class="o">.</span><span class="n">update_by_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                      <span class="n">wr_values</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WatchRule.destroy"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.destroy">[docs]</a>    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Delete the watchrule from the database.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
+            <span class="n">watch_rule_objects</span><span class="o">.</span><span class="n">WatchRule</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WatchRule.do_data_cmp"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.do_data_cmp">[docs]</a>    <span class="k">def</span> <span class="nf">do_data_cmp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+        <span class="n">op</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;ComparisonOperator&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="s">&#39;GreaterThanThreshold&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span> <span class="o">&gt;</span> <span class="n">threshold</span>
+        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s">&#39;GreaterThanOrEqualToThreshold&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span> <span class="o">&gt;=</span> <span class="n">threshold</span>
+        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s">&#39;LessThanThreshold&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s">&#39;LessThanOrEqualToThreshold&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span> <span class="o">&lt;=</span> <span class="n">threshold</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="WatchRule.do_Maximum"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.do_Maximum">[docs]</a>    <span class="k">def</span> <span class="nf">do_Maximum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">have_data</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">watch_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">created_at</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeperiod</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">have_data</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;MetricName&#39;</span><span class="p">]][</span><span class="s">&#39;Value&#39;</span><span class="p">])</span>
+                <span class="n">have_data</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;MetricName&#39;</span><span class="p">]][</span><span class="s">&#39;Value&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;MetricName&#39;</span><span class="p">]][</span><span class="s">&#39;Value&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">have_data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">NODATA</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_data_cmp</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;Threshold&#39;</span><span class="p">])):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ALARM</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">NORMAL</span>
+</div>
+<div class="viewcode-block" id="WatchRule.do_Minimum"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.do_Minimum">[docs]</a>    <span class="k">def</span> <span class="nf">do_Minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">have_data</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">watch_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">created_at</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeperiod</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">have_data</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;MetricName&#39;</span><span class="p">]][</span><span class="s">&#39;Value&#39;</span><span class="p">])</span>
+                <span class="n">have_data</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">elif</span> <span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;MetricName&#39;</span><span class="p">]][</span><span class="s">&#39;Value&#39;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;MetricName&#39;</span><span class="p">]][</span><span class="s">&#39;Value&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">have_data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">NODATA</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_data_cmp</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;Threshold&#39;</span><span class="p">])):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ALARM</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">NORMAL</span>
+</div>
+<div class="viewcode-block" id="WatchRule.do_SampleCount"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.do_SampleCount">[docs]</a>    <span class="k">def</span> <span class="nf">do_SampleCount</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        count all samples within the specified period</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">watch_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">created_at</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeperiod</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_data_cmp</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;Threshold&#39;</span><span class="p">])):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ALARM</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">NORMAL</span>
+</div>
+<div class="viewcode-block" id="WatchRule.do_Average"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.do_Average">[docs]</a>    <span class="k">def</span> <span class="nf">do_Average</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">watch_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">created_at</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeperiod</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;MetricName&#39;</span><span class="p">]][</span><span class="s">&#39;Value&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">samples</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">NODATA</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span> <span class="o">/</span> <span class="n">samples</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_data_cmp</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;Threshold&#39;</span><span class="p">])):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ALARM</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">NORMAL</span>
+</div>
+<div class="viewcode-block" id="WatchRule.do_Sum"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.do_Sum">[docs]</a>    <span class="k">def</span> <span class="nf">do_Sum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">watch_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">created_at</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeperiod</span><span class="p">:</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;ignoring </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;MetricName&#39;</span><span class="p">]][</span><span class="s">&#39;Value&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_data_cmp</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;Threshold&#39;</span><span class="p">])):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ALARM</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">NORMAL</span>
+</div>
+<div class="viewcode-block" id="WatchRule.get_alarm_state"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.get_alarm_state">[docs]</a>    <span class="k">def</span> <span class="nf">get_alarm_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;do_</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;Statistic&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">fn</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WatchRule.evaluate"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">CEILOMETER_CONTROLLED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUSPENDED</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="c"># has enough time progressed to run the rule</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">=</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">&lt;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_evaluated</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeperiod</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_rule</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WatchRule.get_details"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.get_details">[docs]</a>    <span class="k">def</span> <span class="nf">get_details</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;alarm&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="s">&#39;state&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">}</span>
+</div>
+<div class="viewcode-block" id="WatchRule.run_rule"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.run_rule">[docs]</a>    <span class="k">def</span> <span class="nf">run_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">new_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_alarm_state</span><span class="p">()</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_actions</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">new_state</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_evaluated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">actions</span>
+</div>
+<div class="viewcode-block" id="WatchRule.rule_actions"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.rule_actions">[docs]</a>    <span class="k">def</span> <span class="nf">rule_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_state</span><span class="p">):</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&#39;WATCH: stack:</span><span class="si">%(stack)s</span><span class="s">, watch_name:</span><span class="si">%(watch_name)s</span><span class="s">, &#39;</span>
+                     <span class="s">&#39;new_state:</span><span class="si">%(new_state)s</span><span class="s">&#39;</span><span class="p">),</span> <span class="p">{</span><span class="s">&#39;stack&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_id</span><span class="p">,</span>
+                                                  <span class="s">&#39;watch_name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                  <span class="s">&#39;new_state&#39;</span><span class="p">:</span> <span class="n">new_state</span><span class="p">})</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ACTION_MAP</span><span class="p">[</span><span class="n">new_state</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&#39;no action for new state </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">),</span> <span class="n">new_state</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">stack_object</span><span class="o">.</span><span class="n">Stack</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stack_id</span><span class="p">,</span>
+                <span class="n">eager_load</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">stk</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">Stack</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="n">stack</span><span class="o">=</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">stk</span><span class="o">.</span><span class="n">action</span> <span class="o">!=</span> <span class="n">stk</span><span class="o">.</span><span class="n">DELETE</span>
+                    <span class="ow">and</span> <span class="n">stk</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">stk</span><span class="o">.</span><span class="n">COMPLETE</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">refid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ACTION_MAP</span><span class="p">[</span><span class="n">new_state</span><span class="p">]]:</span>
+                    <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stk</span><span class="o">.</span><span class="n">resource_by_refid</span><span class="p">(</span><span class="n">refid</span><span class="p">)</span><span class="o">.</span><span class="n">signal</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">_LW</span><span class="p">(</span><span class="s">&quot;Could not process watch state </span><span class="si">%s</span><span class="s"> for stack&quot;</span><span class="p">),</span>
+                         <span class="n">new_state</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">actions</span>
+</div>
+    <span class="k">def</span> <span class="nf">_to_ceilometer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">clients</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">sample</span><span class="p">[</span><span class="s">&#39;meter_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;gauge&#39;</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s">&#39;Namespace&#39;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">sample</span><span class="p">[</span><span class="s">&#39;meter_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+            <span class="n">sample</span><span class="p">[</span><span class="s">&#39;sample_volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s">&#39;Value&#39;</span><span class="p">]</span>
+            <span class="n">sample</span><span class="p">[</span><span class="s">&#39;meter_unit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s">&#39;Unit&#39;</span><span class="p">]</span>
+            <span class="n">dims</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;Dimensions&#39;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">dims</span> <span class="o">=</span> <span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">sample</span><span class="p">[</span><span class="s">&#39;resource_metadata&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dims</span>
+            <span class="n">sample</span><span class="p">[</span><span class="s">&#39;resource_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dims</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;InstanceId&#39;</span><span class="p">)</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;new sample:</span><span class="si">%(k)s</span><span class="s"> data:</span><span class="si">%(sample)s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">{</span>
+                      <span class="s">&#39;k&#39;</span><span class="p">:</span> <span class="n">k</span><span class="p">,</span> <span class="s">&#39;sample&#39;</span><span class="p">:</span> <span class="n">sample</span><span class="p">})</span>
+            <span class="n">clients</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s">&#39;ceilometer&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="o">**</span><span class="n">sample</span><span class="p">)</span>
+
+<div class="viewcode-block" id="WatchRule.create_watch_data"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.create_watch_data">[docs]</a>    <span class="k">def</span> <span class="nf">create_watch_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">CEILOMETER_CONTROLLED</span><span class="p">:</span>
+            <span class="c"># this is a short term measure for those that have cfn-push-stats</span>
+            <span class="c"># within their templates, but want to use Ceilometer alarms.</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_to_ceilometer</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUSPENDED</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Ignoring metric data for </span><span class="si">%s</span><span class="s">, SUSPENDED state&#39;</span>
+                      <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;MetricName&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="c"># Our simplified cloudwatch implementation only expects a single</span>
+            <span class="c"># Metric associated with each alarm, but some cfn-push-stats</span>
+            <span class="c"># options, e.g --haproxy try to push multiple metrics when we</span>
+            <span class="c"># actually only care about one (the one we&#39;re alarming on)</span>
+            <span class="c"># so just ignore any data which doesn&#39;t contain MetricName</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Ignoring metric data (only accept </span><span class="si">%(metric)s</span><span class="s">) &#39;</span>
+                      <span class="s">&#39;: </span><span class="si">%(data)s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;metric&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;MetricName&#39;</span><span class="p">],</span>
+                                      <span class="s">&#39;data&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">})</span>
+            <span class="k">return</span>
+
+        <span class="n">watch_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;data&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span>
+            <span class="s">&#39;watch_rule_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+        <span class="p">}</span>
+        <span class="n">wd</span> <span class="o">=</span> <span class="n">watch_data_objects</span><span class="o">.</span><span class="n">WatchData</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="n">watch_data</span><span class="p">)</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;new watch:</span><span class="si">%(name)s</span><span class="s"> data:</span><span class="si">%(data)s</span><span class="s">&#39;</span>
+                  <span class="o">%</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s">&#39;data&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">wd</span><span class="o">.</span><span class="n">data</span><span class="p">)})</span>
+</div>
+<div class="viewcode-block" id="WatchRule.state_set"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.state_set">[docs]</a>    <span class="k">def</span> <span class="nf">state_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Persistently store the watch state</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">WATCH_STATES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Invalid watch state </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">state</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WatchRule.set_watch_state"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.WatchRule.set_watch_state">[docs]</a>    <span class="k">def</span> <span class="nf">set_watch_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Temporarily set the watch state, returns list of functions to be</span>
+<span class="sd">        scheduled in the stack ThreadGroup for the specified state</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">WATCH_STATES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Unknown watch state </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">state</span><span class="p">)</span>
+
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
+            <span class="n">actions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_actions</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">actions</span><span class="p">:</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Overriding state </span><span class="si">%(self_state)s</span><span class="s"> for watch &quot;</span>
+                          <span class="s">&quot;</span><span class="si">%(name)s</span><span class="s"> with </span><span class="si">%(state)s</span><span class="s">&quot;</span>
+                          <span class="o">%</span> <span class="p">{</span><span class="s">&#39;self_state&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                             <span class="s">&#39;state&#39;</span><span class="p">:</span> <span class="n">state</span><span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">_LW</span><span class="p">(</span><span class="s">&quot;Unable to override state </span><span class="si">%(state)s</span><span class="s"> for &quot;</span>
+                             <span class="s">&quot;watch </span><span class="si">%(name)s</span><span class="s">&quot;</span><span class="p">),</span> <span class="p">{</span><span class="s">&#39;state&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+                                                 <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">actions</span>
+
+</div></div>
+<div class="viewcode-block" id="rule_can_use_sample"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.watchrule.html#heat.engine.watchrule.rule_can_use_sample">[docs]</a><span class="k">def</span> <span class="nf">rule_can_use_sample</span><span class="p">(</span><span class="n">wr</span><span class="p">,</span> <span class="n">stats_data</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">match_dimesions</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">elif</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+    <span class="k">if</span> <span class="n">wr</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">WatchRule</span><span class="o">.</span><span class="n">SUSPENDED</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">wr</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">WatchRule</span><span class="o">.</span><span class="n">CEILOMETER_CONTROLLED</span><span class="p">:</span>
+        <span class="n">metric</span> <span class="o">=</span> <span class="n">wr</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;meter_name&#39;</span><span class="p">]</span>
+        <span class="n">rule_dims</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="n">wr</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;matching_metadata&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">rule_dims</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">metric</span> <span class="o">=</span> <span class="n">wr</span><span class="o">.</span><span class="n">rule</span><span class="p">[</span><span class="s">&#39;MetricName&#39;</span><span class="p">]</span>
+        <span class="n">rule_dims</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">d</span><span class="p">[</span><span class="s">&#39;Name&#39;</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="s">&#39;Value&#39;</span><span class="p">])</span>
+                         <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">wr</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;Dimensions&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+
+    <span class="k">if</span> <span class="n">metric</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stats_data</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="n">stats_data</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s">&#39;Namespace&#39;</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">metric</span><span class="p">:</span>
+            <span class="n">data_dims</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;Dimensions&#39;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_dims</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">data_dims</span> <span class="o">=</span> <span class="n">data_dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">match_dimesions</span><span class="p">(</span><span class="n">rule_dims</span><span class="p">,</span> <span class="n">data_dims</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="bp">False</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+========================================
+The :mod:`heat.engine.stack_lock` Module
+========================================
+.. automodule:: heat.engine.stack_lock
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

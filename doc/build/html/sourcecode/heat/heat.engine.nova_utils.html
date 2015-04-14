@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.nova_utils Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-engine-nova-utils-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.engine.nova_utils</span></tt> Module<a class="headerlink" href="#the-heat-engine-nova-utils-module" title="Permalink to this headline">¶</a></h1>
+<p>Utilities for Resources that use the OpenStack Nova API.</p>
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.nova_utils.</tt><tt class="descname">absolute_limits</tt><big>(</big><em>nova_client</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/nova_utils.html#absolute_limits"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the absolute limits as a dictionary.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.nova_utils.</tt><tt class="descname">build_userdata</tt><big>(</big><em>resource</em>, <em>userdata=None</em>, <em>instance_user=None</em>, <em>user_data_format='HEAT_CFNTOOLS'</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/nova_utils.html#build_userdata"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.nova_utils.</tt><tt class="descname">check_rebuild</tt><big>(</big><em>server</em>, <em>image_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/nova_utils.html#check_rebuild"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Verify that a rebuilding server is rebuilt.
+Raise error if it ends up in an ERROR state.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.nova_utils.</tt><tt class="descname">check_resize</tt><big>(</big><em>server</em>, <em>flavor</em>, <em>flavor_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/nova_utils.html#check_resize"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Verify that a resizing server is properly resized.
+If that&#8217;s the case, confirm the resize, if not raise an error.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.nova_utils.</tt><tt class="descname">delete_server</tt><big>(</big><em>server</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/nova_utils.html#delete_server"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>A co-routine that deletes the server and waits for it to
+disappear from Nova.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.nova_utils.</tt><tt class="descname">get_flavor_id</tt><big>(</big><em>nova_client</em>, <em>flavor</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/nova_utils.html#get_flavor_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.nova_utils.</tt><tt class="descname">get_ip</tt><big>(</big><em>server</em>, <em>net_type</em>, <em>ip_version</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/nova_utils.html#get_ip"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the server&#8217;s IP of the given type and version.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.nova_utils.</tt><tt class="descname">get_keypair</tt><big>(</big><em>nova_client</em>, <em>key_name</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/nova_utils.html#get_keypair"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.nova_utils.</tt><tt class="descname">meta_serialize</tt><big>(</big><em>metadata</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/nova_utils.html#meta_serialize"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Serialize non-string metadata values before sending them to
+Nova.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.nova_utils.</tt><tt class="descname">meta_update</tt><big>(</big><em>client</em>, <em>server</em>, <em>metadata</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/nova_utils.html#meta_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Delete/Add the metadata in nova as needed.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.nova_utils.</tt><tt class="descname">rebuild</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/nova_utils.html#rebuild"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Rebuild the server and call check_rebuild to verify.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.nova_utils.</tt><tt class="descname">refresh_server</tt><big>(</big><em>server</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/nova_utils.html#refresh_server"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Refresh server&#8217;s attributes and log warnings for non-critical API errors.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.nova_utils.</tt><tt class="descname">rename</tt><big>(</big><em>server</em>, <em>name</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/nova_utils.html#rename"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Update the name for a server.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.nova_utils.</tt><tt class="descname">resize</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/nova_utils.html#resize"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Resize the server and then call check_resize task to verify.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.nova_utils.</tt><tt class="descname">server_to_ipaddress</tt><big>(</big><em>client</em>, <em>server</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/nova_utils.html#server_to_ipaddress"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the server&#8217;s IP address, fetching it from Nova.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.engine.nova_utils.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

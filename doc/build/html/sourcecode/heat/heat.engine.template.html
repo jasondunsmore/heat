@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.template Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-engine-template-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.engine.template</span></tt> Module<a class="headerlink" href="#the-heat-engine-template-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.template.</tt><tt class="descname">Template</tt><big>(</big><em>template</em>, <em>template_id=None</em>, <em>files=None</em>, <em>env=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/template.html#Template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">_abcoll.Mapping</span></tt></p>
+<p>A stack template.</p>
+<dl class="method">
+<dt>
+<tt class="descname">add_resource</tt><big>(</big><em>definition</em>, <em>name=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.add_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Add a resource to the template.</p>
+<p>The resource is passed as a ResourceDefinition object. If no name is
+specified, the name from the ResourceDefinition should be used.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>context</em>, <em>template_id</em>, <em>t=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.load"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Retrieve a Template with the given ID from the database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">param_schemata</tt><big>(</big><em>param_defaults=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.param_schemata"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a dict of parameters.Schema objects for the parameters.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">parameters</tt><big>(</big><em>stack_identifier</em>, <em>user_params</em>, <em>param_defaults=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.parameters"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a parameters.Parameters object for the stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">parse</tt><big>(</big><em>stack</em>, <em>snippet</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.parse"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">remove_resource</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.remove_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Remove a resource from the template.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">resource_definitions</tt><big>(</big><em>stack</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.resource_definitions"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a dictionary of ResourceDefinition objects.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">store</tt><big>(</big><em>context=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.store"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Store the Template in the database and return its ID.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">validate</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Validate the template.</p>
+<p>Validates the top-level sections of the template as well as syntax
+inside select sections. Some sections are not checked here but in
+code parts that are responsible for working with the respective
+sections (e.g. parameters are check by parameters schema class).</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">validate_resource_definitions</tt><big>(</big><em>stack</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.validate_resource_definitions"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Check section&#8217;s type of ResourceDefinitions.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><tt class="descname">validate_resource_key_type</tt><big>(</big><em>key</em>, <em>valid_types</em>, <em>typename</em>, <em>allowed_keys</em>, <em>rsrc_name</em>, <em>rsrc_data</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.validate_resource_key_type"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Validation type of the specific resource key.</p>
+<p>Used in validate_resource_definition and check correctness of
+key&#8217;s type.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.engine.template.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

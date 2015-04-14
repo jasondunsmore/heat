@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.api.cfn.v1.stacks Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-api-cfn-v1-stacks-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.api.cfn.v1.stacks</span></tt> Module<a class="headerlink" href="#the-heat-api-cfn-v1-stacks-module" title="Permalink to this headline">¶</a></h1>
+<p>Stack endpoint for Heat CloudFormation v1 API.</p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.api.cfn.v1.stacks.</tt><tt class="descname">StackController</tt><big>(</big><em>options</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#StackController"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>WSGI controller for stacks resource in Heat CloudFormation v1 API
+Implements the API actions</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">CREATE_OR_UPDATE_ACTION</tt><em class="property"> = ('CreateStack', 'UpdateStack')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">CREATE_STACK</tt><em class="property"> = 'CreateStack'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">UPDATE_STACK</tt><em class="property"> = 'UpdateStack'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">cancel_update</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#StackController.cancel_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">create</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#StackController.create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">create_or_update</tt><big>(</big><em>req</em>, <em>action=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#StackController.create_or_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements CreateStack and UpdateStack API actions.
+Create or update stack as defined in template file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">delete</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#StackController.delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements the DeleteStack API action.
+Deletes the specified stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">describe</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#StackController.describe"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements DescribeStacks API action
+Gets detailed information for a stack (or all stacks)</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">describe_stack_resource</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#StackController.describe_stack_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements the DescribeStackResource API action.
+Return the details of the given resource belonging to the given stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">describe_stack_resources</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#StackController.describe_stack_resources"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements the DescribeStackResources API action
+Return details of resources specified by the parameters.</p>
+<p><cite>StackName</cite>: returns all resources belonging to the stack.</p>
+<p><cite>PhysicalResourceId</cite>: returns all resources belonging to the stack this
+resource is associated with.</p>
+<p>Only one of the parameters may be specified.</p>
+<p>Optional parameter:</p>
+<p><cite>LogicalResourceId</cite>: filter the resources list by the logical resource
+id.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">estimate_template_cost</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#StackController.estimate_template_cost"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements the EstimateTemplateCost API action
+Get the estimated monthly cost of a template</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">events_list</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#StackController.events_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements the DescribeStackEvents API action.
+Returns events related to a specified stack (or all stacks).</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_template</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#StackController.get_template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements the GetTemplate API action.
+Get the template body for an existing stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#StackController.list"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements ListStacks API action
+Lists summary information for all stacks</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_stack_resources</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#StackController.list_stack_resources"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements the ListStackResources API action
+Return summary of the resources belonging to the specified stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">update</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#StackController.update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">validate_template</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#StackController.validate_template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements the ValidateTemplate API action.
+Validates the specified template.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.api.cfn.v1.stacks.</tt><tt class="descname">create_resource</tt><big>(</big><em>options</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cfn/v1/stacks.html#create_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Stacks resource factory method.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.api.cfn.v1.stacks.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

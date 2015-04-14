@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.clients.os.trove Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-engine-clients-os-trove-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.engine.clients.os.trove</span></tt> Module<a class="headerlink" href="#the-heat-engine-clients-os-trove-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.clients.os.trove.</tt><tt class="descname">FlavorConstraint</tt><a class="reference internal" href="../../_modules/heat/engine/clients/os/trove.html#FlavorConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.BaseCustomConstraint</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">expected_exceptions</tt><em class="property"> = (&lt;class 'heat.common.exception.FlavorMissing'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">validate_with_client</tt><big>(</big><em>client</em>, <em>flavor</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/trove.html#FlavorConstraint.validate_with_client"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.clients.os.trove.</tt><tt class="descname">TroveClientPlugin</tt><big>(</big><em>context</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/trove.html#TroveClientPlugin"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.clients.client_plugin.ClientPlugin</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">exceptions_module</tt><em class="property"> = &lt;module 'troveclient.openstack.common.apiclient.exceptions' from '/var/lib/jenkins/workspace/Heat-Build/heat_repo/.tox/docs/local/lib/python2.7/site-packages/troveclient/openstack/common/apiclient/exceptions.pyc'&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_flavor_id</tt><big>(</big><em>flavor</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/trove.html#TroveClientPlugin.get_flavor_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get the id for the specified flavor name.
+If the specified value is flavor id, just return it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>flavor</strong> &#8211; the name of the flavor to find</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the id of :flavor:</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">exception.FlavorMissing</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">is_conflict</tt><big>(</big><em>ex</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/trove.html#TroveClientPlugin.is_conflict"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">is_not_found</tt><big>(</big><em>ex</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/trove.html#TroveClientPlugin.is_not_found"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">is_over_limit</tt><big>(</big><em>ex</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/trove.html#TroveClientPlugin.is_over_limit"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">validate_datastore</tt><big>(</big><em>datastore_type</em>, <em>datastore_version</em>, <em>ds_type_key</em>, <em>ds_version_key</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/trove.html#TroveClientPlugin.validate_datastore"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.engine.clients.os.trove.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

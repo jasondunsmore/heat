@@ -1,0 +1,8 @@
+=======================================
+The :mod:`heat.engine.watchrule` Module
+=======================================
+.. automodule:: heat.engine.watchrule
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

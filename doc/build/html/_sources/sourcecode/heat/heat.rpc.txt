@@ -1,0 +1,8 @@
+==========================
+The :mod:`heat.rpc` Module
+==========================
+.. automodule:: heat.rpc
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

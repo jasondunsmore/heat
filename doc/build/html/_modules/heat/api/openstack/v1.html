@@ -1,0 +1,495 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.api.openstack.v1 &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../../index.html" />
+    <link rel="up" title="heat.api.openstack" href="../openstack.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../openstack.html" accesskey="U">heat.api.openstack</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.api.openstack.v1</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">routes</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">heat.api.openstack.v1</span> <span class="kn">import</span> <span class="n">actions</span>
+<span class="kn">from</span> <span class="nn">heat.api.openstack.v1</span> <span class="kn">import</span> <span class="n">build_info</span>
+<span class="kn">from</span> <span class="nn">heat.api.openstack.v1</span> <span class="kn">import</span> <span class="n">events</span>
+<span class="kn">from</span> <span class="nn">heat.api.openstack.v1</span> <span class="kn">import</span> <span class="n">resources</span>
+<span class="kn">from</span> <span class="nn">heat.api.openstack.v1</span> <span class="kn">import</span> <span class="n">services</span>
+<span class="kn">from</span> <span class="nn">heat.api.openstack.v1</span> <span class="kn">import</span> <span class="n">software_configs</span>
+<span class="kn">from</span> <span class="nn">heat.api.openstack.v1</span> <span class="kn">import</span> <span class="n">software_deployments</span>
+<span class="kn">from</span> <span class="nn">heat.api.openstack.v1</span> <span class="kn">import</span> <span class="n">stacks</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">wsgi</span>
+
+
+<div class="viewcode-block" id="API"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.openstack.v1.html#heat.api.openstack.v1.API">[docs]</a><span class="k">class</span> <span class="nc">API</span><span class="p">(</span><span class="n">wsgi</span><span class="o">.</span><span class="n">Router</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    WSGI router for Heat v1 ReST API requests.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="o">**</span><span class="n">local_conf</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conf</span> <span class="o">=</span> <span class="n">conf</span>
+        <span class="n">mapper</span> <span class="o">=</span> <span class="n">routes</span><span class="o">.</span><span class="n">Mapper</span><span class="p">()</span>
+        <span class="n">default_resource</span> <span class="o">=</span> <span class="n">wsgi</span><span class="o">.</span><span class="n">Resource</span><span class="p">(</span><span class="n">wsgi</span><span class="o">.</span><span class="n">DefaultMethodController</span><span class="p">(),</span>
+                                         <span class="n">wsgi</span><span class="o">.</span><span class="n">JSONRequestDeserializer</span><span class="p">())</span>
+
+        <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="n">path_prefix</span><span class="p">,</span> <span class="n">routes</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            This function connects the list of routes to the given</span>
+<span class="sd">            controller, prepending the given path_prefix. Then for each URL it</span>
+<span class="sd">            finds which request methods aren&#39;t handled and configures those</span>
+<span class="sd">            to return a 405 error. Finally, it adds a handler for the</span>
+<span class="sd">            OPTIONS method to all URLs that returns the list of allowed</span>
+<span class="sd">            methods with 204 status code.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="c"># register the routes with the mapper, while keeping track of which</span>
+            <span class="c"># methods are defined for each URL</span>
+            <span class="n">urls</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">routes</span><span class="p">:</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="n">path_prefix</span> <span class="o">+</span> <span class="n">r</span><span class="p">[</span><span class="s">&#39;url&#39;</span><span class="p">]</span>
+                <span class="n">methods</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s">&#39;method&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">methods</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+                    <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="n">methods</span><span class="p">]</span>
+                <span class="n">methods_str</span> <span class="o">=</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">methods</span><span class="p">)</span>
+                <span class="n">mapper</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="n">url</span><span class="p">,</span> <span class="n">controller</span><span class="o">=</span><span class="n">controller</span><span class="p">,</span>
+                               <span class="n">action</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s">&#39;action&#39;</span><span class="p">],</span>
+                               <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="n">methods_str</span><span class="p">})</span>
+                <span class="k">if</span> <span class="n">url</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
+                    <span class="n">urls</span><span class="p">[</span><span class="n">url</span><span class="p">]</span> <span class="o">=</span> <span class="n">methods</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">urls</span><span class="p">[</span><span class="n">url</span><span class="p">]</span> <span class="o">+=</span> <span class="n">methods</span>
+
+            <span class="c"># now register the missing methods to return 405s, and register</span>
+            <span class="c"># a handler for OPTIONS that returns the list of allowed methods</span>
+            <span class="k">for</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span> <span class="ow">in</span> <span class="n">urls</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">all_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;HEAD&#39;</span><span class="p">,</span> <span class="s">&#39;GET&#39;</span><span class="p">,</span> <span class="s">&#39;POST&#39;</span><span class="p">,</span> <span class="s">&#39;PUT&#39;</span><span class="p">,</span> <span class="s">&#39;PATCH&#39;</span><span class="p">,</span> <span class="s">&#39;DELETE&#39;</span><span class="p">]</span>
+                <span class="n">missing_methods</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">all_methods</span> <span class="k">if</span> <span class="n">m</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">methods</span><span class="p">]</span>
+                <span class="n">allowed_methods_str</span> <span class="o">=</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">methods</span><span class="p">)</span>
+                <span class="n">mapper</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">url</span><span class="p">,</span>
+                               <span class="n">controller</span><span class="o">=</span><span class="n">default_resource</span><span class="p">,</span>
+                               <span class="n">action</span><span class="o">=</span><span class="s">&#39;reject&#39;</span><span class="p">,</span>
+                               <span class="n">allowed_methods</span><span class="o">=</span><span class="n">allowed_methods_str</span><span class="p">,</span>
+                               <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="n">missing_methods</span><span class="p">})</span>
+                <span class="k">if</span> <span class="s">&#39;OPTIONS&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">methods</span><span class="p">:</span>
+                    <span class="n">mapper</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">url</span><span class="p">,</span>
+                                   <span class="n">controller</span><span class="o">=</span><span class="n">default_resource</span><span class="p">,</span>
+                                   <span class="n">action</span><span class="o">=</span><span class="s">&#39;options&#39;</span><span class="p">,</span>
+                                   <span class="n">allowed_methods</span><span class="o">=</span><span class="n">allowed_methods_str</span><span class="p">,</span>
+                                   <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;OPTIONS&#39;</span><span class="p">})</span>
+
+        <span class="c"># Stacks</span>
+        <span class="n">stacks_resource</span> <span class="o">=</span> <span class="n">stacks</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+        <span class="n">connect</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="n">stacks_resource</span><span class="p">,</span>
+                <span class="n">path_prefix</span><span class="o">=</span><span class="s">&#39;/{tenant_id}&#39;</span><span class="p">,</span>
+                <span class="n">routes</span><span class="o">=</span><span class="p">[</span>
+                    <span class="c"># Template handling</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;template_validate&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/validate&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;validate_template&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;POST&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;resource_types&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/resource_types&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;list_resource_types&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;resource_schema&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/resource_types/{type_name}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;resource_schema&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;generate_template&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/resource_types/{type_name}/template&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;generate_template&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+
+                    <span class="c"># Stack collection</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_index&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;index&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_create&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;create&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;POST&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_preview&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/preview&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;preview&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;POST&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_detail&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/detail&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;detail&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+
+                    <span class="c"># Stack data</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_lookup&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/{stack_name}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;lookup&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;GET&#39;</span><span class="p">,</span> <span class="s">&#39;POST&#39;</span><span class="p">,</span> <span class="s">&#39;PUT&#39;</span><span class="p">,</span> <span class="s">&#39;PATCH&#39;</span><span class="p">,</span> <span class="s">&#39;DELETE&#39;</span><span class="p">]</span>
+                    <span class="p">},</span>
+                    <span class="c"># \x3A matches on a colon.</span>
+                    <span class="c"># Routes treats : specially in its regexp</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_lookup&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">r&#39;/stacks/{stack_name:arn\x3A.*}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;lookup&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;GET&#39;</span><span class="p">,</span> <span class="s">&#39;POST&#39;</span><span class="p">,</span> <span class="s">&#39;PUT&#39;</span><span class="p">,</span> <span class="s">&#39;PATCH&#39;</span><span class="p">,</span> <span class="s">&#39;DELETE&#39;</span><span class="p">]</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_lookup_subpath&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/{stack_name}/&#39;</span>
+                               <span class="s">&#39;{path:resources|events|template|actions}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;lookup&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_lookup_subpath_post&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/{stack_name}/&#39;</span>
+                               <span class="s">&#39;{path:resources|events|template|actions}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;lookup&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;POST&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_show&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/{stack_name}/{stack_id}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;show&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_lookup&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/{stack_name}/{stack_id}/template&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;template&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+
+                    <span class="c"># Stack update/delete</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_update&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/{stack_name}/{stack_id}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;update&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;PUT&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_update_patch&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/{stack_name}/{stack_id}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;update_patch&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;PATCH&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_delete&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/{stack_name}/{stack_id}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;delete&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;DELETE&#39;</span>
+                    <span class="p">},</span>
+
+                    <span class="c"># Stack abandon</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_abandon&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/{stack_name}/{stack_id}/abandon&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;abandon&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;DELETE&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_snapshot&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/{stack_name}/{stack_id}/snapshots&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;snapshot&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;POST&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_snapshot_show&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/{stack_name}/{stack_id}/snapshots/&#39;</span>
+                               <span class="s">&#39;{snapshot_id}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;show_snapshot&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_snapshot_delete&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/{stack_name}/{stack_id}/snapshots/&#39;</span>
+                               <span class="s">&#39;{snapshot_id}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;delete_snapshot&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;DELETE&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_list_snapshots&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/{stack_name}/{stack_id}/snapshots&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;list_snapshots&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;stack_snapshot_restore&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/stacks/{stack_name}/{stack_id}/snapshots/&#39;</span>
+                               <span class="s">&#39;{snapshot_id}/restore&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;restore_snapshot&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;POST&#39;</span>
+                    <span class="p">}</span>
+                <span class="p">])</span>
+
+        <span class="c"># Resources</span>
+        <span class="n">resources_resource</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+        <span class="n">stack_path</span> <span class="o">=</span> <span class="s">&#39;/{tenant_id}/stacks/{stack_name}/{stack_id}&#39;</span>
+        <span class="n">connect</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="n">resources_resource</span><span class="p">,</span> <span class="n">path_prefix</span><span class="o">=</span><span class="n">stack_path</span><span class="p">,</span>
+                <span class="n">routes</span><span class="o">=</span><span class="p">[</span>
+                    <span class="c"># Resource collection</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;resource_index&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/resources&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;index&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+
+                    <span class="c"># Resource data</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;resource_show&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/resources/{resource_name}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;show&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;resource_metadata_show&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/resources/{resource_name}/metadata&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;metadata&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;resource_signal&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/resources/{resource_name}/signal&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;signal&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;POST&#39;</span>
+                    <span class="p">}</span>
+                <span class="p">])</span>
+
+        <span class="c"># Events</span>
+        <span class="n">events_resource</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+        <span class="n">connect</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="n">events_resource</span><span class="p">,</span> <span class="n">path_prefix</span><span class="o">=</span><span class="n">stack_path</span><span class="p">,</span>
+                <span class="n">routes</span><span class="o">=</span><span class="p">[</span>
+                    <span class="c"># Stack event collection</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;event_index_stack&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/events&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;index&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+
+                    <span class="c"># Resource event collection</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;event_index_resource&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/resources/{resource_name}/events&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;index&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+
+                    <span class="c"># Event data</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;event_show&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/resources/{resource_name}/events/{event_id}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;show&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">}</span>
+                <span class="p">])</span>
+
+        <span class="c"># Actions</span>
+        <span class="n">actions_resource</span> <span class="o">=</span> <span class="n">actions</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+        <span class="n">connect</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="n">actions_resource</span><span class="p">,</span> <span class="n">path_prefix</span><span class="o">=</span><span class="n">stack_path</span><span class="p">,</span>
+                <span class="n">routes</span><span class="o">=</span><span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;action_stack&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/actions&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;action&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;POST&#39;</span>
+                    <span class="p">}</span>
+                <span class="p">])</span>
+
+        <span class="c"># Info</span>
+        <span class="n">info_resource</span> <span class="o">=</span> <span class="n">build_info</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+        <span class="n">connect</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="n">info_resource</span><span class="p">,</span> <span class="n">path_prefix</span><span class="o">=</span><span class="s">&#39;/{tenant_id}&#39;</span><span class="p">,</span>
+                <span class="n">routes</span><span class="o">=</span><span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;build_info&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/build_info&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;build_info&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">}</span>
+                <span class="p">])</span>
+
+        <span class="c"># Software configs</span>
+        <span class="n">software_config_resource</span> <span class="o">=</span> <span class="n">software_configs</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+        <span class="n">connect</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="n">software_config_resource</span><span class="p">,</span>
+                <span class="n">path_prefix</span><span class="o">=</span><span class="s">&#39;/{tenant_id}/software_configs&#39;</span><span class="p">,</span>
+                <span class="n">routes</span><span class="o">=</span><span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;software_config_create&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;create&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;POST&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;software_config_show&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/{config_id}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;show&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;software_config_delete&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/{config_id}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;delete&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;DELETE&#39;</span>
+                    <span class="p">}</span>
+                <span class="p">])</span>
+
+        <span class="c"># Software deployments</span>
+        <span class="n">sd_resource</span> <span class="o">=</span> <span class="n">software_deployments</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+        <span class="n">connect</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="n">sd_resource</span><span class="p">,</span>
+                <span class="n">path_prefix</span><span class="o">=</span><span class="s">&#39;/{tenant_id}/software_deployments&#39;</span><span class="p">,</span>
+                <span class="n">routes</span><span class="o">=</span><span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;software_deployment_index&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;index&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;software_deployment_metadata&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/metadata/{server_id}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;metadata&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;software_deployment_create&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;create&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;POST&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;software_deployment_show&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/{deployment_id}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;show&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;software_deployment_update&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/{deployment_id}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;update&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;PUT&#39;</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;software_deployment_delete&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;/{deployment_id}&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="s">&#39;delete&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;DELETE&#39;</span>
+                    <span class="p">}</span>
+                <span class="p">])</span>
+
+        <span class="c"># Services</span>
+        <span class="n">service_resource</span> <span class="o">=</span> <span class="n">services</span><span class="o">.</span><span class="n">create_resource</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">mapper</span><span class="o">.</span><span class="n">submapper</span><span class="p">(</span>
+            <span class="n">controller</span><span class="o">=</span><span class="n">service_resource</span><span class="p">,</span>
+            <span class="n">path_prefix</span><span class="o">=</span><span class="s">&#39;/{tenant_id}/services&#39;</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">sa_mapper</span><span class="p">:</span>
+
+            <span class="n">sa_mapper</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&quot;service_index&quot;</span><span class="p">,</span>
+                              <span class="s">&quot;&quot;</span><span class="p">,</span>
+                              <span class="n">action</span><span class="o">=</span><span class="s">&quot;index&quot;</span><span class="p">,</span>
+                              <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="s">&#39;GET&#39;</span><span class="p">})</span>
+
+        <span class="c"># now that all the routes are defined, add a handler for</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">API</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">mapper</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../openstack.html" >heat.api.openstack</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.lifecycle_plugin Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-engine-lifecycle-plugin-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.engine.lifecycle_plugin</span></tt> Module<a class="headerlink" href="#the-heat-engine-lifecycle-plugin-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.lifecycle_plugin.</tt><tt class="descname">LifecyclePlugin</tt><a class="reference internal" href="../../_modules/heat/engine/lifecycle_plugin.html#LifecyclePlugin"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Base class for pre-op and post-op work on a stack.
+Implementations should extend this class and override the methods.</p>
+<dl class="method">
+<dt>
+<tt class="descname">do_post_op</tt><big>(</big><em>cnxt</em>, <em>stack</em>, <em>current_stack=None</em>, <em>action=None</em>, <em>is_stack_failure=False</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/lifecycle_plugin.html#LifecyclePlugin.do_post_op"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Method to be run by heat after stack operations, including failures.</p>
+<p>On failure to execute all the registered pre_ops, this method will be
+called if and only if the corresponding pre_op was successfully called.
+On failures of the actual stack operation, this method will
+be called if all the pre operations were successfully called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">do_pre_op</tt><big>(</big><em>cnxt</em>, <em>stack</em>, <em>current_stack=None</em>, <em>action=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/lifecycle_plugin.html#LifecyclePlugin.do_pre_op"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Method to be run by heat before stack operations.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_ordinal</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/lifecycle_plugin.html#LifecyclePlugin.get_ordinal"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>An ordinal used to order class instances for pre and post
+operation execution.</p>
+<p>The values returned by get_ordinal are used to create a partial order
+for pre and post operation method invocations. The default ordinal
+value of 100 may be overridden.
+If class1inst.ordinal() &lt; class2inst.ordinal(), then the method on
+class1inst will be executed before the method on class2inst.
+If class1inst.ordinal() &gt; class2inst.ordinal(), then the method on
+class1inst will be executed after the method on class2inst.
+If class1inst.ordinal() == class2inst.ordinal(), then the order of
+method invocation is indeterminate.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.engine.lifecycle_plugin.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

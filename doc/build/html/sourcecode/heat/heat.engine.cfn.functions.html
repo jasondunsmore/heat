@@ -1,0 +1,367 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.cfn.functions Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-engine-cfn-functions-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.engine.cfn.functions</span></tt> Module<a class="headerlink" href="#the-heat-engine-cfn-functions-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.cfn.functions.</tt><tt class="descname">Base64</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#Base64"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A placeholder function for converting to base64.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span> <span class="s">&quot;Fn::Base64&quot;</span> <span class="p">:</span> <span class="s">&quot;&lt;string&gt;&quot;</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>This function actually performs no conversion. It is included for the
+benefit of templates that convert UserData to Base64. Heat accepts UserData
+in plain text.</p>
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#Base64.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.cfn.functions.</tt><tt class="descname">FindInMap</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#FindInMap"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A function for resolving keys in the template mappings.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span> <span class="s">&quot;Fn::FindInMap&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s">&quot;mapping&quot;</span><span class="p">,</span>
+                      <span class="s">&quot;key&quot;</span><span class="p">,</span>
+                      <span class="s">&quot;value&quot;</span> <span class="p">]</span> <span class="p">}</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#FindInMap.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.cfn.functions.</tt><tt class="descname">GetAZs</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#GetAZs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A function for retrieving the availability zones.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span> <span class="s">&quot;Fn::GetAZs&quot;</span> <span class="p">:</span> <span class="s">&quot;&lt;region&gt;&quot;</span> <span class="p">}</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#GetAZs.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.cfn.functions.</tt><tt class="descname">GetAtt</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#GetAtt"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A function for resolving resource attributes.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span> <span class="s">&quot;Fn::GetAtt&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s">&quot;&lt;resource_name&gt;&quot;</span><span class="p">,</span>
+                   <span class="s">&quot;&lt;attribute_name&quot;</span> <span class="p">]</span> <span class="p">}</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt>
+<tt class="descname">dep_attrs</tt><big>(</big><em>resource_name</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#GetAtt.dep_attrs"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">dependencies</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#GetAtt.dependencies"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#GetAtt.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">validate</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#GetAtt.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.cfn.functions.</tt><tt class="descname">Join</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#Join"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A function for joining strings.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>{ &quot;Fn::Join&quot; : [ &quot;&lt;delim&gt;&quot;, [ &quot;&lt;string_1&gt;&quot;, &quot;&lt;string_2&gt;&quot;, ... ] }
+</pre></div>
+</div>
+<p>And resolves to:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="s">&quot;&lt;string_1&gt;&lt;delim&gt;&lt;string_2&gt;&lt;delim&gt;...&quot;</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#Join.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.cfn.functions.</tt><tt class="descname">MemberListToMap</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#MemberListToMap"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A function for converting lists containing enumerated keys and values to
+a mapping.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>{ &#39;Fn::MemberListToMap&#39; : [ &#39;Name&#39;,
+                            &#39;Value&#39;,
+                            [ &#39;.member.0.Name=&lt;key_0&gt;&#39;,
+                              &#39;.member.0.Value=&lt;value_0&gt;&#39;,
+                              ... ] ] }
+</pre></div>
+</div>
+<p>And resolves to:</p>
+<div class="highlight-python"><div class="highlight"><pre>{ &quot;&lt;key_0&gt;&quot; : &quot;&lt;value_0&gt;&quot;, ... }
+</pre></div>
+</div>
+<p>The first two arguments are the names of the key and value.</p>
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#MemberListToMap.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.cfn.functions.</tt><tt class="descname">ParamRef</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#ParamRef"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A function for resolving parameter references.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span> <span class="s">&quot;Ref&quot;</span> <span class="p">:</span> <span class="s">&quot;&lt;param_name&gt;&quot;</span> <span class="p">}</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#ParamRef.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.cfn.functions.</tt><tt class="descname">Ref</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#Ref"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>A function for resolving parameters or resource references.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span> <span class="s">&quot;Ref&quot;</span> <span class="p">:</span> <span class="s">&quot;&lt;param_name&gt;&quot;</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span> <span class="s">&quot;Ref&quot;</span> <span class="p">:</span> <span class="s">&quot;&lt;resource_name&gt;&quot;</span> <span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.cfn.functions.</tt><tt class="descname">Replace</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#Replace"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A function for performing string substitutions.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>{ &quot;Fn::Replace&quot; : [
+    { &quot;&lt;key_1&gt;&quot;: &quot;&lt;value_1&gt;&quot;, &quot;&lt;key_2&gt;&quot;: &quot;&lt;value_2&gt;&quot;, ... },
+    &quot;&lt;key_1&gt; &lt;key_2&gt;&quot;
+  ] }
+</pre></div>
+</div>
+<p>And resolves to:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="s">&quot;&lt;value_1&gt; &lt;value_2&gt;&quot;</span>
+</pre></div>
+</div>
+<p>This is implemented using python str.replace on each key. The order in
+which replacements are performed is undefined.</p>
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#Replace.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.cfn.functions.</tt><tt class="descname">ResourceFacade</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#ResourceFacade"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A function for obtaining data from the facade resource from within the
+corresponding provider template.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span> <span class="s">&quot;Fn::ResourceFacade&quot;</span><span class="p">:</span> <span class="s">&quot;&lt;attribute_type&gt;&quot;</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>where the valid attribute types are &#8220;Metadata&#8221;, &#8220;DeletionPolicy&#8221; and
+&#8220;UpdatePolicy&#8221;.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">DELETION_POLICY</tt><em class="property"> = 'DeletionPolicy'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">METADATA</tt><em class="property"> = 'Metadata'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">UPDATE_POLICY</tt><em class="property"> = 'UpdatePolicy'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#ResourceFacade.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.cfn.functions.</tt><tt class="descname">ResourceRef</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#ResourceRef"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A function for resolving resource references.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span> <span class="s">&quot;Ref&quot;</span> <span class="p">:</span> <span class="s">&quot;&lt;resource_name&gt;&quot;</span> <span class="p">}</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt>
+<tt class="descname">dependencies</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#ResourceRef.dependencies"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#ResourceRef.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.cfn.functions.</tt><tt class="descname">Select</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#Select"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A function for selecting an item from a list or map.</p>
+<p>Takes the form (for a list lookup):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span> <span class="s">&quot;Fn::Select&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s">&quot;&lt;index&gt;&quot;</span><span class="p">,</span> <span class="p">[</span> <span class="s">&quot;&lt;value_1&gt;&quot;</span><span class="p">,</span> <span class="s">&quot;&lt;value_2&gt;&quot;</span><span class="p">,</span> <span class="o">...</span> <span class="p">]</span> <span class="p">]</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>Takes the form (for a map lookup):</p>
+<div class="highlight-python"><div class="highlight"><pre>{ &quot;Fn::Select&quot; : [ &quot;&lt;index&gt;&quot;, { &quot;&lt;key_1&gt;&quot;: &quot;&lt;value_1&gt;&quot;, ... } ] }
+</pre></div>
+</div>
+<p>If the selected index is not found, this function resolves to an empty
+string.</p>
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#Select.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.cfn.functions.</tt><tt class="descname">Split</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#Split"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A function for splitting strings.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span> <span class="s">&quot;Fn::Split&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s">&quot;&lt;delim&gt;&quot;</span><span class="p">,</span> <span class="s">&quot;&lt;string_1&gt;&lt;delim&gt;&lt;string_2&gt;...&quot;</span> <span class="p">]</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>And resolves to:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span> <span class="s">&quot;&lt;string_1&gt;&quot;</span><span class="p">,</span> <span class="s">&quot;&lt;string_2&gt;&quot;</span><span class="p">,</span> <span class="o">...</span> <span class="p">]</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/functions.html#Split.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.engine.cfn.functions.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

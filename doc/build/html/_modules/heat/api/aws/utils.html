@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.api.aws.utils &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.api.aws.utils</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Helper utilities related to the AWS API implementations.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span> <span class="k">as</span> <span class="n">logging</span>
+
+<span class="kn">from</span> <span class="nn">heat.api.aws</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LE</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="format_response"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.aws.utils.html#heat.api.aws.utils.format_response">[docs]</a><span class="k">def</span> <span class="nf">format_response</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Format response from engine into API format.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">Response&#39;</span> <span class="o">%</span> <span class="n">action</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">Result&#39;</span> <span class="o">%</span> <span class="n">action</span><span class="p">:</span> <span class="n">response</span><span class="p">}}</span>
+
+</div>
+<div class="viewcode-block" id="extract_param_pairs"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.aws.utils.html#heat.api.aws.utils.extract_param_pairs">[docs]</a><span class="k">def</span> <span class="nf">extract_param_pairs</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">keyname</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">valuename</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Extract user input params from AWS style parameter-pair encoded list.</span>
+
+<span class="sd">    In the AWS API list items appear as two key-value</span>
+<span class="sd">    pairs (passed as query parameters)  with keys of the form below:</span>
+
+<span class="sd">    Prefix.member.1.keyname=somekey</span>
+<span class="sd">    Prefix.member.1.keyvalue=somevalue</span>
+<span class="sd">    Prefix.member.2.keyname=anotherkey</span>
+<span class="sd">    Prefix.member.2.keyvalue=somevalue</span>
+
+<span class="sd">    We reformat this into a dict here to match the heat</span>
+<span class="sd">    engine API expected format.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">plist</span> <span class="o">=</span> <span class="n">extract_param_list</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
+    <span class="n">kvs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">p</span><span class="p">[</span><span class="n">keyname</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="n">valuename</span><span class="p">])</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">plist</span>
+           <span class="k">if</span> <span class="n">keyname</span> <span class="ow">in</span> <span class="n">p</span> <span class="ow">and</span> <span class="n">valuename</span> <span class="ow">in</span> <span class="n">p</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">kvs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="extract_param_list"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.aws.utils.html#heat.api.aws.utils.extract_param_list">[docs]</a><span class="k">def</span> <span class="nf">extract_param_list</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Extract a list-of-dicts based on parameters containing AWS style list.</span>
+
+<span class="sd">    MetricData.member.1.MetricName=buffers</span>
+<span class="sd">    MetricData.member.1.Unit=Bytes</span>
+<span class="sd">    MetricData.member.1.Value=231434333</span>
+<span class="sd">    MetricData.member.2.MetricName=buffers2</span>
+<span class="sd">    MetricData.member.2.Unit=Bytes</span>
+<span class="sd">    MetricData.member.2.Value=12345</span>
+
+<span class="sd">    This can be extracted by passing prefix=MetricData, resulting in a</span>
+<span class="sd">    list containing two dicts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">key_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&quot;</span><span class="si">%s</span><span class="s">\.member\.([0-9]+)\.(.*)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">get_param_data</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">key_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">key</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+                    <span class="k">yield</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+    <span class="c"># Sort and group by index</span>
+    <span class="n">key_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">get_param_data</span><span class="p">(</span><span class="n">params</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="n">key_func</span><span class="p">)</span>
+    <span class="n">members</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">key_func</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">kv</span> <span class="k">for</span> <span class="n">di</span><span class="p">,</span> <span class="n">kv</span> <span class="ow">in</span> <span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">mi</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">members</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="get_param_value"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.aws.utils.html#heat.api.aws.utils.get_param_value">[docs]</a><span class="k">def</span> <span class="nf">get_param_value</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Looks up an expected parameter in a parsed params dict.</span>
+
+<span class="sd">    Helper function, looks up an expected parameter in a parsed</span>
+<span class="sd">    params dict and returns the result.  If params does not contain</span>
+<span class="sd">    the requested key we raise an exception of the appropriate type.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">_LE</span><span class="p">(</span><span class="s">&quot;Request does not contain </span><span class="si">%s</span><span class="s"> parameter!&quot;</span><span class="p">),</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatMissingParameterError</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="reformat_dict_keys"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.aws.utils.html#heat.api.aws.utils.reformat_dict_keys">[docs]</a><span class="k">def</span> <span class="nf">reformat_dict_keys</span><span class="p">(</span><span class="n">keymap</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">inputdict</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Utility function for mapping one dict format to another.&quot;&quot;&quot;</span>
+    <span class="n">keymap</span> <span class="o">=</span> <span class="n">keymap</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="n">inputdict</span> <span class="o">=</span> <span class="n">inputdict</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">outk</span><span class="p">,</span> <span class="n">inputdict</span><span class="p">[</span><span class="n">ink</span><span class="p">])</span> <span class="k">for</span> <span class="n">ink</span><span class="p">,</span> <span class="n">outk</span> <span class="ow">in</span> <span class="n">keymap</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">ink</span> <span class="ow">in</span> <span class="n">inputdict</span><span class="p">])</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

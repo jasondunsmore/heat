@@ -1,0 +1,8 @@
+============================================
+The :mod:`heat.engine.plugin_manager` Module
+============================================
+.. automodule:: heat.engine.plugin_manager
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

@@ -1,0 +1,495 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.rsrc_defn &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.engine.rsrc_defn</h1><div class="highlight"><pre>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">function</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">properties</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ResourceDefinition&#39;</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">ResourceDefinitionCore</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A definition of a resource, independent of any particular template format.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">DELETION_POLICIES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">DELETE</span><span class="p">,</span> <span class="n">RETAIN</span><span class="p">,</span> <span class="n">SNAPSHOT</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s">&#39;Delete&#39;</span><span class="p">,</span> <span class="s">&#39;Retain&#39;</span><span class="p">,</span> <span class="s">&#39;Snapshot&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">depends</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">deletion_policy</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">update_policy</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise with the parsed definition of a resource.</span>
+
+<span class="sd">        Any intrinsic functions present in any of the sections should have been</span>
+<span class="sd">        parsed into Function objects before constructing the definition.</span>
+
+<span class="sd">        :param name: The name of the resource (for use in error messages)</span>
+<span class="sd">        :param resource_type: The resource type</span>
+<span class="sd">        :param properties: A dictionary of supplied property values</span>
+<span class="sd">        :param metadata: The supplied metadata</span>
+<span class="sd">        :param depends: A list of resource names on which this resource depends</span>
+<span class="sd">        :param deletion_policy: The deletion policy for the resource</span>
+<span class="sd">        :param update_policy: A dictionary of supplied update policies</span>
+<span class="sd">        :param description: A string describing the resource</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">depends</span> <span class="o">=</span> <span class="n">depends</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_type</span> <span class="o">=</span> <span class="n">resource_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span> <span class="o">=</span> <span class="n">properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="n">metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_depends</span> <span class="o">=</span> <span class="n">depends</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_deletion_policy</span> <span class="o">=</span> <span class="n">deletion_policy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_policy</span> <span class="o">=</span> <span class="n">update_policy</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span> <span class="o">=</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rendering</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">properties</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">,</span>
+                                           <span class="n">function</span><span class="o">.</span><span class="n">Function</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span> <span class="o">^=</span> <span class="n">_hash_data</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">,</span>
+                                         <span class="n">function</span><span class="o">.</span><span class="n">Function</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span> <span class="o">^=</span> <span class="n">_hash_data</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">depends</span><span class="p">,</span> <span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">Sequence</span><span class="p">,</span>
+                                    <span class="n">function</span><span class="o">.</span><span class="n">Function</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">depends</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span> <span class="o">^=</span> <span class="n">_hash_data</span><span class="p">(</span><span class="n">depends</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">deletion_policy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">deletion_policy</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">DELETION_POLICIES</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span> <span class="o">^=</span> <span class="nb">hash</span><span class="p">(</span><span class="n">deletion_policy</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">update_policy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">update_policy</span><span class="p">,</span> <span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">,</span>
+                                              <span class="n">function</span><span class="o">.</span><span class="n">Function</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span> <span class="o">^=</span> <span class="n">_hash_data</span><span class="p">(</span><span class="n">update_policy</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">freeze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">overrides</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a frozen resource definition, with all functions resolved.</span>
+
+<span class="sd">        This return a new resource definition with fixed data (containing no</span>
+<span class="sd">        intrinsic functions). Named arguments passed to this method override</span>
+<span class="sd">        the values passed as arguments to the constructor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">arg_item</span><span class="p">(</span><span class="n">attr_name</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">attr_name</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">overrides</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">overrides</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">function</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="s">&#39;resource_type&#39;</span><span class="p">,</span> <span class="s">&#39;_properties&#39;</span><span class="p">,</span> <span class="s">&#39;_metadata&#39;</span><span class="p">,</span>
+                <span class="s">&#39;_depends&#39;</span><span class="p">,</span> <span class="s">&#39;_deletion_policy&#39;</span><span class="p">,</span> <span class="s">&#39;_update_policy&#39;</span><span class="p">,</span>
+                <span class="s">&#39;description&#39;</span><span class="p">)</span>
+
+        <span class="n">defn</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">arg_item</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">))</span>
+        <span class="n">defn</span><span class="o">.</span><span class="n">_frozen</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="n">defn</span>
+
+    <span class="k">def</span> <span class="nf">reparse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">template</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reinterpret the resource definition in the context of a new stack.</span>
+
+<span class="sd">        This returns a new resource definition, with all of the functions</span>
+<span class="sd">        parsed in the context of the specified stack and template.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_frozen&#39;</span><span class="p">,</span> <span class="bp">False</span>
+                           <span class="p">),</span> <span class="s">&quot;Cannot re-parse a frozen definition&quot;</span>
+
+        <span class="k">def</span> <span class="nf">reparse_snippet</span><span class="p">(</span><span class="n">snippet</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">snippet</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_type</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="n">reparse_snippet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="n">reparse_snippet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">),</span>
+            <span class="n">depends</span><span class="o">=</span><span class="n">reparse_snippet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_depends</span><span class="p">),</span>
+            <span class="n">deletion_policy</span><span class="o">=</span><span class="n">reparse_snippet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_deletion_policy</span><span class="p">),</span>
+            <span class="n">update_policy</span><span class="o">=</span><span class="n">reparse_snippet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_update_policy</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">dep_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return an iterator over dependent attributes for specified</span>
+<span class="sd">        resource_name in resources&#39; properties and metadata fields.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="n">function</span><span class="o">.</span><span class="n">dep_attrs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">,</span>
+                                                  <span class="n">resource_name</span><span class="p">),</span>
+                               <span class="n">function</span><span class="o">.</span><span class="n">dep_attrs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">,</span>
+                                                  <span class="n">resource_name</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">dependencies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the Resource objects in the given stack on which this depends.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="n">section</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">section</span><span class="p">])</span>
+
+        <span class="k">def</span> <span class="nf">get_resource</span><span class="p">(</span><span class="n">res_name</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">res_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stack</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidTemplateReference</span><span class="p">(</span><span class="n">resource</span><span class="o">=</span><span class="n">res_name</span><span class="p">,</span>
+                                                         <span class="n">key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">stack</span><span class="p">[</span><span class="n">res_name</span><span class="p">]</span>
+
+        <span class="k">def</span> <span class="nf">strict_func_deps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">ifilter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="s">&#39;strict_dependency&#39;</span><span class="p">,</span>
+                                                       <span class="bp">True</span><span class="p">),</span>
+                                     <span class="n">function</span><span class="o">.</span><span class="n">dependencies</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">datapath</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">((</span><span class="n">get_resource</span><span class="p">(</span><span class="n">dep</span><span class="p">)</span> <span class="k">for</span> <span class="n">dep</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_depends</span><span class="p">),</span>
+                               <span class="n">strict_func_deps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">,</span>
+                                                <span class="n">path</span><span class="p">(</span><span class="n">PROPERTIES</span><span class="p">)),</span>
+                               <span class="n">strict_func_deps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">,</span>
+                                                <span class="n">path</span><span class="p">(</span><span class="n">METADATA</span><span class="p">)))</span>
+
+    <span class="k">def</span> <span class="nf">properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a Properties object representing the resource properties.</span>
+
+<span class="sd">        The Properties object is constructed from the given schema, and may</span>
+<span class="sd">        require a context to validate constraints.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">properties</span><span class="o">.</span><span class="n">Properties</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span> <span class="ow">or</span> <span class="p">{},</span>
+                                     <span class="n">function</span><span class="o">.</span><span class="n">resolve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">deletion_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the deletion policy for the resource.</span>
+
+<span class="sd">        The policy will be one of those listed in DELETION_POLICIES.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">function</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_deletion_policy</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">DELETE</span>
+
+    <span class="k">def</span> <span class="nf">update_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a Properties object representing the resource update policy.</span>
+
+<span class="sd">        The Properties object is constructed from the given schema, and may</span>
+<span class="sd">        require a context to validate constraints.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">properties</span><span class="o">.</span><span class="n">Properties</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_policy</span> <span class="ow">or</span> <span class="p">{},</span>
+                                     <span class="n">function</span><span class="o">.</span><span class="n">resolve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the resource metadata.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">function</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">render_hot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a HOT snippet for the resource definition.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rendering</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;resource_type&#39;</span><span class="p">,</span>
+                <span class="s">&#39;properties&#39;</span><span class="p">:</span> <span class="s">&#39;_properties&#39;</span><span class="p">,</span>
+                <span class="s">&#39;metadata&#39;</span><span class="p">:</span> <span class="s">&#39;_metadata&#39;</span><span class="p">,</span>
+                <span class="s">&#39;deletion_policy&#39;</span><span class="p">:</span> <span class="s">&#39;_deletion_policy&#39;</span><span class="p">,</span>
+                <span class="s">&#39;update_policy&#39;</span><span class="p">:</span> <span class="s">&#39;_update_policy&#39;</span><span class="p">,</span>
+                <span class="s">&#39;depends_on&#39;</span><span class="p">:</span> <span class="s">&#39;_depends&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="k">def</span> <span class="nf">rawattrs</span><span class="p">():</span>
+                <span class="sd">&quot;&quot;&quot;Get an attribute with function objects stripped out.&quot;&quot;&quot;</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">key</span><span class="p">,</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rendering</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">rawattrs</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rendering</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compare this resource definition for equality with another.</span>
+
+<span class="sd">        Two resource definitions are considered to be equal if they can be</span>
+<span class="sd">        generated from the same template snippet. The name of the resource is</span>
+<span class="sd">        ignored, as are the actual values that any included functions resolve</span>
+<span class="sd">        to.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">ResourceDefinitionCore</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_hot</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">render_hot</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compare this resource definition for inequality with another.</span>
+
+<span class="sd">        See __eq__() for the definition of equality.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">equal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">equal</span> <span class="ow">is</span> <span class="bp">NotImplemented</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+        <span class="k">return</span> <span class="ow">not</span> <span class="n">equal</span>
+
+    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a hash value for this resource definition.</span>
+
+<span class="sd">        Resource definitions that compare equal will have the same hash. (In</span>
+<span class="sd">        particular, the resource name is *not* taken into account.) See</span>
+<span class="sd">        the __eq__() method for the definition of equality.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a string representation of the resource definition.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">arg_repr</span><span class="p">(</span><span class="n">arg_name</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s">&#39;=&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">arg_name</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">arg_name</span><span class="p">))])</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;properties&#39;</span><span class="p">,</span> <span class="s">&#39;metadata&#39;</span><span class="p">,</span> <span class="s">&#39;depends&#39;</span><span class="p">,</span>
+                <span class="s">&#39;deletion_policy&#39;</span><span class="p">,</span> <span class="s">&#39;update_policy&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;classname&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+            <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">),</span>
+            <span class="s">&#39;args&#39;</span><span class="p">:</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">arg_repr</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="si">%(classname)s</span><span class="s">(</span><span class="si">%(name)s</span><span class="s">, </span><span class="si">%(type)s</span><span class="s">, </span><span class="si">%(args)s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="n">data</span>
+
+
+<span class="n">_KEYS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">TYPE</span><span class="p">,</span> <span class="n">PROPERTIES</span><span class="p">,</span> <span class="n">METADATA</span><span class="p">,</span> <span class="n">DELETION_POLICY</span><span class="p">,</span> <span class="n">UPDATE_POLICY</span><span class="p">,</span>
+    <span class="n">DEPENDS_ON</span><span class="p">,</span> <span class="n">DESCRIPTION</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s">&#39;Type&#39;</span><span class="p">,</span> <span class="s">&#39;Properties&#39;</span><span class="p">,</span> <span class="s">&#39;Metadata&#39;</span><span class="p">,</span> <span class="s">&#39;DeletionPolicy&#39;</span><span class="p">,</span> <span class="s">&#39;UpdatePolicy&#39;</span><span class="p">,</span>
+    <span class="s">&#39;DependsOn&#39;</span><span class="p">,</span> <span class="s">&#39;Description&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="ResourceDefinition"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.rsrc_defn.html#heat.engine.rsrc_defn.ResourceDefinition">[docs]</a><span class="k">class</span> <span class="nc">ResourceDefinition</span><span class="p">(</span><span class="n">ResourceDefinitionCore</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A resource definition that also acts like a cfn template snippet.</span>
+
+<span class="sd">    This class exists only for backwards compatibility with existing resource</span>
+<span class="sd">    plugins and unit tests; it will at some point be deprecated and then</span>
+<span class="sd">    replaced with ResourceDefinitionCore.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compare this resource definition for equality with another.</span>
+
+<span class="sd">        Two resource definitions are considered to be equal if they can be</span>
+<span class="sd">        generated from the same template snippet. The name of the resource is</span>
+<span class="sd">        ignored, as are the actual values that any included functions resolve</span>
+<span class="sd">        to.</span>
+
+<span class="sd">        This method can also compare the resource definition to a template</span>
+<span class="sd">        snippet. In this case, two snippets are considered equal if they</span>
+<span class="sd">        compare equal in a dictionary comparison. (Specifically, this means</span>
+<span class="sd">        that intrinsic functions are compared by their results.) This exists</span>
+<span class="sd">        solely to not break existing unit tests.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">ResourceDefinitionCore</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+                <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="n">other</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ResourceDefinition</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Iterate over the available CFN template keys.</span>
+
+<span class="sd">        This is for backwards compatibility with existing code that expects a</span>
+<span class="sd">        parsed-JSON template snippet.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">yield</span> <span class="n">TYPE</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">PROPERTIES</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">METADATA</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deletion_policy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">DELETION_POLICY</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_policy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">UPDATE_POLICY</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_depends</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">DEPENDS_ON</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">DESCRIPTION</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the specified item from a CFN template snippet.</span>
+
+<span class="sd">        This is for backwards compatibility with existing code that expects a</span>
+<span class="sd">        parsed-JSON template snippet.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">TYPE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_type</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="n">PROPERTIES</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="n">METADATA</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="n">DELETION_POLICY</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deletion_policy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deletion_policy</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="n">UPDATE_POLICY</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_policy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_policy</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="n">DEPENDS_ON</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_depends</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_depends</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_depends</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_depends</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="n">DESCRIPTION</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span>
+
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the number of available CFN template keys.</span>
+
+<span class="sd">        This is for backwards compatibility with existing code that expects a</span>
+<span class="sd">        parsed-JSON template snippet.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">)))</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a string representation of the resource definition.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s">&#39;ResourceDefinition </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_hash_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a stable hash value for an arbitrary parsed-JSON data snippet.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">function</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Sequence</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">_hash_data</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">data</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+            <span class="n">item_hashes</span> <span class="o">=</span> <span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">^</span> <span class="n">_hash_data</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+            <span class="k">return</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">xor</span><span class="p">,</span> <span class="n">item_hashes</span><span class="p">,</span> <span class="il">0L</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

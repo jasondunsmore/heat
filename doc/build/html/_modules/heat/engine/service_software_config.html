@@ -1,0 +1,341 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.service_software_config &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.engine.service_software_config</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span> <span class="k">as</span> <span class="n">logging</span>
+<span class="kn">from</span> <span class="nn">oslo_serialization</span> <span class="kn">import</span> <span class="n">jsonutils</span>
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">timeutils</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">from</span> <span class="nn">six.moves.urllib</span> <span class="kn">import</span> <span class="n">parse</span> <span class="k">as</span> <span class="n">urlparse</span>
+
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LI</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">resource</span> <span class="k">as</span> <span class="n">resource_object</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">software_config</span> <span class="k">as</span> <span class="n">software_config_object</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">software_deployment</span> <span class="k">as</span> <span class="n">software_deployment_object</span>
+<span class="kn">from</span> <span class="nn">heat.openstack.common</span> <span class="kn">import</span> <span class="n">service</span>
+<span class="kn">from</span> <span class="nn">heat.rpc</span> <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">rpc_api</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SoftwareConfigService"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.service_software_config.html#heat.engine.service_software_config.SoftwareConfigService">[docs]</a><span class="k">class</span> <span class="nc">SoftwareConfigService</span><span class="p">(</span><span class="n">service</span><span class="o">.</span><span class="n">Service</span><span class="p">):</span>
+
+<div class="viewcode-block" id="SoftwareConfigService.show_software_config"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.service_software_config.html#heat.engine.service_software_config.SoftwareConfigService.show_software_config">[docs]</a>    <span class="k">def</span> <span class="nf">show_software_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnxt</span><span class="p">,</span> <span class="n">config_id</span><span class="p">):</span>
+        <span class="n">sc</span> <span class="o">=</span> <span class="n">software_config_object</span><span class="o">.</span><span class="n">SoftwareConfig</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span><span class="n">cnxt</span><span class="p">,</span> <span class="n">config_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">format_software_config</span><span class="p">(</span><span class="n">sc</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SoftwareConfigService.create_software_config"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.service_software_config.html#heat.engine.service_software_config.SoftwareConfigService.create_software_config">[docs]</a>    <span class="k">def</span> <span class="nf">create_software_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnxt</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span>
+                               <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+
+        <span class="n">sc</span> <span class="o">=</span> <span class="n">software_config_object</span><span class="o">.</span><span class="n">SoftwareConfig</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">cnxt</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s">&#39;group&#39;</span><span class="p">:</span> <span class="n">group</span><span class="p">,</span>
+            <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s">&#39;inputs&#39;</span><span class="p">:</span> <span class="n">inputs</span><span class="p">,</span>
+                <span class="s">&#39;outputs&#39;</span><span class="p">:</span> <span class="n">outputs</span><span class="p">,</span>
+                <span class="s">&#39;options&#39;</span><span class="p">:</span> <span class="n">options</span><span class="p">,</span>
+                <span class="s">&#39;config&#39;</span><span class="p">:</span> <span class="n">config</span>
+            <span class="p">},</span>
+            <span class="s">&#39;tenant&#39;</span><span class="p">:</span> <span class="n">cnxt</span><span class="o">.</span><span class="n">tenant_id</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">format_software_config</span><span class="p">(</span><span class="n">sc</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SoftwareConfigService.delete_software_config"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.service_software_config.html#heat.engine.service_software_config.SoftwareConfigService.delete_software_config">[docs]</a>    <span class="k">def</span> <span class="nf">delete_software_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnxt</span><span class="p">,</span> <span class="n">config_id</span><span class="p">):</span>
+        <span class="n">software_config_object</span><span class="o">.</span><span class="n">SoftwareConfig</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">cnxt</span><span class="p">,</span> <span class="n">config_id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SoftwareConfigService.list_software_deployments"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.service_software_config.html#heat.engine.service_software_config.SoftwareConfigService.list_software_deployments">[docs]</a>    <span class="k">def</span> <span class="nf">list_software_deployments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnxt</span><span class="p">,</span> <span class="n">server_id</span><span class="p">):</span>
+        <span class="n">all_sd</span> <span class="o">=</span> <span class="n">software_deployment_object</span><span class="o">.</span><span class="n">SoftwareDeployment</span><span class="o">.</span><span class="n">get_all</span><span class="p">(</span>
+            <span class="n">cnxt</span><span class="p">,</span> <span class="n">server_id</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">api</span><span class="o">.</span><span class="n">format_software_deployment</span><span class="p">(</span><span class="n">sd</span><span class="p">)</span> <span class="k">for</span> <span class="n">sd</span> <span class="ow">in</span> <span class="n">all_sd</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">result</span>
+</div>
+<div class="viewcode-block" id="SoftwareConfigService.metadata_software_deployments"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.service_software_config.html#heat.engine.service_software_config.SoftwareConfigService.metadata_software_deployments">[docs]</a>    <span class="k">def</span> <span class="nf">metadata_software_deployments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnxt</span><span class="p">,</span> <span class="n">server_id</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">server_id</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;server_id must be specified&#39;</span><span class="p">))</span>
+        <span class="n">all_sd</span> <span class="o">=</span> <span class="n">software_deployment_object</span><span class="o">.</span><span class="n">SoftwareDeployment</span><span class="o">.</span><span class="n">get_all</span><span class="p">(</span>
+            <span class="n">cnxt</span><span class="p">,</span> <span class="n">server_id</span><span class="p">)</span>
+        <span class="c"># sort the configs by config name, to give the list of metadata a</span>
+        <span class="c"># deterministic and controllable order.</span>
+        <span class="n">all_sd_s</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">all_sd</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">sd</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">api</span><span class="o">.</span><span class="n">format_software_config</span><span class="p">(</span><span class="n">sd</span><span class="o">.</span><span class="n">config</span><span class="p">)</span> <span class="k">for</span> <span class="n">sd</span> <span class="ow">in</span> <span class="n">all_sd_s</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">result</span>
+</div>
+    <span class="k">def</span> <span class="nf">_push_metadata_software_deployments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnxt</span><span class="p">,</span> <span class="n">server_id</span><span class="p">):</span>
+        <span class="n">rs</span> <span class="o">=</span> <span class="p">(</span><span class="n">resource_object</span><span class="o">.</span><span class="n">Resource</span><span class="o">.</span>
+              <span class="n">get_by_physical_resource_id</span><span class="p">(</span><span class="n">cnxt</span><span class="p">,</span> <span class="n">server_id</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rs</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">deployments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata_software_deployments</span><span class="p">(</span><span class="n">cnxt</span><span class="p">,</span> <span class="n">server_id</span><span class="p">)</span>
+        <span class="n">md</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">rsrc_metadata</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">md</span><span class="p">[</span><span class="s">&#39;deployments&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">deployments</span>
+        <span class="n">rs</span><span class="o">.</span><span class="n">update_and_save</span><span class="p">({</span><span class="s">&#39;rsrc_metadata&#39;</span><span class="p">:</span> <span class="n">md</span><span class="p">})</span>
+
+        <span class="n">metadata_put_url</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">for</span> <span class="n">rd</span> <span class="ow">in</span> <span class="n">rs</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rd</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s">&#39;metadata_put_url&#39;</span><span class="p">:</span>
+                <span class="n">metadata_put_url</span> <span class="o">=</span> <span class="n">rd</span><span class="o">.</span><span class="n">value</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">metadata_put_url</span><span class="p">:</span>
+            <span class="n">json_md</span> <span class="o">=</span> <span class="n">jsonutils</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">md</span><span class="p">)</span>
+            <span class="n">requests</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">metadata_put_url</span><span class="p">,</span> <span class="n">json_md</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_refresh_software_deployment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnxt</span><span class="p">,</span> <span class="n">sd</span><span class="p">,</span> <span class="n">deploy_signal_id</span><span class="p">):</span>
+        <span class="n">container</span><span class="p">,</span> <span class="n">object_name</span> <span class="o">=</span> <span class="n">urlparse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span>
+            <span class="n">deploy_signal_id</span><span class="p">)</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="n">swift_plugin</span> <span class="o">=</span> <span class="n">cnxt</span><span class="o">.</span><span class="n">clients</span><span class="o">.</span><span class="n">client_plugin</span><span class="p">(</span><span class="s">&#39;swift&#39;</span><span class="p">)</span>
+        <span class="n">swift</span> <span class="o">=</span> <span class="n">swift_plugin</span><span class="o">.</span><span class="n">client</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">headers</span> <span class="o">=</span> <span class="n">swift</span><span class="o">.</span><span class="n">head_object</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="n">object_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="c"># ignore not-found, in case swift is not consistent yet</span>
+            <span class="k">if</span> <span class="n">swift_plugin</span><span class="o">.</span><span class="n">is_not_found</span><span class="p">(</span><span class="n">ex</span><span class="p">):</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&#39;Signal object not found: </span><span class="si">%(c)s</span><span class="s"> </span><span class="si">%(o)s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span>
+                    <span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="n">container</span><span class="p">,</span> <span class="s">&#39;o&#39;</span><span class="p">:</span> <span class="n">object_name</span><span class="p">})</span>
+                <span class="k">return</span> <span class="n">sd</span>
+            <span class="k">raise</span> <span class="n">ex</span>
+
+        <span class="n">lm</span> <span class="o">=</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;last-modified&#39;</span><span class="p">)</span>
+
+        <span class="n">last_modified</span> <span class="o">=</span> <span class="n">swift_plugin</span><span class="o">.</span><span class="n">parse_last_modified</span><span class="p">(</span><span class="n">lm</span><span class="p">)</span>
+        <span class="n">prev_last_modified</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">updated_at</span>
+
+        <span class="k">if</span> <span class="n">prev_last_modified</span><span class="p">:</span>
+            <span class="c"># assume stored as utc, convert to offset-naive datetime</span>
+            <span class="n">prev_last_modified</span> <span class="o">=</span> <span class="n">prev_last_modified</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">prev_last_modified</span> <span class="ow">and</span> <span class="p">(</span><span class="n">last_modified</span> <span class="o">&lt;=</span> <span class="n">prev_last_modified</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">sd</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">headers</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span> <span class="o">=</span> <span class="n">swift</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="n">object_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="c"># ignore not-found, in case swift is not consistent yet</span>
+            <span class="k">if</span> <span class="n">swift_plugin</span><span class="o">.</span><span class="n">is_not_found</span><span class="p">(</span><span class="n">ex</span><span class="p">):</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span>
+                    <span class="s">&#39;Signal object not found: </span><span class="si">%(c)s</span><span class="s"> </span><span class="si">%(o)s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span>
+                        <span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="n">container</span><span class="p">,</span> <span class="s">&#39;o&#39;</span><span class="p">:</span> <span class="n">object_name</span><span class="p">})</span>
+                <span class="k">return</span> <span class="n">sd</span>
+            <span class="k">raise</span> <span class="n">ex</span>
+        <span class="k">if</span> <span class="n">obj</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">signal_software_deployment</span><span class="p">(</span>
+                <span class="n">cnxt</span><span class="p">,</span> <span class="n">sd</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">jsonutils</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span>
+                <span class="n">timeutils</span><span class="o">.</span><span class="n">strtime</span><span class="p">(</span><span class="n">last_modified</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">software_deployment_object</span><span class="o">.</span><span class="n">SoftwareDeployment</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span>
+            <span class="n">cnxt</span><span class="p">,</span> <span class="n">sd</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SoftwareConfigService.show_software_deployment"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.service_software_config.html#heat.engine.service_software_config.SoftwareConfigService.show_software_deployment">[docs]</a>    <span class="k">def</span> <span class="nf">show_software_deployment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnxt</span><span class="p">,</span> <span class="n">deployment_id</span><span class="p">):</span>
+        <span class="n">sd</span> <span class="o">=</span> <span class="n">software_deployment_object</span><span class="o">.</span><span class="n">SoftwareDeployment</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span>
+            <span class="n">cnxt</span><span class="p">,</span> <span class="n">deployment_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sd</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_IN_PROGRESS</span><span class="p">:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config</span>
+            <span class="n">input_values</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">i</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">c</span><span class="p">[</span><span class="s">&#39;inputs&#39;</span><span class="p">])</span>
+            <span class="n">transport</span> <span class="o">=</span> <span class="n">input_values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;deploy_signal_transport&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">transport</span> <span class="o">==</span> <span class="s">&#39;TEMP_URL_SIGNAL&#39;</span><span class="p">:</span>
+                <span class="n">sd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_software_deployment</span><span class="p">(</span>
+                    <span class="n">cnxt</span><span class="p">,</span> <span class="n">sd</span><span class="p">,</span> <span class="n">input_values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;deploy_signal_id&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">format_software_deployment</span><span class="p">(</span><span class="n">sd</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SoftwareConfigService.create_software_deployment"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.service_software_config.html#heat.engine.service_software_config.SoftwareConfigService.create_software_deployment">[docs]</a>    <span class="k">def</span> <span class="nf">create_software_deployment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnxt</span><span class="p">,</span> <span class="n">server_id</span><span class="p">,</span> <span class="n">config_id</span><span class="p">,</span>
+                                   <span class="n">input_values</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span>
+                                   <span class="n">status_reason</span><span class="p">,</span> <span class="n">stack_user_project_id</span><span class="p">):</span>
+
+        <span class="n">sd</span> <span class="o">=</span> <span class="n">software_deployment_object</span><span class="o">.</span><span class="n">SoftwareDeployment</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">cnxt</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s">&#39;config_id&#39;</span><span class="p">:</span> <span class="n">config_id</span><span class="p">,</span>
+            <span class="s">&#39;server_id&#39;</span><span class="p">:</span> <span class="n">server_id</span><span class="p">,</span>
+            <span class="s">&#39;input_values&#39;</span><span class="p">:</span> <span class="n">input_values</span><span class="p">,</span>
+            <span class="s">&#39;tenant&#39;</span><span class="p">:</span> <span class="n">cnxt</span><span class="o">.</span><span class="n">tenant_id</span><span class="p">,</span>
+            <span class="s">&#39;stack_user_project_id&#39;</span><span class="p">:</span> <span class="n">stack_user_project_id</span><span class="p">,</span>
+            <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">action</span><span class="p">,</span>
+            <span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="n">status</span><span class="p">,</span>
+            <span class="s">&#39;status_reason&#39;</span><span class="p">:</span> <span class="n">status_reason</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_push_metadata_software_deployments</span><span class="p">(</span><span class="n">cnxt</span><span class="p">,</span> <span class="n">server_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">format_software_deployment</span><span class="p">(</span><span class="n">sd</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SoftwareConfigService.signal_software_deployment"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.service_software_config.html#heat.engine.service_software_config.SoftwareConfigService.signal_software_deployment">[docs]</a>    <span class="k">def</span> <span class="nf">signal_software_deployment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnxt</span><span class="p">,</span> <span class="n">deployment_id</span><span class="p">,</span> <span class="n">details</span><span class="p">,</span>
+                                   <span class="n">updated_at</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">deployment_id</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;deployment_id must be specified&#39;</span><span class="p">))</span>
+
+        <span class="n">sd</span> <span class="o">=</span> <span class="n">software_deployment_object</span><span class="o">.</span><span class="n">SoftwareDeployment</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span>
+            <span class="n">cnxt</span><span class="p">,</span> <span class="n">deployment_id</span><span class="p">)</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">status</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">status</span> <span class="o">==</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_IN_PROGRESS</span><span class="p">:</span>
+            <span class="c"># output values are only expected when in an IN_PROGRESS state</span>
+            <span class="k">return</span>
+
+        <span class="n">details</span> <span class="o">=</span> <span class="n">details</span> <span class="ow">or</span> <span class="p">{}</span>
+
+        <span class="n">output_status_code</span> <span class="o">=</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_OUTPUT_STATUS_CODE</span>
+        <span class="n">ov</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">output_values</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">status_reasons</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">status_code</span> <span class="o">=</span> <span class="n">details</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">output_status_code</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">status_code</span> <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="n">status_code</span><span class="p">)</span> <span class="o">!=</span> <span class="s">&#39;0&#39;</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_FAILED</span>
+            <span class="n">status_reasons</span><span class="p">[</span><span class="n">output_status_code</span><span class="p">]</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span>
+                <span class="s">&#39;Deployment exited with non-zero status code: </span><span class="si">%s</span><span class="s">&#39;</span>
+            <span class="p">)</span> <span class="o">%</span> <span class="n">details</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">output_status_code</span><span class="p">)</span>
+            <span class="n">event_reason</span> <span class="o">=</span> <span class="s">&#39;deployment failed (</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="n">status_code</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">event_reason</span> <span class="o">=</span> <span class="s">&#39;deployment succeeded&#39;</span>
+
+        <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">sd</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;outputs&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="p">[]:</span>
+            <span class="n">out_key</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">out_key</span> <span class="ow">in</span> <span class="n">details</span><span class="p">:</span>
+                <span class="n">ov</span><span class="p">[</span><span class="n">out_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">details</span><span class="p">[</span><span class="n">out_key</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">output</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;error_output&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+                    <span class="n">status</span> <span class="o">=</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_FAILED</span>
+                    <span class="n">status_reasons</span><span class="p">[</span><span class="n">out_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">details</span><span class="p">[</span><span class="n">out_key</span><span class="p">]</span>
+                    <span class="n">event_reason</span> <span class="o">=</span> <span class="s">&#39;deployment failed&#39;</span>
+
+        <span class="k">for</span> <span class="n">out_key</span> <span class="ow">in</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_OUTPUTS</span><span class="p">:</span>
+            <span class="n">ov</span><span class="p">[</span><span class="n">out_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">details</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">out_key</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_FAILED</span><span class="p">:</span>
+            <span class="c"># build a status reason out of all of the values of outputs</span>
+            <span class="c"># flagged as error_output</span>
+            <span class="n">status_reasons</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39; : &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">status_reasons</span><span class="p">[</span><span class="n">k</span><span class="p">])))</span>
+                              <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">status_reasons</span><span class="p">]</span>
+            <span class="n">status_reason</span> <span class="o">=</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">status_reasons</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_COMPLETE</span>
+            <span class="n">status_reason</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Outputs received&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_software_deployment</span><span class="p">(</span>
+            <span class="n">cnxt</span><span class="p">,</span> <span class="n">deployment_id</span><span class="o">=</span><span class="n">deployment_id</span><span class="p">,</span>
+            <span class="n">output_values</span><span class="o">=</span><span class="n">ov</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span> <span class="n">status_reason</span><span class="o">=</span><span class="n">status_reason</span><span class="p">,</span>
+            <span class="n">config_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">input_values</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+            <span class="n">updated_at</span><span class="o">=</span><span class="n">updated_at</span><span class="p">)</span>
+        <span class="c"># Return a string describing the outcome of handling the signal data</span>
+        <span class="k">return</span> <span class="n">event_reason</span>
+</div>
+<div class="viewcode-block" id="SoftwareConfigService.update_software_deployment"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.service_software_config.html#heat.engine.service_software_config.SoftwareConfigService.update_software_deployment">[docs]</a>    <span class="k">def</span> <span class="nf">update_software_deployment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnxt</span><span class="p">,</span> <span class="n">deployment_id</span><span class="p">,</span> <span class="n">config_id</span><span class="p">,</span>
+                                   <span class="n">input_values</span><span class="p">,</span> <span class="n">output_values</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span>
+                                   <span class="n">status</span><span class="p">,</span> <span class="n">status_reason</span><span class="p">,</span> <span class="n">updated_at</span><span class="p">):</span>
+        <span class="n">update_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">config_id</span><span class="p">:</span>
+            <span class="n">update_data</span><span class="p">[</span><span class="s">&#39;config_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config_id</span>
+        <span class="k">if</span> <span class="n">input_values</span><span class="p">:</span>
+            <span class="n">update_data</span><span class="p">[</span><span class="s">&#39;input_values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_values</span>
+        <span class="k">if</span> <span class="n">output_values</span><span class="p">:</span>
+            <span class="n">update_data</span><span class="p">[</span><span class="s">&#39;output_values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_values</span>
+        <span class="k">if</span> <span class="n">action</span><span class="p">:</span>
+            <span class="n">update_data</span><span class="p">[</span><span class="s">&#39;action&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">action</span>
+        <span class="k">if</span> <span class="n">status</span><span class="p">:</span>
+            <span class="n">update_data</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">status</span>
+        <span class="k">if</span> <span class="n">status_reason</span><span class="p">:</span>
+            <span class="n">update_data</span><span class="p">[</span><span class="s">&#39;status_reason&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">status_reason</span>
+        <span class="k">if</span> <span class="n">updated_at</span><span class="p">:</span>
+            <span class="n">update_data</span><span class="p">[</span><span class="s">&#39;updated_at&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">normalize_time</span><span class="p">(</span>
+                <span class="n">timeutils</span><span class="o">.</span><span class="n">parse_isotime</span><span class="p">(</span><span class="n">updated_at</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">update_data</span><span class="p">[</span><span class="s">&#39;updated_at&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span>
+
+        <span class="n">sd</span> <span class="o">=</span> <span class="n">software_deployment_object</span><span class="o">.</span><span class="n">SoftwareDeployment</span><span class="o">.</span><span class="n">update_by_id</span><span class="p">(</span>
+            <span class="n">cnxt</span><span class="p">,</span> <span class="n">deployment_id</span><span class="p">,</span> <span class="n">update_data</span><span class="p">)</span>
+
+        <span class="c"># only push metadata if this update resulted in the config_id</span>
+        <span class="c"># changing, since metadata is just a list of configs</span>
+        <span class="k">if</span> <span class="n">config_id</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_push_metadata_software_deployments</span><span class="p">(</span><span class="n">cnxt</span><span class="p">,</span> <span class="n">sd</span><span class="o">.</span><span class="n">server_id</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">format_software_deployment</span><span class="p">(</span><span class="n">sd</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SoftwareConfigService.delete_software_deployment"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.service_software_config.html#heat.engine.service_software_config.SoftwareConfigService.delete_software_deployment">[docs]</a>    <span class="k">def</span> <span class="nf">delete_software_deployment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnxt</span><span class="p">,</span> <span class="n">deployment_id</span><span class="p">):</span>
+        <span class="n">software_deployment_object</span><span class="o">.</span><span class="n">SoftwareDeployment</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span>
+            <span class="n">cnxt</span><span class="p">,</span> <span class="n">deployment_id</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

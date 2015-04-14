@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.clients.os.cinder Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-engine-clients-os-cinder-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.engine.clients.os.cinder</span></tt> Module<a class="headerlink" href="#the-heat-engine-clients-os-cinder-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.clients.os.cinder.</tt><tt class="descname">CinderClientPlugin</tt><big>(</big><em>context</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/cinder.html#CinderClientPlugin"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.clients.client_plugin.ClientPlugin</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">exceptions_module</tt><em class="property"> = &lt;module 'cinderclient.exceptions' from '/var/lib/jenkins/workspace/Heat-Build/heat_repo/.tox/docs/local/lib/python2.7/site-packages/cinderclient/exceptions.pyc'&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_volume</tt><big>(</big><em>volume</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/cinder.html#CinderClientPlugin.get_volume"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_volume_api_version</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/cinder.html#CinderClientPlugin.get_volume_api_version"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns the most recent API version.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_volume_snapshot</tt><big>(</big><em>snapshot</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/cinder.html#CinderClientPlugin.get_volume_snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_volume_type</tt><big>(</big><em>volume_type</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/cinder.html#CinderClientPlugin.get_volume_type"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">is_conflict</tt><big>(</big><em>ex</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/cinder.html#CinderClientPlugin.is_conflict"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">is_not_found</tt><big>(</big><em>ex</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/cinder.html#CinderClientPlugin.is_not_found"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">is_over_limit</tt><big>(</big><em>ex</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/cinder.html#CinderClientPlugin.is_over_limit"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.clients.os.cinder.</tt><tt class="descname">VolumeConstraint</tt><a class="reference internal" href="../../_modules/heat/engine/clients/os/cinder.html#VolumeConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.BaseCustomConstraint</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">expected_exceptions</tt><em class="property"> = (&lt;class 'heat.common.exception.VolumeNotFound'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">validate_with_client</tt><big>(</big><em>client</em>, <em>volume</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/cinder.html#VolumeConstraint.validate_with_client"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.clients.os.cinder.</tt><tt class="descname">VolumeSnapshotConstraint</tt><a class="reference internal" href="../../_modules/heat/engine/clients/os/cinder.html#VolumeSnapshotConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.BaseCustomConstraint</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">expected_exceptions</tt><em class="property"> = (&lt;class 'heat.common.exception.VolumeSnapshotNotFound'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">validate_with_client</tt><big>(</big><em>client</em>, <em>snapshot</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/cinder.html#VolumeSnapshotConstraint.validate_with_client"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.clients.os.cinder.</tt><tt class="descname">VolumeTypeConstraint</tt><a class="reference internal" href="../../_modules/heat/engine/clients/os/cinder.html#VolumeTypeConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.BaseCustomConstraint</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">expected_exceptions</tt><em class="property"> = (&lt;class 'heat.common.exception.VolumeTypeNotFound'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">validate_with_client</tt><big>(</big><em>client</em>, <em>volume_type</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/clients/os/cinder.html#VolumeTypeConstraint.validate_with_client"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.engine.clients.os.cinder.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+==============================================
+The :mod:`heat.api.cloudwatch.versions` Module
+==============================================
+.. automodule:: heat.api.cloudwatch.versions
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

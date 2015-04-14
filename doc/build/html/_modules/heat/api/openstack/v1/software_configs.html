@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.api.openstack.v1.software_configs &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../../../index.html" />
+    <link rel="up" title="heat.api.openstack.v1" href="../v1.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../openstack.html" >heat.api.openstack</a> &raquo;</li>
+          <li><a href="../v1.html" accesskey="U">heat.api.openstack.v1</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.api.openstack.v1.software_configs</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">webob</span> <span class="kn">import</span> <span class="n">exc</span>
+
+<span class="kn">from</span> <span class="nn">heat.api.openstack.v1</span> <span class="kn">import</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">wsgi</span>
+<span class="kn">from</span> <span class="nn">heat.rpc</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">rpc_client</span>
+
+
+<div class="viewcode-block" id="SoftwareConfigController"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.openstack.v1.software_configs.html#heat.api.openstack.v1.software_configs.SoftwareConfigController">[docs]</a><span class="k">class</span> <span class="nc">SoftwareConfigController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    WSGI controller for Software config in Heat v1 API</span>
+<span class="sd">    Implements the API actions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">REQUEST_SCOPE</span> <span class="o">=</span> <span class="s">&#39;software_configs&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="n">options</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span> <span class="o">=</span> <span class="n">rpc_client</span><span class="o">.</span><span class="n">EngineClient</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SoftwareConfigController.default"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.openstack.v1.software_configs.html#heat.api.openstack.v1.software_configs.SoftwareConfigController.default">[docs]</a>    <span class="k">def</span> <span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">exc</span><span class="o">.</span><span class="n">HTTPNotFound</span><span class="p">()</span>
+</div>
+    <span class="nd">@util.policy_enforce</span>
+<div class="viewcode-block" id="SoftwareConfigController.show"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.openstack.v1.software_configs.html#heat.api.openstack.v1.software_configs.SoftwareConfigController.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">config_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets detailed information for a software config</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">show_software_config</span><span class="p">(</span>
+            <span class="n">req</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="n">config_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;software_config&#39;</span><span class="p">:</span> <span class="n">sc</span><span class="p">}</span>
+</div>
+    <span class="nd">@util.policy_enforce</span>
+<div class="viewcode-block" id="SoftwareConfigController.create"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.openstack.v1.software_configs.html#heat.api.openstack.v1.software_configs.SoftwareConfigController.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">body</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a new software config</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">create_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;name&#39;</span><span class="p">),</span>
+            <span class="s">&#39;group&#39;</span><span class="p">:</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;group&#39;</span><span class="p">),</span>
+            <span class="s">&#39;config&#39;</span><span class="p">:</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;config&#39;</span><span class="p">),</span>
+            <span class="s">&#39;inputs&#39;</span><span class="p">:</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;inputs&#39;</span><span class="p">),</span>
+            <span class="s">&#39;outputs&#39;</span><span class="p">:</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;outputs&#39;</span><span class="p">),</span>
+            <span class="s">&#39;options&#39;</span><span class="p">:</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;options&#39;</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="n">sc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">create_software_config</span><span class="p">(</span>
+            <span class="n">req</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="o">**</span><span class="n">create_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;software_config&#39;</span><span class="p">:</span> <span class="n">sc</span><span class="p">}</span>
+</div>
+    <span class="nd">@util.policy_enforce</span>
+<div class="viewcode-block" id="SoftwareConfigController.delete"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.openstack.v1.software_configs.html#heat.api.openstack.v1.software_configs.SoftwareConfigController.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">config_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete an existing software config</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">delete_software_config</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="n">config_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s">&#39;Error&#39;</span><span class="p">])</span>
+
+        <span class="k">raise</span> <span class="n">exc</span><span class="o">.</span><span class="n">HTTPNoContent</span><span class="p">()</span>
+
+</div></div>
+<div class="viewcode-block" id="create_resource"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.openstack.v1.software_configs.html#heat.api.openstack.v1.software_configs.create_resource">[docs]</a><span class="k">def</span> <span class="nf">create_resource</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Software configs resource factory method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">deserializer</span> <span class="o">=</span> <span class="n">wsgi</span><span class="o">.</span><span class="n">JSONRequestDeserializer</span><span class="p">()</span>
+    <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">JSONResponseSerializer</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">wsgi</span><span class="o">.</span><span class="n">Resource</span><span class="p">(</span>
+        <span class="n">SoftwareConfigController</span><span class="p">(</span><span class="n">options</span><span class="p">),</span> <span class="n">deserializer</span><span class="p">,</span> <span class="n">serializer</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../openstack.html" >heat.api.openstack</a> &raquo;</li>
+          <li><a href="../v1.html" >heat.api.openstack.v1</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

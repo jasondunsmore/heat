@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.objects.service &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.objects.service</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c"># a copy of the License at</span>
+<span class="c">#</span>
+<span class="c"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c"># License for the specific language governing permissions and limitations</span>
+<span class="c"># under the License.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Service object</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">oslo_versionedobjects</span> <span class="kn">import</span> <span class="n">base</span>
+<span class="kn">from</span> <span class="nn">oslo_versionedobjects</span> <span class="kn">import</span> <span class="n">fields</span>
+
+<span class="kn">from</span> <span class="nn">heat.db</span> <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">db_api</span>
+
+
+<div class="viewcode-block" id="Service"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.service.html#heat.objects.service.Service">[docs]</a><span class="k">class</span> <span class="nc">Service</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">VersionedObject</span><span class="p">,</span>
+              <span class="n">base</span><span class="o">.</span><span class="n">VersionedObjectDictCompat</span><span class="p">,</span>
+              <span class="n">base</span><span class="o">.</span><span class="n">ComparableVersionedObject</span><span class="p">):</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(),</span>
+        <span class="s">&#39;engine_id&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(),</span>
+        <span class="s">&#39;host&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(),</span>
+        <span class="s">&#39;hostname&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(),</span>
+        <span class="s">&#39;binary&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(),</span>
+        <span class="s">&#39;topic&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(),</span>
+        <span class="s">&#39;report_interval&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(),</span>
+        <span class="s">&#39;created_at&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;updated_at&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;deleted_at&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_from_db_object</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">db_service</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">service</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="n">service</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">db_service</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+        <span class="n">service</span><span class="o">.</span><span class="n">_context</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="n">service</span><span class="o">.</span><span class="n">obj_reset_changes</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">service</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_from_db_objects</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">list_obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="n">cls</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span><span class="n">context</span><span class="p">,</span>
+                                                   <span class="n">cls</span><span class="p">(</span><span class="n">context</span><span class="p">),</span>
+                                                   <span class="n">obj</span><span class="p">),</span>
+                   <span class="n">list_obj</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Service.get_by_id"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.service.html#heat.objects.service.Service.get_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_by_id</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">service_id</span><span class="p">):</span>
+        <span class="n">service_db</span> <span class="o">=</span> <span class="n">db_api</span><span class="o">.</span><span class="n">service_get</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">service_id</span><span class="p">)</span>
+        <span class="n">service</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">cls</span><span class="p">(),</span> <span class="n">service_db</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">service</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Service.create"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.service.html#heat.objects.service.Service.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span>
+            <span class="n">context</span><span class="p">,</span>
+            <span class="n">cls</span><span class="p">(),</span>
+            <span class="n">db_api</span><span class="o">.</span><span class="n">service_create</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Service.update_by_id"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.service.html#heat.objects.service.Service.update_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">update_by_id</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">service_id</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span>
+            <span class="n">context</span><span class="p">,</span>
+            <span class="n">cls</span><span class="p">(),</span>
+            <span class="n">db_api</span><span class="o">.</span><span class="n">service_update</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">service_id</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Service.delete"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.service.html#heat.objects.service.Service.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">service_id</span><span class="p">,</span> <span class="n">soft_delete</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">db_api</span><span class="o">.</span><span class="n">service_delete</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">service_id</span><span class="p">,</span> <span class="n">soft_delete</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Service.get_all"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.service.html#heat.objects.service.Service.get_all">[docs]</a>    <span class="k">def</span> <span class="nf">get_all</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">_from_db_objects</span><span class="p">(</span><span class="n">context</span><span class="p">,</span>
+                                    <span class="n">db_api</span><span class="o">.</span><span class="n">service_get_all</span><span class="p">(</span><span class="n">context</span><span class="p">))</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Service.get_all_by_args"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.service.html#heat.objects.service.Service.get_all_by_args">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_by_args</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">hostname</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">_from_db_objects</span><span class="p">(</span>
+            <span class="n">context</span><span class="p">,</span>
+            <span class="n">db_api</span><span class="o">.</span><span class="n">service_get_all_by_args</span><span class="p">(</span><span class="n">context</span><span class="p">,</span>
+                                           <span class="n">host</span><span class="p">,</span>
+                                           <span class="n">binary</span><span class="p">,</span>
+                                           <span class="n">hostname</span><span class="p">))</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

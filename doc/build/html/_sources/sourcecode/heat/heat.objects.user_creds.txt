@@ -1,0 +1,8 @@
+=========================================
+The :mod:`heat.objects.user_creds` Module
+=========================================
+.. automodule:: heat.objects.user_creds
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

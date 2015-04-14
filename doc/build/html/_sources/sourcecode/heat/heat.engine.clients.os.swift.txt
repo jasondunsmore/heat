@@ -1,0 +1,8 @@
+==============================================
+The :mod:`heat.engine.clients.os.swift` Module
+==============================================
+.. automodule:: heat.engine.clients.os.swift
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

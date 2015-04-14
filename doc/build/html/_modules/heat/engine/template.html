@@ -1,0 +1,337 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.template &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.engine.template</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span> <span class="k">as</span> <span class="n">logging</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">from</span> <span class="nn">stevedore</span> <span class="kn">import</span> <span class="n">extension</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">environment</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">raw_template</span> <span class="k">as</span> <span class="n">template_object</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;Template&#39;</span><span class="p">]</span>
+
+
+<span class="n">_template_classes</span> <span class="o">=</span> <span class="bp">None</span>
+
+
+<span class="k">def</span> <span class="nf">get_version</span><span class="p">(</span><span class="n">template_data</span><span class="p">,</span> <span class="n">available_versions</span><span class="p">):</span>
+    <span class="n">version_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">version</span> <span class="ow">in</span> <span class="n">available_versions</span><span class="p">)</span>
+    <span class="n">candidate_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">template_data</span><span class="p">)</span> <span class="k">if</span>
+                         <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">))</span>
+
+    <span class="n">keys_present</span> <span class="o">=</span> <span class="n">version_keys</span> <span class="o">&amp;</span> <span class="n">candidate_keys</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys_present</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">explanation</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Ambiguous versions (</span><span class="si">%s</span><span class="s">)&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">keys_present</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidTemplateVersion</span><span class="p">(</span><span class="n">explanation</span><span class="o">=</span><span class="n">explanation</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">version_key</span> <span class="o">=</span> <span class="n">keys_present</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">explanation</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Template version was not provided&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidTemplateVersion</span><span class="p">(</span><span class="n">explanation</span><span class="o">=</span><span class="n">explanation</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">version_key</span><span class="p">,</span> <span class="n">template_data</span><span class="p">[</span><span class="n">version_key</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_get_template_extension_manager</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">extension</span><span class="o">.</span><span class="n">ExtensionManager</span><span class="p">(</span>
+        <span class="n">namespace</span><span class="o">=</span><span class="s">&#39;heat.templates&#39;</span><span class="p">,</span>
+        <span class="n">invoke_on_load</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">verify_requirements</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">on_load_failure_callback</span><span class="o">=</span><span class="n">raise_extension_exception</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">raise_extension_exception</span><span class="p">(</span><span class="n">extmanager</span><span class="p">,</span> <span class="n">ep</span><span class="p">,</span> <span class="n">err</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="n">TemplatePluginNotRegistered</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">TemplatePluginNotRegistered</span><span class="p">(</span><span class="n">exception</span><span class="o">.</span><span class="n">HeatException</span><span class="p">):</span>
+    <span class="n">msg_fmt</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Could not load </span><span class="si">%(name)s</span><span class="s">: </span><span class="si">%(error)s</span><span class="s">&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_template_class</span><span class="p">(</span><span class="n">template_data</span><span class="p">):</span>
+    <span class="n">available_versions</span> <span class="o">=</span> <span class="n">_template_classes</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="n">get_version</span><span class="p">(</span><span class="n">template_data</span><span class="p">,</span> <span class="n">available_versions</span><span class="p">)</span>
+    <span class="n">version_type</span> <span class="o">=</span> <span class="n">version</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_template_classes</span><span class="p">[</span><span class="n">version</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">av_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">available_versions</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">version_type</span><span class="p">]</span>
+        <span class="n">msg_data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;version&#39;</span><span class="p">:</span> <span class="s">&#39;: &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">version</span><span class="p">),</span>
+                    <span class="s">&#39;version_type&#39;</span><span class="p">:</span> <span class="n">version_type</span><span class="p">,</span>
+                    <span class="s">&#39;available&#39;</span><span class="p">:</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">av_list</span><span class="p">)}</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">av_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">explanation</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;&quot;</span><span class="si">%(version)s</span><span class="s">&quot;. &quot;</span><span class="si">%(version_type)s</span><span class="s">&quot; &#39;</span>
+                            <span class="s">&#39;should be one of: </span><span class="si">%(available)s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">msg_data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">explanation</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;&quot;</span><span class="si">%(version)s</span><span class="s">&quot;. &quot;</span><span class="si">%(version_type)s</span><span class="s">&quot; &#39;</span>
+                            <span class="s">&#39;should be: </span><span class="si">%(available)s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">msg_data</span>
+        <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidTemplateVersion</span><span class="p">(</span><span class="n">explanation</span><span class="o">=</span><span class="n">explanation</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Template"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.template.html#heat.engine.template.Template">[docs]</a><span class="k">class</span> <span class="nc">Template</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;A stack template.&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Create a new Template of the appropriate class.&#39;&#39;&#39;</span>
+        <span class="k">global</span> <span class="n">_template_classes</span>
+
+        <span class="k">if</span> <span class="n">_template_classes</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">mgr</span> <span class="o">=</span> <span class="n">_get_template_extension_manager</span><span class="p">()</span>
+            <span class="n">_template_classes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="nb">tuple</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)),</span> <span class="n">mgr</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">plugin</span><span class="p">)</span>
+                                     <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">mgr</span><span class="o">.</span><span class="n">names</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">cls</span> <span class="o">!=</span> <span class="n">Template</span><span class="p">:</span>
+            <span class="n">TemplateClass</span> <span class="o">=</span> <span class="n">cls</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">TemplateClass</span> <span class="o">=</span> <span class="n">get_template_class</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Template</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">TemplateClass</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">template_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Initialise the template with a JSON object and a set of Parameters</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">template_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">template</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="n">files</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maps</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">MAPPINGS</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="n">env</span> <span class="ow">or</span> <span class="n">environment</span><span class="o">.</span><span class="n">Environment</span><span class="p">({})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">get_version</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">_template_classes</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Template</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">memo</span><span class="p">),</span> <span class="n">files</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">,</span>
+                        <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Template.load"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.template.html#heat.engine.template.Template.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">template_id</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Retrieve a Template with the given ID from the database.&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">template_object</span><span class="o">.</span><span class="n">RawTemplate</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">template_id</span><span class="p">)</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">environment</span><span class="o">.</span><span class="n">Environment</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">environment</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">template</span><span class="p">,</span> <span class="n">template_id</span><span class="o">=</span><span class="n">template_id</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">files</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Template.store"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.template.html#heat.engine.template.Template.store">[docs]</a>    <span class="k">def</span> <span class="nf">store</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Store the Template in the database and return its ID.&#39;&#39;&#39;</span>
+        <span class="n">rt</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;template&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">,</span>
+            <span class="s">&#39;files&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">,</span>
+            <span class="s">&#39;environment&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">user_env_as_dict</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">new_rt</span> <span class="o">=</span> <span class="n">template_object</span><span class="o">.</span><span class="n">RawTemplate</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">rt</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">new_rt</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">template_object</span><span class="o">.</span><span class="n">RawTemplate</span><span class="o">.</span><span class="n">update_by_id</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">rt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+</div>
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return an iterator over the section names.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SECTIONS</span>
+                <span class="k">if</span> <span class="n">s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SECTIONS_NO_DIRECT_ACCESS</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return the number of sections.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SECTIONS</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SECTIONS_NO_DIRECT_ACCESS</span><span class="p">)</span>
+
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="Template.param_schemata"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.template.html#heat.engine.template.Template.param_schemata">[docs]</a>    <span class="k">def</span> <span class="nf">param_schemata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_defaults</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return a dict of parameters.Schema objects for the parameters.&#39;&#39;&#39;</span>
+        <span class="k">pass</span>
+</div>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="Template.parameters"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.template.html#heat.engine.template.Template.parameters">[docs]</a>    <span class="k">def</span> <span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack_identifier</span><span class="p">,</span> <span class="n">user_params</span><span class="p">,</span> <span class="n">param_defaults</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return a parameters.Parameters object for the stack.&#39;&#39;&#39;</span>
+        <span class="k">pass</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Template.validate_resource_key_type"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.template.html#heat.engine.template.Template.validate_resource_key_type">[docs]</a>    <span class="k">def</span> <span class="nf">validate_resource_key_type</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">valid_types</span><span class="p">,</span> <span class="n">typename</span><span class="p">,</span>
+                                   <span class="n">allowed_keys</span><span class="p">,</span> <span class="n">rsrc_name</span><span class="p">,</span> <span class="n">rsrc_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validation type of the specific resource key.</span>
+
+<span class="sd">        Used in validate_resource_definition and check correctness of</span>
+<span class="sd">        key&#39;s type.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed_keys</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;&quot;</span><span class="si">%s</span><span class="s">&quot; is not a valid &#39;</span>
+                               <span class="s">&#39;keyword inside a resource &#39;</span>
+                               <span class="s">&#39;definition&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">rsrc_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rsrc_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="n">valid_types</span><span class="p">):</span>
+                <span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">rsrc_name</span><span class="p">,</span> <span class="s">&#39;key&#39;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span>
+                        <span class="s">&#39;typename&#39;</span><span class="p">:</span> <span class="n">typename</span><span class="p">}</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Resource </span><span class="si">%(name)s</span><span class="s"> </span><span class="si">%(key)s</span><span class="s"> type &#39;</span>
+                            <span class="s">&#39;must be </span><span class="si">%(typename)s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">args</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+</div>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="Template.validate_resource_definitions"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.template.html#heat.engine.template.Template.validate_resource_definitions">[docs]</a>    <span class="k">def</span> <span class="nf">validate_resource_definitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check section&#39;s type of ResourceDefinitions.&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="Template.resource_definitions"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.template.html#heat.engine.template.Template.resource_definitions">[docs]</a>    <span class="k">def</span> <span class="nf">resource_definitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return a dictionary of ResourceDefinition objects.&#39;&#39;&#39;</span>
+        <span class="k">pass</span>
+</div>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="Template.add_resource"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.template.html#heat.engine.template.Template.add_resource">[docs]</a>    <span class="k">def</span> <span class="nf">add_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">definition</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Add a resource to the template.</span>
+
+<span class="sd">        The resource is passed as a ResourceDefinition object. If no name is</span>
+<span class="sd">        specified, the name from the ResourceDefinition should be used.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="Template.remove_resource"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.template.html#heat.engine.template.Template.remove_resource">[docs]</a>    <span class="k">def</span> <span class="nf">remove_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Remove a resource from the template.&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RESOURCES</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Template.parse"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.template.html#heat.engine.template.Template.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">snippet</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">snippet</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Template.validate"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.template.html#heat.engine.template.Template.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Validate the template.</span>
+
+<span class="sd">        Validates the top-level sections of the template as well as syntax</span>
+<span class="sd">        inside select sections. Some sections are not checked here but in</span>
+<span class="sd">        code parts that are responsible for working with the respective</span>
+<span class="sd">        sections (e.g. parameters are check by parameters schema class).</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c"># check top-level sections</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SECTIONS</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidTemplateSection</span><span class="p">(</span><span class="n">section</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
+
+        <span class="c"># check resources</span>
+        <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">RESOURCES</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">res</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;Type&#39;</span><span class="p">):</span>
+                    <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Each Resource must contain &#39;</span>
+                                <span class="s">&#39;a Type key.&#39;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">StackValidationFailed</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Resources must contain Resource. &#39;</span>
+                            <span class="s">&#39;Found a [</span><span class="si">%s</span><span class="s">] instead&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">StackValidationFailed</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
+
+</div></div>
+<span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">functions</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">snippet</span><span class="p">):</span>
+    <span class="n">recurse</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">parse</span><span class="p">,</span> <span class="n">functions</span><span class="p">,</span> <span class="n">stack</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">snippet</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">fn_name</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">snippet</span><span class="p">))</span>
+            <span class="n">Func</span> <span class="o">=</span> <span class="n">functions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fn_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">Func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Func</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">fn_name</span><span class="p">,</span> <span class="n">recurse</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">recurse</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">snippet</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">)</span> <span class="ow">and</span>
+          <span class="nb">isinstance</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Iterable</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">recurse</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">snippet</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">snippet</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

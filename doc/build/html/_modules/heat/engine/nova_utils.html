@@ -1,0 +1,476 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.nova_utils &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.engine.nova_utils</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+<span class="sd">&quot;&quot;&quot;Utilities for Resources that use the OpenStack Nova API.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">email</span>
+<span class="kn">from</span> <span class="nn">email.mime</span> <span class="kn">import</span> <span class="n">multipart</span>
+<span class="kn">from</span> <span class="nn">email.mime</span> <span class="kn">import</span> <span class="n">text</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pkgutil</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">novaclient</span> <span class="kn">import</span> <span class="n">exceptions</span> <span class="k">as</span> <span class="n">nova_exceptions</span>
+<span class="kn">from</span> <span class="nn">oslo_config</span> <span class="kn">import</span> <span class="n">cfg</span>
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span> <span class="k">as</span> <span class="n">logging</span>
+<span class="kn">from</span> <span class="nn">oslo_serialization</span> <span class="kn">import</span> <span class="n">jsonutils</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">from</span> <span class="nn">six.moves.urllib</span> <span class="kn">import</span> <span class="n">parse</span> <span class="k">as</span> <span class="n">urlparse</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LW</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">scheduler</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="n">deferred_server_statuses</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;BUILD&#39;</span><span class="p">,</span>
+                            <span class="s">&#39;HARD_REBOOT&#39;</span><span class="p">,</span>
+                            <span class="s">&#39;PASSWORD&#39;</span><span class="p">,</span>
+                            <span class="s">&#39;REBOOT&#39;</span><span class="p">,</span>
+                            <span class="s">&#39;RESCUE&#39;</span><span class="p">,</span>
+                            <span class="s">&#39;RESIZE&#39;</span><span class="p">,</span>
+                            <span class="s">&#39;REVERT_RESIZE&#39;</span><span class="p">,</span>
+                            <span class="s">&#39;SHUTOFF&#39;</span><span class="p">,</span>
+                            <span class="s">&#39;SUSPENDED&#39;</span><span class="p">,</span>
+                            <span class="s">&#39;VERIFY_RESIZE&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="refresh_server"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.nova_utils.html#heat.engine.nova_utils.refresh_server">[docs]</a><span class="k">def</span> <span class="nf">refresh_server</span><span class="p">(</span><span class="n">server</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Refresh server&#39;s attributes and log warnings for non-critical API errors.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;nova_utils.refresh_server is deprecated. &#39;</span>
+                  <span class="s">&#39;Use self.client_plugin(&quot;nova&quot;).refresh_server&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">server</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">nova_exceptions</span><span class="o">.</span><span class="n">OverLimit</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">_LW</span><span class="p">(</span><span class="s">&quot;Server </span><span class="si">%(name)s</span><span class="s"> (</span><span class="si">%(id)s</span><span class="s">) received an OverLimit &quot;</span>
+                     <span class="s">&quot;response during server.get(): </span><span class="si">%(exception)s</span><span class="s">&quot;</span><span class="p">),</span>
+                 <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">server</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                  <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="n">server</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                  <span class="s">&#39;exception&#39;</span><span class="p">:</span> <span class="n">exc</span><span class="p">})</span>
+    <span class="k">except</span> <span class="n">nova_exceptions</span><span class="o">.</span><span class="n">ClientException</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="n">http_status</span> <span class="o">=</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="s">&#39;http_status&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span>
+                       <span class="nb">getattr</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="s">&#39;code&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">http_status</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">503</span><span class="p">):</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">_LW</span><span class="p">(</span><span class="s">&#39;Server &quot;</span><span class="si">%(name)s</span><span class="s">&quot; (</span><span class="si">%(id)s</span><span class="s">) received the following &#39;</span>
+                         <span class="s">&#39;exception during server.get(): </span><span class="si">%(exception)s</span><span class="s">&#39;</span><span class="p">),</span>
+                     <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">server</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                      <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="n">server</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                      <span class="s">&#39;exception&#39;</span><span class="p">:</span> <span class="n">exc</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span>
+
+</div>
+<div class="viewcode-block" id="get_ip"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.nova_utils.html#heat.engine.nova_utils.get_ip">[docs]</a><span class="k">def</span> <span class="nf">get_ip</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">net_type</span><span class="p">,</span> <span class="n">ip_version</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the server&#39;s IP of the given type and version.&quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;nova_utils.get_ip is deprecated. &#39;</span>
+                  <span class="s">&#39;Use self.client_plugin(&quot;nova&quot;).get_ip&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">net_type</span> <span class="ow">in</span> <span class="n">server</span><span class="o">.</span><span class="n">addresses</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ip</span> <span class="ow">in</span> <span class="n">server</span><span class="o">.</span><span class="n">addresses</span><span class="p">[</span><span class="n">net_type</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">ip</span><span class="p">[</span><span class="s">&#39;version&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ip_version</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">ip</span><span class="p">[</span><span class="s">&#39;addr&#39;</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="get_flavor_id"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.nova_utils.html#heat.engine.nova_utils.get_flavor_id">[docs]</a><span class="k">def</span> <span class="nf">get_flavor_id</span><span class="p">(</span><span class="n">nova_client</span><span class="p">,</span> <span class="n">flavor</span><span class="p">):</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;nova_utils.get_flavor_id is deprecated. &#39;</span>
+                  <span class="s">&#39;Use self.client_plugin(&quot;nova&quot;).get_flavor_id&#39;</span><span class="p">)</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Get the id for the specified flavor name.</span>
+<span class="sd">    If the specified value is flavor id, just return it.</span>
+
+<span class="sd">    :param nova_client: the nova client to use</span>
+<span class="sd">    :param flavor: the name of the flavor to find</span>
+<span class="sd">    :returns: the id of :flavor:</span>
+<span class="sd">    :raises: exception.FlavorMissing</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">flavor_id</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">flavor_list</span> <span class="o">=</span> <span class="n">nova_client</span><span class="o">.</span><span class="n">flavors</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">flavor_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">flavor</span><span class="p">:</span>
+            <span class="n">flavor_id</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">id</span>
+            <span class="k">break</span>
+        <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">flavor</span><span class="p">:</span>
+            <span class="n">flavor_id</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">id</span>
+            <span class="k">break</span>
+    <span class="k">if</span> <span class="n">flavor_id</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">FlavorMissing</span><span class="p">(</span><span class="n">flavor_id</span><span class="o">=</span><span class="n">flavor</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">flavor_id</span>
+
+</div>
+<div class="viewcode-block" id="get_keypair"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.nova_utils.html#heat.engine.nova_utils.get_keypair">[docs]</a><span class="k">def</span> <span class="nf">get_keypair</span><span class="p">(</span><span class="n">nova_client</span><span class="p">,</span> <span class="n">key_name</span><span class="p">):</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;nova_utils.get_keypair is deprecated. &#39;</span>
+                  <span class="s">&#39;Use self.client_plugin(&quot;nova&quot;).get_keypair&#39;</span><span class="p">)</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Get the public key specified by :key_name:</span>
+
+<span class="sd">    :param nova_client: the nova client to use</span>
+<span class="sd">    :param key_name: the name of the key to look for</span>
+<span class="sd">    :returns: the keypair (name, public_key) for :key_name:</span>
+<span class="sd">    :raises: exception.UserKeyPairMissing</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">nova_client</span><span class="o">.</span><span class="n">keypairs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key_name</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">nova_exceptions</span><span class="o">.</span><span class="n">NotFound</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">UserKeyPairMissing</span><span class="p">(</span><span class="n">key_name</span><span class="o">=</span><span class="n">key_name</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="build_userdata"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.nova_utils.html#heat.engine.nova_utils.build_userdata">[docs]</a><span class="k">def</span> <span class="nf">build_userdata</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">userdata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">instance_user</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                   <span class="n">user_data_format</span><span class="o">=</span><span class="s">&#39;HEAT_CFNTOOLS&#39;</span><span class="p">):</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;nova_utils.build_userdata is deprecated. &#39;</span>
+                  <span class="s">&#39;Use self.client_plugin(&quot;nova&quot;).build_userdata&#39;</span><span class="p">)</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Build multipart data blob for CloudInit which includes user-supplied</span>
+<span class="sd">    Metadata, user data, and the required Heat in-instance configuration.</span>
+
+<span class="sd">    :param resource: the resource implementation</span>
+<span class="sd">    :type resource: heat.engine.Resource</span>
+<span class="sd">    :param userdata: user data string</span>
+<span class="sd">    :type userdata: str or None</span>
+<span class="sd">    :param instance_user: the user to create on the server</span>
+<span class="sd">    :type instance_user: string</span>
+<span class="sd">    :param user_data_format: Format of user data to return</span>
+<span class="sd">    :type user_data_format: string</span>
+<span class="sd">    :returns: multipart mime as a string</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="n">user_data_format</span> <span class="o">==</span> <span class="s">&#39;RAW&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">userdata</span>
+
+    <span class="n">is_cfntools</span> <span class="o">=</span> <span class="n">user_data_format</span> <span class="o">==</span> <span class="s">&#39;HEAT_CFNTOOLS&#39;</span>
+    <span class="n">is_software_config</span> <span class="o">=</span> <span class="n">user_data_format</span> <span class="o">==</span> <span class="s">&#39;SOFTWARE_CONFIG&#39;</span>
+
+    <span class="k">def</span> <span class="nf">make_subpart</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">subtype</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">subtype</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">subtype</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">MIMEText</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">_subtype</span><span class="o">=</span><span class="n">subtype</span><span class="p">)</span>
+        <span class="n">msg</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s">&#39;Content-Disposition&#39;</span><span class="p">,</span> <span class="s">&#39;attachment&#39;</span><span class="p">,</span>
+                       <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="k">def</span> <span class="nf">read_cloudinit_file</span><span class="p">(</span><span class="n">fn</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pkgutil</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s">&#39;heat&#39;</span><span class="p">,</span> <span class="s">&#39;cloudinit/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">fn</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">instance_user</span><span class="p">:</span>
+        <span class="n">config_custom_user</span> <span class="o">=</span> <span class="s">&#39;user: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">instance_user</span>
+        <span class="c"># FIXME(shadower): compatibility workaround for cloud-init 0.6.3. We</span>
+        <span class="c"># can drop this once we stop supporting 0.6.3 (which ships with Ubuntu</span>
+        <span class="c"># 12.04 LTS).</span>
+        <span class="c">#</span>
+        <span class="c"># See bug https://bugs.launchpad.net/heat/+bug/1257410</span>
+        <span class="n">boothook_custom_user</span> <span class="o">=</span> <span class="s">r&quot;&quot;&quot;useradd -m </span><span class="si">%s</span><span class="s"></span>
+<span class="s">echo -e &#39;</span><span class="si">%s</span><span class="s">\tALL=(ALL)\tNOPASSWD: ALL&#39; &gt;&gt; /etc/sudoers</span>
+<span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">instance_user</span><span class="p">,</span> <span class="n">instance_user</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">config_custom_user</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">boothook_custom_user</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+
+    <span class="n">cloudinit_config</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">Template</span><span class="p">(</span>
+        <span class="n">read_cloudinit_file</span><span class="p">(</span><span class="s">&#39;config&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">safe_substitute</span><span class="p">(</span>
+            <span class="n">add_custom_user</span><span class="o">=</span><span class="n">config_custom_user</span><span class="p">)</span>
+    <span class="n">cloudinit_boothook</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">Template</span><span class="p">(</span>
+        <span class="n">read_cloudinit_file</span><span class="p">(</span><span class="s">&#39;boothook.sh&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">safe_substitute</span><span class="p">(</span>
+            <span class="n">add_custom_user</span><span class="o">=</span><span class="n">boothook_custom_user</span><span class="p">)</span>
+
+    <span class="n">attachments</span> <span class="o">=</span> <span class="p">[(</span><span class="n">cloudinit_config</span><span class="p">,</span> <span class="s">&#39;cloud-config&#39;</span><span class="p">),</span>
+                   <span class="p">(</span><span class="n">cloudinit_boothook</span><span class="p">,</span> <span class="s">&#39;boothook.sh&#39;</span><span class="p">,</span> <span class="s">&#39;cloud-boothook&#39;</span><span class="p">),</span>
+                   <span class="p">(</span><span class="n">read_cloudinit_file</span><span class="p">(</span><span class="s">&#39;part_handler.py&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;part-handler.py&#39;</span><span class="p">)]</span>
+
+    <span class="k">if</span> <span class="n">is_cfntools</span><span class="p">:</span>
+        <span class="n">attachments</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">userdata</span><span class="p">,</span> <span class="s">&#39;cfn-userdata&#39;</span><span class="p">,</span> <span class="s">&#39;x-cfninitdata&#39;</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">is_software_config</span><span class="p">:</span>
+        <span class="c"># attempt to parse userdata as a multipart message, and if it</span>
+        <span class="c"># is, add each part as an attachment</span>
+        <span class="n">userdata_parts</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">userdata_parts</span> <span class="o">=</span> <span class="n">email</span><span class="o">.</span><span class="n">message_from_string</span><span class="p">(</span><span class="n">userdata</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">if</span> <span class="n">userdata_parts</span> <span class="ow">and</span> <span class="n">userdata_parts</span><span class="o">.</span><span class="n">is_multipart</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">userdata_parts</span><span class="o">.</span><span class="n">get_payload</span><span class="p">():</span>
+                <span class="n">attachments</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">part</span><span class="o">.</span><span class="n">get_payload</span><span class="p">(),</span>
+                                    <span class="n">part</span><span class="o">.</span><span class="n">get_filename</span><span class="p">(),</span>
+                                    <span class="n">part</span><span class="o">.</span><span class="n">get_content_subtype</span><span class="p">()))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">attachments</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">userdata</span><span class="p">,</span> <span class="s">&#39;userdata&#39;</span><span class="p">,</span> <span class="s">&#39;x-shellscript&#39;</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">is_cfntools</span><span class="p">:</span>
+        <span class="n">attachments</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">read_cloudinit_file</span><span class="p">(</span><span class="s">&#39;loguserdata.py&#39;</span><span class="p">),</span>
+                           <span class="s">&#39;loguserdata.py&#39;</span><span class="p">,</span> <span class="s">&#39;x-shellscript&#39;</span><span class="p">))</span>
+
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">metadata_get</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">metadata</span><span class="p">:</span>
+        <span class="n">attachments</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">jsonutils</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">metadata</span><span class="p">),</span>
+                            <span class="s">&#39;cfn-init-data&#39;</span><span class="p">,</span> <span class="s">&#39;x-cfninitdata&#39;</span><span class="p">))</span>
+
+    <span class="n">attachments</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">heat_watch_server_url</span><span class="p">,</span>
+                        <span class="s">&#39;cfn-watch-server&#39;</span><span class="p">,</span> <span class="s">&#39;x-cfninitdata&#39;</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">is_cfntools</span><span class="p">:</span>
+        <span class="n">attachments</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">heat_metadata_server_url</span><span class="p">,</span>
+                            <span class="s">&#39;cfn-metadata-server&#39;</span><span class="p">,</span> <span class="s">&#39;x-cfninitdata&#39;</span><span class="p">))</span>
+
+        <span class="c"># Create a boto config which the cfntools on the host use to know</span>
+        <span class="c"># where the cfn and cw API&#39;s are to be accessed</span>
+        <span class="n">cfn_url</span> <span class="o">=</span> <span class="n">urlparse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">heat_metadata_server_url</span><span class="p">)</span>
+        <span class="n">cw_url</span> <span class="o">=</span> <span class="n">urlparse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">heat_watch_server_url</span><span class="p">)</span>
+        <span class="n">is_secure</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">instance_connection_is_secure</span>
+        <span class="n">vcerts</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">instance_connection_https_validate_certificates</span>
+        <span class="n">boto_cfg</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&quot;[Boto]&quot;</span><span class="p">,</span>
+                              <span class="s">&quot;debug = 0&quot;</span><span class="p">,</span>
+                              <span class="s">&quot;is_secure = </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">is_secure</span><span class="p">,</span>
+                              <span class="s">&quot;https_validate_certificates = </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">vcerts</span><span class="p">,</span>
+                              <span class="s">&quot;cfn_region_name = heat&quot;</span><span class="p">,</span>
+                              <span class="s">&quot;cfn_region_endpoint = </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                              <span class="n">cfn_url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span>
+                              <span class="s">&quot;cloudwatch_region_name = heat&quot;</span><span class="p">,</span>
+                              <span class="s">&quot;cloudwatch_region_endpoint = </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                              <span class="n">cw_url</span><span class="o">.</span><span class="n">hostname</span><span class="p">])</span>
+        <span class="n">attachments</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">boto_cfg</span><span class="p">,</span>
+                            <span class="s">&#39;cfn-boto-cfg&#39;</span><span class="p">,</span> <span class="s">&#39;x-cfninitdata&#39;</span><span class="p">))</span>
+
+    <span class="n">subparts</span> <span class="o">=</span> <span class="p">[</span><span class="n">make_subpart</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="k">for</span> <span class="n">args</span> <span class="ow">in</span> <span class="n">attachments</span><span class="p">]</span>
+    <span class="n">mime_blob</span> <span class="o">=</span> <span class="n">multipart</span><span class="o">.</span><span class="n">MIMEMultipart</span><span class="p">(</span><span class="n">_subparts</span><span class="o">=</span><span class="n">subparts</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mime_blob</span><span class="o">.</span><span class="n">as_string</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="delete_server"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.nova_utils.html#heat.engine.nova_utils.delete_server">[docs]</a><span class="k">def</span> <span class="nf">delete_server</span><span class="p">(</span><span class="n">server</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    A co-routine that deletes the server and waits for it to</span>
+<span class="sd">    disappear from Nova.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;nova_utils.delete_server is deprecated. &#39;</span>
+                  <span class="s">&#39;Use self.client_plugin(&quot;nova&quot;).delete_server&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">server</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">server</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">nova_exceptions</span><span class="o">.</span><span class="n">NotFound</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">yield</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">refresh_server</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">nova_exceptions</span><span class="o">.</span><span class="n">NotFound</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># Some clouds append extra (STATUS) strings to the status</span>
+            <span class="n">short_server_status</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;(&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">short_server_status</span> <span class="o">==</span> <span class="s">&quot;DELETED&quot;</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">short_server_status</span> <span class="o">==</span> <span class="s">&quot;ERROR&quot;</span><span class="p">:</span>
+                <span class="n">fault</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="s">&#39;fault&#39;</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="n">fault</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;message&#39;</span><span class="p">,</span> <span class="s">&#39;Unknown&#39;</span><span class="p">)</span>
+                <span class="n">code</span> <span class="o">=</span> <span class="n">fault</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;code&#39;</span><span class="p">)</span>
+                <span class="n">errmsg</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Server </span><span class="si">%(name)s</span><span class="s"> delete failed: (</span><span class="si">%(code)s</span><span class="s">) &quot;</span>
+                            <span class="s">&quot;</span><span class="si">%(message)s</span><span class="s">&quot;</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="n">errmsg</span> <span class="o">%</span> <span class="p">{</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="n">server</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                <span class="s">&quot;code&quot;</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span>
+                                                <span class="s">&quot;message&quot;</span><span class="p">:</span> <span class="n">message</span><span class="p">})</span>
+
+</div>
+<span class="nd">@scheduler.wrappertask</span>
+<div class="viewcode-block" id="resize"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.nova_utils.html#heat.engine.nova_utils.resize">[docs]</a><span class="k">def</span> <span class="nf">resize</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">flavor</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Resize the server and then call check_resize task to verify.&quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;nova_utils.resize is deprecated. &#39;</span>
+                  <span class="s">&#39;Use self.client_plugin(&quot;nova&quot;).resize&#39;</span><span class="p">)</span>
+    <span class="n">server</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">flavor_id</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="n">check_resize</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">flavor</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="rename"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.nova_utils.html#heat.engine.nova_utils.rename">[docs]</a><span class="k">def</span> <span class="nf">rename</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Update the name for a server.&quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;nova_utils.rename is deprecated. &#39;</span>
+                  <span class="s">&#39;Use self.client_plugin(&quot;nova&quot;).rename&#39;</span><span class="p">)</span>
+    <span class="n">server</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="check_resize"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.nova_utils.html#heat.engine.nova_utils.check_resize">[docs]</a><span class="k">def</span> <span class="nf">check_resize</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">flavor</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verify that a resizing server is properly resized.</span>
+<span class="sd">    If that&#39;s the case, confirm the resize, if not raise an error.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;nova_utils.check_resize is deprecated. &#39;</span>
+                  <span class="s">&#39;Use self.client_plugin(&quot;nova&quot;).check_resize&#39;</span><span class="p">)</span>
+    <span class="n">refresh_server</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">server</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s">&#39;RESIZE&#39;</span><span class="p">:</span>
+        <span class="k">yield</span>
+        <span class="n">refresh_server</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">server</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s">&#39;VERIFY_RESIZE&#39;</span><span class="p">:</span>
+        <span class="n">server</span><span class="o">.</span><span class="n">confirm_resize</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span>
+            <span class="n">_</span><span class="p">(</span><span class="s">&quot;Resizing to &#39;</span><span class="si">%(flavor)s</span><span class="s">&#39; failed, status &#39;</span><span class="si">%(status)s</span><span class="s">&#39;&quot;</span><span class="p">)</span> <span class="o">%</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">flavor</span><span class="o">=</span><span class="n">flavor</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">server</span><span class="o">.</span><span class="n">status</span><span class="p">))</span>
+
+</div>
+<span class="nd">@scheduler.wrappertask</span>
+<div class="viewcode-block" id="rebuild"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.nova_utils.html#heat.engine.nova_utils.rebuild">[docs]</a><span class="k">def</span> <span class="nf">rebuild</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">image_id</span><span class="p">,</span> <span class="n">preserve_ephemeral</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rebuild the server and call check_rebuild to verify.&quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;nova_utils.rebuild is deprecated. &#39;</span>
+                  <span class="s">&#39;Use self.client_plugin(&quot;nova&quot;).rebuild&#39;</span><span class="p">)</span>
+    <span class="n">server</span><span class="o">.</span><span class="n">rebuild</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">preserve_ephemeral</span><span class="o">=</span><span class="n">preserve_ephemeral</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="n">check_rebuild</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">image_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="check_rebuild"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.nova_utils.html#heat.engine.nova_utils.check_rebuild">[docs]</a><span class="k">def</span> <span class="nf">check_rebuild</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">image_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verify that a rebuilding server is rebuilt.</span>
+<span class="sd">    Raise error if it ends up in an ERROR state.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;nova_utils.check_rebuild is deprecated. &#39;</span>
+                  <span class="s">&#39;Use self.client_plugin(&quot;nova&quot;).check_rebuild&#39;</span><span class="p">)</span>
+    <span class="n">refresh_server</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">server</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s">&#39;REBUILD&#39;</span><span class="p">:</span>
+        <span class="k">yield</span>
+        <span class="n">refresh_server</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">server</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s">&#39;ERROR&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span>
+            <span class="n">_</span><span class="p">(</span><span class="s">&quot;Rebuilding server failed, status &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">server</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="meta_serialize"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.nova_utils.html#heat.engine.nova_utils.meta_serialize">[docs]</a><span class="k">def</span> <span class="nf">meta_serialize</span><span class="p">(</span><span class="n">metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serialize non-string metadata values before sending them to</span>
+<span class="sd">    Nova.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;nova_utils.meta_serialize is deprecated. &#39;</span>
+                  <span class="s">&#39;Use self.client_plugin(&quot;nova&quot;).meta_serialize&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">value</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span>
+                                           <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">)</span>
+                       <span class="k">else</span> <span class="n">jsonutils</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+                 <span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+</div>
+<div class="viewcode-block" id="meta_update"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.nova_utils.html#heat.engine.nova_utils.meta_update">[docs]</a><span class="k">def</span> <span class="nf">meta_update</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">server</span><span class="p">,</span> <span class="n">metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Delete/Add the metadata in nova as needed.&quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;nova_utils.meta_update is deprecated. &#39;</span>
+                  <span class="s">&#39;Use self.client_plugin(&quot;nova&quot;).meta_update&#39;</span><span class="p">)</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">meta_serialize</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+    <span class="n">current_md</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">metadata</span>
+    <span class="n">to_del</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">current_md</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">to_del</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">delete_meta</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">to_del</span><span class="p">)</span>
+
+    <span class="n">client</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">set_meta</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_to_ipaddress"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.nova_utils.html#heat.engine.nova_utils.server_to_ipaddress">[docs]</a><span class="k">def</span> <span class="nf">server_to_ipaddress</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">server</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Return the server&#39;s IP address, fetching it from Nova.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;nova_utils.server_to_ipaddress is deprecated. &#39;</span>
+                  <span class="s">&#39;Use self.client_plugin(&quot;nova&quot;).server_to_ipaddress&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">server</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">nova_exceptions</span><span class="o">.</span><span class="n">NotFound</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">_LW</span><span class="p">(</span><span class="s">&#39;Instance (</span><span class="si">%(server)s</span><span class="s">) not found: </span><span class="si">%(ex)s</span><span class="s">&#39;</span><span class="p">),</span>
+                 <span class="p">{</span><span class="s">&#39;server&#39;</span><span class="p">:</span> <span class="n">server</span><span class="p">,</span> <span class="s">&#39;ex&#39;</span><span class="p">:</span> <span class="n">ex</span><span class="p">})</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">server</span><span class="o">.</span><span class="n">networks</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">server</span><span class="o">.</span><span class="n">networks</span><span class="p">[</span><span class="n">n</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">server</span><span class="o">.</span><span class="n">networks</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="absolute_limits"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.nova_utils.html#heat.engine.nova_utils.absolute_limits">[docs]</a><span class="k">def</span> <span class="nf">absolute_limits</span><span class="p">(</span><span class="n">nova_client</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the absolute limits as a dictionary.&quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;nova_utils.absolute_limits is deprecated. &#39;</span>
+                  <span class="s">&#39;Use self.client_plugin(&quot;nova&quot;).absolute_limits&#39;</span><span class="p">)</span>
+    <span class="n">limits</span> <span class="o">=</span> <span class="n">nova_client</span><span class="o">.</span><span class="n">limits</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">limit</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">limit</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">limit</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">limits</span><span class="o">.</span><span class="n">absolute</span><span class="p">)])</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

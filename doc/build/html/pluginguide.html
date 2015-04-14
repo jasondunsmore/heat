@@ -1,0 +1,754 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Heat Resource Plug-in Development Guide &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="heat-resource-plug-in-development-guide">
+<h1>Heat Resource Plug-in Development Guide<a class="headerlink" href="#heat-resource-plug-in-development-guide" title="Permalink to this headline">¶</a></h1>
+<p>Heat allows service providers to extend the capabilities of the orchestration
+service by writing their own resource plug-ins. These plug-ins are written in
+Python and included in a directory configured by the service provider. This
+guide describes a resource plug-in structure and life cycle in order to assist
+developers in writing their own resource plug-ins.</p>
+<div class="section" id="resource-plug-in-life-cycle">
+<h2>Resource Plug-in Life Cycle<a class="headerlink" href="#resource-plug-in-life-cycle" title="Permalink to this headline">¶</a></h2>
+<p>A resource plug-in is relatively simple in that it needs to extend a base
+<tt class="docutils literal"><span class="pre">Resource</span></tt> class and implement some relevant life cycle handler methods.
+The basic life cycle methods of a resource are:</p>
+<dl class="docutils">
+<dt>create</dt>
+<dd>The plug-in should create a new physical resource.</dd>
+<dt>update</dt>
+<dd>The plug-in should update an existing resource with new
+configuration or tell the engine that the resource must be destroyed
+and re-created.  This method is optional; the default behavior is to
+create a replacement resource and then delete the old resource.</dd>
+<dt>suspend</dt>
+<dd>The plug-in should suspend operation of the physical resource; this is
+an optional operation.</dd>
+<dt>resume</dt>
+<dd>The plug-in should resume operation of the physical resource; this is an
+optional operation.</dd>
+<dt>delete</dt>
+<dd>The plug-in should delete the physical resource.</dd>
+</dl>
+<p>The base class <tt class="docutils literal"><span class="pre">Resource</span></tt> implements each of these life cycle methods and
+defines one or more handler methods that plug-ins should implement in order
+to manifest and manage the actual physical resource abstracted by the plug-in.
+These handler methods will be described in detail in the following sections.</p>
+<div class="section" id="heat-resource-base-class">
+<h3>Heat Resource Base Class<a class="headerlink" href="#heat-resource-base-class" title="Permalink to this headline">¶</a></h3>
+<p>Plug-ins must extend the class <tt class="docutils literal"><span class="pre">heat.engine.resource.Resource</span></tt>.</p>
+<p>This class is responsible for managing the overall life cycle of the plug-in.
+It defines methods corresponding to the life cycle as well as the basic hooks
+for plug-ins to handle the work of communicating with specific down-stream
+services. For example, when the engine determines it is time to create a
+resource, it calls the <tt class="docutils literal"><span class="pre">create</span></tt> method of the applicable plug-in. This method
+is implemented in the <tt class="docutils literal"><span class="pre">Resource</span></tt> base class and handles most of the
+bookkeeping and interaction with the engine. This method then calls a
+<tt class="docutils literal"><span class="pre">handle_create</span></tt> method defined in the plug-in class (if implemented) which is
+responsible for using specific service calls or other methods needed to
+instantiate the desired physical resource (server, network, volume, etc).</p>
+<div class="section" id="resource-status-and-action">
+<h4>Resource Status and Action<a class="headerlink" href="#resource-status-and-action" title="Permalink to this headline">¶</a></h4>
+<p>The base class handles reporting state of the resource back to the engine.
+A resource&#8217;s state is the combination of the life cycle action and the status
+of that action. For example, if a resource is created successfully, the status
+of that resource will be <tt class="docutils literal"><span class="pre">CREATE</span> <span class="pre">COMPLETE</span></tt>. Alternatively, if the plug-in
+encounters an error when attempting to create the physical resource, the
+status would be <tt class="docutils literal"><span class="pre">CREATE</span> <span class="pre">FAILED</span></tt>. The base class handles the
+reporting and persisting of resource state, so a plug-in&#8217;s handler
+methods only need to return data or raise exceptions as appropriate.</p>
+</div>
+</div>
+<div class="section" id="properties-and-attributes">
+<h3>Properties and Attributes<a class="headerlink" href="#properties-and-attributes" title="Permalink to this headline">¶</a></h3>
+<p>A resource&#8217;s <em>properties</em> define the settings the template author can
+manipulate when including that resource in a template. Some examples would be:</p>
+<ul class="simple">
+<li>Which flavor and image to use for a Nova server</li>
+<li>The port to listen to on Neutron LBaaS nodes</li>
+<li>The size of a Cinder volume</li>
+</ul>
+<p><em>Attributes</em> describe runtime state data of the physical resource that the
+plug-in can expose to other resources in a Stack. Generally, these aren&#8217;t
+available until the physical resource has been created and is in a usable
+state. Some examples would be:</p>
+<ul class="simple">
+<li>The host id of a Nova server</li>
+<li>The status of a Neutron network</li>
+<li>The creation time of a Cinder volume</li>
+</ul>
+<div class="section" id="defining-resource-properties">
+<h4>Defining Resource Properties<a class="headerlink" href="#defining-resource-properties" title="Permalink to this headline">¶</a></h4>
+<p>Each property that a resource supports must be defined in a schema that informs
+the engine and validation logic what the properties are, what type each is,
+and validation constraints. The schema is a dictionary whose keys define
+property names and whose values describe the constraints on that property. This
+dictionary must be assigned to the <tt class="docutils literal"><span class="pre">properties_schema</span></tt> attribute of the
+plug-in.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">constraints</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">properties</span>
+
+    <span class="n">nested_schema</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="n">properties</span><span class="o">.</span><span class="n">Schema</span><span class="p">(</span>
+            <span class="n">properties</span><span class="o">.</span><span class="n">Schema</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
+            <span class="n">_</span><span class="p">(</span><span class="s">&#39;description of foo field&#39;</span><span class="p">),</span>
+            <span class="n">constraints</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">constraints</span><span class="o">.</span><span class="n">AllowedPattern</span><span class="p">(</span><span class="s">&#39;(Ba[rc]?)+&#39;</span><span class="p">),</span>
+                <span class="n">constraints</span><span class="o">.</span><span class="n">Length</span><span class="p">(</span><span class="nb">max</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                                   <span class="n">description</span><span class="o">=</span><span class="s">&quot;don&#39;t go crazy&quot;</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+    <span class="n">properties_schema</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&quot;property_name&quot;</span><span class="p">:</span> <span class="n">properties</span><span class="o">.</span><span class="n">Schema</span><span class="p">(</span>
+            <span class="n">properties</span><span class="o">.</span><span class="n">Schema</span><span class="o">.</span><span class="n">MAP</span><span class="p">,</span>
+            <span class="n">_</span><span class="p">(</span><span class="s">&#39;Internationalized description of property&#39;</span><span class="p">),</span>
+            <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;Foo&quot;</span><span class="p">:</span> <span class="s">&quot;Bar&quot;</span><span class="p">},</span>
+            <span class="n">schema</span><span class="o">=</span><span class="n">nested_schema</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+<p>As shown above, some properties may themselves be complex and
+reference nested schema definitions.  Following are the parameters to the
+<tt class="docutils literal"><span class="pre">Schema</span></tt> constructor; all but the first have defaults.</p>
+<p><em>data_type</em>:</p>
+<blockquote>
+<div>Defines the type of the property&#8217;s value. The valid types are
+the members of the list <tt class="docutils literal"><span class="pre">properties.Schema.TYPES</span></tt>, currently
+<tt class="docutils literal"><span class="pre">INTEGER</span></tt>, <tt class="docutils literal"><span class="pre">STRING</span></tt>, <tt class="docutils literal"><span class="pre">NUMBER</span></tt>, <tt class="docutils literal"><span class="pre">BOOLEAN</span></tt>, <tt class="docutils literal"><span class="pre">MAP</span></tt>, and
+<tt class="docutils literal"><span class="pre">LIST</span></tt>; please use those symbolic names rather than the
+literals to which they are equated.  For <tt class="docutils literal"><span class="pre">LIST</span></tt> and <tt class="docutils literal"><span class="pre">MAP</span></tt>
+type properties, the <tt class="docutils literal"><span class="pre">schema</span></tt> referenced constrains the
+format of complex items in the list or map.</div></blockquote>
+<dl class="docutils">
+<dt><em>description</em>:</dt>
+<dd>A description of the property and its function; also used in documentation
+generation.  Default is <tt class="docutils literal"><span class="pre">None</span></tt> &#8212; but you should always provide a
+description.</dd>
+<dt><em>default</em>:</dt>
+<dd>The default value to assign to this property if none was supplied in the
+template.  Default is <tt class="docutils literal"><span class="pre">None</span></tt>.</dd>
+<dt><em>schema</em>:</dt>
+<dd>This property&#8217;s value is complex and its members must conform to
+this referenced schema in order to be valid. The referenced schema
+dictionary has the same format as the <tt class="docutils literal"><span class="pre">properties_schema</span></tt>. Default
+is <tt class="docutils literal"><span class="pre">None</span></tt>.</dd>
+<dt><em>required</em>:</dt>
+<dd><tt class="docutils literal"><span class="pre">True</span></tt> if the property must have a value for the template to be valid;
+<tt class="docutils literal"><span class="pre">False</span></tt> otherwise. The default is <tt class="docutils literal"><span class="pre">False</span></tt></dd>
+<dt><em>constraints</em>:</dt>
+<dd>A list of constraints that apply to the property&#8217;s value.  See
+<a class="reference internal" href="#property-constraints">Property Constraints</a>.</dd>
+<dt><em>update_allowed</em>:</dt>
+<dd><tt class="docutils literal"><span class="pre">True</span></tt> if an existing resource can be updated, <tt class="docutils literal"><span class="pre">False</span></tt> means
+update is accomplished by delete and re-create.  Default is <tt class="docutils literal"><span class="pre">False</span></tt>.</dd>
+</dl>
+<p>Accessing property values of the plug-in at runtime is then a simple call to:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s">&#39;PropertyName&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Based on the property type, properties without a set value will return the
+default &#8220;empty&#8221; value for that type:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="37%" />
+<col width="63%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Empty Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>String</td>
+<td>&#8216;&#8217;</td>
+</tr>
+<tr class="row-odd"><td>Number</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>Integer</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>List</td>
+<td>[]</td>
+</tr>
+<tr class="row-even"><td>Map</td>
+<td>{}</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="property-constraints">
+<h4>Property Constraints<a class="headerlink" href="#property-constraints" title="Permalink to this headline">¶</a></h4>
+<p>Following are the available kinds of constraints.  The description is
+optional and, if given, states the constraint in plain language for
+the end user.</p>
+<dl class="docutils">
+<dt><em>AllowedPattern(regex, description)</em>:</dt>
+<dd>Constrains the value to match the given regular expression;
+applicable to STRING.</dd>
+<dt><em>AllowedValues(allowed, description)</em>:</dt>
+<dd>Lists the allowed values.  <tt class="docutils literal"><span class="pre">allowed</span></tt> must be a
+<tt class="docutils literal"><span class="pre">collections.Sequence</span></tt> or <tt class="docutils literal"><span class="pre">basestring</span></tt>.  Applicable to all types
+of value except MAP.</dd>
+<dt><em>Length(min, max, description)</em>:</dt>
+<dd>Constrains the length of the value.  Applicable to STRING, LIST,
+MAP.  Both <tt class="docutils literal"><span class="pre">min</span></tt> and <tt class="docutils literal"><span class="pre">max</span></tt> default to <tt class="docutils literal"><span class="pre">None</span></tt>.</dd>
+<dt><em>Range(min, max, description)</em>:</dt>
+<dd>Constrains a numerical value.  Applicable to INTEGER and NUMBER.
+Both <tt class="docutils literal"><span class="pre">min</span></tt> and <tt class="docutils literal"><span class="pre">max</span></tt> default to <tt class="docutils literal"><span class="pre">None</span></tt>.</dd>
+<dt><em>CustomConstraint(name, description, environment)</em>:</dt>
+<dd>This constructor brings in a named constraint class from an
+environment.  If the given environment is <tt class="docutils literal"><span class="pre">None</span></tt> (its default)
+then the environment used is the global one.</dd>
+</dl>
+</div>
+<div class="section" id="defining-resource-attributes">
+<h4>Defining Resource Attributes<a class="headerlink" href="#defining-resource-attributes" title="Permalink to this headline">¶</a></h4>
+<p>Attributes communicate runtime state of the physical resource. Note that some
+plug-ins do not define any attributes and doing so is optional. If the plug-in
+needs to expose attributes, it will define an <tt class="docutils literal"><span class="pre">attributes_schema</span></tt> similar to
+the properties schema described above. This schema, however, is much simpler
+to define as each item in the dictionary only defines the attribute name and
+a description of the attribute.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">attributes_schema</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;The foo attribute&quot;</span><span class="p">),</span>
+    <span class="s">&quot;bar&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;The bar attribute&quot;</span><span class="p">),</span>
+    <span class="s">&quot;baz&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;The baz attribute&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>If attributes are defined, their values must also be resolved by the plug-in.
+The simplest way to do this is to override the <tt class="docutils literal"><span class="pre">_resolve_attribute</span></tt> method
+from the <tt class="docutils literal"><span class="pre">Resource</span></tt> class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_resolve_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="c"># _example_get_physical_resource is just an example and is not defined</span>
+    <span class="c"># in the Resource class</span>
+    <span class="n">phys_resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_example_get_physical_resource</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">phys_resource</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phys_resource</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+                <span class="c"># this is usually not needed, but this is a simple example</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidTemplateAttribute</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">phys_resource</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">None</span>
+</pre></div>
+</div>
+<p>If the plug-in needs to be more sophisticated in its attribute resolution, the
+plug-in may instead choose to override <tt class="docutils literal"><span class="pre">FnGetAtt</span></tt>. However, if this method is
+chosen, validation and accessibility of the attribute would be the plug-in&#8217;s
+responsibility.</p>
+</div>
+<div class="section" id="property-and-attribute-example">
+<h4>Property and Attribute Example<a class="headerlink" href="#property-and-attribute-example" title="Permalink to this headline">¶</a></h4>
+<p>Assume the following simple property and attribute definition:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">properties_schema</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;foo&#39;</span><span class="p">:</span> <span class="n">properties</span><span class="o">.</span><span class="n">Schema</span><span class="p">(</span>
+        <span class="n">properties</span><span class="o">.</span><span class="n">Schema</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
+        <span class="n">_</span><span class="p">(</span><span class="s">&#39;foo prop description&#39;</span><span class="p">),</span>
+        <span class="n">default</span><span class="o">=</span><span class="s">&#39;foo&#39;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">True</span>
+    <span class="p">),</span>
+    <span class="s">&#39;bar&#39;</span><span class="p">:</span> <span class="n">properties</span><span class="o">.</span><span class="n">Schema</span><span class="p">(</span>
+        <span class="n">properties</span><span class="o">.</span><span class="n">Schema</span><span class="o">.</span><span class="n">INTEGER</span><span class="p">,</span>
+        <span class="n">_</span><span class="p">(</span><span class="s">&#39;bar prop description&#39;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">constraints</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">constraints</span><span class="o">.</span><span class="n">Range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">attributes_schema</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;Attr_1&#39;</span><span class="p">:</span> <span class="s">&#39;The first attribute&#39;</span><span class="p">,</span>
+    <span class="s">&#39;Attr_2&#39;</span><span class="p">:</span> <span class="s">&#39;The second attribute&#39;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Also assume the plug-in defining the above has been registered under the
+template reference name &#8216;Resource::Foo&#8217; (see <a class="reference internal" href="#registering-resource-plug-ins">Registering Resource Plug-ins</a>).
+A template author could then use this plug-in in a stack by simply making
+following declarations in a template:</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="c1"># ... other sections omitted for brevity ...</span>
+
+<span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">resource-1</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Resource::Foo</span>
+    <span class="l-Scalar-Plain">properties</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">foo</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Value of the foo property</span>
+      <span class="l-Scalar-Plain">bar</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">7</span>
+
+<span class="l-Scalar-Plain">outputs</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">foo-attrib-1</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">value</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span> <span class="nv">get_attr</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">resource-1</span><span class="p-Indicator">,</span> <span class="nv">Attr_1</span><span class="p-Indicator">]</span> <span class="p-Indicator">}</span>
+    <span class="l-Scalar-Plain">description</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">The first attribute of the foo resource</span>
+  <span class="l-Scalar-Plain">foo-attrib-2</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">value</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span> <span class="nv">get_attr</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">resource-1</span><span class="p-Indicator">,</span> <span class="nv">Attr_2</span><span class="p-Indicator">]</span> <span class="p-Indicator">}</span>
+    <span class="l-Scalar-Plain">description</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">The second attribute of the foo resource</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="life-cycle-handler-methods">
+<h3>Life Cycle Handler Methods<a class="headerlink" href="#life-cycle-handler-methods" title="Permalink to this headline">¶</a></h3>
+<p>To do the work of managing the physical resource the plug-in supports, the
+following life cycle handler methods should be implemented. Note that the
+plug-in need not implement <em>all</em> of these methods; optional handlers will
+be documented as such.</p>
+<p>Generally, the handler methods follow a basic pattern. The basic
+handler method for any life cycle step follows the format
+<tt class="docutils literal"><span class="pre">handle_&lt;life</span> <span class="pre">cycle</span> <span class="pre">step&gt;</span></tt>. So for the create step, the handler
+method would be <tt class="docutils literal"><span class="pre">handle_create</span></tt>. Once a handler is called, an
+optional <tt class="docutils literal"><span class="pre">check_&lt;life</span> <span class="pre">cycle</span> <span class="pre">step&gt;_complete</span></tt> may also be implemented
+so that the plug-in may return immediately from the basic handler and
+then take advantage of cooperative multi-threading built in to the
+base class and periodically poll a down-stream service for completion;
+the check method is polled until it returns <tt class="docutils literal"><span class="pre">True</span></tt>. Again, for the
+create step, this method would be <tt class="docutils literal"><span class="pre">check_create_complete</span></tt>.</p>
+<div class="section" id="create">
+<h4>Create<a class="headerlink" href="#create" title="Permalink to this headline">¶</a></h4>
+<dl class="function">
+<dt id="handle_create">
+<tt class="descname">handle_create</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#handle_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new physical resource. This function should make the required
+calls to create the physical resource and return as soon as there is enough
+information to identify the resource. The function should return this
+identifying information and implement <tt class="docutils literal"><span class="pre">check_create_complete</span></tt> which will
+take this information in as a parameter and then periodically be polled.
+This allows for cooperative multi-threading between multiple resources that
+have had their dependencies satisfied.</p>
+<p><em>Note</em> once the native identifier of the physical resource is known, this
+function should call <tt class="docutils literal"><span class="pre">self.resource_id_set</span></tt> passing the native identifier
+of the physical resource. This will persist the identifier and make it
+available to the plug-in by accessing <tt class="docutils literal"><span class="pre">self.resource_id</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A representation of the created physical resource</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raise:</th><td class="field-body">any <tt class="docutils literal"><span class="pre">Exception</span></tt> if the create failed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="check_create_complete">
+<tt class="descname">check_create_complete</tt><big>(</big><em>self</em>, <em>token</em><big>)</big><a class="headerlink" href="#check_create_complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>If defined, will be called with the return value of <tt class="docutils literal"><span class="pre">handle_create</span></tt></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>token</strong> &#8211; the return value of <tt class="docutils literal"><span class="pre">handle_create</span></tt>; used to poll the
+physical resource&#8217;s status.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><tt class="docutils literal"><span class="pre">True</span></tt> if the physical resource is active and ready for use;
+<tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raise:</th><td class="field-body">any <tt class="docutils literal"><span class="pre">Exception</span></tt> if the create failed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="update-optional">
+<h4>Update (Optional)<a class="headerlink" href="#update-optional" title="Permalink to this headline">¶</a></h4>
+<p>Note that there is a default implementation of <tt class="docutils literal"><span class="pre">handle_update</span></tt> in
+<tt class="docutils literal"><span class="pre">heat.engine.resource.Resource</span></tt> that simply raises an exception indicating
+that updates require the engine to delete and re-create the resource
+(this is the default behavior) so implementing this is optional.</p>
+<dl class="function">
+<dt id="handle_update">
+<tt class="descname">handle_update</tt><big>(</big><em>self</em>, <em>json_snippet</em>, <em>templ_diff</em>, <em>prop_diff</em><big>)</big><a class="headerlink" href="#handle_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the physical resources using updated information.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>json_snippet</strong> (<em>collections.Mapping</em>) &#8211; the resource definition from the updated template</li>
+<li><strong>templ_diff</strong> (<em>collections.Mapping</em>) &#8211; changed values from the original template definition</li>
+<li><strong>prop_diff</strong> (<em>collections.Mapping</em>) &#8211; property values that are different between the original
+definition and the updated definition; keys are
+property names and values are the new values. Deleted or
+properties that were originally present but now absent
+have values of <tt class="docutils literal"><span class="pre">None</span></tt></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="check_update_complete">
+<tt class="descname">check_update_complete</tt><big>(</big><em>self</em>, <em>token</em><big>)</big><a class="headerlink" href="#check_update_complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>If defined, will be called with the return value of <tt class="docutils literal"><span class="pre">handle_update</span></tt></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>token</strong> &#8211; the return value of <tt class="docutils literal"><span class="pre">handle_update</span></tt>; used to poll the
+physical resource&#8217;s status.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><tt class="docutils literal"><span class="pre">True</span></tt> if the update has finished;
+<tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raise:</th><td class="field-body">any <tt class="docutils literal"><span class="pre">Exception</span></tt> if the update failed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="suspend-optional">
+<h4>Suspend (Optional)<a class="headerlink" href="#suspend-optional" title="Permalink to this headline">¶</a></h4>
+<p><em>These handler functions are optional and only need to be implemented if the
+physical resource supports suspending</em></p>
+<dl class="function">
+<dt id="handle_suspend">
+<tt class="descname">handle_suspend</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#handle_suspend" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the physical resource supports it, this function should call the native
+API and suspend the resource&#8217;s operation. This function should return
+information sufficient for <tt class="docutils literal"><span class="pre">check_suspend_complete</span></tt> to poll the native
+API to verify the operation&#8217;s status.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a token containing enough information for <tt class="docutils literal"><span class="pre">check_suspend_complete</span></tt>
+to verify operation status.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raise:</th><td class="field-body">any <tt class="docutils literal"><span class="pre">Exception</span></tt> if the suspend operation fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="check_suspend_complete">
+<tt class="descname">check_suspend_complete</tt><big>(</big><em>self</em>, <em>token</em><big>)</big><a class="headerlink" href="#check_suspend_complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify the suspend operation completed successfully.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>token</strong> &#8211; the return value of <tt class="docutils literal"><span class="pre">handle_suspend</span></tt></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><tt class="docutils literal"><span class="pre">True</span></tt> if the suspend operation completed and the physical
+resource is now suspended; <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raise:</th><td class="field-body">any <tt class="docutils literal"><span class="pre">Exception</span></tt> if the suspend operation failed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="resume-optional">
+<h4>Resume (Optional)<a class="headerlink" href="#resume-optional" title="Permalink to this headline">¶</a></h4>
+<p><em>These handler functions are optional and only need to be implemented if the
+physical resource supports resuming from a suspended state</em></p>
+<dl class="function">
+<dt id="handle_resume">
+<tt class="descname">handle_resume</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#handle_resume" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the physical resource supports it, this function should call the native
+API and resume a suspended resource&#8217;s operation. This function should return
+information sufficient for <tt class="docutils literal"><span class="pre">check_resume_complete</span></tt> to poll the native
+API to verify the operation&#8217;s status.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a token containing enough information for <tt class="docutils literal"><span class="pre">check_resume_complete</span></tt>
+to verify operation status.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raise:</th><td class="field-body">any <tt class="docutils literal"><span class="pre">Exception</span></tt> if the resume operation fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="check_resume_complete">
+<tt class="descname">check_resume_complete</tt><big>(</big><em>self</em>, <em>token</em><big>)</big><a class="headerlink" href="#check_resume_complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify the resume operation completed successfully.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>token</strong> &#8211; the return value of <tt class="docutils literal"><span class="pre">handle_resume</span></tt></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><tt class="docutils literal"><span class="pre">True</span></tt> if the resume operation completed and the physical resource
+is now active; <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raise:</th><td class="field-body">any Exception if the resume operation failed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="delete">
+<h4>Delete<a class="headerlink" href="#delete" title="Permalink to this headline">¶</a></h4>
+<dl class="function">
+<dt id="handle_delete">
+<tt class="descname">handle_delete</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#handle_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the physical resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a token containing sufficient data to verify the operations status</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raise:</th><td class="field-body">any <tt class="docutils literal"><span class="pre">Exception</span></tt> if the delete operation failed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="handle_delete_snapshot">
+<tt class="descname">handle_delete_snapshot</tt><big>(</big><em>self</em>, <em>snapshot</em><big>)</big><a class="headerlink" href="#handle_delete_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete resource snapshot.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>snapshot</strong> &#8211; dictionary describing current snapshot.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a token containing sufficient data to verify the operations status</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raise:</th><td class="field-body">any <tt class="docutils literal"><span class="pre">Exception</span></tt> if the delete operation failed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="handle_snapshot_delete">
+<tt class="descname">handle_snapshot_delete</tt><big>(</big><em>self</em>, <em>state</em><big>)</big><a class="headerlink" href="#handle_snapshot_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called instead of <tt class="docutils literal"><span class="pre">handle_delete</span></tt> when the deletion policy is SNAPSHOT.
+Create backup of resource and then delete resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>state</strong> &#8211; the (action, status) tuple of the resource to make sure that
+backup may be created for the current resource</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a token containing sufficient data to verify the operations status</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raise:</th><td class="field-body">any <tt class="docutils literal"><span class="pre">Exception</span></tt> if the delete operation failed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="check_delete_complete">
+<tt class="descname">check_delete_complete</tt><big>(</big><em>self</em>, <em>token</em><big>)</big><a class="headerlink" href="#check_delete_complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify the delete operation completed successfully.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>token</strong> &#8211; the return value of <tt class="docutils literal"><span class="pre">handle_delete</span></tt> or
+<tt class="docutils literal"><span class="pre">handle_snapshot_delete</span></tt> (for deletion policy - Snapshot)
+used to verify the status of the operation</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><tt class="docutils literal"><span class="pre">True</span></tt> if the delete operation completed and the physical resource
+is deleted; <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raise:</th><td class="field-body">any <tt class="docutils literal"><span class="pre">Exception</span></tt> if the delete operation failed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="check_delete_snapshot_complete">
+<tt class="descname">check_delete_snapshot_complete</tt><big>(</big><em>self</em>, <em>token</em><big>)</big><a class="headerlink" href="#check_delete_snapshot_complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify the delete snapshot operation completed successfully.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>token</strong> &#8211; the return value of <tt class="docutils literal"><span class="pre">handle_delete_snapshot</span></tt> used
+to verify the status of the operation</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><tt class="docutils literal"><span class="pre">True</span></tt> if the delete operation completed and the snapshot
+is deleted; <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raise:</th><td class="field-body">any <tt class="docutils literal"><span class="pre">Exception</span></tt> if the delete operation failed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="registering-resource-plug-ins">
+<h3>Registering Resource Plug-ins<a class="headerlink" href="#registering-resource-plug-ins" title="Permalink to this headline">¶</a></h3>
+<p>To make your plug-in available for use in stack templates, the plug-in must
+register a reference name with the engine. This is done by defining a
+<tt class="docutils literal"><span class="pre">resource_mapping</span></tt> function in your plug-in module that returns a map of
+template resource type names and their corresponding implementation classes:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">resource_mapping</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">{</span> <span class="s">&#39;My::Custom::Plugin&#39;</span><span class="p">:</span> <span class="n">MyResourceClass</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>This would allow a template author to define a resource as:</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">my_resource</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">My::Custom::Plugin</span>
+    <span class="l-Scalar-Plain">properties</span><span class="p-Indicator">:</span>
+    <span class="c1"># ... your plug-in&#39;s properties ...</span>
+</pre></div>
+</div>
+<p>Note that you can define multiple plug-ins per module by simply returning
+a map containing a unique template type name for each. You may also use this to
+register a single resource plug-in under multiple template type names (which
+you would only want to do when constrained by backwards compatibility).</p>
+</div>
+</div>
+<div class="section" id="configuring-the-engine">
+<h2>Configuring the Engine<a class="headerlink" href="#configuring-the-engine" title="Permalink to this headline">¶</a></h2>
+<p>In order to use your plug-in, Heat must be configured to read your resources
+from a particular directory. The <tt class="docutils literal"><span class="pre">plugin_dirs</span></tt> configuration option lists the
+directories on the local file system where the engine will search for plug-ins.
+Simply place the file containing your resource in one of these directories and
+the engine will make them available next time the service starts.</p>
+<p>See one of the Installation Guides at <a class="reference external" href="http://docs.OpenStack.org/">http://docs.OpenStack.org/</a> for
+more information on configuring the orchestration service.</p>
+</div>
+<div class="section" id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+<p>Tests can live inside the plug-in under the <tt class="docutils literal"><span class="pre">tests</span></tt>
+namespace/directory. The Heat plug-in loader will implicitly not load
+anything under that directory. This is useful when your plug-in tests
+have dependencies you don&#8217;t want installed in production.</p>
+</div>
+<div class="section" id="putting-it-all-together">
+<h2>Putting It All Together<a class="headerlink" href="#putting-it-all-together" title="Permalink to this headline">¶</a></h2>
+<p>You can find the plugin classes in <tt class="docutils literal"><span class="pre">heat/engine/resources</span></tt>.  An
+exceptionally simple one to start with is <tt class="docutils literal"><span class="pre">random_string.py</span></tt>; it is
+unusual in that it does not manipulate anything in the cloud!</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="raxdox/index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Heat Resource Plug-in Development Guide</a><ul>
+<li><a class="reference internal" href="#resource-plug-in-life-cycle">Resource Plug-in Life Cycle</a><ul>
+<li><a class="reference internal" href="#heat-resource-base-class">Heat Resource Base Class</a><ul>
+<li><a class="reference internal" href="#resource-status-and-action">Resource Status and Action</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#properties-and-attributes">Properties and Attributes</a><ul>
+<li><a class="reference internal" href="#defining-resource-properties">Defining Resource Properties</a></li>
+<li><a class="reference internal" href="#property-constraints">Property Constraints</a></li>
+<li><a class="reference internal" href="#defining-resource-attributes">Defining Resource Attributes</a></li>
+<li><a class="reference internal" href="#property-and-attribute-example">Property and Attribute Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#life-cycle-handler-methods">Life Cycle Handler Methods</a><ul>
+<li><a class="reference internal" href="#create">Create</a></li>
+<li><a class="reference internal" href="#update-optional">Update (Optional)</a></li>
+<li><a class="reference internal" href="#suspend-optional">Suspend (Optional)</a></li>
+<li><a class="reference internal" href="#resume-optional">Resume (Optional)</a></li>
+<li><a class="reference internal" href="#delete">Delete</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#registering-resource-plug-ins">Registering Resource Plug-ins</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuring-the-engine">Configuring the Engine</a></li>
+<li><a class="reference internal" href="#testing">Testing</a></li>
+<li><a class="reference internal" href="#putting-it-all-together">Putting It All Together</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pluginguide.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

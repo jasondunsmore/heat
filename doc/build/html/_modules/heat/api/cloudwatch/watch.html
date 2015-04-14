@@ -1,0 +1,405 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.api.cloudwatch.watch &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../../index.html" />
+    <link rel="up" title="heat.api.cloudwatch" href="../cloudwatch.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../cloudwatch.html" accesskey="U">heat.api.cloudwatch</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.api.cloudwatch.watch</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Endpoint for heat AWS-compatible CloudWatch API.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span> <span class="k">as</span> <span class="n">logging</span>
+<span class="kn">import</span> <span class="nn">oslo_messaging</span> <span class="kn">as</span> <span class="nn">messaging</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">heat.api.aws</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.api.aws</span> <span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">api_utils</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">exception</span> <span class="k">as</span> <span class="n">heat_exception</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LE</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LW</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">policy</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">wsgi</span>
+<span class="kn">from</span> <span class="nn">heat.rpc</span> <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">rpc_api</span>
+<span class="kn">from</span> <span class="nn">heat.rpc</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">rpc_client</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="WatchController"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.cloudwatch.watch.html#heat.api.cloudwatch.watch.WatchController">[docs]</a><span class="k">class</span> <span class="nc">WatchController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;WSGI controller for CloudWatch resource in heat API.</span>
+
+<span class="sd">    Implements the API actions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="n">options</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span> <span class="o">=</span> <span class="n">rpc_client</span><span class="o">.</span><span class="n">EngineClient</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">policy</span> <span class="o">=</span> <span class="n">policy</span><span class="o">.</span><span class="n">Enforcer</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s">&#39;cloudwatch&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_enforce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Authorize an action against the policy.json.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">enforce</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">heat_exception</span><span class="o">.</span><span class="n">Forbidden</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Action </span><span class="si">%s</span><span class="s"> not allowed for user&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">action</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatAccessDeniedError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="c"># We expect policy.enforce to either pass or raise Forbidden</span>
+            <span class="c"># however, if anything else happens, we want to raise</span>
+            <span class="c"># HeatInternalFailureError, failure to do this results in</span>
+            <span class="c"># the user getting a big stacktrace spew as an API response</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Error authorizing action </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">action</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatInternalFailureError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_reformat_dimensions</span><span class="p">(</span><span class="n">dims</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reformat dimensions list into AWS API format.</span>
+
+<span class="sd">        :param dims: a list of dicts.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">newdims</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">count</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">newdims</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s">&#39;Name&#39;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span> <span class="s">&#39;Value&#39;</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]})</span>
+        <span class="k">return</span> <span class="n">newdims</span>
+
+<div class="viewcode-block" id="WatchController.delete_alarms"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.cloudwatch.watch.html#heat.api.cloudwatch.watch.WatchController.delete_alarms">[docs]</a>    <span class="k">def</span> <span class="nf">delete_alarms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Implements DeleteAlarms API action.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;DeleteAlarms&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatAPINotImplementedError</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WatchController.describe_alarm_history"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.cloudwatch.watch.html#heat.api.cloudwatch.watch.WatchController.describe_alarm_history">[docs]</a>    <span class="k">def</span> <span class="nf">describe_alarm_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Implements DescribeAlarmHistory API action.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;DescribeAlarmHistory&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatAPINotImplementedError</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WatchController.describe_alarms"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.cloudwatch.watch.html#heat.api.cloudwatch.watch.WatchController.describe_alarms">[docs]</a>    <span class="k">def</span> <span class="nf">describe_alarms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Implements DescribeAlarms API action.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;DescribeAlarms&#39;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">format_metric_alarm</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Reformat engine output into the AWS &quot;MetricAlarm&quot; format.&quot;&quot;&quot;</span>
+            <span class="n">keymap</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_ACTIONS_ENABLED</span><span class="p">:</span> <span class="s">&#39;ActionsEnabled&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_ALARM_ACTIONS</span><span class="p">:</span> <span class="s">&#39;AlarmActions&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_TOPIC</span><span class="p">:</span> <span class="s">&#39;AlarmArn&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_UPDATED_TIME</span><span class="p">:</span>
+                <span class="s">&#39;AlarmConfigurationUpdatedTimestamp&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DESCRIPTION</span><span class="p">:</span> <span class="s">&#39;AlarmDescription&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_NAME</span><span class="p">:</span> <span class="s">&#39;AlarmName&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_COMPARISON</span><span class="p">:</span> <span class="s">&#39;ComparisonOperator&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DIMENSIONS</span><span class="p">:</span> <span class="s">&#39;Dimensions&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_PERIODS</span><span class="p">:</span> <span class="s">&#39;EvaluationPeriods&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_INSUFFICIENT_ACTIONS</span><span class="p">:</span>
+                <span class="s">&#39;InsufficientDataActions&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_METRIC_NAME</span><span class="p">:</span> <span class="s">&#39;MetricName&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_NAMESPACE</span><span class="p">:</span> <span class="s">&#39;Namespace&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_OK_ACTIONS</span><span class="p">:</span> <span class="s">&#39;OKActions&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_PERIOD</span><span class="p">:</span> <span class="s">&#39;Period&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_REASON</span><span class="p">:</span> <span class="s">&#39;StateReason&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_REASON_DATA</span><span class="p">:</span> <span class="s">&#39;StateReasonData&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_UPDATED_TIME</span><span class="p">:</span> <span class="s">&#39;StateUpdatedTimestamp&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_VALUE</span><span class="p">:</span> <span class="s">&#39;StateValue&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATISTIC</span><span class="p">:</span> <span class="s">&#39;Statistic&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_THRESHOLD</span><span class="p">:</span> <span class="s">&#39;Threshold&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_UNIT</span><span class="p">:</span> <span class="s">&#39;Unit&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="c"># AWS doesn&#39;t return StackId in the main MetricAlarm</span>
+            <span class="c"># structure, so we add StackId as a dimension to all responses</span>
+            <span class="n">a</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DIMENSIONS</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s">&#39;StackId&#39;</span><span class="p">:</span>
+                                                <span class="n">a</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STACK_ID</span><span class="p">]})</span>
+
+            <span class="c"># Reformat dimensions list into AWS API format</span>
+            <span class="n">a</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DIMENSIONS</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reformat_dimensions</span><span class="p">(</span>
+                <span class="n">a</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DIMENSIONS</span><span class="p">])</span>
+
+            <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">reformat_dict_keys</span><span class="p">(</span><span class="n">keymap</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span>
+        <span class="n">parms</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">parms</span><span class="p">[</span><span class="s">&#39;AlarmName&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">watch_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">show_watch</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">watch_name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">messaging</span><span class="o">.</span><span class="n">RemoteError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">map_remote_error</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;MetricAlarms&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">format_metric_alarm</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+                                <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">watch_list</span><span class="p">]}</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&quot;DescribeAlarms&quot;</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+</div>
+<div class="viewcode-block" id="WatchController.describe_alarms_for_metric"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.cloudwatch.watch.html#heat.api.cloudwatch.watch.WatchController.describe_alarms_for_metric">[docs]</a>    <span class="k">def</span> <span class="nf">describe_alarms_for_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Implements DescribeAlarmsForMetric API action.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;DescribeAlarmsForMetric&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatAPINotImplementedError</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WatchController.disable_alarm_actions"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.cloudwatch.watch.html#heat.api.cloudwatch.watch.WatchController.disable_alarm_actions">[docs]</a>    <span class="k">def</span> <span class="nf">disable_alarm_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Implements DisableAlarmActions API action.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;DisableAlarmActions&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatAPINotImplementedError</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WatchController.enable_alarm_actions"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.cloudwatch.watch.html#heat.api.cloudwatch.watch.WatchController.enable_alarm_actions">[docs]</a>    <span class="k">def</span> <span class="nf">enable_alarm_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Implements EnableAlarmActions API action.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;EnableAlarmActions&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatAPINotImplementedError</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WatchController.get_metric_statistics"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.cloudwatch.watch.html#heat.api.cloudwatch.watch.WatchController.get_metric_statistics">[docs]</a>    <span class="k">def</span> <span class="nf">get_metric_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Implements GetMetricStatistics API action.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;GetMetricStatistics&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatAPINotImplementedError</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WatchController.list_metrics"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.cloudwatch.watch.html#heat.api.cloudwatch.watch.WatchController.list_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">list_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Implements ListMetrics API action.</span>
+
+<span class="sd">        Lists metric datapoints associated with a particular alarm,</span>
+<span class="sd">        or all alarms if none specified.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;ListMetrics&#39;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">format_metric_data</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">fil</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Reformat engine output into the AWS &quot;Metric&quot; format.</span>
+
+<span class="sd">            Takes an optional filter dict, which is traversed</span>
+<span class="sd">            so a metric dict is only returned if all keys match</span>
+<span class="sd">            the filter dict.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">fil</span> <span class="o">=</span> <span class="n">fil</span> <span class="ow">or</span> <span class="p">{}</span>
+            <span class="n">dimensions</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s">&#39;AlarmName&#39;</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DATA_ALARM</span><span class="p">]},</span>
+                <span class="p">{</span><span class="s">&#39;Timestamp&#39;</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DATA_TIME</span><span class="p">]}</span>
+            <span class="p">]</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DATA</span><span class="p">]:</span>
+                <span class="n">dimensions</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DATA</span><span class="p">][</span><span class="n">key</span><span class="p">]})</span>
+
+            <span class="n">newdims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reformat_dimensions</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s">&#39;MetricName&#39;</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DATA_METRIC</span><span class="p">],</span>
+                <span class="s">&#39;Dimensions&#39;</span><span class="p">:</span> <span class="n">newdims</span><span class="p">,</span>
+                <span class="s">&#39;Namespace&#39;</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DATA_NAMESPACE</span><span class="p">],</span>
+            <span class="p">}</span>
+
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fil</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">f</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="n">fil</span><span class="p">[</span><span class="n">f</span><span class="p">]:</span>
+                        <span class="c"># Filter criteria not met, return None</span>
+                        <span class="k">return</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="n">LOG</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">_LW</span><span class="p">(</span><span class="s">&quot;Invalid filter key </span><span class="si">%s</span><span class="s">, ignoring&quot;</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span>
+        <span class="n">parms</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+        <span class="c"># FIXME : Don&#39;t yet handle filtering by Dimensions</span>
+        <span class="n">filter_result</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">parms</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span>
+                             <span class="p">(</span><span class="s">&quot;MetricName&quot;</span><span class="p">,</span> <span class="s">&quot;Namespace&quot;</span><span class="p">))</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;filter parameters : </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">filter_result</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c"># Engine does not currently support query by namespace/metric</span>
+            <span class="c"># so we pass None/None and do any filtering locally</span>
+            <span class="n">null_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;metric_namespace&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+                           <span class="s">&#39;metric_name&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">}</span>
+            <span class="n">watch_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">show_watch_metric</span><span class="p">(</span><span class="n">con</span><span class="p">,</span>
+                                                           <span class="o">**</span><span class="n">null_kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">messaging</span><span class="o">.</span><span class="n">RemoteError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">map_remote_error</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;Metrics&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">watch_data</span><span class="p">:</span>
+            <span class="n">metric</span> <span class="o">=</span> <span class="n">format_metric_data</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">filter_result</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">metric</span><span class="p">:</span>
+                <span class="n">res</span><span class="p">[</span><span class="s">&#39;Metrics&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&quot;ListMetrics&quot;</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+</div>
+<div class="viewcode-block" id="WatchController.put_metric_alarm"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.cloudwatch.watch.html#heat.api.cloudwatch.watch.WatchController.put_metric_alarm">[docs]</a>    <span class="k">def</span> <span class="nf">put_metric_alarm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Implements PutMetricAlarm API action.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;PutMetricAlarm&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatAPINotImplementedError</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WatchController.put_metric_data"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.cloudwatch.watch.html#heat.api.cloudwatch.watch.WatchController.put_metric_data">[docs]</a>    <span class="k">def</span> <span class="nf">put_metric_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Implements PutMetricData API action.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;PutMetricData&#39;</span><span class="p">)</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span>
+        <span class="n">parms</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">namespace</span> <span class="o">=</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">get_param_value</span><span class="p">(</span><span class="n">parms</span><span class="p">,</span> <span class="s">&#39;Namespace&#39;</span><span class="p">)</span>
+
+        <span class="c"># Extract data from the request so we can pass it to the engine</span>
+        <span class="c"># We have to do this in two passes, because the AWS</span>
+        <span class="c"># query format nests the dimensions within the MetricData</span>
+        <span class="c"># query-parameter-list (see AWS PutMetricData docs)</span>
+        <span class="c"># extract_param_list gives a list-of-dict, which we then</span>
+        <span class="c"># need to process (each dict) for dimensions</span>
+        <span class="n">metric_data</span> <span class="o">=</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">extract_param_list</span><span class="p">(</span><span class="n">parms</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s">&#39;MetricData&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">metric_data</span><span class="p">):</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">_LE</span><span class="p">(</span><span class="s">&quot;Request does not contain required MetricData&quot;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatMissingParameterError</span><span class="p">(</span><span class="s">&quot;MetricData list&quot;</span><span class="p">)</span>
+
+        <span class="n">watch_name</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">dimensions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">metric_data</span><span class="p">:</span>
+            <span class="n">dimension</span> <span class="o">=</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">extract_param_pairs</span><span class="p">(</span><span class="n">p</span><span class="p">,</span>
+                                                      <span class="n">prefix</span><span class="o">=</span><span class="s">&#39;Dimensions&#39;</span><span class="p">,</span>
+                                                      <span class="n">keyname</span><span class="o">=</span><span class="s">&#39;Name&#39;</span><span class="p">,</span>
+                                                      <span class="n">valuename</span><span class="o">=</span><span class="s">&#39;Value&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s">&#39;AlarmName&#39;</span> <span class="ow">in</span> <span class="n">dimension</span><span class="p">:</span>
+                <span class="n">watch_name</span> <span class="o">=</span> <span class="n">dimension</span><span class="p">[</span><span class="s">&#39;AlarmName&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dimensions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
+
+        <span class="c"># Extract the required data from the metric_data</span>
+        <span class="c"># and format dict to pass to engine</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;Namespace&#39;</span><span class="p">:</span> <span class="n">namespace</span><span class="p">,</span>
+                <span class="n">api_utils</span><span class="o">.</span><span class="n">get_param_value</span><span class="p">(</span><span class="n">metric_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;MetricName&#39;</span><span class="p">):</span> <span class="p">{</span>
+                    <span class="s">&#39;Unit&#39;</span><span class="p">:</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">get_param_value</span><span class="p">(</span><span class="n">metric_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;Unit&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;Value&#39;</span><span class="p">:</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">get_param_value</span><span class="p">(</span><span class="n">metric_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                       <span class="s">&#39;Value&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;Dimensions&#39;</span><span class="p">:</span> <span class="n">dimensions</span><span class="p">}}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">create_watch_data</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">watch_name</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">messaging</span><span class="o">.</span><span class="n">RemoteError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">map_remote_error</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;ResponseMetadata&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&quot;PutMetricData&quot;</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WatchController.set_alarm_state"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.cloudwatch.watch.html#heat.api.cloudwatch.watch.WatchController.set_alarm_state">[docs]</a>    <span class="k">def</span> <span class="nf">set_alarm_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Implements SetAlarmState API action.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;SetAlarmState&#39;</span><span class="p">)</span>
+
+        <span class="c"># Map from AWS state names to those used in the engine</span>
+        <span class="n">state_map</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;OK&#39;</span><span class="p">:</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_OK</span><span class="p">,</span>
+                     <span class="s">&#39;ALARM&#39;</span><span class="p">:</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_ALARM</span><span class="p">,</span>
+                     <span class="s">&#39;INSUFFICIENT_DATA&#39;</span><span class="p">:</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_NODATA</span><span class="p">}</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span>
+        <span class="n">parms</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+
+        <span class="c"># Get mandatory parameters</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">get_param_value</span><span class="p">(</span><span class="n">parms</span><span class="p">,</span> <span class="s">&#39;AlarmName&#39;</span><span class="p">)</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">get_param_value</span><span class="p">(</span><span class="n">parms</span><span class="p">,</span> <span class="s">&#39;StateValue&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state_map</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid state </span><span class="si">%(state)s</span><span class="s">, &#39;</span>
+                    <span class="s">&#39;expecting one of </span><span class="si">%(expect)s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span>
+                        <span class="s">&#39;state&#39;</span><span class="p">:</span> <span class="n">state</span><span class="p">,</span>
+                        <span class="s">&#39;expect&#39;</span><span class="p">:</span> <span class="n">state_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatInvalidParameterValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;setting </span><span class="si">%(name)s</span><span class="s"> to </span><span class="si">%(state)s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">{</span>
+                  <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s">&#39;state&#39;</span><span class="p">:</span> <span class="n">state_map</span><span class="p">[</span><span class="n">state</span><span class="p">]})</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">set_watch_state</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">watch_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                            <span class="n">state</span><span class="o">=</span><span class="n">state_map</span><span class="p">[</span><span class="n">state</span><span class="p">])</span>
+        <span class="k">except</span> <span class="n">messaging</span><span class="o">.</span><span class="n">RemoteError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">map_remote_error</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&quot;SetAlarmState&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="create_resource"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.cloudwatch.watch.html#heat.api.cloudwatch.watch.create_resource">[docs]</a><span class="k">def</span> <span class="nf">create_resource</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Watch resource factory method.&quot;&quot;&quot;</span>
+    <span class="n">deserializer</span> <span class="o">=</span> <span class="n">wsgi</span><span class="o">.</span><span class="n">JSONRequestDeserializer</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">wsgi</span><span class="o">.</span><span class="n">Resource</span><span class="p">(</span><span class="n">WatchController</span><span class="p">(</span><span class="n">options</span><span class="p">),</span> <span class="n">deserializer</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../cloudwatch.html" >heat.api.cloudwatch</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

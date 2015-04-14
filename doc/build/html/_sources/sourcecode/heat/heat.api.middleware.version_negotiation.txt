@@ -1,0 +1,8 @@
+=========================================================
+The :mod:`heat.api.middleware.version_negotiation` Module
+=========================================================
+.. automodule:: heat.api.middleware.version_negotiation
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

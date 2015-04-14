@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.service_software_config Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-engine-service-software-config-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.engine.service_software_config</span></tt> Module<a class="headerlink" href="#the-heat-engine-service-software-config-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.service_software_config.</tt><tt class="descname">SoftwareConfigService</tt><big>(</big><em>threads=1000</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service_software_config.html#SoftwareConfigService"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.openstack.common.service.Service</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">create_software_config</tt><big>(</big><em>cnxt</em>, <em>group</em>, <em>name</em>, <em>config</em>, <em>inputs</em>, <em>outputs</em>, <em>options</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service_software_config.html#SoftwareConfigService.create_software_config"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">create_software_deployment</tt><big>(</big><em>cnxt</em>, <em>server_id</em>, <em>config_id</em>, <em>input_values</em>, <em>action</em>, <em>status</em>, <em>status_reason</em>, <em>stack_user_project_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service_software_config.html#SoftwareConfigService.create_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">delete_software_config</tt><big>(</big><em>cnxt</em>, <em>config_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service_software_config.html#SoftwareConfigService.delete_software_config"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">delete_software_deployment</tt><big>(</big><em>cnxt</em>, <em>deployment_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service_software_config.html#SoftwareConfigService.delete_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_software_deployments</tt><big>(</big><em>cnxt</em>, <em>server_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service_software_config.html#SoftwareConfigService.list_software_deployments"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">metadata_software_deployments</tt><big>(</big><em>cnxt</em>, <em>server_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service_software_config.html#SoftwareConfigService.metadata_software_deployments"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">show_software_config</tt><big>(</big><em>cnxt</em>, <em>config_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service_software_config.html#SoftwareConfigService.show_software_config"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">show_software_deployment</tt><big>(</big><em>cnxt</em>, <em>deployment_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service_software_config.html#SoftwareConfigService.show_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">signal_software_deployment</tt><big>(</big><em>cnxt</em>, <em>deployment_id</em>, <em>details</em>, <em>updated_at</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service_software_config.html#SoftwareConfigService.signal_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">update_software_deployment</tt><big>(</big><em>cnxt</em>, <em>deployment_id</em>, <em>config_id</em>, <em>input_values</em>, <em>output_values</em>, <em>action</em>, <em>status</em>, <em>status_reason</em>, <em>updated_at</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service_software_config.html#SoftwareConfigService.update_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.engine.service_software_config.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

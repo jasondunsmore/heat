@@ -1,0 +1,245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.objects.stack &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.objects.stack</h1><div class="highlight"><pre>
+<span class="c"># Copyright 2014 Intel Corp.</span>
+<span class="c">#</span>
+<span class="c"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c"># a copy of the License at</span>
+<span class="c">#</span>
+<span class="c"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c"># License for the specific language governing permissions and limitations</span>
+<span class="c"># under the License.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Stack object</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">oslo_versionedobjects</span> <span class="kn">import</span> <span class="n">base</span>
+<span class="kn">from</span> <span class="nn">oslo_versionedobjects</span> <span class="kn">import</span> <span class="n">fields</span>
+
+
+<span class="kn">from</span> <span class="nn">heat.db</span> <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">db_api</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">fields</span> <span class="k">as</span> <span class="n">heat_fields</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">raw_template</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">stack_tag</span>
+
+
+<div class="viewcode-block" id="Stack"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.stack.html#heat.objects.stack.Stack">[docs]</a><span class="k">class</span> <span class="nc">Stack</span><span class="p">(</span>
+    <span class="n">base</span><span class="o">.</span><span class="n">VersionedObject</span><span class="p">,</span>
+    <span class="n">base</span><span class="o">.</span><span class="n">VersionedObjectDictCompat</span><span class="p">,</span>
+    <span class="n">base</span><span class="o">.</span><span class="n">ComparableVersionedObject</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(),</span>
+        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(),</span>
+        <span class="s">&#39;raw_template_id&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(),</span>
+        <span class="s">&#39;backup&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(),</span>
+        <span class="s">&#39;created_at&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;deleted_at&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;disable_rollback&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(),</span>
+        <span class="s">&#39;nested_depth&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(),</span>
+        <span class="s">&#39;owner_id&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;stack_user_project_id&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;tenant&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;timeout&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;updated_at&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;user_creds_id&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;username&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;status_reason&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;raw_template&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">ObjectField</span><span class="p">(</span><span class="s">&#39;RawTemplate&#39;</span><span class="p">),</span>
+        <span class="s">&#39;convergence&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(),</span>
+        <span class="s">&#39;current_traversal&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(),</span>
+        <span class="s">&#39;current_deps&#39;</span><span class="p">:</span> <span class="n">heat_fields</span><span class="o">.</span><span class="n">JsonField</span><span class="p">(),</span>
+        <span class="s">&#39;prev_raw_template_id&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(),</span>
+        <span class="s">&#39;prev_raw_template&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">ObjectField</span><span class="p">(</span><span class="s">&#39;RawTemplate&#39;</span><span class="p">),</span>
+        <span class="s">&#39;tags&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">ObjectField</span><span class="p">(</span><span class="s">&#39;StackTagList&#39;</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_from_db_object</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">db_stack</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">field</span> <span class="o">==</span> <span class="s">&#39;raw_template&#39;</span><span class="p">:</span>
+                <span class="n">stack</span><span class="p">[</span><span class="s">&#39;raw_template&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">raw_template</span><span class="o">.</span><span class="n">RawTemplate</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span>
+                        <span class="n">context</span><span class="p">,</span> <span class="n">db_stack</span><span class="p">[</span><span class="s">&#39;raw_template_id&#39;</span><span class="p">]))</span>
+            <span class="k">elif</span> <span class="n">field</span> <span class="o">==</span> <span class="s">&#39;tags&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">db_stack</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">stack</span><span class="p">[</span><span class="s">&#39;tags&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stack_tag</span><span class="o">.</span><span class="n">StackTagList</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                        <span class="n">context</span><span class="p">,</span> <span class="n">db_stack</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">stack</span><span class="p">[</span><span class="s">&#39;tags&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stack</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">db_stack</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="n">stack</span><span class="o">.</span><span class="n">_context</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="n">stack</span><span class="o">.</span><span class="n">obj_reset_changes</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">stack</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Stack.get_by_id"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.stack.html#heat.objects.stack.Stack.get_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_by_id</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">db_stack</span> <span class="o">=</span> <span class="n">db_api</span><span class="o">.</span><span class="n">stack_get</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">db_stack</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">db_stack</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">cls</span><span class="p">(</span><span class="n">context</span><span class="p">),</span> <span class="n">db_stack</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">stack</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Stack.get_by_name_and_owner_id"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.stack.html#heat.objects.stack.Stack.get_by_name_and_owner_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_by_name_and_owner_id</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">stack_name</span><span class="p">,</span> <span class="n">owner_id</span><span class="p">):</span>
+        <span class="n">db_stack</span> <span class="o">=</span> <span class="n">db_api</span><span class="o">.</span><span class="n">stack_get_by_name_and_owner_id</span><span class="p">(</span>
+            <span class="n">context</span><span class="p">,</span>
+            <span class="n">stack_name</span><span class="p">,</span>
+            <span class="n">owner_id</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">db_stack</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">db_stack</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">cls</span><span class="p">(</span><span class="n">context</span><span class="p">),</span> <span class="n">db_stack</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">stack</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Stack.get_by_name"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.stack.html#heat.objects.stack.Stack.get_by_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_by_name</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">stack_name</span><span class="p">):</span>
+        <span class="n">db_stack</span> <span class="o">=</span> <span class="n">db_api</span><span class="o">.</span><span class="n">stack_get_by_name</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">stack_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">db_stack</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">db_stack</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">cls</span><span class="p">(</span><span class="n">context</span><span class="p">),</span> <span class="n">db_stack</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">stack</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Stack.get_all"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.stack.html#heat.objects.stack.Stack.get_all">[docs]</a>    <span class="k">def</span> <span class="nf">get_all</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">db_stacks</span> <span class="o">=</span> <span class="n">db_api</span><span class="o">.</span><span class="n">stack_get_all</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">stacks</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">db_stack</span><span class="p">:</span> <span class="n">cls</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span>
+                <span class="n">context</span><span class="p">,</span>
+                <span class="n">cls</span><span class="p">(</span><span class="n">context</span><span class="p">),</span>
+                <span class="n">db_stack</span><span class="p">),</span>
+            <span class="n">db_stacks</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">stacks</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Stack.get_all_by_owner_id"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.stack.html#heat.objects.stack.Stack.get_all_by_owner_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_by_owner_id</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">owner_id</span><span class="p">):</span>
+        <span class="n">db_stacks</span> <span class="o">=</span> <span class="n">db_api</span><span class="o">.</span><span class="n">stack_get_all_by_owner_id</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">owner_id</span><span class="p">)</span>
+        <span class="n">stacks</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">db_stack</span><span class="p">:</span> <span class="n">cls</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span>
+                <span class="n">context</span><span class="p">,</span>
+                <span class="n">cls</span><span class="p">(</span><span class="n">context</span><span class="p">),</span>
+                <span class="n">db_stack</span><span class="p">),</span>
+            <span class="n">db_stacks</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">stacks</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Stack.count_all"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.stack.html#heat.objects.stack.Stack.count_all">[docs]</a>    <span class="k">def</span> <span class="nf">count_all</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">db_api</span><span class="o">.</span><span class="n">stack_count_all</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Stack.create"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.stack.html#heat.objects.stack.Stack.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">db_api</span><span class="o">.</span><span class="n">stack_create</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Stack.update_by_id"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.stack.html#heat.objects.stack.Stack.update_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">update_by_id</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">db_api</span><span class="o">.</span><span class="n">stack_update</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Stack.delete"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.stack.html#heat.objects.stack.Stack.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">db_api</span><span class="o">.</span><span class="n">stack_delete</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Stack.update_and_save"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.stack.html#heat.objects.stack.Stack.update_and_save">[docs]</a>    <span class="k">def</span> <span class="nf">update_and_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="n">db_stack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">update_by_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_context</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">db_stack</span>
+</div>
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">another</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>  <span class="c"># to make test object comparison work well</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Stack</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__eq__</span><span class="p">(</span><span class="n">another</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Stack.refresh"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.stack.html#heat.objects.stack.Stack.refresh">[docs]</a>    <span class="k">def</span> <span class="nf">refresh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">db_stack</span> <span class="o">=</span> <span class="n">db_api</span><span class="o">.</span><span class="n">stack_get</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_context</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">show_deleted</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">db_stack</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_context</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">db_stack</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

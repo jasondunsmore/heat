@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Glossary &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="glossary">
+<h1>Glossary<a class="headerlink" href="#glossary" title="Permalink to this headline">¶</a></h1>
+<dl class="glossary docutils">
+<dt id="term-api-server">API server</dt>
+<dd>HTTP REST API service for heat.</dd>
+<dt id="term-cfn">CFN</dt>
+<dd>An abbreviated form of &#8220;AWS CloudFormation&#8221;.</dd>
+<dt id="term-constraint">Constraint</dt>
+<dd>Defines valid input <a class="reference internal" href="#term-parameters"><em class="xref std std-term">parameters</em></a> for a <a class="reference internal" href="#term-template"><em class="xref std std-term">template</em></a>.</dd>
+<dt id="term-dependency">Dependency</dt>
+<dd>When a <a class="reference internal" href="#term-resource"><em class="xref std std-term">resource</em></a> must wait for another resource to finish
+creation before being created itself. Heat adds an implicit
+dependency when a resource references another resource or one of
+its <a class="reference internal" href="#term-resource-attribute"><em class="xref std std-term">attributes</em></a>. An explicit
+dependency can also be created by the user in the template
+definition.</dd>
+<dt id="term-environment">Environment</dt>
+<dd>Used to affect the run-time behavior of the template. Provides a
+way to override the default resource implementation and
+parameters passed to Heat. See <a class="reference internal" href="template_guide/environment.html#environments"><em>Environments</em></a>.</dd>
+<dt id="term-heat-orchestration-template">Heat Orchestration Template</dt>
+<dd>A particular <a class="reference internal" href="#term-template"><em class="xref std std-term">template</em></a> format that is native to Heat.
+Heat Orchestration Templates are expressed in YAML and are not
+backwards-compatible with CloudFormation templates.</dd>
+<dt id="term-hot">HOT</dt>
+<dd>An acronym for &#8220;<a class="reference internal" href="#term-heat-orchestration-template"><em class="xref std std-term">Heat Orchestration Template</em></a>&#8221;.</dd>
+<dt id="term-input-parameters">Input parameters</dt>
+<dd>See <a class="reference internal" href="#term-parameters"><em class="xref std std-term">Parameters</em></a>.</dd>
+<dt id="term-metadata">Metadata</dt>
+<dd>May refer to <a class="reference internal" href="#term-resource-metadata"><em class="xref std std-term">Resource Metadata</em></a>, <a class="reference internal" href="#term-nova-instance-metadata"><em class="xref std std-term">Nova Instance
+metadata</em></a>, or the <a class="reference internal" href="#term-metadata-service"><em class="xref std std-term">Metadata service</em></a>.</dd>
+<dt id="term-metadata-service">Metadata service</dt>
+<dd>A Compute service that enables virtual machine instances to
+retrieve instance-specific data. See <a class="reference external" href="http://docs.openstack.org/admin-guide-cloud/content/section_metadata-service.html">Metadata
+service (OpenStack Cloud Admin Guide)</a>.</dd>
+<dt id="term-multi-region">Multi-region</dt>
+<dd>A feature of Heat that supports deployment to multiple regions.</dd>
+<dt id="term-nested-resource">Nested resource</dt>
+<dd>A <a class="reference internal" href="#term-resource"><em class="xref std std-term">resource</em></a> instantiated as part of a <a class="reference internal" href="#term-nested-stack"><em class="xref std std-term">nested
+stack</em></a>.</dd>
+<dt id="term-nested-stack">Nested stack</dt>
+<dd>A <a class="reference internal" href="#term-template"><em class="xref std std-term">template</em></a> referenced by URL inside of another template.
+Used to reduce redundant resource definitions and group complex
+architectures into logical groups.</dd>
+<dt id="term-nova-instance-metadata">Nova Instance metadata</dt>
+<dd>User-provided <em>key:value</em> pairs associated with a Compute
+Instance. See <a class="reference external" href="http://docs.openstack.org/grizzly/openstack-compute/admin/content/instance-data.html#inserting_metadata">Instance specific data (OpenStack Compute Admin
+Guide)</a>.</dd>
+<dt id="term-openstack">OpenStack</dt>
+<dd>Open source software for building private and public clouds.</dd>
+<dt id="term-orchestrate">Orchestrate</dt>
+<dd>Arrange or direct the elements of a situation to produce a
+desired effect.</dd>
+<dt id="term-outputs">Outputs</dt>
+<dd>A top-level block in a <a class="reference internal" href="#term-template"><em class="xref std std-term">template</em></a> that defines what data
+will be returned by a stack after instantiation.</dd>
+<dt id="term-parameters">Parameters</dt>
+<dd>A top-level block in a <a class="reference internal" href="#term-template"><em class="xref std std-term">template</em></a> that defines what data
+can be passed to customise a template when it is used to create
+or update a <a class="reference internal" href="#term-stack"><em class="xref std std-term">stack</em></a>.</dd>
+<dt id="term-provider-resource">Provider resource</dt>
+<dd>A <a class="reference internal" href="#term-resource"><em class="xref std std-term">resource</em></a> implemented by a <a class="reference internal" href="#term-provider-template"><em class="xref std std-term">provider
+template</em></a>. The parent resource&#8217;s properties become the
+<a class="reference internal" href="#term-nested-stack"><em class="xref std std-term">nested stack&#8217;s</em></a> parameters. See <a class="reference external" href="https://wiki.openstack.org/wiki/Heat/Providers#What_are_.22Providers.22.3F">What are
+&#8220;Providers&#8221;? (OpenStack Wiki)</a>.</dd>
+<dt id="term-provider-template">Provider template</dt>
+<dd>Allows user-definable <a class="reference internal" href="#term-resource-provider"><em class="xref std std-term">resource providers</em></a> to be specified via <a class="reference internal" href="#term-nested-stack"><em class="xref std std-term">nested stacks</em></a>. The nested stack&#8217;s <a class="reference internal" href="#term-outputs"><em class="xref std std-term">outputs</em></a> become the parent
+stack&#8217;s <a class="reference internal" href="#term-resource-attribute"><em class="xref std std-term">attributes</em></a>.</dd>
+<dt id="term-resource">Resource</dt>
+<dd>An element of OpenStack infrastructure instantiated from a
+particular <a class="reference internal" href="#term-resource-provider"><em class="xref std std-term">resource provider</em></a>. See also <a class="reference internal" href="#term-nested-resource"><em class="xref std std-term">Nested
+resource</em></a>.</dd>
+<dt id="term-resource-attribute">Resource attribute</dt>
+<dd>Data that can be obtained from a <a class="reference internal" href="#term-resource"><em class="xref std std-term">resource</em></a>, e.g. a
+server&#8217;s public IP or name. Usually passed to another resource&#8217;s
+<a class="reference internal" href="#term-resource-property"><em class="xref std std-term">properties</em></a> or added to the stack&#8217;s
+<a class="reference internal" href="#term-outputs"><em class="xref std std-term">outputs</em></a>.</dd>
+<dt id="term-resource-group">Resource group</dt>
+<dd>A <a class="reference internal" href="#term-resource-provider"><em class="xref std std-term">resource provider</em></a> that creates one or more identically
+configured <a class="reference internal" href="#term-resource"><em class="xref std std-term">resources</em></a> or <a class="reference internal" href="#term-nested-resource"><em class="xref std std-term">nested
+resources</em></a>.</dd>
+<dt id="term-resource-metadata">Resource Metadata</dt>
+<dd>A <a class="reference internal" href="#term-resource-property"><em class="xref std std-term">resource property</em></a> that contains CFN-style template
+metadata. See <a class="reference external" href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-init.html">AWS::CloudFormation::Init (AWS CloudFormation User Guide)</a></dd>
+<dt id="term-resource-plugin">Resource plugin</dt>
+<dd>Python code that understands how to instantiate and manage a
+<a class="reference internal" href="#term-resource"><em class="xref std std-term">resource</em></a>. See <a class="reference external" href="https://wiki.openstack.org/wiki/Heat/Plugins#Heat_Resource_Plugins">Heat Resource Plugins (OpenStack wiki)</a>.</dd>
+<dt id="term-resource-property">Resource property</dt>
+<dd>Data utilized for the instantiation of a <a class="reference internal" href="#term-resource"><em class="xref std std-term">resource</em></a>. Can be
+defined statically in a <a class="reference internal" href="#term-template"><em class="xref std std-term">template</em></a> or passed in as
+<a class="reference internal" href="#term-parameters"><em class="xref std std-term">input parameters</em></a>.</dd>
+<dt id="term-resource-provider">Resource provider</dt>
+<dd>The implementation of a particular resource type. May be a
+<a class="reference internal" href="#term-resource-plugin"><em class="xref std std-term">Resource plugin</em></a> or a <a class="reference internal" href="#term-provider-template"><em class="xref std std-term">Provider template</em></a>.</dd>
+<dt id="term-stack">Stack</dt>
+<dd>A collection of instantiated <a class="reference internal" href="#term-resource"><em class="xref std std-term">resources</em></a> that
+are defined in a single <a class="reference internal" href="#term-template"><em class="xref std std-term">template</em></a>.</dd>
+<dt id="term-stack-resource">Stack resource</dt>
+<dd>A <a class="reference internal" href="#term-resource-provider"><em class="xref std std-term">resource provider</em></a> that allows the management of a
+<a class="reference internal" href="#term-nested-stack"><em class="xref std std-term">nested stack</em></a> as a <a class="reference internal" href="#term-resource"><em class="xref std std-term">resource</em></a> in a parent stack.</dd>
+<dt id="term-template">Template</dt>
+<dd>An orchestration document that details everything needed to carry
+out an <a class="reference internal" href="#term-orchestrate"><em class="xref std std-term">orchestration</em></a>.</dd>
+<dt id="term-template-resource">Template resource</dt>
+<dd>See <a class="reference internal" href="#term-provider-resource"><em class="xref std std-term">Provider resource</em></a>.</dd>
+<dt id="term-user-data">User data</dt>
+<dd>A <a class="reference internal" href="#term-resource-property"><em class="xref std std-term">resource property</em></a> that contains a user-provided data
+blob. User data gets passed to <a class="reference external" href="https://help.ubuntu.com/community/CloudInit">cloud-init</a> to automatically
+configure instances at boot time. See also <a class="reference external" href="http://docs.openstack.org/user-guide/content/user-data.html#d6e2415">User data (OpenStack
+End User Guide)</a>.</dd>
+<dt id="term-wait-condition">Wait condition</dt>
+<dd>A <a class="reference internal" href="#term-resource-provider"><em class="xref std std-term">resource provider</em></a> that provides a way to communicate
+data or events from servers back to the orchestration
+engine. Most commonly used to pause the creation of the
+<a class="reference internal" href="#term-stack"><em class="xref std std-term">stack</em></a> while the server is being configured.</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/glossary.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

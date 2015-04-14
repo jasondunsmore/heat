@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.api.cloudwatch.watch Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-api-cloudwatch-watch-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.api.cloudwatch.watch</span></tt> Module<a class="headerlink" href="#the-heat-api-cloudwatch-watch-module" title="Permalink to this headline">¶</a></h1>
+<p>Endpoint for heat AWS-compatible CloudWatch API.</p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.api.cloudwatch.watch.</tt><tt class="descname">WatchController</tt><big>(</big><em>options</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cloudwatch/watch.html#WatchController"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>WSGI controller for CloudWatch resource in heat API.</p>
+<p>Implements the API actions.</p>
+<dl class="method">
+<dt>
+<tt class="descname">delete_alarms</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cloudwatch/watch.html#WatchController.delete_alarms"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements DeleteAlarms API action.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">describe_alarm_history</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cloudwatch/watch.html#WatchController.describe_alarm_history"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements DescribeAlarmHistory API action.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">describe_alarms</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cloudwatch/watch.html#WatchController.describe_alarms"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements DescribeAlarms API action.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">describe_alarms_for_metric</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cloudwatch/watch.html#WatchController.describe_alarms_for_metric"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements DescribeAlarmsForMetric API action.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">disable_alarm_actions</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cloudwatch/watch.html#WatchController.disable_alarm_actions"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements DisableAlarmActions API action.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">enable_alarm_actions</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cloudwatch/watch.html#WatchController.enable_alarm_actions"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements EnableAlarmActions API action.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_metric_statistics</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cloudwatch/watch.html#WatchController.get_metric_statistics"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements GetMetricStatistics API action.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_metrics</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cloudwatch/watch.html#WatchController.list_metrics"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements ListMetrics API action.</p>
+<p>Lists metric datapoints associated with a particular alarm,
+or all alarms if none specified.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">put_metric_alarm</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cloudwatch/watch.html#WatchController.put_metric_alarm"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements PutMetricAlarm API action.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">put_metric_data</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cloudwatch/watch.html#WatchController.put_metric_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements PutMetricData API action.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">set_alarm_state</tt><big>(</big><em>req</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cloudwatch/watch.html#WatchController.set_alarm_state"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements SetAlarmState API action.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.api.cloudwatch.watch.</tt><tt class="descname">create_resource</tt><big>(</big><em>options</em><big>)</big><a class="reference internal" href="../../_modules/heat/api/cloudwatch/watch.html#create_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Watch resource factory method.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.api.cloudwatch.watch.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

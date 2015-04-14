@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Heat and Devstack &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="heat-and-devstack">
+<h1>Heat and Devstack<a class="headerlink" href="#heat-and-devstack" title="Permalink to this headline">¶</a></h1>
+<p>Heat is fully integrated into DevStack. This is a convenient way to try out or develop heat alongside the current development state of all the other OpenStack projects. Heat on DevStack works on both Ubuntu and Fedora.</p>
+<p>These instructions assume you already have a working DevStack installation which can launch basic instances.</p>
+<div class="section" id="configure-devstack-to-enable-heat">
+<h2>Configure DevStack to enable Heat<a class="headerlink" href="#configure-devstack-to-enable-heat" title="Permalink to this headline">¶</a></h2>
+<p>Heat is configured by default on devstack for Icehouse or newer
+versions of OpenStack.</p>
+<p>It would also be useful to automatically download and register
+a VM image that Heat can launch. To do that add the following to your
+devstack <cite>localrc</cite>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">IMAGE_URLS</span><span class="o">+=</span><span class="s">&quot;,http://cloud.fedoraproject.org/fedora-20.x86_64.qcow2&quot;</span>
+</pre></div>
+</div>
+<p>URLs for any cloud image may be specified, but fedora images from F20 contain the heat-cfntools package which is required for some heat functionality.</p>
+<p>That is all the configuration that is required. When you run <cite>./stack.sh</cite> the Heat processes will be launched in <cite>screen</cite> with the labels prefixed with <cite>h-</cite>.</p>
+</div>
+<div class="section" id="configure-devstack-to-enable-ceilometer-if-using-alarms">
+<h2>Configure DevStack to enable Ceilometer (if using Alarms)<a class="headerlink" href="#configure-devstack-to-enable-ceilometer-if-using-alarms" title="Permalink to this headline">¶</a></h2>
+<p>To use Ceilometer Alarms you need to enable Ceilometer in devstack.
+Adding the following lines to your <cite>localrc</cite> file will enable the ceilometer services:</p>
+<div class="highlight-python"><div class="highlight"><pre>CEILOMETER_BACKEND=mongo
+enable_service ceilometer-acompute ceilometer-acentral ceilometer-collector ceilometer-api
+enable_service ceilometer-alarm-notifier ceilometer-alarm-evaluator
+</pre></div>
+</div>
+</div>
+<div class="section" id="configure-devstack-to-enable-osprofiler">
+<h2>Configure Devstack to enable OSprofiler<a class="headerlink" href="#configure-devstack-to-enable-osprofiler" title="Permalink to this headline">¶</a></h2>
+<p>Add the profiler notifier to your Ceilometer to your config:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">CEILOMETER_NOTIFICATION_TOPICS</span><span class="o">=</span><span class="n">notifications</span><span class="p">,</span><span class="n">profiler</span>
+</pre></div>
+</div>
+<p>Enable the profiler in /etc/heat/heat.conf:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ echo -e &quot;[profiler]\nprofiler_enabled = True\ntrace_sqlalchemy = True\n&quot; &gt;&gt; /etc/heat/heat.conf
+</pre></div>
+</div>
+<p>Change the default hmac_key in /etc/heat/api-paste.ini:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sed -i &quot;s/hmac_keys =.*/hmac_keys = SECRET_KEY/&quot; /etc/heat/api-paste.ini
+</pre></div>
+</div>
+<p>Run any command with &#8211;profile SECRET_KEY:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ heat --profile SECRET_KEY stack-list
+# it will print &lt;Trace ID&gt;
+</pre></div>
+</div>
+<p>Get pretty HTML with traces:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ osprofiler trace show --html &lt;Profile ID&gt;
+</pre></div>
+</div>
+<p>Note that osprofiler should be run with the admin user name &amp; tenant.</p>
+</div>
+<div class="section" id="confirming-heat-is-responding">
+<h2>Confirming Heat is responding<a class="headerlink" href="#confirming-heat-is-responding" title="Permalink to this headline">¶</a></h2>
+<p>Before any Heat commands can be run, the authentication environment
+needs to be loaded:</p>
+<div class="highlight-python"><div class="highlight"><pre>source openrc
+</pre></div>
+</div>
+<p>You can confirm that Heat is running and responding
+with this command:</p>
+<div class="highlight-python"><div class="highlight"><pre>heat stack-list
+</pre></div>
+</div>
+<p>This should return an empty line</p>
+</div>
+<div class="section" id="preparing-nova-for-running-stacks">
+<h2>Preparing Nova for running stacks<a class="headerlink" href="#preparing-nova-for-running-stacks" title="Permalink to this headline">¶</a></h2>
+<p>Enabling Heat in devstack will replace the default Nova flavors with
+flavors that the Heat example templates expect. You can see what
+those flavors are by running:</p>
+<div class="highlight-python"><div class="highlight"><pre>nova flavor-list
+</pre></div>
+</div>
+<p>Heat needs to launch instances with a keypair, so we need
+to generate one:</p>
+<div class="highlight-python"><div class="highlight"><pre>nova keypair-add heat_key &gt; heat_key.priv
+chmod 600 heat_key.priv
+</pre></div>
+</div>
+</div>
+<div class="section" id="launching-a-stack">
+<h2>Launching a stack<a class="headerlink" href="#launching-a-stack" title="Permalink to this headline">¶</a></h2>
+<p>Now lets launch a stack, using an example template from the heat-templates repository:</p>
+<div class="highlight-python"><div class="highlight"><pre>heat stack-create teststack -u
+http://git.openstack.org/cgit/openstack/heat-templates/plain/hot/F20/WordPress_Native.yaml -P key_name=heat_key -P image_id=Fedora-x86_64-20-20131211.1-sda
+</pre></div>
+</div>
+<p>Which will respond:</p>
+<div class="highlight-python"><div class="highlight"><pre>+--------------------------------------+-----------+--------------------+----------------------+
+| ID                                   | Name      | Status             | Created              |
++--------------------------------------+-----------+--------------------+----------------------+
+| (uuid)                               | teststack | CREATE_IN_PROGRESS | (timestamp)          |
++--------------------------------------+-----------+--------------------+----------------------+
+</pre></div>
+</div>
+<div class="section" id="list-stacks">
+<h3>List stacks<a class="headerlink" href="#list-stacks" title="Permalink to this headline">¶</a></h3>
+<p>List the stacks in your tenant:</p>
+<div class="highlight-python"><div class="highlight"><pre>heat stack-list
+</pre></div>
+</div>
+</div>
+<div class="section" id="list-stack-events">
+<h3>List stack events<a class="headerlink" href="#list-stack-events" title="Permalink to this headline">¶</a></h3>
+<p>List the events related to a particular stack:</p>
+<div class="highlight-python"><div class="highlight"><pre>heat event-list teststack
+</pre></div>
+</div>
+</div>
+<div class="section" id="describe-the-wordpress-stack">
+<h3>Describe the wordpress stack<a class="headerlink" href="#describe-the-wordpress-stack" title="Permalink to this headline">¶</a></h3>
+<p>Show detailed state of a stack:</p>
+<div class="highlight-python"><div class="highlight"><pre>heat stack-show teststack
+</pre></div>
+</div>
+<p>Note: After a few seconds, the stack_status should change from IN_PROGRESS to CREATE_COMPLETE.</p>
+</div>
+<div class="section" id="verify-instance-creation">
+<h3>Verify instance creation<a class="headerlink" href="#verify-instance-creation" title="Permalink to this headline">¶</a></h3>
+<p>Because the software takes some time to install from the repository, it may be a few minutes before the Wordpress instance is in a running state.</p>
+<p>Point a web browser at the location given by the WebsiteURL Output as shown by heat stack-show teststack:</p>
+<div class="highlight-python"><div class="highlight"><pre>wget ${WebsiteURL}
+</pre></div>
+</div>
+</div>
+<div class="section" id="delete-the-instance-when-done">
+<h3>Delete the instance when done<a class="headerlink" href="#delete-the-instance-when-done" title="Permalink to this headline">¶</a></h3>
+<p>Note: The list operation will show no running stack.:</p>
+<div class="highlight-python"><div class="highlight"><pre>heat stack-delete teststack
+heat stack-list
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../raxdox/index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Heat and Devstack</a><ul>
+<li><a class="reference internal" href="#configure-devstack-to-enable-heat">Configure DevStack to enable Heat</a></li>
+<li><a class="reference internal" href="#configure-devstack-to-enable-ceilometer-if-using-alarms">Configure DevStack to enable Ceilometer (if using Alarms)</a></li>
+<li><a class="reference internal" href="#configure-devstack-to-enable-osprofiler">Configure Devstack to enable OSprofiler</a></li>
+<li><a class="reference internal" href="#confirming-heat-is-responding">Confirming Heat is responding</a></li>
+<li><a class="reference internal" href="#preparing-nova-for-running-stacks">Preparing Nova for running stacks</a></li>
+<li><a class="reference internal" href="#launching-a-stack">Launching a stack</a><ul>
+<li><a class="reference internal" href="#list-stacks">List stacks</a></li>
+<li><a class="reference internal" href="#list-stack-events">List stack events</a></li>
+<li><a class="reference internal" href="#describe-the-wordpress-stack">Describe the wordpress stack</a></li>
+<li><a class="reference internal" href="#verify-instance-creation">Verify instance creation</a></li>
+<li><a class="reference internal" href="#delete-the-instance-when-done">Delete the instance when done</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/getting_started/on_devstack.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

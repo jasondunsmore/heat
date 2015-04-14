@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.cfn.template Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-engine-cfn-template-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.engine.cfn.template</span></tt> Module<a class="headerlink" href="#the-heat-engine-cfn-template-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.cfn.template.</tt><tt class="descname">CfnTemplate</tt><big>(</big><em>template</em>, <em>template_id=None</em>, <em>files=None</em>, <em>env=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/template.html#CfnTemplate"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.template.Template</span></tt></p>
+<p>A stack template.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">ALTERNATE_VERSION</tt><em class="property"> = 'HeatTemplateFormatVersion'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">DESCRIPTION</tt><em class="property"> = 'Description'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">MAPPINGS</tt><em class="property"> = 'Mappings'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">OUTPUTS</tt><em class="property"> = 'Outputs'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">PARAMETERS</tt><em class="property"> = 'Parameters'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">RESOURCES</tt><em class="property"> = 'Resources'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">SECTIONS</tt><em class="property"> = ('AWSTemplateFormatVersion', 'HeatTemplateFormatVersion', 'Description', 'Mappings', 'Parameters', 'Resources', 'Outputs')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">SECTIONS_NO_DIRECT_ACCESS</tt><em class="property"> = set(['AWSTemplateFormatVersion', 'HeatTemplateFormatVersion', 'Parameters'])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">VERSION</tt><em class="property"> = 'AWSTemplateFormatVersion'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">add_resource</tt><big>(</big><em>definition</em>, <em>name=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/template.html#CfnTemplate.add_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">functions</tt><em class="property"> = {'Fn::Select': &lt;class 'heat.engine.cfn.functions.Select'&gt;, 'Fn::FindInMap': &lt;class 'heat.engine.cfn.functions.FindInMap'&gt;, 'Fn::GetAtt': &lt;class 'heat.engine.cfn.functions.GetAtt'&gt;, 'Fn::Join': &lt;class 'heat.engine.cfn.functions.Join'&gt;, 'Ref': &lt;function Ref at 0x7e59488&gt;, 'Fn::GetAZs': &lt;class 'heat.engine.cfn.functions.GetAZs'&gt;, 'Fn::Base64': &lt;class 'heat.engine.cfn.functions.Base64'&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">param_schemata</tt><big>(</big><em>param_defaults=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/template.html#CfnTemplate.param_schemata"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">parameters</tt><big>(</big><em>stack_identifier</em>, <em>user_params</em>, <em>param_defaults=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/template.html#CfnTemplate.parameters"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">resource_definitions</tt><big>(</big><em>stack</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/template.html#CfnTemplate.resource_definitions"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">validate_resource_definitions</tt><big>(</big><em>stack</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/template.html#CfnTemplate.validate_resource_definitions"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.cfn.template.</tt><tt class="descname">HeatTemplate</tt><big>(</big><em>template</em>, <em>template_id=None</em>, <em>files=None</em>, <em>env=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/cfn/template.html#HeatTemplate"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.cfn.template.CfnTemplate</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">functions</tt><em class="property"> = {'Fn::Select': &lt;class 'heat.engine.cfn.functions.Select'&gt;, 'Fn::Base64': &lt;class 'heat.engine.cfn.functions.Base64'&gt;, 'Fn::MemberListToMap': &lt;class 'heat.engine.cfn.functions.MemberListToMap'&gt;, 'Fn::Replace': &lt;class 'heat.engine.cfn.functions.Replace'&gt;, 'Fn::GetAtt': &lt;class 'heat.engine.cfn.functions.GetAtt'&gt;, 'Fn::Join': &lt;class 'heat.engine.cfn.functions.Join'&gt;, 'Ref': &lt;function Ref at 0x7e59488&gt;, 'Fn::GetAZs': &lt;class 'heat.engine.cfn.functions.GetAZs'&gt;, 'Fn::ResourceFacade': &lt;class 'heat.engine.cfn.functions.ResourceFacade'&gt;, 'Fn::Split': &lt;class 'heat.engine.cfn.functions.Split'&gt;, 'Fn::FindInMap': &lt;class 'heat.engine.cfn.functions.FindInMap'&gt;}</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.engine.cfn.template.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

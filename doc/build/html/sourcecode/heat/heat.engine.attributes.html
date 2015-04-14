@@ -1,0 +1,218 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.attributes Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-engine-attributes-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.engine.attributes</span></tt> Module<a class="headerlink" href="#the-heat-engine-attributes-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.attributes.</tt><tt class="descname">Attribute</tt><big>(</big><em>attr_name</em>, <em>schema</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/attributes.html#Attribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>An Attribute schema.</p>
+<dl class="method">
+<dt>
+<tt class="descname">as_output</tt><big>(</big><em>resource_name</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/attributes.html#Attribute.as_output"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return an Output schema entry for a provider template with the given
+resource name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resource_name</strong> &#8211; the logical name of the provider resource</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">This attribute as a template &#8216;Output&#8217; entry</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">support_status</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/attributes.html#Attribute.support_status"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.attributes.</tt><tt class="descname">Attributes</tt><big>(</big><em>res_name</em>, <em>schema</em>, <em>resolver</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/attributes.html#Attributes"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">_abcoll.Mapping</span></tt></p>
+<p>Models a collection of Resource Attributes.</p>
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">as_outputs</tt><big>(</big><em>resource_name</em>, <em>resource_class</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/attributes.html#Attributes.as_outputs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource_name</strong> &#8211; logical name of the resource</li>
+<li><strong>resource_class</strong> &#8211; resource implementation class</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The attributes of the specified resource_class as a template
+Output map</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">reset_resolved_values</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/attributes.html#Attributes.reset_resolved_values"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">schema_from_outputs</tt><big>(</big><em>json_snippet</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/attributes.html#Attributes.schema_from_outputs"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.attributes.</tt><tt class="descname">Schema</tt><big>(</big><em>description=None</em>, <em>support_status=&lt;heat.engine.support.SupportStatus object at 0x4034810&gt;</em>, <em>cache_mode='cache_local'</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/attributes.html#Schema"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.Schema</span></tt></p>
+<p>Simple schema class for attributes.</p>
+<p>Schema objects are serialisable to dictionaries following a superset of
+the HOT input Parameter schema using dict().</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">CACHE_LOCAL</tt><em class="property"> = 'cache_local'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">CACHE_MODES</tt><em class="property"> = ('cache_local', 'cache_none')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">CACHE_NONE</tt><em class="property"> = 'cache_none'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">DESCRIPTION</tt><em class="property"> = 'description'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">KEYS</tt><em class="property"> = ('description',)</em></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><tt class="descname">from_attribute</tt><big>(</big><em>schema_dict</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/attributes.html#Schema.from_attribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a Property Schema corresponding to a Attribute Schema.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.attributes.</tt><tt class="descname">schemata</tt><big>(</big><em>schema</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/attributes.html#schemata"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return dictionary of Schema objects for given dictionary of schemata.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.attributes.</tt><tt class="descname">select_from_attribute</tt><big>(</big><em>attribute_value</em>, <em>path</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/attributes.html#select_from_attribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Select an element from an attribute value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>attribute_value</strong> &#8211; the attribute value.</li>
+<li><strong>path</strong> &#8211; a list of path components to select from the attribute.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the selected attribute component value.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.engine.attributes.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

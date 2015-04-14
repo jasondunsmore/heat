@@ -1,0 +1,8 @@
+=======================================
+The :mod:`heat.engine.rsrc_defn` Module
+=======================================
+.. automodule:: heat.engine.rsrc_defn
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

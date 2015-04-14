@@ -1,0 +1,8 @@
+=======================================
+The :mod:`heat.objects.snapshot` Module
+=======================================
+.. automodule:: heat.objects.snapshot
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

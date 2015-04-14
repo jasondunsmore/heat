@@ -1,0 +1,246 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Template Guide &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="template-guide">
+<h1>Template Guide<a class="headerlink" href="#template-guide" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hot_guide.html">Heat Orchestration Template (HOT) Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hot_guide.html#status">Status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hot_guide.html#writing-a-hello-world-hot-template">Writing a hello world HOT template</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hot_spec.html">Heat Orchestration Template (HOT) Specification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hot_spec.html#status">Status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hot_spec.html#template-structure">Template Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hot_spec.html#heat-template-version">Heat Template Version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hot_spec.html#parameter-groups-section">Parameter Groups Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hot_spec.html#parameters-section">Parameters Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hot_spec.html#resources-section">Resources Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hot_spec.html#outputs-section">Outputs Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hot_spec.html#intrinsic-functions">Intrinsic Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="environment.html">Environments</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="environment.html#format">Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="environment.html#command-line-usage">Command line usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="environment.html#global-and-effective-environments">Global and effective environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="environment.html#usage-examples">Usage examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="composition.html">Template composition</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="composition.html#use-the-template-filename-as-type">Use the template filename as type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="composition.html#define-a-new-resource-type">Define a new resource type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="composition.html#get-access-to-nested-attributes">Get access to nested attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="composition.html#making-your-template-resource-more-transparent">Making your template resource more &#8220;transparent&#8221;</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="openstack.html">OpenStack Resource Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Ceilometer::Alarm">OS::Ceilometer::Alarm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Ceilometer::CombinationAlarm">OS::Ceilometer::CombinationAlarm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Cinder::Volume">OS::Cinder::Volume</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Cinder::VolumeAttachment">OS::Cinder::VolumeAttachment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Glance::Image">OS::Glance::Image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::AccessPolicy">OS::Heat::AccessPolicy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::AutoScalingGroup">OS::Heat::AutoScalingGroup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::CWLiteAlarm">OS::Heat::CWLiteAlarm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::CloudConfig">OS::Heat::CloudConfig</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::HARestarter">OS::Heat::HARestarter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::InstanceGroup">OS::Heat::InstanceGroup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::MultipartMime">OS::Heat::MultipartMime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::RandomString">OS::Heat::RandomString</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::ResourceGroup">OS::Heat::ResourceGroup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::ScalingPolicy">OS::Heat::ScalingPolicy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::SoftwareComponent">OS::Heat::SoftwareComponent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::SoftwareConfig">OS::Heat::SoftwareConfig</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::SoftwareDeployment">OS::Heat::SoftwareDeployment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::SoftwareDeployments">OS::Heat::SoftwareDeployments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::Stack">OS::Heat::Stack</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::StructuredConfig">OS::Heat::StructuredConfig</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::StructuredDeployment">OS::Heat::StructuredDeployment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::StructuredDeployments">OS::Heat::StructuredDeployments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::SwiftSignal">OS::Heat::SwiftSignal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::SwiftSignalHandle">OS::Heat::SwiftSignalHandle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::UpdateWaitConditionHandle">OS::Heat::UpdateWaitConditionHandle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::WaitCondition">OS::Heat::WaitCondition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Heat::WaitConditionHandle">OS::Heat::WaitConditionHandle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::Firewall">OS::Neutron::Firewall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::FirewallPolicy">OS::Neutron::FirewallPolicy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::FirewallRule">OS::Neutron::FirewallRule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::FloatingIP">OS::Neutron::FloatingIP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::FloatingIPAssociation">OS::Neutron::FloatingIPAssociation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::HealthMonitor">OS::Neutron::HealthMonitor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::IKEPolicy">OS::Neutron::IKEPolicy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::IPsecPolicy">OS::Neutron::IPsecPolicy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::IPsecSiteConnection">OS::Neutron::IPsecSiteConnection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::LoadBalancer">OS::Neutron::LoadBalancer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::MeteringLabel">OS::Neutron::MeteringLabel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::MeteringRule">OS::Neutron::MeteringRule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::Net">OS::Neutron::Net</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::NetworkGateway">OS::Neutron::NetworkGateway</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::Pool">OS::Neutron::Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::PoolMember">OS::Neutron::PoolMember</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::Port">OS::Neutron::Port</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::ProviderNet">OS::Neutron::ProviderNet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::Router">OS::Neutron::Router</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::RouterGateway">OS::Neutron::RouterGateway</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::RouterInterface">OS::Neutron::RouterInterface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::SecurityGroup">OS::Neutron::SecurityGroup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::Subnet">OS::Neutron::Subnet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Neutron::VPNService">OS::Neutron::VPNService</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Nova::FloatingIP">OS::Nova::FloatingIP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Nova::FloatingIPAssociation">OS::Nova::FloatingIPAssociation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Nova::KeyPair">OS::Nova::KeyPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Nova::Server">OS::Nova::Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Nova::ServerGroup">OS::Nova::ServerGroup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Sahara::Cluster">OS::Sahara::Cluster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Sahara::ClusterTemplate">OS::Sahara::ClusterTemplate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Sahara::NodeGroupTemplate">OS::Sahara::NodeGroupTemplate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Swift::Container">OS::Swift::Container</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Trove::Cluster">OS::Trove::Cluster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="openstack.html#OS::Trove::Instance">OS::Trove::Instance</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cfn.html">CloudFormation Compatible Resource Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::AutoScaling::AutoScalingGroup">AWS::AutoScaling::AutoScalingGroup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::AutoScaling::LaunchConfiguration">AWS::AutoScaling::LaunchConfiguration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::AutoScaling::ScalingPolicy">AWS::AutoScaling::ScalingPolicy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::CloudFormation::Stack">AWS::CloudFormation::Stack</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::CloudFormation::WaitCondition">AWS::CloudFormation::WaitCondition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::CloudFormation::WaitConditionHandle">AWS::CloudFormation::WaitConditionHandle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::CloudFormation::WaitConditionHandle">AWS::CloudFormation::WaitConditionHandle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::EC2::EIP">AWS::EC2::EIP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::EC2::EIPAssociation">AWS::EC2::EIPAssociation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::EC2::Instance">AWS::EC2::Instance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::EC2::InternetGateway">AWS::EC2::InternetGateway</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::EC2::NetworkInterface">AWS::EC2::NetworkInterface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::EC2::RouteTable">AWS::EC2::RouteTable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::EC2::SecurityGroup">AWS::EC2::SecurityGroup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::EC2::Subnet">AWS::EC2::Subnet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::EC2::SubnetRouteTableAssociation">AWS::EC2::SubnetRouteTableAssociation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::EC2::VPC">AWS::EC2::VPC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::EC2::VPCGatewayAttachment">AWS::EC2::VPCGatewayAttachment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::EC2::Volume">AWS::EC2::Volume</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::EC2::VolumeAttachment">AWS::EC2::VolumeAttachment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::ElasticLoadBalancing::LoadBalancer">AWS::ElasticLoadBalancing::LoadBalancer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::IAM::AccessKey">AWS::IAM::AccessKey</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::IAM::User">AWS::IAM::User</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfn.html#AWS::S3::Bucket">AWS::S3::Bucket</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contrib.html">Contributed Heat Resource Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Barbican::Order">OS::Barbican::Order</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Barbican::Secret">OS::Barbican::Secret</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Ceilometer::GnocchiAggregationByMetricsAlarm">OS::Ceilometer::GnocchiAggregationByMetricsAlarm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Ceilometer::GnocchiAggregationByResourcesAlarm">OS::Ceilometer::GnocchiAggregationByResourcesAlarm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Ceilometer::GnocchiResourcesAlarm">OS::Ceilometer::GnocchiResourcesAlarm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Cinder::VolumeType">OS::Cinder::VolumeType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Heat::ChefSolo">OS::Heat::ChefSolo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Keystone::Group">OS::Keystone::Group</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Keystone::Project">OS::Keystone::Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Keystone::Role">OS::Keystone::Role</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Keystone::User">OS::Keystone::User</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Mistral::Workflow">OS::Mistral::Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Neutron::ExtraRoute">OS::Neutron::ExtraRoute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Nova::Flavor">OS::Nova::Flavor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Nova::Server">OS::Nova::Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#OS::Zaqar::Queue">OS::Zaqar::Queue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#rackspace-cloud-resource-types">Rackspace Cloud Resource Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contrib.html#dockerinc-resource">DockerInc Resource</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">CloudFormation Compatible Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#ref">Ref</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#fn-base64">Fn::Base64</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#fn-findinmap">Fn::FindInMap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#fn-getatt">Fn::GetAtt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#fn-getazs">Fn::GetAZs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#fn-join">Fn::Join</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#fn-select">Fn::Select</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#fn-split">Fn::Split</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#fn-replace">Fn::Replace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#fn-resourcefacade">Fn::ResourceFacade</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#fn-memberlisttomap">Fn::MemberListToMap</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/template_guide/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,609 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.scheduler &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.engine.scheduler</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">types</span>
+
+<span class="kn">import</span> <span class="nn">eventlet</span>
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span> <span class="k">as</span> <span class="n">logging</span>
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">encodeutils</span>
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">excutils</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LI</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="c"># Whether TaskRunner._sleep actually does an eventlet sleep when called.</span>
+<span class="n">ENABLE_SLEEP</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">wallclock</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span>
+
+
+<div class="viewcode-block" id="task_description"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.task_description">[docs]</a><span class="k">def</span> <span class="nf">task_description</span><span class="p">(</span><span class="n">task</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a human-readable string description of a task suitable for logging</span>
+<span class="sd">    the status of the task.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">__name__</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s">&#39;__name__&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s">&#39;__self__&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> from </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">task</span><span class="o">.</span><span class="n">__self__</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Timeout"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.Timeout">[docs]</a><span class="k">class</span> <span class="nc">Timeout</span><span class="p">(</span><span class="ne">BaseException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Timeout exception, raised within a task when it has exceeded its allotted</span>
+<span class="sd">    (wallclock) running time.</span>
+
+<span class="sd">    This allows the task to perform any necessary cleanup, as well as use a</span>
+<span class="sd">    different exception to notify the controlling task if appropriate. If the</span>
+<span class="sd">    task suppresses the exception altogether, it will be cancelled but the</span>
+<span class="sd">    controlling task will not be notified of the timeout.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_runner</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise with the TaskRunner and a timeout period in seconds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> Timed out&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">task_runner</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Timeout</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="c"># Note that we don&#39;t attempt to handle leap seconds or large clock</span>
+        <span class="c"># jumps here. The latter are assumed to be rare and the former</span>
+        <span class="c"># negligible in the context of the timeout. Time zone adjustments,</span>
+        <span class="c"># Daylight Savings and the like *are* handled. PEP 418 adds a proper</span>
+        <span class="c"># monotonic clock, but only in Python 3.3.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_endtime</span> <span class="o">=</span> <span class="n">wallclock</span><span class="p">()</span> <span class="o">+</span> <span class="n">timeout</span>
+
+<div class="viewcode-block" id="Timeout.expired"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.Timeout.expired">[docs]</a>    <span class="k">def</span> <span class="nf">expired</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">wallclock</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_endtime</span>
+</div>
+<div class="viewcode-block" id="Timeout.trigger"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.Timeout.trigger">[docs]</a>    <span class="k">def</span> <span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Trigger the timeout on a given generator.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">generator</span><span class="o">.</span><span class="n">throw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># Clean up in case task swallows exception without exiting</span>
+            <span class="n">generator</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">False</span>
+</div>
+    <span class="k">def</span> <span class="nf">__cmp__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Timeout</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="nb">cmp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_endtime</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">_endtime</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="TimedCancel"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.TimedCancel">[docs]</a><span class="k">class</span> <span class="nc">TimedCancel</span><span class="p">(</span><span class="n">Timeout</span><span class="p">):</span>
+<div class="viewcode-block" id="TimedCancel.trigger"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.TimedCancel.trigger">[docs]</a>    <span class="k">def</span> <span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Trigger the timeout on a given generator.&quot;&quot;&quot;</span>
+        <span class="n">generator</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+</div></div>
+<div class="viewcode-block" id="ExceptionGroup"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.ExceptionGroup">[docs]</a><span class="k">class</span> <span class="nc">ExceptionGroup</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Container for multiple exceptions.</span>
+
+<span class="sd">    This exception is used by DependencyTaskGroup when the flag</span>
+<span class="sd">    aggregate_exceptions is set to True and it&#39;s re-raised again when all tasks</span>
+<span class="sd">    are finished.  This way it can be caught later on so that the individual</span>
+<span class="sd">    exceptions can be acted upon.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exceptions</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">exceptions</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">exceptions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">exceptions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">exceptions</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">unicode</span><span class="p">([</span><span class="nb">unicode</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">ex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exceptions</span><span class="p">])</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__unicode__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exceptions</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="TaskRunner"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.TaskRunner">[docs]</a><span class="k">class</span> <span class="nc">TaskRunner</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper for a resumable task (co-routine).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise with a task function, and arguments to be passed to it when</span>
+<span class="sd">        it is started.</span>
+
+<span class="sd">        The task function may be a co-routine that yields control flow between</span>
+<span class="sd">        steps.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">task</span><span class="p">),</span> <span class="s">&quot;Task is not callable&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_task</span> <span class="o">=</span> <span class="n">task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_args</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_runner</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_done</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">task_description</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a human-readable string representation of the task.&quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Task </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">return</span> <span class="n">encodeutils</span><span class="o">.</span><span class="n">safe_encode</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__unicode__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a human-readable string representation of the task.&quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Task </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">return</span> <span class="n">encodeutils</span><span class="o">.</span><span class="n">safe_decode</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_sleep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wait_time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sleep for the specified number of seconds.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ENABLE_SLEEP</span> <span class="ow">and</span> <span class="n">wait_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> sleeping&#39;</span> <span class="o">%</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            <span class="n">eventlet</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait_time</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wait_time</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Start and run the task to completion.</span>
+
+<span class="sd">        The task will first sleep for zero seconds, then sleep for `wait_time`</span>
+<span class="sd">        seconds between steps. To avoid sleeping, pass `None` for `wait_time`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="c"># ensure that zero second sleep is applied only if task</span>
+        <span class="c"># has not completed.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="ow">and</span> <span class="n">wait_time</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_to_completion</span><span class="p">(</span><span class="n">wait_time</span><span class="o">=</span><span class="n">wait_time</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TaskRunner.start"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.TaskRunner.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise the task and run its first step.</span>
+
+<span class="sd">        If a timeout is specified, any attempt to step the task after that</span>
+<span class="sd">        number of seconds has elapsed will result in a Timeout being</span>
+<span class="sd">        raised inside the task.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runner</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&quot;Task already started&quot;</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_done</span><span class="p">,</span> <span class="s">&quot;Task already cancelled&quot;</span>
+
+        <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> starting&#39;</span> <span class="o">%</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="o">=</span> <span class="n">Timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_task</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">GeneratorType</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_runner</span> <span class="o">=</span> <span class="n">result</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_runner</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_done</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> done (not resumable)&#39;</span> <span class="o">%</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="TaskRunner.step"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.TaskRunner.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run another step of the task, and return True if the task is complete;</span>
+<span class="sd">        False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runner</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&quot;Task not started&quot;</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span><span class="o">.</span><span class="n">expired</span><span class="p">():</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> timed out&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_done</span> <span class="o">=</span> <span class="bp">True</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_runner</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> running&#39;</span> <span class="o">%</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_runner</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_done</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> complete&#39;</span> <span class="o">%</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_done</span>
+</div>
+<div class="viewcode-block" id="TaskRunner.run_to_completion"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.TaskRunner.run_to_completion">[docs]</a>    <span class="k">def</span> <span class="nf">run_to_completion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wait_time</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run the task to completion.</span>
+
+<span class="sd">        The task will sleep for `wait_time` seconds between steps. To avoid</span>
+<span class="sd">        sleeping, pass `None` for `wait_time`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sleep</span><span class="p">(</span><span class="n">wait_time</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TaskRunner.cancel"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.TaskRunner.cancel">[docs]</a>    <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grace_period</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Cancel the task and mark it as done.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="p">()</span> <span class="ow">or</span> <span class="n">grace_period</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> cancelled&#39;</span> <span class="o">%</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_done</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_runner</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">timeout</span> <span class="o">=</span> <span class="n">TimedCancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grace_period</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">timeout</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+</div>
+<div class="viewcode-block" id="TaskRunner.started"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.TaskRunner.started">[docs]</a>    <span class="k">def</span> <span class="nf">started</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return True if the task has been started.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runner</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="TaskRunner.done"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.TaskRunner.done">[docs]</a>    <span class="k">def</span> <span class="nf">done</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return True if the task is complete.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_done</span>
+</div>
+    <span class="k">def</span> <span class="nf">__nonzero__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return True if there are steps remaining.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="wrappertask"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.wrappertask">[docs]</a><span class="k">def</span> <span class="nf">wrappertask</span><span class="p">(</span><span class="n">task</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decorator for a task that needs to drive a subtask.</span>
+
+<span class="sd">    This is essentially a replacement for the Python 3-only &quot;yield from&quot;</span>
+<span class="sd">    keyword (PEP 380), using the &quot;yield&quot; keyword that is supported in</span>
+<span class="sd">    Python 2. For example::</span>
+
+<span class="sd">        @wrappertask</span>
+<span class="sd">        def parent_task(self):</span>
+<span class="sd">            self.setup()</span>
+
+<span class="sd">            yield self.child_task()</span>
+
+<span class="sd">            self.cleanup()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@six.wraps</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">task</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">subtask</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">subtask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">subtask_running</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">step</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">subtask</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                        <span class="n">subtask_running</span> <span class="o">=</span> <span class="bp">False</span>
+
+                    <span class="k">while</span> <span class="n">subtask_running</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="k">yield</span> <span class="n">step</span>
+                        <span class="k">except</span> <span class="ne">GeneratorExit</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                            <span class="n">subtask</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                            <span class="k">raise</span> <span class="n">ex</span>
+                        <span class="k">except</span><span class="p">:</span>  <span class="c"># noqa</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="n">step</span> <span class="o">=</span> <span class="n">subtask</span><span class="o">.</span><span class="n">throw</span><span class="p">(</span><span class="o">*</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
+                            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                                <span class="n">subtask_running</span> <span class="o">=</span> <span class="bp">False</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="n">step</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">subtask</span><span class="p">)</span>
+                            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                                <span class="n">subtask_running</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">yield</span>
+            <span class="k">except</span> <span class="ne">GeneratorExit</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                <span class="n">parent</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="n">ex</span>
+            <span class="k">except</span><span class="p">:</span>  <span class="c"># noqa</span>
+                <span class="n">subtask</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">throw</span><span class="p">(</span><span class="o">*</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">subtask</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span>
+
+</div>
+<div class="viewcode-block" id="DependencyTaskGroup"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.DependencyTaskGroup">[docs]</a><span class="k">class</span> <span class="nc">DependencyTaskGroup</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A task which manages a group of subtasks that have ordering dependencies.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dependencies</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">o</span><span class="p">(),</span>
+                 <span class="n">reverse</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">error_wait_time</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">aggregate_exceptions</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise with the task dependencies and (optionally) a task to run on</span>
+<span class="sd">        each.</span>
+
+<span class="sd">        If no task is supplied, it is assumed that the tasks are stored</span>
+<span class="sd">        directly in the dependency tree. If a task is supplied, the object</span>
+<span class="sd">        stored in the dependency tree is passed as an argument.</span>
+
+<span class="sd">        If an error_wait_time is specified, tasks that are already running at</span>
+<span class="sd">        the time of an error will continue to run for up to the specified</span>
+<span class="sd">        time before being cancelled. Once all remaining tasks are complete or</span>
+<span class="sd">        have been cancelled, the original exception is raised.</span>
+
+<span class="sd">        If aggregate_exceptions is True, then execution of parallel operations</span>
+<span class="sd">        will not be cancelled in the event of an error (operations downstream</span>
+<span class="sd">        of the error will be cancelled). Once all chains are complete, any</span>
+<span class="sd">        errors will be rolled up into an ExceptionGroup exception.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_runners</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">o</span><span class="p">,</span> <span class="n">TaskRunner</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">o</span><span class="p">))</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">dependencies</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span> <span class="o">=</span> <span class="n">dependencies</span><span class="o">.</span><span class="n">graph</span><span class="p">(</span><span class="n">reverse</span><span class="o">=</span><span class="n">reverse</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_wait_time</span> <span class="o">=</span> <span class="n">error_wait_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregate_exceptions</span> <span class="o">=</span> <span class="n">aggregate_exceptions</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;(</span><span class="si">%s</span><span class="s">) </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s">&#39;__name__&#39;</span><span class="p">,</span>
+                                        <span class="n">task_description</span><span class="p">(</span><span class="n">task</span><span class="p">)),</span>
+                                <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">dependencies</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a string representation of the task.&quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">(</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">encodeutils</span><span class="o">.</span><span class="n">safe_encode</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a co-routine which runs the task group.&quot;&quot;&quot;</span>
+        <span class="n">raised_exceptions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_runners</span><span class="o">.</span><span class="n">itervalues</span><span class="p">()):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ready</span><span class="p">():</span>
+                    <span class="n">r</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+                <span class="k">yield</span>
+
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">step</span><span class="p">():</span>
+                        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">exc_info</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregate_exceptions</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_cancel_recursively</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">cancel_all</span><span class="p">(</span><span class="n">grace_period</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">error_wait_time</span><span class="p">)</span>
+                <span class="n">raised_exceptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exc_info</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>  <span class="c"># noqa</span>
+                <span class="k">with</span> <span class="n">excutils</span><span class="o">.</span><span class="n">save_and_reraise_exception</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">cancel_all</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">raised_exceptions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregate_exceptions</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ExceptionGroup</span><span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">tb</span> <span class="ow">in</span> <span class="n">raised_exceptions</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">traceback</span> <span class="o">=</span> <span class="n">raised_exceptions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">raise</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">traceback</span>
+
+<div class="viewcode-block" id="DependencyTaskGroup.cancel_all"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.DependencyTaskGroup.cancel_all">[docs]</a>    <span class="k">def</span> <span class="nf">cancel_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grace_period</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runners</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="n">grace_period</span><span class="o">=</span><span class="n">grace_period</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_cancel_recursively</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
+        <span class="n">runner</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">dependent_node</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">required_by</span><span class="p">():</span>
+            <span class="n">node_runner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runners</span><span class="p">[</span><span class="n">dependent_node</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cancel_recursively</span><span class="p">(</span><span class="n">dependent_node</span><span class="p">,</span> <span class="n">node_runner</span><span class="p">)</span>
+
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Iterate over all subtasks that are ready to start - i.e. all their</span>
+<span class="sd">        dependencies have been satisfied but they have not yet been started.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">n</span><span class="p">:</span>
+                <span class="n">runner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runners</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">runner</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">runner</span><span class="o">.</span><span class="n">started</span><span class="p">():</span>
+                    <span class="k">yield</span> <span class="n">k</span><span class="p">,</span> <span class="n">runner</span>
+
+    <span class="k">def</span> <span class="nf">_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Iterate over all subtasks that are currently running - i.e. they have</span>
+<span class="sd">        been started but have not yet completed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">running</span> <span class="o">=</span> <span class="k">lambda</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span> <span class="ow">and</span> <span class="n">r</span><span class="o">.</span><span class="n">started</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">ifilter</span><span class="p">(</span><span class="n">running</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_runners</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="PollingTaskGroup"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.PollingTaskGroup">[docs]</a><span class="k">class</span> <span class="nc">PollingTaskGroup</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A task which manages a group of subtasks.</span>
+
+<span class="sd">    When the task is started, all of its subtasks are also started. The task</span>
+<span class="sd">    completes when all subtasks are complete.</span>
+
+<span class="sd">    Once started, the subtasks are assumed to be only polling for completion</span>
+<span class="sd">    of an asynchronous operation, so no attempt is made to give them equal</span>
+<span class="sd">    scheduling slots.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise with a list of tasks.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tasks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">task_description</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tasks</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_args</span><span class="p">(</span><span class="n">arg_lists</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list containing the positional args for each subtask.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">arg_lists</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_kwargs</span><span class="p">(</span><span class="n">kwarg_lists</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list containing the keyword args for each subtask.&quot;&quot;&quot;</span>
+        <span class="n">keygroups</span> <span class="o">=</span> <span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">izip</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                                    <span class="n">arglist</span><span class="p">)</span>
+                     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">arglist</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">kwarg_lists</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">izip</span><span class="p">(</span><span class="o">*</span><span class="n">keygroups</span><span class="p">)]</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="PollingTaskGroup.from_task_with_args"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.scheduler.html#heat.engine.scheduler.PollingTaskGroup.from_task_with_args">[docs]</a>    <span class="k">def</span> <span class="nf">from_task_with_args</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="o">*</span><span class="n">arg_lists</span><span class="p">,</span> <span class="o">**</span><span class="n">kwarg_lists</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a new PollingTaskGroup where each subtask is identical except</span>
+<span class="sd">        for the arguments passed to it.</span>
+
+<span class="sd">        Each argument to use should be passed as a list (or iterable) of values</span>
+<span class="sd">        such that one is passed in the corresponding position for each subtask.</span>
+<span class="sd">        The number of subtasks spawned depends on the length of the argument</span>
+<span class="sd">        lists.</span>
+<span class="sd">        For example::</span>
+
+<span class="sd">            PollingTaskGroup.from_task_with_args(my_task,</span>
+<span class="sd">                                                 [1, 2, 3],</span>
+<span class="sd">                                                 alpha=[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;])</span>
+
+<span class="sd">        will start three TaskRunners that will run::</span>
+
+<span class="sd">            my_task(1, alpha=&#39;a&#39;)</span>
+<span class="sd">            my_task(2, alpha=&#39;b&#39;)</span>
+<span class="sd">            my_task(3, alpha=&#39;c&#39;)</span>
+
+<span class="sd">        respectively.</span>
+
+<span class="sd">        If multiple arguments are supplied, each list should be of the same</span>
+<span class="sd">        length. In the case of any discrepancy, the length of the shortest</span>
+<span class="sd">        argument list will be used, and any extra arguments discarded.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">args_list</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_args</span><span class="p">(</span><span class="n">arg_lists</span><span class="p">)</span>
+        <span class="n">kwargs_list</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_kwargs</span><span class="p">(</span><span class="n">kwarg_lists</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">kwarg_lists</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">arg_lists</span><span class="p">:</span>
+            <span class="n">args_list</span> <span class="o">=</span> <span class="p">[[]]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs_list</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">arg_lists</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">kwarg_lists</span><span class="p">:</span>
+            <span class="n">kwargs_list</span> <span class="o">=</span> <span class="p">[{}]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">args_list</span><span class="p">)</span>
+
+        <span class="n">task_args</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">izip</span><span class="p">(</span><span class="n">args_list</span><span class="p">,</span> <span class="n">kwargs_list</span><span class="p">)</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="p">(</span><span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kwa</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">kwa</span> <span class="ow">in</span> <span class="n">task_args</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">task_description</span><span class="p">(</span><span class="n">task</span><span class="p">))</span>
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a string representation of the task group.&quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">(</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">encodeutils</span><span class="o">.</span><span class="n">safe_encode</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a co-routine which runs the task group.&quot;&quot;&quot;</span>
+        <span class="n">runners</span> <span class="o">=</span> <span class="p">[</span><span class="n">TaskRunner</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tasks</span><span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">runners</span><span class="p">:</span>
+                <span class="n">r</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+            <span class="k">while</span> <span class="n">runners</span><span class="p">:</span>
+                <span class="k">yield</span>
+                <span class="n">runners</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">dropwhile</span><span class="p">(</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">step</span><span class="p">(),</span>
+                                                   <span class="n">runners</span><span class="p">))</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c"># noqa</span>
+            <span class="k">with</span> <span class="n">excutils</span><span class="o">.</span><span class="n">save_and_reraise_exception</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">runners</span><span class="p">:</span>
+                    <span class="n">r</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

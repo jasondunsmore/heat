@@ -1,0 +1,367 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.environment Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-engine-environment-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.engine.environment</span></tt> Module<a class="headerlink" href="#the-heat-engine-environment-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.environment.</tt><tt class="descname">ClassResourceInfo</tt><big>(</big><em>registry</em>, <em>path</em>, <em>value</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ClassResourceInfo"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.environment.ResourceInfo</span></tt></p>
+<p>Store the mapping of resource name to python class implementation.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">description</tt><em class="property"> = 'Plugin'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_class</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ClassResourceInfo.get_class"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.environment.</tt><tt class="descname">Environment</tt><big>(</big><em>env=None</em>, <em>user_env=True</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#Environment"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">get_class</tt><big>(</big><em>resource_type</em>, <em>resource_name=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#Environment.get_class"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_constraint</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#Environment.get_constraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_resource_info</tt><big>(</big><em>resource_type</em>, <em>resource_name=None</em>, <em>registry_type=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#Environment.get_resource_info"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_stack_lifecycle_plugins</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#Environment.get_stack_lifecycle_plugins"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_types</tt><big>(</big><em>support_status=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#Environment.get_types"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">load</tt><big>(</big><em>env_snippet</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#Environment.load"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">patch_previous_parameters</tt><big>(</big><em>previous_env</em>, <em>clear_parameters=[]</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#Environment.patch_previous_parameters"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>This instance of Environment is the new environment where
+we are reusing as default the previous parameter values.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">register_class</tt><big>(</big><em>resource_type</em>, <em>resource_class</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#Environment.register_class"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">register_constraint</tt><big>(</big><em>constraint_name</em>, <em>constraint</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#Environment.register_constraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">register_stack_lifecycle_plugin</tt><big>(</big><em>stack_lifecycle_name</em>, <em>stack_lifecycle_class</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#Environment.register_stack_lifecycle_plugin"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">user_env_as_dict</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#Environment.user_env_as_dict"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get the environment as a dict, ready for storing in the db.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.environment.</tt><tt class="descname">GlobResourceInfo</tt><big>(</big><em>registry</em>, <em>path</em>, <em>value</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#GlobResourceInfo"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.environment.MapResourceInfo</span></tt></p>
+<p>Store the mapping (with wild cards) of one resource type to another.</p>
+<p>like: OS::Networking::* -&gt; OS::Neutron::*</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">description</tt><em class="property"> = 'Wildcard Mapping'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_resource_info</tt><big>(</big><em>resource_type=None</em>, <em>resource_name=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#GlobResourceInfo.get_resource_info"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">matches</tt><big>(</big><em>resource_type</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#GlobResourceInfo.matches"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.environment.</tt><tt class="descname">MapResourceInfo</tt><big>(</big><em>registry</em>, <em>path</em>, <em>value</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#MapResourceInfo"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.environment.ResourceInfo</span></tt></p>
+<p>Store the mapping of one resource type to another.</p>
+<p>like: OS::Networking::FloatingIp -&gt; OS::Neutron::FloatingIp</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">description</tt><em class="property"> = 'Mapping'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_class</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#MapResourceInfo.get_class"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_resource_info</tt><big>(</big><em>resource_type=None</em>, <em>resource_name=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#MapResourceInfo.get_resource_info"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.environment.</tt><tt class="descname">ResourceInfo</tt><big>(</big><em>registry</em>, <em>path</em>, <em>value</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ResourceInfo"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Base mapping of resource type to implementation.</p>
+<dl class="method">
+<dt>
+<tt class="descname">get_resource_info</tt><big>(</big><em>resource_type=None</em>, <em>resource_name=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ResourceInfo.get_resource_info"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">matches</tt><big>(</big><em>resource_type</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ResourceInfo.matches"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.environment.</tt><tt class="descname">ResourceRegistry</tt><big>(</big><em>global_registry</em>, <em>env</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ResourceRegistry"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>By looking at the environment, find the resource implementation.</p>
+<dl class="method">
+<dt>
+<tt class="descname">as_dict</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ResourceRegistry.as_dict"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return user resources in a dict format.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_class</tt><big>(</big><em>resource_type</em>, <em>resource_name=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ResourceRegistry.get_class"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_resource_info</tt><big>(</big><em>resource_type</em>, <em>resource_name=None</em>, <em>registry_type=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ResourceRegistry.get_resource_info"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Find possible matches to the resource type and name.
+chain the results from the global and user registry to find
+a match.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_types</tt><big>(</big><em>support_status</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ResourceRegistry.get_types"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a list of valid resource types.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">iterable_by</tt><big>(</big><em>resource_type</em>, <em>resource_name=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ResourceRegistry.iterable_by"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">load</tt><big>(</big><em>json_snippet</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ResourceRegistry.load"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">matches_hook</tt><big>(</big><em>resource_name</em>, <em>hook</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ResourceRegistry.matches_hook"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return whether a resource have a hook set in the environment.</p>
+<p>For a given resource and a hook type, we check to see if the the passed
+group of resources has the right hook associated with the name.</p>
+<p>Hooks are set in this format via <cite>resources</cite>:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>{</dt>
+<dd><dl class="first docutils">
+<dt>&#8220;res_name&#8221;: {</dt>
+<dd>&#8220;hooks&#8221;: [pre-create, pre-update]</dd>
+</dl>
+<p>},
+&#8220;<a href="#id1"><span class="problematic" id="id2">*</span></a>_suffix&#8221;: {</p>
+<blockquote>
+<div>&#8220;hooks&#8221;: pre-create</div></blockquote>
+<p>},
+&#8220;prefix_*&#8221;: {</p>
+<blockquote>
+<div>&#8220;hooks&#8221;: pre-update</div></blockquote>
+<p class="last">}</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>A hook value is either <cite>pre-create</cite>, <cite>pre-update</cite> or a list of those
+values. Resources support wildcard matching. The asterisk sign matches
+everything.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">register_class</tt><big>(</big><em>resource_type</em>, <em>resource_class</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ResourceRegistry.register_class"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">remove_item</tt><big>(</big><em>info</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ResourceRegistry.remove_item"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">remove_resources_except</tt><big>(</big><em>resource_name</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#ResourceRegistry.remove_resources_except"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.environment.</tt><tt class="descname">TemplateResourceInfo</tt><big>(</big><em>registry</em>, <em>path</em>, <em>value</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#TemplateResourceInfo"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.environment.ResourceInfo</span></tt></p>
+<p>Store the info needed to start a TemplateResource.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">description</tt><em class="property"> = 'Template'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_class</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#TemplateResourceInfo.get_class"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.environment.</tt><tt class="descname">get_child_environment</tt><big>(</big><em>parent_env</em>, <em>child_params</em>, <em>item_to_remove=None</em>, <em>child_resource_name=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#get_child_environment"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Build a child environment using the parent environment and params.</p>
+<p>This is built from the child_params and the parent env so some
+resources can use user-provided parameters as if they come from an
+environment.</p>
+<ol class="arabic simple">
+<li>resource_registry must be merged (child env should be loaded after the
+parent env to take presdence).</li>
+<li>child parameters must overwrite the parent&#8217;s as they won&#8217;t be relevant
+in the child template.</li>
+</ol>
+<p>If <cite>child_resource_name</cite> is provided, resources in the registry will be
+replaced with the contents of the matching child resource plus anything
+that passes a wildcard match.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.environment.</tt><tt class="descname">is_hook_definition</tt><big>(</big><em>key</em>, <em>value</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#is_hook_definition"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.environment.</tt><tt class="descname">read_global_environment</tt><big>(</big><em>env</em>, <em>env_dir=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#read_global_environment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.environment.</tt><tt class="descname">valid_hook_type</tt><big>(</big><em>hook</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/environment.html#valid_hook_type"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.engine.environment.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

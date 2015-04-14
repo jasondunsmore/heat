@@ -1,0 +1,427 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Scaling a Deployment &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="scaling-a-deployment">
+<h1>Scaling a Deployment<a class="headerlink" href="#scaling-a-deployment" title="Permalink to this headline">¶</a></h1>
+<p>When deploying in an environment where a large number of incoming requests need
+to be handled, the API and engine services can be overloaded. In those
+scenarios, in order to increase the system performance, it can be helpful to run
+multiple load-balanced APIs and engines.</p>
+<p>This guide details how to scale out the ReST API, the CFN API, and the engine,
+also known as the <em>heat-api</em>, <em>heat-api-cfn</em>, and <em>heat-engine</em> services,
+respectively.</p>
+<div class="section" id="assumptions">
+<span id="scale-deployment-assumptions"></span><h2>Assumptions<a class="headerlink" href="#assumptions" title="Permalink to this headline">¶</a></h2>
+<p>This guide, using a devstack installation of OpenStack, assumes that:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>You have configured devstack from <a class="reference external" href="http://devstack.org/guides/single-machine.html">Single Machine Installation Guide</a>;</li>
+<li>You have set up Heat on devstack, as defined at <a class="reference external" href="http://docs.openstack.org/developer/heat/getting_started/on_devstack.html">Heat and Devstack</a>;</li>
+<li>You have installed <a class="reference external" href="http://haproxy.1wt.eu">HAProxy</a> on the devstack
+server.</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="architecture">
+<h2>Architecture<a class="headerlink" href="#architecture" title="Permalink to this headline">¶</a></h2>
+<p>This section shows the basic Heat architecture, the load balancing mechanism
+used and the target scaled out architecture.</p>
+<div class="section" id="basic-architecture">
+<h3>Basic Architecture<a class="headerlink" href="#basic-architecture" title="Permalink to this headline">¶</a></h3>
+<p>The Heat architecture is as defined at <a class="reference external" href="http://docs.openstack.org/developer/heat/architecture.html">Heat Architecture</a> and shown in the
+diagram below, where we have a CLI that sends HTTP requests to the ReST and CFN
+APIs, which in turn make calls using AMQP to the Heat engine.</p>
+<div class="highlight-python"><div class="highlight"><pre>                  |- [REST API] -|
+[CLI] -- &lt;HTTP&gt; --                -- &lt;AMQP&gt; -- [ENGINE]
+                  |- [CFN API]  -|
+</pre></div>
+</div>
+</div>
+<div class="section" id="load-balancing">
+<h3>Load Balancing<a class="headerlink" href="#load-balancing" title="Permalink to this headline">¶</a></h3>
+<p>As there is a need to use a load balancer mechanism between the multiple APIs
+and the CLI, a proxy has to be deployed.</p>
+<p>Because the Heat CLI and APIs communicate by exchanging HTTP requests and
+responses, a <a class="reference external" href="http://haproxy.1wt.eu">HAProxy</a> HTTP load balancer server will
+be deployed between them.</p>
+<p>This way, the proxy will take the CLIs requests to the APIs and act on their
+behalf. Once the proxy receives a response, it will be redirected to the caller
+CLI.</p>
+<p>A round-robin distribution of messages from the AMQP queue will act as the load
+balancer for multiple engines. Check that your AMQP service is configured to
+distribute messages round-robin (RabbitMQ does this by default).</p>
+</div>
+<div class="section" id="target-architecture">
+<h3>Target Architecture<a class="headerlink" href="#target-architecture" title="Permalink to this headline">¶</a></h3>
+<p>A scaled out Heat architecture is represented in the diagram below:</p>
+<div class="highlight-python"><div class="highlight"><pre>                             |- [REST-API] -|
+                             |-    ...     -|
+                             |- [REST-API] -|             |- [ENGINE] -|
+[CLI] -- &lt;HTTP&gt; -- [PROXY] --                -- &lt;AMQP&gt; -- |-    ...   -|
+                             |- [API-CFN]  -|             |- [ENGINE] -|
+                             |-    ...     -|
+                             |- [API-CFN]  -|
+</pre></div>
+</div>
+<p>Thus, a request sent from the CLI looks like:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>CLI contacts the proxy;</li>
+<li>The HAProxy server, acting as a load balancer, redirects the call to an
+API instance;</li>
+<li>The API server sends messages to the AMQP queue, and the engines pick up
+messages in round-robin fashion.</li>
+</ol>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="deploying-multiple-apis">
+<h2>Deploying Multiple APIs<a class="headerlink" href="#deploying-multiple-apis" title="Permalink to this headline">¶</a></h2>
+<p>In order to run a Heat component separately, you have to execute one of the
+python scripts located at the <em>bin</em> directory of your Heat repository.</p>
+<p>These scripts take as argument a configuration file. When using devstack, the
+configuration file is located at <em>/etc/heat/heat.conf</em>. For instance, to start
+new ReST and CFN API services, you must run:</p>
+<div class="highlight-python"><div class="highlight"><pre>python bin/heat-api --config-file=/etc/heat/heat.conf
+python bin/heat-api-cfn --config-file=/etc/heat/heat.conf
+</pre></div>
+</div>
+<p>Each API service must have a unique address to listen. This address have to be
+defined in the configuration file. For ReST and CFN APIs, modify the
+<em>[heat_api]</em> and <em>[heat_api_cfn]</em> blocks, respectively.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">heat_api</span><span class="p">]</span>
+<span class="n">bind_port</span> <span class="o">=</span> <span class="p">{</span><span class="n">API_PORT</span><span class="p">}</span>
+<span class="n">bind_host</span> <span class="o">=</span> <span class="p">{</span><span class="n">API_HOST</span><span class="p">}</span>
+
+<span class="o">...</span>
+
+<span class="p">[</span><span class="n">heat_api_cfn</span><span class="p">]</span>
+<span class="n">bind_port</span> <span class="o">=</span> <span class="p">{</span><span class="n">API_CFN_PORT</span><span class="p">}</span>
+<span class="n">bind_host</span> <span class="o">=</span> <span class="p">{</span><span class="n">API_CFN_HOST</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>If you wish to run multiple API processes on the same machine, you must create
+multiple copies of the heat.conf file, each containing a unique port number.</p>
+<p>In addition, if you want to run some API services in different machines than
+the devstack server, you have to update the loopback addresses found at the
+<em>sql_connection</em> and <em>rabbit_host</em> properties to the devstack server&#8217;s IP,
+which must be reachable from the remote machine.</p>
+</div>
+<div class="section" id="deploying-multiple-engines">
+<h2>Deploying Multiple Engines<a class="headerlink" href="#deploying-multiple-engines" title="Permalink to this headline">¶</a></h2>
+<p>All engines must be configured to use the same AMQP service.  Ensure that all of
+the <em>rabbit_</em>* and <em>kombu_</em>* configuration options in the <em>[DEFAULT]</em> section
+of <em>/etc/heat/heat.conf</em> match across each machine that will be running an
+engine.  By using the same AMQP configuration, each engine will subscribe to the
+same AMQP <em>engine</em> queue and pick up work in round-robin fashion with the other
+engines.</p>
+<p>One or more engines can be deployed per host.  Depending on the host&#8217;s CPU
+architecture, it may be beneficial to deploy several engines on a single
+machine.</p>
+<p>To start multiple engines on the same machine, simply start multiple
+<em>heat-engine</em> processes:</p>
+<div class="highlight-python"><div class="highlight"><pre>python bin/heat-engine --config-file=/etc/heat/heat.conf &amp;
+python bin/heat-engine --config-file=/etc/heat/heat.conf &amp;
+</pre></div>
+</div>
+</div>
+<div class="section" id="deploying-the-proxy">
+<h2>Deploying the Proxy<a class="headerlink" href="#deploying-the-proxy" title="Permalink to this headline">¶</a></h2>
+<p>In order to simplify the deployment of the HAProxy server, we will replace
+the ReST and CFN APIs deployed when installing devstack by the HAProxy server.
+This way, there is no need to update, on the CLI, the addresses where it should
+look for the APIs. In this case, when it makes a call to any API, it will find
+the proxy, acting on their behalf.</p>
+<p>Note that the addresses that the HAProxy will be listening to are the pairs
+<em>API_HOST:API-PORT</em> and <em>API_CFN_HOST:API_CFN_PORT</em>, found at the <em>[heat_api]</em>
+and <em>[heat_api_cfn]</em> blocks on the devstack server&#8217;s configuration file. In
+addition, the original <em>heat-api</em> and <em>heat-api-cfn</em> processes running in these
+ports have to be killed, because these addresses must be free to be used by the
+proxy.</p>
+<p>To deploy the HAProxy server on the devstack server, run
+<em>haproxy -f apis-proxy.conf</em>, where this configuration file looks like:</p>
+<div class="highlight-python"><div class="highlight"><pre>global
+    daemon
+    maxconn 4000
+
+defaults
+    log  global
+    maxconn  8000
+    option  redispatch
+    retries  3
+    timeout  http-request 10s
+    timeout  queue 1m
+    timeout  connect 10s
+    timeout  client 1m
+    timeout  server 1m
+    timeout  check 10s
+
+listen rest_api_proxy
+    # The values required below are the original ones that were in
+    # /etc/heat/heat.conf on the devstack server.
+    bind {API_HOST}:{API_PORT}
+    balance  source
+    option  tcpka
+    option  httpchk
+    # The values required below are the different addresses supplied when
+    # running the ReST API instances.
+    server SERVER_1 {HOST_1}:{PORT_1}
+    ...
+    server SERVER_N {HOST_N}:{PORT_N}
+
+listen cfn_api_proxy
+    # The values required below are the original ones that were in
+    # /etc/heat/heat.conf on the devstack server.
+    bind {API_CFN_HOST}:{API_CFN_PORT}
+    balance  source
+    option  tcpka
+    option  httpchk
+    # The values required below are the different addresses supplied when
+    # running the CFN API instances.
+    server SERVER_1 {HOST_1}:{PORT_1}
+    ...
+    server SERVER_N {HOST_N}:{PORT_N}
+</pre></div>
+</div>
+</div>
+<div class="section" id="sample">
+<h2>Sample<a class="headerlink" href="#sample" title="Permalink to this headline">¶</a></h2>
+<p>This section aims to clarify some aspects of the scaling out solution, as well
+as to show more details of the configuration by describing a concrete sample.</p>
+<div class="section" id="id2">
+<h3>Architecture<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>This section shows a basic OpenStack architecture and the target one
+that will be used for testing of the scaled-out heat services.</p>
+<div class="section" id="id3">
+<h4>Basic Architecture<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<p>For this sample, consider that:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>We have an architecture composed by 3 machines configured in a LAN, with
+the addresses A: 10.0.0.1; B: 10.0.0.2; and C: 10.0.0.3;</li>
+<li>The OpenStack devstack installation, including the Heat module, has been
+done in the machine A, as shown in the
+<a class="reference internal" href="#scale-deployment-assumptions"><em>Assumptions</em></a> section.</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="id4">
+<h4>Target Architecture<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<p>At this moment, everything is running in a single devstack server. The next
+subsections show how to deploy a scaling out Heat architecture by:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Running one ReST and one CFN API on the machines B and C;</li>
+<li>Setting up the HAProxy server on the machine A.</li>
+</ol>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="running-the-api-and-engine-services">
+<h3>Running the API and Engine Services<a class="headerlink" href="#running-the-api-and-engine-services" title="Permalink to this headline">¶</a></h3>
+<p>For each machine, B and C, you must do the following steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Clone the Heat repository <a class="reference external" href="https://github.com/openstack/heat">https://github.com/openstack/heat</a>;</li>
+<li>Create a local copy of the configuration file <em>/etc/heat/heat.conf</em> from
+the machine A;</li>
+<li>Make required changes on the configuration file;</li>
+<li>Enter the Heat local repository and run:</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre>python bin/heat-api --config-file=/etc/heat/heat.conf
+python bin/heat-api-cfn --config-file=/etc/heat/heat.conf
+</pre></div>
+</div>
+<ol class="arabic simple" start="5">
+<li>Start as many <em>heat-engine</em> processes as you want running on that
+machine:</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre>python bin/heat-engine --config-file=/etc/heat/heat.conf &amp;
+python bin/heat-engine --config-file=/etc/heat/heat.conf &amp;
+...
+</pre></div>
+</div>
+</div></blockquote>
+<div class="section" id="changes-on-configuration">
+<h4>Changes On Configuration<a class="headerlink" href="#changes-on-configuration" title="Permalink to this headline">¶</a></h4>
+<p>The original file from A looks like:</p>
+<div class="highlight-python"><div class="highlight"><pre>[DEFAULT]
+...
+sql_connection = mysql://root:admin@127.0.0.1/heat?charset=utf8
+rabbit_host = localhost
+...
+[heat_api]
+bind_port = 8004
+bind_host = 10.0.0.1
+...
+[heat_api_cfn]
+bind_port = 8000
+bind_host = 10.0.0.1
+</pre></div>
+</div>
+<p>After the changes for B, it looks like:</p>
+<div class="highlight-python"><div class="highlight"><pre>[DEFAULT]
+...
+sql_connection = mysql://root:admin@10.0.0.1/heat?charset=utf8
+rabbit_host = 10.0.0.1
+...
+[heat_api]
+bind_port = 8004
+bind_host = 10.0.0.2
+...
+[heat_api_cfn]
+bind_port = 8000
+bind_host = 10.0.0.2
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="setting-up-haproxy">
+<h3>Setting Up HAProxy<a class="headerlink" href="#setting-up-haproxy" title="Permalink to this headline">¶</a></h3>
+<p>On the machine A, kill the <em>heat-api</em> and <em>heat-api-cfn</em> processes by running
+<em>pkill heat-api</em> and <em>pkill heat-api-cfn</em>. After, run
+<em>haproxy -f apis-proxy.conf</em> with the following configuration:</p>
+<div class="highlight-python"><div class="highlight"><pre> global
+    daemon
+    maxconn 4000
+
+defaults
+    log  global
+    maxconn  8000
+    option  redispatch
+    retries  3
+    timeout  http-request 10s
+    timeout  queue 1m
+    timeout  connect 10s
+    timeout  client 1m
+    timeout  server 1m
+    timeout  check 10s
+
+listen rest_api_proxy
+    bind 10.0.0.1:8004
+    balance  source
+    option  tcpka
+    option  httpchk
+    server rest-server-1 10.0.0.2:8004
+    server rest-server-2 10.0.0.3:8004
+
+listen cfn_api_proxy
+    bind 10.0.0.1:8000
+    balance  source
+    option  tcpka
+    option  httpchk
+    server cfn-server-1 10.0.0.2:8000
+    server cfn-server-2 10.0.0.3:8000
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="raxdox/index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Scaling a Deployment</a><ul>
+<li><a class="reference internal" href="#assumptions">Assumptions</a></li>
+<li><a class="reference internal" href="#architecture">Architecture</a><ul>
+<li><a class="reference internal" href="#basic-architecture">Basic Architecture</a></li>
+<li><a class="reference internal" href="#load-balancing">Load Balancing</a></li>
+<li><a class="reference internal" href="#target-architecture">Target Architecture</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#deploying-multiple-apis">Deploying Multiple APIs</a></li>
+<li><a class="reference internal" href="#deploying-multiple-engines">Deploying Multiple Engines</a></li>
+<li><a class="reference internal" href="#deploying-the-proxy">Deploying the Proxy</a></li>
+<li><a class="reference internal" href="#sample">Sample</a><ul>
+<li><a class="reference internal" href="#id2">Architecture</a><ul>
+<li><a class="reference internal" href="#id3">Basic Architecture</a></li>
+<li><a class="reference internal" href="#id4">Target Architecture</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#running-the-api-and-engine-services">Running the API and Engine Services</a><ul>
+<li><a class="reference internal" href="#changes-on-configuration">Changes On Configuration</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#setting-up-haproxy">Setting Up HAProxy</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/scale_deployment.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

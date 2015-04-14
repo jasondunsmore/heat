@@ -1,0 +1,8 @@
+============================================
+The :mod:`heat.api.openstack.v1.util` Module
+============================================
+.. automodule:: heat.api.openstack.v1.util
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

@@ -1,0 +1,8 @@
+=========================================
+The :mod:`heat.objects.watch_rule` Module
+=========================================
+.. automodule:: heat.objects.watch_rule
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

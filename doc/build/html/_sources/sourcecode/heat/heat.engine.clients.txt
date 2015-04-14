@@ -1,0 +1,8 @@
+=====================================
+The :mod:`heat.engine.clients` Module
+=====================================
+.. automodule:: heat.engine.clients
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

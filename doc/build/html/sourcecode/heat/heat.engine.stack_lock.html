@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.stack_lock Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-engine-stack-lock-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.engine.stack_lock</span></tt> Module<a class="headerlink" href="#the-heat-engine-stack-lock-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.stack_lock.</tt><tt class="descname">StackLock</tt><big>(</big><em>context</em>, <em>stack</em>, <em>engine_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">acquire</tt><big>(</big><em>retry=True</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.acquire"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Acquire a lock on the stack.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>retry</strong> (<em>boolean</em>) &#8211; When True, retry if lock was released while stealing.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">engine_alive</tt><big>(</big><em>context</em>, <em>engine_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.engine_alive"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">generate_engine_id</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.generate_engine_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_engine_id</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.get_engine_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">release</tt><big>(</big><em>stack_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.release"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Release a stack lock.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">thread_lock</tt><big>(</big><em>*args</em>, <em>**kwds</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.thread_lock"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Acquire a lock and release it only if there is an exception.  The
+release method still needs to be scheduled to be run at the
+end of the thread using the Thread.link method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">try_acquire</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.try_acquire"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Try to acquire a stack lock, but don&#8217;t raise an ActionInProgress
+exception or try to steal lock.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">try_thread_lock</tt><big>(</big><em>*args</em>, <em>**kwds</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.try_thread_lock"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Similar to thread_lock, but acquire the lock using try_acquire
+and only release it upon any exception after a successful
+acquisition.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.engine.stack_lock.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

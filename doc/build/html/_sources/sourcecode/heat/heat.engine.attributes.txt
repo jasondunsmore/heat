@@ -1,0 +1,8 @@
+========================================
+The :mod:`heat.engine.attributes` Module
+========================================
+.. automodule:: heat.engine.attributes
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

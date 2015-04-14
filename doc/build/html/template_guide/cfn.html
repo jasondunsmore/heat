@@ -1,0 +1,2869 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>CloudFormation Compatible Resource Types &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="cloudformation-compatible-resource-types">
+<h1>CloudFormation Compatible Resource Types<a class="headerlink" href="#cloudformation-compatible-resource-types" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="AWS::AutoScaling::AutoScalingGroup">
+<h2>AWS::AutoScaling::AutoScalingGroup<a class="headerlink" href="#AWS::AutoScaling::AutoScalingGroup" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.1 (Icehouse)</p>
+</div>
+<div class="section" id="AWS::AutoScaling::AutoScalingGroup-props">
+<h3>Properties<a class="headerlink" href="#AWS::AutoScaling::AutoScalingGroup-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>AvailabilityZones <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Not Implemented.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Cooldown <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">Cooldown period, in seconds.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>DesiredCapacity <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Desired initial number of instances.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>HealthCheckGracePeriod <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>HealthCheckType <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>InstanceId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of an existing instance to use to create the Auto Scaling group. If specify this property, will create the group use an existing instance instead of a launch configuration.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type nova.server</p>
+</dd>
+<dt>LaunchConfigurationName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The reference to a LaunchConfiguration resource.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>LoadBalancerNames <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">List of LoadBalancer resources.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>MaxSize <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Maximum number of instances in the group.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>MinSize <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Minimum number of instances in the group.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Tags <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Tags to attach to this group.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>Key <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Value <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>VPCZoneIdentifier <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Use only with Neutron, to list the internal subnet to which the instance will be attached; needed only if multiple exist; list length must be exactly 1.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">UUID of the internal subnet to which the instance will be attached.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::AutoScaling::AutoScalingGroup-attrs">
+<h3>Attributes<a class="headerlink" href="#AWS::AutoScaling::AutoScalingGroup-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>InstanceList</dt>
+<dd>A comma-delimited list of server ip addresses. (Heat extension).</dd>
+</dl>
+</div>
+<div class="section" id="AWS::AutoScaling::AutoScalingGroup-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::AutoScaling::AutoScalingGroup-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::AutoScaling::AutoScalingGroup
+    properties:
+      AvailabilityZones: [Value, Value, ...]
+      Cooldown: Number
+      DesiredCapacity: Integer
+      InstanceId: String
+      LaunchConfigurationName: String
+      LoadBalancerNames: [Value, Value, ...]
+      MaxSize: Integer
+      MinSize: Integer
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      VPCZoneIdentifier: [String, String, ...]
+</pre>
+</div>
+<div class="section" id="AWS::AutoScaling::AutoScalingGroup-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::AutoScaling::AutoScalingGroup-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones: [Value, Value, ...]
+      Cooldown: Number
+      DesiredCapacity: Integer
+      InstanceId: String
+      LaunchConfigurationName: String
+      LoadBalancerNames: [Value, Value, ...]
+      MaxSize: Integer
+      MinSize: Integer
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      VPCZoneIdentifier: [String, String, ...]
+</pre>
+</div>
+<div class="section" id="AWS::AutoScaling::AutoScalingGroup-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::AutoScaling::AutoScalingGroup-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::AutoScaling::AutoScalingGroup&quot;,
+      &quot;Properties&quot;: {
+        &quot;AvailabilityZones&quot;: [Value, Value, ...],
+        &quot;Cooldown&quot;: Number,
+        &quot;DesiredCapacity&quot;: Integer,
+        &quot;InstanceId&quot;: String,
+        &quot;LaunchConfigurationName&quot;: String,
+        &quot;LoadBalancerNames&quot;: [Value, Value, ...],
+        &quot;MaxSize&quot;: Integer,
+        &quot;MinSize&quot;: Integer,
+        &quot;Tags&quot;: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...],
+        &quot;VPCZoneIdentifier&quot;: [String, String, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::AutoScaling::LaunchConfiguration">
+<h2>AWS::AutoScaling::LaunchConfiguration<a class="headerlink" href="#AWS::AutoScaling::LaunchConfiguration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::AutoScaling::LaunchConfiguration-props">
+<h3>Properties<a class="headerlink" href="#AWS::AutoScaling::LaunchConfiguration-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>BlockDeviceMappings <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Block device mappings to attach to instance.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>DeviceName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A device name where the volume will be attached in the system at /dev/device_name.e.g. vdb</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Ebs <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">The ebs volume to attach to the instance.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>DeleteOnTermination <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Indicate whether the volume should be deleted when the instance is terminated.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;True&#8221;.</p>
+</dd>
+<dt>Iops <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>SnapshotId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the snapshot to create a volume from.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type cinder.snapshot</p>
+</dd>
+<dt>VolumeSize <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The size of the volume, in GB. Must be equal or greater than the size of the snapshot. It is safe to leave this blank and have the Compute service infer the size.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>VolumeType <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+</dl>
+</dd>
+<dt>NoDevice <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>VirtualName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>ImageId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Glance image ID or name.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type glance.image</p>
+</dd>
+<dt>InstanceId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of an existing instance you want to use to create the launch configuration. All properties are derived from the instance with the exception of BlockDeviceMapping.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type nova.server</p>
+</dd>
+<dt>InstanceType <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Nova instance type (flavor).</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type nova.flavor</p>
+</dd>
+<dt>KernelId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>KeyName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Optional Nova keypair name.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type nova.keypair</p>
+</dd>
+<dt>NovaSchedulerHints <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Scheduler hints to pass to Nova (Heat extension).</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>Key <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Value <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>RamDiskId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>SecurityGroups <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Security group names to assign.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>UserData <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">User data to pass to instance.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::AutoScaling::LaunchConfiguration-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::AutoScaling::LaunchConfiguration-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::AutoScaling::LaunchConfiguration
+    properties:
+      BlockDeviceMappings: [{&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, {&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, ...]
+      ImageId: String
+      InstanceId: String
+      InstanceType: String
+      KeyName: String
+      NovaSchedulerHints: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      SecurityGroups: [Value, Value, ...]
+      UserData: String
+</pre>
+</div>
+<div class="section" id="AWS::AutoScaling::LaunchConfiguration-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::AutoScaling::LaunchConfiguration-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      BlockDeviceMappings: [{&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, {&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, ...]
+      ImageId: String
+      InstanceId: String
+      InstanceType: String
+      KeyName: String
+      NovaSchedulerHints: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      SecurityGroups: [Value, Value, ...]
+      UserData: String
+</pre>
+</div>
+<div class="section" id="AWS::AutoScaling::LaunchConfiguration-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::AutoScaling::LaunchConfiguration-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::AutoScaling::LaunchConfiguration&quot;,
+      &quot;Properties&quot;: {
+        &quot;BlockDeviceMappings&quot;: [{&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, {&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, ...],
+        &quot;ImageId&quot;: String,
+        &quot;InstanceId&quot;: String,
+        &quot;InstanceType&quot;: String,
+        &quot;KeyName&quot;: String,
+        &quot;NovaSchedulerHints&quot;: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...],
+        &quot;SecurityGroups&quot;: [Value, Value, ...],
+        &quot;UserData&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::AutoScaling::ScalingPolicy">
+<h2>AWS::AutoScaling::ScalingPolicy<a class="headerlink" href="#AWS::AutoScaling::ScalingPolicy" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::AutoScaling::ScalingPolicy-props">
+<h3>Properties<a class="headerlink" href="#AWS::AutoScaling::ScalingPolicy-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>AdjustmentType <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Type of adjustment (absolute or percentage).</p>
+<p>Can be updated without replacement.</p>
+<p>Required property.</p>
+<p class="last">Allowed values: ChangeInCapacity, ExactCapacity, PercentChangeInCapacity</p>
+</dd>
+<dt>AutoScalingGroupName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">AutoScaling group name to apply policy to.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Cooldown <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">Cooldown period, in seconds.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>ScalingAdjustment <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">Size of adjustment.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::AutoScaling::ScalingPolicy-attrs">
+<h3>Attributes<a class="headerlink" href="#AWS::AutoScaling::ScalingPolicy-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>AlarmUrl</dt>
+<dd>A signed url to handle the alarm. (Heat extension).</dd>
+</dl>
+</div>
+<div class="section" id="AWS::AutoScaling::ScalingPolicy-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::AutoScaling::ScalingPolicy-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::AutoScaling::ScalingPolicy
+    properties:
+      AdjustmentType: String
+      AutoScalingGroupName: String
+      Cooldown: Number
+      ScalingAdjustment: Number
+</pre>
+</div>
+<div class="section" id="AWS::AutoScaling::ScalingPolicy-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::AutoScaling::ScalingPolicy-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: String
+      AutoScalingGroupName: String
+      Cooldown: Number
+      ScalingAdjustment: Number
+</pre>
+</div>
+<div class="section" id="AWS::AutoScaling::ScalingPolicy-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::AutoScaling::ScalingPolicy-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::AutoScaling::ScalingPolicy&quot;,
+      &quot;Properties&quot;: {
+        &quot;AdjustmentType&quot;: String,
+        &quot;AutoScalingGroupName&quot;: String,
+        &quot;Cooldown&quot;: Number,
+        &quot;ScalingAdjustment&quot;: Number
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::CloudFormation::Stack">
+<h2>AWS::CloudFormation::Stack<a class="headerlink" href="#AWS::CloudFormation::Stack" title="Permalink to this headline">¶</a></h2>
+<p>A Resource representing a child stack to allow composition of templates.</p>
+<div class="section" id="AWS::CloudFormation::Stack-props">
+<h3>Properties<a class="headerlink" href="#AWS::CloudFormation::Stack-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>Parameters <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">The set of parameters passed to this nested stack.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>TemplateURL <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The URL of a template that specifies the stack to be created as a resource.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>TimeoutInMinutes <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">The length of time, in minutes, to wait for the nested stack creation.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::CloudFormation::Stack-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::CloudFormation::Stack-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::CloudFormation::Stack
+    properties:
+      Parameters: {...}
+      TemplateURL: String
+      TimeoutInMinutes: Number
+</pre>
+</div>
+<div class="section" id="AWS::CloudFormation::Stack-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::CloudFormation::Stack-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters: {...}
+      TemplateURL: String
+      TimeoutInMinutes: Number
+</pre>
+</div>
+<div class="section" id="AWS::CloudFormation::Stack-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::CloudFormation::Stack-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::CloudFormation::Stack&quot;,
+      &quot;Properties&quot;: {
+        &quot;Parameters&quot;: {...},
+        &quot;TemplateURL&quot;: String,
+        &quot;TimeoutInMinutes&quot;: Number
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitCondition">
+<h2>AWS::CloudFormation::WaitCondition<a class="headerlink" href="#AWS::CloudFormation::WaitCondition" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.1 (Icehouse)</p>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitCondition-props">
+<h3>Properties<a class="headerlink" href="#AWS::CloudFormation::WaitCondition-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>Count <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">The number of success signals that must be received before the stack creation process continues.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;1&#8221;.</p>
+<p class="last">The value must be at least 1.</p>
+</dd>
+<dt>Handle <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A reference to the wait condition handle used to signal this wait condition.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Timeout <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">The number of seconds to wait for the correct number of signals to arrive.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">The value must be in the range 1 to 43200.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitCondition-attrs">
+<h3>Attributes<a class="headerlink" href="#AWS::CloudFormation::WaitCondition-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>Data</dt>
+<dd>JSON serialized dict containing data associated with wait condition signals sent to the handle.</dd>
+</dl>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitCondition-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::CloudFormation::WaitCondition-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::CloudFormation::WaitCondition
+    properties:
+      Count: Number
+      Handle: String
+      Timeout: Number
+</pre>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitCondition-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::CloudFormation::WaitCondition-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::CloudFormation::WaitCondition
+    Properties:
+      Count: Number
+      Handle: String
+      Timeout: Number
+</pre>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitCondition-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::CloudFormation::WaitCondition-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::CloudFormation::WaitCondition&quot;,
+      &quot;Properties&quot;: {
+        &quot;Count&quot;: Number,
+        &quot;Handle&quot;: String,
+        &quot;Timeout&quot;: Number
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitConditionHandle">
+<h2>AWS::CloudFormation::WaitConditionHandle<a class="headerlink" href="#AWS::CloudFormation::WaitConditionHandle" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.1 (Icehouse)</p>
+</div>
+<p>the main point of this class is to :
+have no dependencies (so the instance can reference it)
+generate a unique url (to be returned in the reference)
+then the cfn-signal will use this url to post to and
+WaitCondition will poll it to see if has been written to.</p>
+<div class="section" id="AWS::CloudFormation::WaitConditionHandle-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::CloudFormation::WaitConditionHandle-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::CloudFormation::WaitConditionHandle
+</pre>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitConditionHandle-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::CloudFormation::WaitConditionHandle-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::CloudFormation::WaitConditionHandle
+</pre>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitConditionHandle-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::CloudFormation::WaitConditionHandle-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::CloudFormation::WaitConditionHandle&quot;
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitConditionHandle">
+<h2>AWS::CloudFormation::WaitConditionHandle<a class="headerlink" href="#AWS::CloudFormation::WaitConditionHandle" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.2 (Juno)</p>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitConditionHandle-attrs">
+<h3>Attributes<a class="headerlink" href="#AWS::CloudFormation::WaitConditionHandle-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>curl_cli</dt>
+<dd>Convenience attribute, provides curl CLI command prefix, which can be used for signalling handle completion or failure.  You can signal success by adding &#8211;data-binary &#8216;{&#8220;status&#8221;: &#8220;SUCCESS&#8221;}&#8217; , or signal failure by adding &#8211;data-binary &#8216;{&#8220;status&#8221;: &#8220;FAILURE&#8221;}&#8217;</dd>
+<dt>endpoint</dt>
+<dd>Endpoint/url which can be used for signalling handle</dd>
+<dt>token</dt>
+<dd>Tokens are not needed for Swift TempURLs.  This attribute is being kept for compatibility with the OS::Heat::WaitConditionHandle resource</dd>
+</dl>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitConditionHandle-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::CloudFormation::WaitConditionHandle-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::CloudFormation::WaitConditionHandle
+</pre>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitConditionHandle-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::CloudFormation::WaitConditionHandle-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::CloudFormation::WaitConditionHandle
+</pre>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitConditionHandle-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::CloudFormation::WaitConditionHandle-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::CloudFormation::WaitConditionHandle&quot;
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::EC2::EIP">
+<h2>AWS::EC2::EIP<a class="headerlink" href="#AWS::EC2::EIP" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::EC2::EIP-props">
+<h3>Properties<a class="headerlink" href="#AWS::EC2::EIP-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>Domain <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Set to &#8220;vpc&#8221; to have IP address allocation associated to your VPC.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: vpc</p>
+</dd>
+<dt>InstanceId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Instance ID to associate with EIP.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type nova.server</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::EIP-attrs">
+<h3>Attributes<a class="headerlink" href="#AWS::EC2::EIP-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>AllocationId</dt>
+<dd>ID that AWS assigns to represent the allocation of the address for use with Amazon VPC. Returned only for VPC elastic IP addresses.</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::EIP-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::EC2::EIP-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::EC2::EIP
+    properties:
+      Domain: String
+      InstanceId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::EIP-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::EC2::EIP-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: String
+      InstanceId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::EIP-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::EC2::EIP-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::EC2::EIP&quot;,
+      &quot;Properties&quot;: {
+        &quot;Domain&quot;: String,
+        &quot;InstanceId&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::EC2::EIPAssociation">
+<h2>AWS::EC2::EIPAssociation<a class="headerlink" href="#AWS::EC2::EIPAssociation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::EC2::EIPAssociation-props">
+<h3>Properties<a class="headerlink" href="#AWS::EC2::EIPAssociation-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>AllocationId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Allocation ID for VPC EIP address.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>EIP <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">EIP address to associate with instance.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>InstanceId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Instance ID to associate with EIP specified by EIP property.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type nova.server</p>
+</dd>
+<dt>NetworkInterfaceId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Network interface ID to associate with EIP.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::EIPAssociation-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::EC2::EIPAssociation-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::EC2::EIPAssociation
+    properties:
+      AllocationId: String
+      EIP: String
+      InstanceId: String
+      NetworkInterfaceId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::EIPAssociation-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::EC2::EIPAssociation-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: String
+      EIP: String
+      InstanceId: String
+      NetworkInterfaceId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::EIPAssociation-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::EC2::EIPAssociation-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::EC2::EIPAssociation&quot;,
+      &quot;Properties&quot;: {
+        &quot;AllocationId&quot;: String,
+        &quot;EIP&quot;: String,
+        &quot;InstanceId&quot;: String,
+        &quot;NetworkInterfaceId&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::EC2::Instance">
+<h2>AWS::EC2::Instance<a class="headerlink" href="#AWS::EC2::Instance" title="Permalink to this headline">¶</a></h2>
+<p>Implementation of AWS::EC2::Instance that will create and manage Nova
+compute instances.</p>
+<p><em>Note</em> that if Metadata is used for instance configuration, <cite>heat-cfntools</cite>
+must be present in the target image.</p>
+<div class="section" id="AWS::EC2::Instance-props">
+<h3>Properties<a class="headerlink" href="#AWS::EC2::Instance-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>AvailabilityZone <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Availability zone to launch the instance in.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>BlockDeviceMappings <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Block device mappings to attach to instance.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>DeviceName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A device name where the volume will be attached in the system at /dev/device_name.e.g. vdb</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Ebs <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">The ebs volume to attach to the instance.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>DeleteOnTermination <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Indicate whether the volume should be deleted when the instance is terminated.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;True&#8221;.</p>
+</dd>
+<dt>Iops <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>SnapshotId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the snapshot to create a volume from.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type cinder.snapshot</p>
+</dd>
+<dt>VolumeSize <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The size of the volume, in GB. Must be equal or greater than the size of the snapshot. It is safe to leave this blank and have the Compute service infer the size.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>VolumeType <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+</dl>
+</dd>
+<dt>NoDevice <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>VirtualName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>DisableApiTermination <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>ImageId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Glance image ID or name.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type glance.image</p>
+</dd>
+<dt>InstanceType <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Nova instance type (flavor).</p>
+<p>Can be updated without replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type nova.flavor</p>
+</dd>
+<dt>KernelId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>KeyName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Optional Nova keypair name.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type nova.keypair</p>
+</dd>
+<dt>Monitoring <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>NetworkInterfaces <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Network interfaces to associate with instance.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>NovaSchedulerHints <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Scheduler hints to pass to Nova (Heat extension).</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>Key <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Value <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>PlacementGroupName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>PrivateIpAddress <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>RamDiskId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>SecurityGroupIds <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Security group IDs to assign.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>SecurityGroups <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Security group names to assign.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>SourceDestCheck <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>SubnetId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Subnet ID to launch instance in.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>Tags <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Tags to attach to instance.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>Key <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Value <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>Tenancy <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>UserData <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">User data to pass to instance.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>Volumes <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Volumes to attach to instance.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;[]&#8221;.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>Device <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The device where the volume is exposed on the instance. This assignment may not be honored and it is advised that the path /dev/disk/by-id/virtio-&lt;VolumeId&gt; be used instead.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>VolumeId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the volume to be attached.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type cinder.volume</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::Instance-attrs">
+<h3>Attributes<a class="headerlink" href="#AWS::EC2::Instance-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>AvailabilityZone</dt>
+<dd>The Availability Zone where the specified instance is launched.</dd>
+<dt>PrivateDnsName</dt>
+<dd>Private DNS name of the specified instance.</dd>
+<dt>PrivateIp</dt>
+<dd>Private IP address of the specified instance.</dd>
+<dt>PublicDnsName</dt>
+<dd>Public DNS name of the specified instance.</dd>
+<dt>PublicIp</dt>
+<dd>Public IP address of the specified instance.</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::Instance-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::EC2::Instance-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::EC2::Instance
+    properties:
+      AvailabilityZone: String
+      BlockDeviceMappings: [{&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, {&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, ...]
+      ImageId: String
+      InstanceType: String
+      KeyName: String
+      NetworkInterfaces: [Value, Value, ...]
+      NovaSchedulerHints: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      SecurityGroupIds: [Value, Value, ...]
+      SecurityGroups: [Value, Value, ...]
+      SubnetId: String
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      UserData: String
+      Volumes: [{&quot;Device&quot;: String, &quot;VolumeId&quot;: String}, {&quot;Device&quot;: String, &quot;VolumeId&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="AWS::EC2::Instance-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::EC2::Instance-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: String
+      BlockDeviceMappings: [{&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, {&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, ...]
+      ImageId: String
+      InstanceType: String
+      KeyName: String
+      NetworkInterfaces: [Value, Value, ...]
+      NovaSchedulerHints: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      SecurityGroupIds: [Value, Value, ...]
+      SecurityGroups: [Value, Value, ...]
+      SubnetId: String
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      UserData: String
+      Volumes: [{&quot;Device&quot;: String, &quot;VolumeId&quot;: String}, {&quot;Device&quot;: String, &quot;VolumeId&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="AWS::EC2::Instance-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::EC2::Instance-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::EC2::Instance&quot;,
+      &quot;Properties&quot;: {
+        &quot;AvailabilityZone&quot;: String,
+        &quot;BlockDeviceMappings&quot;: [{&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, {&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, ...],
+        &quot;ImageId&quot;: String,
+        &quot;InstanceType&quot;: String,
+        &quot;KeyName&quot;: String,
+        &quot;NetworkInterfaces&quot;: [Value, Value, ...],
+        &quot;NovaSchedulerHints&quot;: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...],
+        &quot;SecurityGroupIds&quot;: [Value, Value, ...],
+        &quot;SecurityGroups&quot;: [Value, Value, ...],
+        &quot;SubnetId&quot;: String,
+        &quot;Tags&quot;: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...],
+        &quot;UserData&quot;: String,
+        &quot;Volumes&quot;: [{&quot;Device&quot;: String, &quot;VolumeId&quot;: String}, {&quot;Device&quot;: String, &quot;VolumeId&quot;: String}, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::EC2::InternetGateway">
+<h2>AWS::EC2::InternetGateway<a class="headerlink" href="#AWS::EC2::InternetGateway" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::EC2::InternetGateway-props">
+<h3>Properties<a class="headerlink" href="#AWS::EC2::InternetGateway-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>Tags <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::InternetGateway-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::EC2::InternetGateway-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::EC2::InternetGateway
+    properties:
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="AWS::EC2::InternetGateway-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::EC2::InternetGateway-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="AWS::EC2::InternetGateway-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::EC2::InternetGateway-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::EC2::InternetGateway&quot;,
+      &quot;Properties&quot;: {
+        &quot;Tags&quot;: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::EC2::NetworkInterface">
+<h2>AWS::EC2::NetworkInterface<a class="headerlink" href="#AWS::EC2::NetworkInterface" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::EC2::NetworkInterface-props">
+<h3>Properties<a class="headerlink" href="#AWS::EC2::NetworkInterface-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>Description <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Description for this interface.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>GroupSet <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">List of security group IDs associated with this interface.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>PrivateIpAddress <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>SourceDestCheck <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>SubnetId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Subnet ID to associate with this interface.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type neutron.subnet</p>
+</dd>
+<dt>Tags <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::NetworkInterface-attrs">
+<h3>Attributes<a class="headerlink" href="#AWS::EC2::NetworkInterface-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>PrivateIpAddress</dt>
+<dd>Private IP address of the network interface.</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::NetworkInterface-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::EC2::NetworkInterface-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::EC2::NetworkInterface
+    properties:
+      Description: String
+      GroupSet: [Value, Value, ...]
+      PrivateIpAddress: String
+      SubnetId: String
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="AWS::EC2::NetworkInterface-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::EC2::NetworkInterface-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::EC2::NetworkInterface
+    Properties:
+      Description: String
+      GroupSet: [Value, Value, ...]
+      PrivateIpAddress: String
+      SubnetId: String
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="AWS::EC2::NetworkInterface-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::EC2::NetworkInterface-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::EC2::NetworkInterface&quot;,
+      &quot;Properties&quot;: {
+        &quot;Description&quot;: String,
+        &quot;GroupSet&quot;: [Value, Value, ...],
+        &quot;PrivateIpAddress&quot;: String,
+        &quot;SubnetId&quot;: String,
+        &quot;Tags&quot;: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::EC2::RouteTable">
+<h2>AWS::EC2::RouteTable<a class="headerlink" href="#AWS::EC2::RouteTable" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.1 (Icehouse)</p>
+</div>
+<div class="section" id="AWS::EC2::RouteTable-props">
+<h3>Properties<a class="headerlink" href="#AWS::EC2::RouteTable-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>Tags <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+</dl>
+</dd>
+<dt>VpcId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">VPC ID for where the route table is created.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::RouteTable-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::EC2::RouteTable-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::EC2::RouteTable
+    properties:
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      VpcId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::RouteTable-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::EC2::RouteTable-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      VpcId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::RouteTable-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::EC2::RouteTable-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::EC2::RouteTable&quot;,
+      &quot;Properties&quot;: {
+        &quot;Tags&quot;: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...],
+        &quot;VpcId&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::EC2::SecurityGroup">
+<h2>AWS::EC2::SecurityGroup<a class="headerlink" href="#AWS::EC2::SecurityGroup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::EC2::SecurityGroup-props">
+<h3>Properties<a class="headerlink" href="#AWS::EC2::SecurityGroup-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>GroupDescription <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Description of the security group.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>SecurityGroupEgress <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">List of security group egress rules.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>CidrIp <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>FromPort <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>IpProtocol <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>SourceSecurityGroupId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>SourceSecurityGroupName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>SourceSecurityGroupOwnerId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>ToPort <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>SecurityGroupIngress <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">List of security group ingress rules.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>CidrIp <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>FromPort <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>IpProtocol <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>SourceSecurityGroupId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>SourceSecurityGroupName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>SourceSecurityGroupOwnerId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>ToPort <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>VpcId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Physical ID of the VPC. Not implemented.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::SecurityGroup-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::EC2::SecurityGroup-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::EC2::SecurityGroup
+    properties:
+      GroupDescription: String
+      SecurityGroupEgress: [{&quot;CidrIp&quot;: String, &quot;SourceSecurityGroupId&quot;: String, &quot;FromPort&quot;: String, &quot;SourceSecurityGroupName&quot;: String, &quot;ToPort&quot;: String, &quot;IpProtocol&quot;: String}, {&quot;CidrIp&quot;: String, &quot;SourceSecurityGroupId&quot;: String, &quot;FromPort&quot;: String, &quot;SourceSecurityGroupName&quot;: String, &quot;ToPort&quot;: String, &quot;IpProtocol&quot;: String}, ...]
+      SecurityGroupIngress: [{&quot;CidrIp&quot;: String, &quot;SourceSecurityGroupId&quot;: String, &quot;FromPort&quot;: String, &quot;SourceSecurityGroupName&quot;: String, &quot;ToPort&quot;: String, &quot;IpProtocol&quot;: String}, {&quot;CidrIp&quot;: String, &quot;SourceSecurityGroupId&quot;: String, &quot;FromPort&quot;: String, &quot;SourceSecurityGroupName&quot;: String, &quot;ToPort&quot;: String, &quot;IpProtocol&quot;: String}, ...]
+      VpcId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::SecurityGroup-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::EC2::SecurityGroup-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: String
+      SecurityGroupEgress: [{&quot;CidrIp&quot;: String, &quot;SourceSecurityGroupId&quot;: String, &quot;FromPort&quot;: String, &quot;SourceSecurityGroupName&quot;: String, &quot;ToPort&quot;: String, &quot;IpProtocol&quot;: String}, {&quot;CidrIp&quot;: String, &quot;SourceSecurityGroupId&quot;: String, &quot;FromPort&quot;: String, &quot;SourceSecurityGroupName&quot;: String, &quot;ToPort&quot;: String, &quot;IpProtocol&quot;: String}, ...]
+      SecurityGroupIngress: [{&quot;CidrIp&quot;: String, &quot;SourceSecurityGroupId&quot;: String, &quot;FromPort&quot;: String, &quot;SourceSecurityGroupName&quot;: String, &quot;ToPort&quot;: String, &quot;IpProtocol&quot;: String}, {&quot;CidrIp&quot;: String, &quot;SourceSecurityGroupId&quot;: String, &quot;FromPort&quot;: String, &quot;SourceSecurityGroupName&quot;: String, &quot;ToPort&quot;: String, &quot;IpProtocol&quot;: String}, ...]
+      VpcId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::SecurityGroup-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::EC2::SecurityGroup-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::EC2::SecurityGroup&quot;,
+      &quot;Properties&quot;: {
+        &quot;GroupDescription&quot;: String,
+        &quot;SecurityGroupEgress&quot;: [{&quot;CidrIp&quot;: String, &quot;SourceSecurityGroupId&quot;: String, &quot;FromPort&quot;: String, &quot;SourceSecurityGroupName&quot;: String, &quot;ToPort&quot;: String, &quot;IpProtocol&quot;: String}, {&quot;CidrIp&quot;: String, &quot;SourceSecurityGroupId&quot;: String, &quot;FromPort&quot;: String, &quot;SourceSecurityGroupName&quot;: String, &quot;ToPort&quot;: String, &quot;IpProtocol&quot;: String}, ...],
+        &quot;SecurityGroupIngress&quot;: [{&quot;CidrIp&quot;: String, &quot;SourceSecurityGroupId&quot;: String, &quot;FromPort&quot;: String, &quot;SourceSecurityGroupName&quot;: String, &quot;ToPort&quot;: String, &quot;IpProtocol&quot;: String}, {&quot;CidrIp&quot;: String, &quot;SourceSecurityGroupId&quot;: String, &quot;FromPort&quot;: String, &quot;SourceSecurityGroupName&quot;: String, &quot;ToPort&quot;: String, &quot;IpProtocol&quot;: String}, ...],
+        &quot;VpcId&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::EC2::Subnet">
+<h2>AWS::EC2::Subnet<a class="headerlink" href="#AWS::EC2::Subnet" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::EC2::Subnet-props">
+<h3>Properties<a class="headerlink" href="#AWS::EC2::Subnet-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>AvailabilityZone <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Availability zone in which you want the subnet.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>CidrBlock <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">CIDR block to apply to subnet.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Tags <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+</dl>
+</dd>
+<dt>VpcId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Ref structure that contains the ID of the VPC on which you want to create the subnet.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::Subnet-attrs">
+<h3>Attributes<a class="headerlink" href="#AWS::EC2::Subnet-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>AvailabilityZone</dt>
+<dd>Availability Zone of the subnet.</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::Subnet-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::EC2::Subnet-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::EC2::Subnet
+    properties:
+      AvailabilityZone: String
+      CidrBlock: String
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      VpcId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::Subnet-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::EC2::Subnet-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: String
+      CidrBlock: String
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      VpcId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::Subnet-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::EC2::Subnet-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::EC2::Subnet&quot;,
+      &quot;Properties&quot;: {
+        &quot;AvailabilityZone&quot;: String,
+        &quot;CidrBlock&quot;: String,
+        &quot;Tags&quot;: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...],
+        &quot;VpcId&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::EC2::SubnetRouteTableAssociation">
+<h2>AWS::EC2::SubnetRouteTableAssociation<a class="headerlink" href="#AWS::EC2::SubnetRouteTableAssociation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::EC2::SubnetRouteTableAssociation-props">
+<h3>Properties<a class="headerlink" href="#AWS::EC2::SubnetRouteTableAssociation-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>RouteTableId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Route table ID.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>SubnetId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Subnet ID.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type neutron.subnet</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::SubnetRouteTableAssociation-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::EC2::SubnetRouteTableAssociation-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::EC2::SubnetRouteTableAssociation
+    properties:
+      RouteTableId: String
+      SubnetId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::SubnetRouteTableAssociation-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::EC2::SubnetRouteTableAssociation-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: String
+      SubnetId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::SubnetRouteTableAssociation-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::EC2::SubnetRouteTableAssociation-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::EC2::SubnetRouteTableAssociation&quot;,
+      &quot;Properties&quot;: {
+        &quot;RouteTableId&quot;: String,
+        &quot;SubnetId&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::EC2::VPC">
+<h2>AWS::EC2::VPC<a class="headerlink" href="#AWS::EC2::VPC" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::EC2::VPC-props">
+<h3>Properties<a class="headerlink" href="#AWS::EC2::VPC-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>CidrBlock <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">CIDR block to apply to the VPC.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>InstanceTenancy <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>Tags <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::VPC-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::EC2::VPC-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::EC2::VPC
+    properties:
+      CidrBlock: String
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="AWS::EC2::VPC-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::EC2::VPC-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: String
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="AWS::EC2::VPC-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::EC2::VPC-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::EC2::VPC&quot;,
+      &quot;Properties&quot;: {
+        &quot;CidrBlock&quot;: String,
+        &quot;Tags&quot;: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::EC2::VPCGatewayAttachment">
+<h2>AWS::EC2::VPCGatewayAttachment<a class="headerlink" href="#AWS::EC2::VPCGatewayAttachment" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::EC2::VPCGatewayAttachment-props">
+<h3>Properties<a class="headerlink" href="#AWS::EC2::VPCGatewayAttachment-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>InternetGatewayId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">ID of the InternetGateway.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>VpcId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">VPC ID for this gateway association.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>VpnGatewayId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::VPCGatewayAttachment-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::EC2::VPCGatewayAttachment-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::EC2::VPCGatewayAttachment
+    properties:
+      InternetGatewayId: String
+      VpcId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::VPCGatewayAttachment-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::EC2::VPCGatewayAttachment-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: String
+      VpcId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::VPCGatewayAttachment-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::EC2::VPCGatewayAttachment-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::EC2::VPCGatewayAttachment&quot;,
+      &quot;Properties&quot;: {
+        &quot;InternetGatewayId&quot;: String,
+        &quot;VpcId&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::EC2::Volume">
+<h2>AWS::EC2::Volume<a class="headerlink" href="#AWS::EC2::Volume" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::EC2::Volume-props">
+<h3>Properties<a class="headerlink" href="#AWS::EC2::Volume-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>AvailabilityZone <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The availability zone in which the volume will be created.</p>
+<p>Updates are not supported. Resource update will fail on any attempt to update this property.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Size <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">The size of the volume in GB.</p>
+<p>Updates are not supported. Resource update will fail on any attempt to update this property.</p>
+<p>Optional property.</p>
+<p class="last">The value must be at least 1.</p>
+</dd>
+<dt>SnapshotId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">If specified, the backup used as the source to create the volume.</p>
+<p>Updates are not supported. Resource update will fail on any attempt to update this property.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>Tags <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">The list of tags to associate with the volume.</p>
+<p>Updates are not supported. Resource update will fail on any attempt to update this property.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>Key <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Value <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::Volume-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::EC2::Volume-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::EC2::Volume
+    properties:
+      AvailabilityZone: String
+      Size: Integer
+      SnapshotId: String
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="AWS::EC2::Volume-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::EC2::Volume-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: String
+      Size: Integer
+      SnapshotId: String
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="AWS::EC2::Volume-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::EC2::Volume-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::EC2::Volume&quot;,
+      &quot;Properties&quot;: {
+        &quot;AvailabilityZone&quot;: String,
+        &quot;Size&quot;: Integer,
+        &quot;SnapshotId&quot;: String,
+        &quot;Tags&quot;: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::EC2::VolumeAttachment">
+<h2>AWS::EC2::VolumeAttachment<a class="headerlink" href="#AWS::EC2::VolumeAttachment" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::EC2::VolumeAttachment-props">
+<h3>Properties<a class="headerlink" href="#AWS::EC2::VolumeAttachment-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>Device <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The device where the volume is exposed on the instance. This assignment may not be honored and it is advised that the path /dev/disk/by-id/virtio-&lt;VolumeId&gt; be used instead.</p>
+<p>Updates are not supported. Resource update will fail on any attempt to update this property.</p>
+<p>Required property.</p>
+<p class="last">Value must match pattern: /dev/vd[b-z]</p>
+</dd>
+<dt>InstanceId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the instance to which the volume attaches.</p>
+<p>Updates are not supported. Resource update will fail on any attempt to update this property.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type nova.server</p>
+</dd>
+<dt>VolumeId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the volume to be attached.</p>
+<p>Updates are not supported. Resource update will fail on any attempt to update this property.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type cinder.volume</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::VolumeAttachment-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::EC2::VolumeAttachment-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::EC2::VolumeAttachment
+    properties:
+      Device: String
+      InstanceId: String
+      VolumeId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::VolumeAttachment-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::EC2::VolumeAttachment-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: String
+      InstanceId: String
+      VolumeId: String
+</pre>
+</div>
+<div class="section" id="AWS::EC2::VolumeAttachment-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::EC2::VolumeAttachment-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::EC2::VolumeAttachment&quot;,
+      &quot;Properties&quot;: {
+        &quot;Device&quot;: String,
+        &quot;InstanceId&quot;: String,
+        &quot;VolumeId&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::ElasticLoadBalancing::LoadBalancer">
+<h2>AWS::ElasticLoadBalancing::LoadBalancer<a class="headerlink" href="#AWS::ElasticLoadBalancing::LoadBalancer" title="Permalink to this headline">¶</a></h2>
+<p>Implements a HAProxy-bearing instance as a nested stack.</p>
+<p>The template for the nested stack can be redefined with
+<tt class="docutils literal"><span class="pre">loadbalancer_template</span></tt> option in <tt class="docutils literal"><span class="pre">heat.conf</span></tt>.</p>
+<p>Generally the image used for the instance must have the following
+packages installed or available for installation at runtime:</p>
+<div class="highlight-python"><div class="highlight"><pre>- heat-cfntools and its dependencies like python-psutil
+- cronie
+- socat
+- haproxy
+</pre></div>
+</div>
+<p>Current default builtin template uses Fedora 21 x86_64 base cloud image
+(<a class="reference external" href="https://getfedora.org/cloud/download/">https://getfedora.org/cloud/download/</a>)
+and apart from installing packages goes through some hoops
+around SELinux due to pecularities of heat-cfntools.</p>
+<div class="section" id="AWS::ElasticLoadBalancing::LoadBalancer-props">
+<h3>Properties<a class="headerlink" href="#AWS::ElasticLoadBalancing::LoadBalancer-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>AppCookieStickinessPolicy <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>AvailabilityZones <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">The Availability Zones in which to create the load balancer.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>HealthCheck <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">An application health check for the instances.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>HealthyThreshold <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">The number of consecutive health probe successes required before moving the instance to the healthy state.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Interval <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">The approximate interval, in seconds, between health checks of an individual instance.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Target <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The port being checked.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Timeout <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">Health probe timeout, in seconds.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>UnhealthyThreshold <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">The number of consecutive health probe failures required before moving the instance to the unhealthy state</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</dd>
+<dt>Instances <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">The list of instance IDs load balanced.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>LBCookieStickinessPolicy <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>Listeners <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">One or more listeners for this load balancer.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>InstancePort <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">TCP port on which the instance server is listening.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>LoadBalancerPort <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">The external load balancer port number.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>PolicyNames <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>Protocol <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The load balancer transport protocol to use.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Allowed values: TCP, HTTP</p>
+</dd>
+<dt>SSLCertificateId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>SecurityGroups <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>Subnets <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::ElasticLoadBalancing::LoadBalancer-attrs">
+<h3>Attributes<a class="headerlink" href="#AWS::ElasticLoadBalancing::LoadBalancer-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>CanonicalHostedZoneName</dt>
+<dd>The name of the hosted zone that is associated with the LoadBalancer.</dd>
+<dt>CanonicalHostedZoneNameID</dt>
+<dd>The ID of the hosted zone name that is associated with the LoadBalancer.</dd>
+<dt>DNSName</dt>
+<dd>The DNS name for the LoadBalancer.</dd>
+<dt>SourceSecurityGroup.GroupName</dt>
+<dd>The security group that you can use as part of your inbound rules for your LoadBalancer&#8217;s back-end instances.</dd>
+<dt>SourceSecurityGroup.OwnerAlias</dt>
+<dd>Owner of the source security group.</dd>
+</dl>
+</div>
+<div class="section" id="AWS::ElasticLoadBalancing::LoadBalancer-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::ElasticLoadBalancing::LoadBalancer-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::ElasticLoadBalancing::LoadBalancer
+    properties:
+      AvailabilityZones: [Value, Value, ...]
+      HealthCheck: {&quot;HealthyThreshold&quot;: Number, &quot;Interval&quot;: Number, &quot;Target&quot;: String, &quot;Timeout&quot;: Number, &quot;UnhealthyThreshold&quot;: Number}
+      Instances: [Value, Value, ...]
+      Listeners: [{&quot;InstancePort&quot;: Number, &quot;LoadBalancerPort&quot;: Number, &quot;Protocol&quot;: String}, {&quot;InstancePort&quot;: Number, &quot;LoadBalancerPort&quot;: Number, &quot;Protocol&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="AWS::ElasticLoadBalancing::LoadBalancer-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::ElasticLoadBalancing::LoadBalancer-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      AvailabilityZones: [Value, Value, ...]
+      HealthCheck: {&quot;HealthyThreshold&quot;: Number, &quot;Interval&quot;: Number, &quot;Target&quot;: String, &quot;Timeout&quot;: Number, &quot;UnhealthyThreshold&quot;: Number}
+      Instances: [Value, Value, ...]
+      Listeners: [{&quot;InstancePort&quot;: Number, &quot;LoadBalancerPort&quot;: Number, &quot;Protocol&quot;: String}, {&quot;InstancePort&quot;: Number, &quot;LoadBalancerPort&quot;: Number, &quot;Protocol&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="AWS::ElasticLoadBalancing::LoadBalancer-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::ElasticLoadBalancing::LoadBalancer-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::ElasticLoadBalancing::LoadBalancer&quot;,
+      &quot;Properties&quot;: {
+        &quot;AvailabilityZones&quot;: [Value, Value, ...],
+        &quot;HealthCheck&quot;: {&quot;HealthyThreshold&quot;: Number, &quot;Interval&quot;: Number, &quot;Target&quot;: String, &quot;Timeout&quot;: Number, &quot;UnhealthyThreshold&quot;: Number},
+        &quot;Instances&quot;: [Value, Value, ...],
+        &quot;Listeners&quot;: [{&quot;InstancePort&quot;: Number, &quot;LoadBalancerPort&quot;: Number, &quot;Protocol&quot;: String}, {&quot;InstancePort&quot;: Number, &quot;LoadBalancerPort&quot;: Number, &quot;Protocol&quot;: String}, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::IAM::AccessKey">
+<h2>AWS::IAM::AccessKey<a class="headerlink" href="#AWS::IAM::AccessKey" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::IAM::AccessKey-props">
+<h3>Properties<a class="headerlink" href="#AWS::IAM::AccessKey-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>Serial <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>Status <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>UserName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The name of the user that the new key will belong to.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::IAM::AccessKey-attrs">
+<h3>Attributes<a class="headerlink" href="#AWS::IAM::AccessKey-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>SecretAccessKey</dt>
+<dd>Keypair secret key.</dd>
+<dt>UserName</dt>
+<dd>Username associated with the AccessKey.</dd>
+</dl>
+</div>
+<div class="section" id="AWS::IAM::AccessKey-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::IAM::AccessKey-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::IAM::AccessKey
+    properties:
+      UserName: String
+</pre>
+</div>
+<div class="section" id="AWS::IAM::AccessKey-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::IAM::AccessKey-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: String
+</pre>
+</div>
+<div class="section" id="AWS::IAM::AccessKey-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::IAM::AccessKey-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::IAM::AccessKey&quot;,
+      &quot;Properties&quot;: {
+        &quot;UserName&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::IAM::User">
+<h2>AWS::IAM::User<a class="headerlink" href="#AWS::IAM::User" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::IAM::User-props">
+<h3>Properties<a class="headerlink" href="#AWS::IAM::User-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>Groups <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Not Implemented.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>LoginProfile <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">A login profile for the user.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>Password <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</dd>
+<dt>Path <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Not Implemented.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>Policies <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Access policies to apply to the user.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::IAM::User-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::IAM::User-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::IAM::User
+    properties:
+      Groups: [Value, Value, ...]
+      LoginProfile: {&quot;Password&quot;: String}
+      Path: String
+      Policies: [Value, Value, ...]
+</pre>
+</div>
+<div class="section" id="AWS::IAM::User-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::IAM::User-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::IAM::User
+    Properties:
+      Groups: [Value, Value, ...]
+      LoginProfile: {&quot;Password&quot;: String}
+      Path: String
+      Policies: [Value, Value, ...]
+</pre>
+</div>
+<div class="section" id="AWS::IAM::User-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::IAM::User-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::IAM::User&quot;,
+      &quot;Properties&quot;: {
+        &quot;Groups&quot;: [Value, Value, ...],
+        &quot;LoginProfile&quot;: {&quot;Password&quot;: String},
+        &quot;Path&quot;: String,
+        &quot;Policies&quot;: [Value, Value, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::S3::Bucket">
+<h2>AWS::S3::Bucket<a class="headerlink" href="#AWS::S3::Bucket" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="AWS::S3::Bucket-props">
+<h3>Properties<a class="headerlink" href="#AWS::S3::Bucket-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>AccessControl <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A predefined access control list (ACL) that grants permissions on the bucket.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: Private, PublicRead, PublicReadWrite, AuthenticatedRead, BucketOwnerRead, BucketOwnerFullControl</p>
+</dd>
+<dt>Tags <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Tags to attach to the bucket.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>Key <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The tag key name.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Value <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The tag value.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>WebsiteConfiguration <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Information used to configure the bucket as a static website.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>ErrorDocument <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The name of the error document.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>IndexDocument <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The name of the index document.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::S3::Bucket-attrs">
+<h3>Attributes<a class="headerlink" href="#AWS::S3::Bucket-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>DomainName</dt>
+<dd>The DNS name of the specified bucket.</dd>
+<dt>WebsiteURL</dt>
+<dd>The website endpoint for the specified bucket.</dd>
+</dl>
+</div>
+<div class="section" id="AWS::S3::Bucket-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::S3::Bucket-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::S3::Bucket
+    properties:
+      AccessControl: String
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      WebsiteConfiguration: {&quot;IndexDocument&quot;: String, &quot;ErrorDocument&quot;: String}
+</pre>
+</div>
+<div class="section" id="AWS::S3::Bucket-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::S3::Bucket-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: String
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      WebsiteConfiguration: {&quot;IndexDocument&quot;: String, &quot;ErrorDocument&quot;: String}
+</pre>
+</div>
+<div class="section" id="AWS::S3::Bucket-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::S3::Bucket-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::S3::Bucket&quot;,
+      &quot;Properties&quot;: {
+        &quot;AccessControl&quot;: String,
+        &quot;Tags&quot;: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...],
+        &quot;WebsiteConfiguration&quot;: {&quot;IndexDocument&quot;: String, &quot;ErrorDocument&quot;: String}
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../raxdox/index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CloudFormation Compatible Resource Types</a><ul>
+<li><a class="reference internal" href="#AWS::AutoScaling::AutoScalingGroup">AWS::AutoScaling::AutoScalingGroup</a><ul>
+<li><a class="reference internal" href="#AWS::AutoScaling::AutoScalingGroup-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::AutoScaling::AutoScalingGroup-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#AWS::AutoScaling::AutoScalingGroup-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::AutoScaling::AutoScalingGroup-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::AutoScaling::AutoScalingGroup-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::AutoScaling::LaunchConfiguration">AWS::AutoScaling::LaunchConfiguration</a><ul>
+<li><a class="reference internal" href="#AWS::AutoScaling::LaunchConfiguration-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::AutoScaling::LaunchConfiguration-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::AutoScaling::LaunchConfiguration-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::AutoScaling::LaunchConfiguration-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::AutoScaling::ScalingPolicy">AWS::AutoScaling::ScalingPolicy</a><ul>
+<li><a class="reference internal" href="#AWS::AutoScaling::ScalingPolicy-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::AutoScaling::ScalingPolicy-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#AWS::AutoScaling::ScalingPolicy-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::AutoScaling::ScalingPolicy-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::AutoScaling::ScalingPolicy-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::CloudFormation::Stack">AWS::CloudFormation::Stack</a><ul>
+<li><a class="reference internal" href="#AWS::CloudFormation::Stack-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::CloudFormation::Stack-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::CloudFormation::Stack-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::CloudFormation::Stack-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitCondition">AWS::CloudFormation::WaitCondition</a><ul>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitCondition-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitCondition-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitCondition-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitCondition-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitCondition-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitConditionHandle">AWS::CloudFormation::WaitConditionHandle</a><ul>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitConditionHandle-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitConditionHandle-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitConditionHandle-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitConditionHandle">AWS::CloudFormation::WaitConditionHandle</a><ul>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitConditionHandle-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitConditionHandle-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitConditionHandle-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitConditionHandle-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::EC2::EIP">AWS::EC2::EIP</a><ul>
+<li><a class="reference internal" href="#AWS::EC2::EIP-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::EC2::EIP-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#AWS::EC2::EIP-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::EIP-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::EIP-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::EC2::EIPAssociation">AWS::EC2::EIPAssociation</a><ul>
+<li><a class="reference internal" href="#AWS::EC2::EIPAssociation-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::EC2::EIPAssociation-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::EIPAssociation-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::EIPAssociation-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::EC2::Instance">AWS::EC2::Instance</a><ul>
+<li><a class="reference internal" href="#AWS::EC2::Instance-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::EC2::Instance-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#AWS::EC2::Instance-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::Instance-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::Instance-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::EC2::InternetGateway">AWS::EC2::InternetGateway</a><ul>
+<li><a class="reference internal" href="#AWS::EC2::InternetGateway-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::EC2::InternetGateway-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::InternetGateway-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::InternetGateway-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::EC2::NetworkInterface">AWS::EC2::NetworkInterface</a><ul>
+<li><a class="reference internal" href="#AWS::EC2::NetworkInterface-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::EC2::NetworkInterface-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#AWS::EC2::NetworkInterface-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::NetworkInterface-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::NetworkInterface-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::EC2::RouteTable">AWS::EC2::RouteTable</a><ul>
+<li><a class="reference internal" href="#AWS::EC2::RouteTable-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::EC2::RouteTable-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::RouteTable-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::RouteTable-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::EC2::SecurityGroup">AWS::EC2::SecurityGroup</a><ul>
+<li><a class="reference internal" href="#AWS::EC2::SecurityGroup-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::EC2::SecurityGroup-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::SecurityGroup-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::SecurityGroup-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::EC2::Subnet">AWS::EC2::Subnet</a><ul>
+<li><a class="reference internal" href="#AWS::EC2::Subnet-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::EC2::Subnet-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#AWS::EC2::Subnet-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::Subnet-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::Subnet-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::EC2::SubnetRouteTableAssociation">AWS::EC2::SubnetRouteTableAssociation</a><ul>
+<li><a class="reference internal" href="#AWS::EC2::SubnetRouteTableAssociation-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::EC2::SubnetRouteTableAssociation-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::SubnetRouteTableAssociation-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::SubnetRouteTableAssociation-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::EC2::VPC">AWS::EC2::VPC</a><ul>
+<li><a class="reference internal" href="#AWS::EC2::VPC-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::EC2::VPC-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::VPC-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::VPC-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::EC2::VPCGatewayAttachment">AWS::EC2::VPCGatewayAttachment</a><ul>
+<li><a class="reference internal" href="#AWS::EC2::VPCGatewayAttachment-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::EC2::VPCGatewayAttachment-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::VPCGatewayAttachment-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::VPCGatewayAttachment-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::EC2::Volume">AWS::EC2::Volume</a><ul>
+<li><a class="reference internal" href="#AWS::EC2::Volume-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::EC2::Volume-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::Volume-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::Volume-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::EC2::VolumeAttachment">AWS::EC2::VolumeAttachment</a><ul>
+<li><a class="reference internal" href="#AWS::EC2::VolumeAttachment-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::EC2::VolumeAttachment-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::VolumeAttachment-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::VolumeAttachment-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::ElasticLoadBalancing::LoadBalancer">AWS::ElasticLoadBalancing::LoadBalancer</a><ul>
+<li><a class="reference internal" href="#AWS::ElasticLoadBalancing::LoadBalancer-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::ElasticLoadBalancing::LoadBalancer-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#AWS::ElasticLoadBalancing::LoadBalancer-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::ElasticLoadBalancing::LoadBalancer-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::ElasticLoadBalancing::LoadBalancer-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::IAM::AccessKey">AWS::IAM::AccessKey</a><ul>
+<li><a class="reference internal" href="#AWS::IAM::AccessKey-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::IAM::AccessKey-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#AWS::IAM::AccessKey-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::IAM::AccessKey-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::IAM::AccessKey-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::IAM::User">AWS::IAM::User</a><ul>
+<li><a class="reference internal" href="#AWS::IAM::User-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::IAM::User-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::IAM::User-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::IAM::User-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::S3::Bucket">AWS::S3::Bucket</a><ul>
+<li><a class="reference internal" href="#AWS::S3::Bucket-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::S3::Bucket-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#AWS::S3::Bucket-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::S3::Bucket-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::S3::Bucket-json">JSON Syntax</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/template_guide/cfn.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

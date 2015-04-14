@@ -1,0 +1,8 @@
+========================================
+The :mod:`heat.rpc.worker_client` Module
+========================================
+.. automodule:: heat.rpc.worker_client
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

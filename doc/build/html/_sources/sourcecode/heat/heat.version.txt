@@ -1,0 +1,8 @@
+==============================
+The :mod:`heat.version` Module
+==============================
+.. automodule:: heat.version
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

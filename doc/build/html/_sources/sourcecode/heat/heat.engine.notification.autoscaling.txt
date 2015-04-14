@@ -1,0 +1,8 @@
+======================================================
+The :mod:`heat.engine.notification.autoscaling` Module
+======================================================
+.. automodule:: heat.engine.notification.autoscaling
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

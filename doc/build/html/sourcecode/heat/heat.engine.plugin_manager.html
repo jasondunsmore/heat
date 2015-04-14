@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.plugin_manager Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-engine-plugin-manager-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.engine.plugin_manager</span></tt> Module<a class="headerlink" href="#the-heat-engine-plugin-manager-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.plugin_manager.</tt><tt class="descname">PluginManager</tt><big>(</big><em>*extra_packages</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/plugin_manager.html#PluginManager"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>A class for managing plugin modules.</p>
+<dl class="method">
+<dt>
+<tt class="descname">map_to_modules</tt><big>(</big><em>function</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/plugin_manager.html#PluginManager.map_to_modules"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Iterate over the results of calling a function on every module.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.plugin_manager.</tt><tt class="descname">PluginMapping</tt><big>(</big><em>names</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/plugin_manager.html#PluginMapping"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>A class for managing plugin mappings.</p>
+<dl class="method">
+<dt>
+<tt class="descname">load_all</tt><big>(</big><em>plugin_manager</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/plugin_manager.html#PluginMapping.load_all"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Iterate over the mappings from all modules in the plugin manager.</p>
+<p>Mappings are returned as a list of (key, value) tuples.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">load_from_module</tt><big>(</big><em>module</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/plugin_manager.html#PluginMapping.load_from_module"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the mapping specified in the given module.</p>
+<p>If no such mapping is specified, an empty dictionary is returned.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.engine.plugin_manager.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

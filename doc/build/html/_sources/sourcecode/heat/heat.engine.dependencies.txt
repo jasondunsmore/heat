@@ -1,0 +1,8 @@
+==========================================
+The :mod:`heat.engine.dependencies` Module
+==========================================
+.. automodule:: heat.engine.dependencies
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

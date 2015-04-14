@@ -1,0 +1,239 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.api.middleware.fault &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.api.middleware.fault</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c">#</span>
+<span class="c"># Copyright © 2013 Unitedstack Inc.</span>
+<span class="c">#</span>
+<span class="c"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c"># a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#      http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c"># License for the specific language governing permissions and limitations</span>
+<span class="c"># under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;A middleware that turns exceptions into parsable string. Inspired by</span>
+<span class="sd">Cinder&#39;s faultwrapper</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">import</span> <span class="nn">traceback</span>
+
+<span class="kn">from</span> <span class="nn">oslo_config</span> <span class="kn">import</span> <span class="n">cfg</span>
+<span class="kn">import</span> <span class="nn">webob</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">wsgi</span>
+
+
+<div class="viewcode-block" id="Fault"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.middleware.fault.html#heat.api.middleware.fault.Fault">[docs]</a><span class="k">class</span> <span class="nc">Fault</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error</span> <span class="o">=</span> <span class="n">error</span>
+
+    <span class="nd">@webob.dec.wsgify</span><span class="p">(</span><span class="n">RequestClass</span><span class="o">=</span><span class="n">wsgi</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">req</span><span class="o">.</span><span class="n">content_type</span> <span class="o">==</span> <span class="s">&#39;application/xml&#39;</span><span class="p">:</span>
+            <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">XMLResponseSerializer</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">JSONResponseSerializer</span><span class="p">()</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">webob</span><span class="o">.</span><span class="n">Response</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">req</span><span class="p">)</span>
+        <span class="n">default_webob_exc</span> <span class="o">=</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPInternalServerError</span><span class="p">()</span>
+        <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;code&#39;</span><span class="p">,</span> <span class="n">default_webob_exc</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">resp</span>
+
+</div>
+<div class="viewcode-block" id="FaultWrapper"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.middleware.fault.html#heat.api.middleware.fault.FaultWrapper">[docs]</a><span class="k">class</span> <span class="nc">FaultWrapper</span><span class="p">(</span><span class="n">wsgi</span><span class="o">.</span><span class="n">Middleware</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Replace error body with something the client can parse.&quot;&quot;&quot;</span>
+
+    <span class="n">error_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;AttributeError&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;ActionInProgress&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPConflict</span><span class="p">,</span>
+        <span class="s">&#39;ValueError&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;StackNotFound&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPNotFound</span><span class="p">,</span>
+        <span class="s">&#39;NotFound&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPNotFound</span><span class="p">,</span>
+        <span class="s">&#39;ResourceActionNotSupported&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;ResourceNotFound&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPNotFound</span><span class="p">,</span>
+        <span class="s">&#39;ResourceTypeNotFound&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPNotFound</span><span class="p">,</span>
+        <span class="s">&#39;SnapshotNotFound&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPNotFound</span><span class="p">,</span>
+        <span class="s">&#39;ResourceNotAvailable&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPNotFound</span><span class="p">,</span>
+        <span class="s">&#39;PhysicalResourceNotFound&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPNotFound</span><span class="p">,</span>
+        <span class="s">&#39;InvalidTenant&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPForbidden</span><span class="p">,</span>
+        <span class="s">&#39;Forbidden&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPForbidden</span><span class="p">,</span>
+        <span class="s">&#39;StackExists&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPConflict</span><span class="p">,</span>
+        <span class="s">&#39;StackValidationFailed&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;InvalidSchemaError&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;InvalidTemplateReference&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;InvalidTemplateVersion&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;InvalidTemplateSection&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;UnknownUserParameter&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;RevertFailed&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPInternalServerError</span><span class="p">,</span>
+        <span class="s">&#39;StopActionFailed&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPInternalServerError</span><span class="p">,</span>
+        <span class="s">&#39;EventSendFailed&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPInternalServerError</span><span class="p">,</span>
+        <span class="s">&#39;ServerBuildFailed&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPInternalServerError</span><span class="p">,</span>
+        <span class="s">&#39;NotSupported&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;MissingCredentialError&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;UserParameterMissing&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;RequestLimitExceeded&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;InvalidTemplateParameter&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;Invalid&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;ResourcePropertyConflict&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;PropertyUnspecifiedError&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;ObjectFieldInvalid&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;ReadOnlyFieldError&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;ObjectActionError&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;IncompatibleObjectVersion&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;OrphanedObjectError&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+        <span class="s">&#39;UnsupportedObjectError&#39;</span><span class="p">:</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPBadRequest</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_map_exception_to_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">class_exception</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">class_exception</span> <span class="o">==</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">webob</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">HTTPInternalServerError</span>
+
+        <span class="k">if</span> <span class="n">class_exception</span><span class="o">.</span><span class="n">__name__</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_map</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_exception_to_error</span><span class="p">(</span><span class="n">class_exception</span><span class="o">.</span><span class="n">__base__</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_map</span><span class="p">[</span><span class="n">class_exception</span><span class="o">.</span><span class="n">__name__</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+
+        <span class="n">trace</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">traceback_marker</span> <span class="o">=</span> <span class="s">&#39;Traceback (most recent call last)&#39;</span>
+        <span class="n">webob_exc</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">exception</span><span class="o">.</span><span class="n">HTTPExceptionDisguise</span><span class="p">):</span>
+            <span class="c"># An HTTP exception was disguised so it could make it here</span>
+            <span class="c"># let&#39;s remove the disguise and set the original HTTP exception</span>
+            <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                <span class="n">trace</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_tb</span><span class="p">(</span><span class="n">ex</span><span class="o">.</span><span class="n">tb</span><span class="p">))</span>
+            <span class="n">ex</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="n">exc</span>
+            <span class="n">webob_exc</span> <span class="o">=</span> <span class="n">ex</span>
+
+        <span class="n">ex_type</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+
+        <span class="n">is_remote</span> <span class="o">=</span> <span class="n">ex_type</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;_Remote&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_remote</span><span class="p">:</span>
+            <span class="n">ex_type</span> <span class="o">=</span> <span class="n">ex_type</span><span class="p">[:</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="s">&#39;_Remote&#39;</span><span class="p">)]</span>
+
+        <span class="n">full_message</span> <span class="o">=</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="ow">in</span> <span class="n">full_message</span> <span class="ow">and</span> <span class="n">is_remote</span><span class="p">:</span>
+            <span class="n">message</span><span class="p">,</span> <span class="n">msg_trace</span> <span class="o">=</span> <span class="n">full_message</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">traceback_marker</span> <span class="ow">in</span> <span class="n">full_message</span><span class="p">:</span>
+            <span class="n">message</span><span class="p">,</span> <span class="n">msg_trace</span> <span class="o">=</span> <span class="n">full_message</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">traceback_marker</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">msg_trace</span> <span class="o">=</span> <span class="n">traceback_marker</span> <span class="o">+</span> <span class="n">msg_trace</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg_trace</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">full_message</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatException</span><span class="p">):</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="n">message</span>
+
+        <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">debug</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">trace</span><span class="p">:</span>
+            <span class="n">trace</span> <span class="o">=</span> <span class="n">msg_trace</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">webob_exc</span><span class="p">:</span>
+            <span class="n">webob_exc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_exception_to_error</span><span class="p">(</span><span class="n">ex</span><span class="o">.</span><span class="n">__class__</span><span class="p">)</span>
+
+        <span class="n">error</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;code&#39;</span><span class="p">:</span> <span class="n">webob_exc</span><span class="o">.</span><span class="n">code</span><span class="p">,</span>
+            <span class="s">&#39;title&#39;</span><span class="p">:</span> <span class="n">webob_exc</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>
+            <span class="s">&#39;explanation&#39;</span><span class="p">:</span> <span class="n">webob_exc</span><span class="o">.</span><span class="n">explanation</span><span class="p">,</span>
+            <span class="s">&#39;error&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s">&#39;message&#39;</span><span class="p">:</span> <span class="n">message</span><span class="p">,</span>
+                <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">ex_type</span><span class="p">,</span>
+                <span class="s">&#39;traceback&#39;</span><span class="p">:</span> <span class="n">trace</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">error</span>
+
+<div class="viewcode-block" id="FaultWrapper.process_request"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.api.middleware.fault.html#heat.api.middleware.fault.FaultWrapper.process_request">[docs]</a>    <span class="k">def</span> <span class="nf">process_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">req</span><span class="o">.</span><span class="n">get_response</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">application</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">req</span><span class="o">.</span><span class="n">get_response</span><span class="p">(</span><span class="n">Fault</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">(</span><span class="n">exc</span><span class="p">)))</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

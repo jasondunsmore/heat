@@ -1,0 +1,8 @@
+=========================================
+The :mod:`heat.api.middleware.ssl` Module
+=========================================
+.. automodule:: heat.api.middleware.ssl
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

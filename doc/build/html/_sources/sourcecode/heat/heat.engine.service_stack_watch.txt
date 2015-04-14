@@ -1,0 +1,8 @@
+=================================================
+The :mod:`heat.engine.service_stack_watch` Module
+=================================================
+.. automodule:: heat.engine.service_stack_watch
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

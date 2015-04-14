@@ -1,0 +1,437 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>CloudFormation Compatible Functions &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="cloudformation-compatible-functions">
+<h1>CloudFormation Compatible Functions<a class="headerlink" href="#cloudformation-compatible-functions" title="Permalink to this headline">¶</a></h1>
+<p>There are a number of functions that you can use to help you write
+CloudFormation compatible templates.  While most CloudFormation functions are
+supported in HOT version &#8216;2013-05-23&#8217;, <em>Fn::Select</em> is the only CloudFormation
+function supported in HOT templates since version &#8216;2014-10-16&#8217; which is
+introduced in Juno.</p>
+<p>All of these functions (except <em>Ref</em>) start with <em>Fn::</em>.</p>
+<div class="section" id="ref">
+<h2>Ref<a class="headerlink" href="#ref" title="Permalink to this headline">¶</a></h2>
+<p>Returns the value of the named parameter or resource.</p>
+<div class="section" id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd>The name of the resource or parameter.</dd>
+</dl>
+</div>
+<div class="section" id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="n">Ref</span><span class="p">:</span> <span class="n">my_server</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns the nova instance ID. For example, <tt class="docutils literal"><span class="pre">d8093de0-850f-4513-b202-7979de6c0d55</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="fn-base64">
+<h2>Fn::Base64<a class="headerlink" href="#fn-base64" title="Permalink to this headline">¶</a></h2>
+<p>This is a placeholder for a function to convert an input string to Base64.
+This function in Heat actually performs no conversion.  It is included for
+the benefit of CFN templates that convert UserData to Base64.  Heat only
+accepts UserData in plain text.</p>
+<div class="section" id="id1">
+<h3>Parameters<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>value <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd>The string to convert.</dd>
+</dl>
+</div>
+<div class="section" id="id2">
+<h3>Usage<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&quot;Fn::Base64&quot;</span><span class="p">:</span> <span class="s">&quot;convert this string please.&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns the original input string.</p>
+</div>
+</div>
+<div class="section" id="fn-findinmap">
+<h2>Fn::FindInMap<a class="headerlink" href="#fn-findinmap" title="Permalink to this headline">¶</a></h2>
+<p>Returns the value corresponding to keys into a two-level map declared in the
+Mappings section.</p>
+<div class="section" id="id3">
+<h3>Parameters<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>map_name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd>The logical name of a mapping declared in the Mappings section that
+contains the keys and values.</dd>
+<dt>top_level_key <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd>The top-level key name. It&#8217;s value is a list of key-value pairs.</dd>
+<dt>second_level_key <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd>The second-level key name, which is set to one of the keys from the list
+assigned to top_level_key.</dd>
+</dl>
+</div>
+<div class="section" id="id4">
+<h3>Usage<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>Mapping:
+  MyContacts:
+    jone: {phone: 337, email: a@b.com}
+    jim: {phone: 908, email: g@b.com}
+
+{&quot;Fn::FindInMap&quot;: [&quot;MyContacts&quot;, &quot;jim&quot;, &quot;phone&quot; ] }
+</pre></div>
+</div>
+<p>Returns <tt class="docutils literal"><span class="pre">908</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="fn-getatt">
+<h2>Fn::GetAtt<a class="headerlink" href="#fn-getatt" title="Permalink to this headline">¶</a></h2>
+<p>Returns an attribute of a resource within the template.</p>
+<div class="section" id="id5">
+<h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>resource <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd>The name of the resource.</dd>
+<dt>attribute <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd>The name of the attribute.</dd>
+</dl>
+</div>
+<div class="section" id="id6">
+<h3>Usage<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>{Fn::GetAtt: [my_server, PublicIp]}
+</pre></div>
+</div>
+<p>Returns an IP address such as <tt class="docutils literal"><span class="pre">10.0.0.2</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="fn-getazs">
+<h2>Fn::GetAZs<a class="headerlink" href="#fn-getazs" title="Permalink to this headline">¶</a></h2>
+<p>Returns the Availability Zones within the given region.</p>
+<p><em>Note: AZ&#8217;s and regions are not fully implemented in Heat.</em></p>
+<div class="section" id="id7">
+<h3>Parameters<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>region <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd>The name of the region.</dd>
+</dl>
+</div>
+<div class="section" id="id8">
+<h3>Usage<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>{Fn::GetAZs: &quot;&quot;}
+</pre></div>
+</div>
+<p>Returns the list provided by <tt class="docutils literal"><span class="pre">nova</span> <span class="pre">availability-zone-list</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="fn-join">
+<h2>Fn::Join<a class="headerlink" href="#fn-join" title="Permalink to this headline">¶</a></h2>
+<p>Like python join, it joins a list of strings with the given delimiter.</p>
+<div class="section" id="id9">
+<h3>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>delimiter <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd>The string to join the list with.</dd>
+<dt>list <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>The list to join.</dd>
+</dl>
+</div>
+<div class="section" id="id10">
+<h3>Usage<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>{Fn::Join: [&quot;,&quot;, [&quot;beer&quot;, &quot;wine&quot;, &quot;more beer&quot;]]}
+</pre></div>
+</div>
+<p>Returns <tt class="docutils literal"><span class="pre">beer,</span> <span class="pre">wine,</span> <span class="pre">more</span> <span class="pre">beer</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="fn-select">
+<h2>Fn::Select<a class="headerlink" href="#fn-select" title="Permalink to this headline">¶</a></h2>
+<p>Select an item from a list.</p>
+<p><em>Heat extension: Select an item from a map</em></p>
+<div class="section" id="id11">
+<h3>Parameters<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>selector <span class="classifier-delimiter">:</span> <span class="classifier">string or integer</span></dt>
+<dd>The number of item in the list or the name of the item in the map.</dd>
+<dt>collection <span class="classifier-delimiter">:</span> <span class="classifier">map or list</span></dt>
+<dd>The collection to select the item from.</dd>
+</dl>
+</div>
+<div class="section" id="id12">
+<h3>Usage<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<p>For a list lookup:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span> <span class="s">&quot;Fn::Select&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s">&quot;2&quot;</span><span class="p">,</span> <span class="p">[</span> <span class="s">&quot;apples&quot;</span><span class="p">,</span> <span class="s">&quot;grapes&quot;</span><span class="p">,</span> <span class="s">&quot;mangoes&quot;</span> <span class="p">]</span> <span class="p">]</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns <tt class="docutils literal"><span class="pre">mangoes</span></tt>.</p>
+<p>For a map lookup:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span> <span class="s">&quot;Fn::Select&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s">&quot;red&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;red&quot;</span><span class="p">:</span> <span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="s">&quot;flu&quot;</span><span class="p">:</span> <span class="s">&quot;b&quot;</span><span class="p">}</span> <span class="p">]</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns <tt class="docutils literal"><span class="pre">a</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="fn-split">
+<h2>Fn::Split<a class="headerlink" href="#fn-split" title="Permalink to this headline">¶</a></h2>
+<p>This is the reverse of Join. Convert a string into a list based on the
+delimiter.</p>
+<div class="section" id="id13">
+<h3>Parameters<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>delimiter <span class="classifier-delimiter">:</span> <span class="classifier">string</span></dt>
+<dd>Matching string to split on.</dd>
+<dt>string <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd>The string to split.</dd>
+</dl>
+</div>
+<div class="section" id="id14">
+<h3>Usage<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span> <span class="s">&quot;Fn::Split&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s">&quot;,&quot;</span><span class="p">,</span> <span class="s">&quot;str1,str2,str3,str4&quot;</span><span class="p">]}</span>
+</pre></div>
+</div>
+<p>Returns <tt class="docutils literal"><span class="pre">{[&quot;str1&quot;,</span> <span class="pre">&quot;str2&quot;,</span> <span class="pre">&quot;str3&quot;,</span> <span class="pre">&quot;str4&quot;]}</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="fn-replace">
+<h2>Fn::Replace<a class="headerlink" href="#fn-replace" title="Permalink to this headline">¶</a></h2>
+<p>Find and replace one string with another.</p>
+<div class="section" id="id15">
+<h3>Parameters<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>substitutions <span class="classifier-delimiter">:</span> <span class="classifier">map</span></dt>
+<dd>A map of substitutions.</dd>
+<dt>string: String</dt>
+<dd>The string to do the substitutions in.</dd>
+</dl>
+</div>
+<div class="section" id="id16">
+<h3>Usage<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&quot;Fn::Replace&quot;</span><span class="p">:</span> <span class="p">[</span>
+ <span class="p">{</span><span class="s">&#39;$var1&#39;</span><span class="p">:</span> <span class="s">&#39;foo&#39;</span><span class="p">,</span> <span class="s">&#39;%var2%&#39;</span><span class="p">:</span> <span class="s">&#39;bar&#39;</span><span class="p">},</span>
+  <span class="s">&#39;$var1 is %var2%&#39;</span>
+<span class="p">]}</span>
+</pre></div>
+</div>
+<p>Returns <tt class="docutils literal"><span class="pre">&quot;foo</span> <span class="pre">is</span> <span class="pre">bar&quot;</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="fn-resourcefacade">
+<h2>Fn::ResourceFacade<a class="headerlink" href="#fn-resourcefacade" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>When writing a Template Resource:</dt>
+<dd><ul class="first last simple">
+<li>user writes a template that will fill in for a resource (the resource is the facade).</li>
+<li>when they are writing their template they need to access the metadata from
+the facade.</li>
+</ul>
+</dd>
+</dl>
+<div class="section" id="id17">
+<h3>Parameters<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>attribute_name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd>One of <tt class="docutils literal"><span class="pre">Metadata</span></tt>, <tt class="docutils literal"><span class="pre">DeletionPolicy</span></tt> or <tt class="docutils literal"><span class="pre">UpdatePolicy</span></tt>.</dd>
+</dl>
+</div>
+<div class="section" id="id18">
+<h3>Usage<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&#39;Fn::ResourceFacade&#39;</span><span class="p">:</span> <span class="s">&#39;Metadata&#39;</span><span class="p">}</span>
+<span class="p">{</span><span class="s">&#39;Fn::ResourceFacade&#39;</span><span class="p">:</span> <span class="s">&#39;DeletionPolicy&#39;</span><span class="p">}</span>
+<span class="p">{</span><span class="s">&#39;Fn::ResourceFacade&#39;</span><span class="p">:</span> <span class="s">&#39;UpdatePolicy&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="example">
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
+<p>Here is a top level template <tt class="docutils literal"><span class="pre">top.yaml</span></tt></p>
+<div class="highlight-python"><div class="highlight"><pre>resources:
+  my_server:
+    type: OS::Nova::Server
+    metadata:
+      key: value
+      some: more stuff
+</pre></div>
+</div>
+<p>Here is a resource template <tt class="docutils literal"><span class="pre">my_actual_server.yaml</span></tt></p>
+<div class="highlight-python"><div class="highlight"><pre>resources:
+  _actual_server_:
+    type: OS::Nova::Server
+    metadata: {&#39;Fn::ResourceFacade&#39;: Metadata}
+</pre></div>
+</div>
+<p>The environment file <tt class="docutils literal"><span class="pre">env.yaml</span></tt></p>
+<div class="highlight-python"><div class="highlight"><pre>resource_registry:
+  resources:
+    my_server:
+      &quot;OS::Nova::Server&quot;: my_actual_server.yaml
+</pre></div>
+</div>
+<p>To use it</p>
+<div class="highlight-python"><div class="highlight"><pre>$ heat stack-create -f top.yaml -e env.yaml
+</pre></div>
+</div>
+<p>What happened is the metadata in <tt class="docutils literal"><span class="pre">top.yaml</span></tt> (key: value, some: more
+stuff) gets passed into the resource template via the <a class="reference internal" href="#fn-resourcefacade">Fn::ResourceFacade</a>
+function.</p>
+</div>
+</div>
+<div class="section" id="fn-memberlisttomap">
+<h2>Fn::MemberListToMap<a class="headerlink" href="#fn-memberlisttomap" title="Permalink to this headline">¶</a></h2>
+<p>Convert an AWS style member list into a map.</p>
+<div class="section" id="id19">
+<h3>Parameters<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>key name: string</dt>
+<dd>The name of the key (normally &#8220;Name&#8221; or &#8220;Key&#8221;).</dd>
+<dt>value name: string</dt>
+<dd>The name of the value (normally &#8220;Value&#8221;).</dd>
+<dt>list: A list of strings</dt>
+<dd>The string to convert.</dd>
+</dl>
+</div>
+<div class="section" id="id20">
+<h3>Usage<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&#39;Fn::MemberListToMap&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;Name&#39;</span><span class="p">,</span> <span class="s">&#39;Value&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;.member.0.Name=key&#39;</span><span class="p">,</span>
+                                           <span class="s">&#39;.member.0.Value=door&#39;</span><span class="p">,</span>
+                                           <span class="s">&#39;.member.1.Name=colour&#39;</span><span class="p">,</span>
+                                           <span class="s">&#39;.member.1.Value=green&#39;</span><span class="p">]]}</span>
+</pre></div>
+</div>
+<p>Returns <tt class="docutils literal"><span class="pre">{'key':</span> <span class="pre">'door',</span> <span class="pre">'colour':</span> <span class="pre">'green'}</span></tt>.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../raxdox/index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CloudFormation Compatible Functions</a><ul>
+<li><a class="reference internal" href="#ref">Ref</a><ul>
+<li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fn-base64">Fn::Base64</a><ul>
+<li><a class="reference internal" href="#id1">Parameters</a></li>
+<li><a class="reference internal" href="#id2">Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fn-findinmap">Fn::FindInMap</a><ul>
+<li><a class="reference internal" href="#id3">Parameters</a></li>
+<li><a class="reference internal" href="#id4">Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fn-getatt">Fn::GetAtt</a><ul>
+<li><a class="reference internal" href="#id5">Parameters</a></li>
+<li><a class="reference internal" href="#id6">Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fn-getazs">Fn::GetAZs</a><ul>
+<li><a class="reference internal" href="#id7">Parameters</a></li>
+<li><a class="reference internal" href="#id8">Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fn-join">Fn::Join</a><ul>
+<li><a class="reference internal" href="#id9">Parameters</a></li>
+<li><a class="reference internal" href="#id10">Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fn-select">Fn::Select</a><ul>
+<li><a class="reference internal" href="#id11">Parameters</a></li>
+<li><a class="reference internal" href="#id12">Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fn-split">Fn::Split</a><ul>
+<li><a class="reference internal" href="#id13">Parameters</a></li>
+<li><a class="reference internal" href="#id14">Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fn-replace">Fn::Replace</a><ul>
+<li><a class="reference internal" href="#id15">Parameters</a></li>
+<li><a class="reference internal" href="#id16">Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fn-resourcefacade">Fn::ResourceFacade</a><ul>
+<li><a class="reference internal" href="#id17">Parameters</a></li>
+<li><a class="reference internal" href="#id18">Usage</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fn-memberlisttomap">Fn::MemberListToMap</a><ul>
+<li><a class="reference internal" href="#id19">Parameters</a></li>
+<li><a class="reference internal" href="#id20">Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/template_guide/functions.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

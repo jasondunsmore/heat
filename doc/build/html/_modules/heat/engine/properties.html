@@ -1,0 +1,604 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.properties &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.engine.properties</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="kn">from</span> <span class="nn">oslo_serialization</span> <span class="kn">import</span> <span class="n">jsonutils</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">constraints</span> <span class="k">as</span> <span class="n">constr</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">function</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">parameters</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">support</span>
+
+<span class="n">SCHEMA_KEYS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">REQUIRED</span><span class="p">,</span> <span class="n">IMPLEMENTED</span><span class="p">,</span> <span class="n">DEFAULT</span><span class="p">,</span> <span class="n">TYPE</span><span class="p">,</span> <span class="n">SCHEMA</span><span class="p">,</span>
+    <span class="n">ALLOWED_PATTERN</span><span class="p">,</span> <span class="n">MIN_VALUE</span><span class="p">,</span> <span class="n">MAX_VALUE</span><span class="p">,</span> <span class="n">ALLOWED_VALUES</span><span class="p">,</span>
+    <span class="n">MIN_LENGTH</span><span class="p">,</span> <span class="n">MAX_LENGTH</span><span class="p">,</span> <span class="n">DESCRIPTION</span><span class="p">,</span> <span class="n">UPDATE_ALLOWED</span><span class="p">,</span>
+    <span class="n">IMMUTABLE</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s">&#39;Required&#39;</span><span class="p">,</span> <span class="s">&#39;Implemented&#39;</span><span class="p">,</span> <span class="s">&#39;Default&#39;</span><span class="p">,</span> <span class="s">&#39;Type&#39;</span><span class="p">,</span> <span class="s">&#39;Schema&#39;</span><span class="p">,</span>
+    <span class="s">&#39;AllowedPattern&#39;</span><span class="p">,</span> <span class="s">&#39;MinValue&#39;</span><span class="p">,</span> <span class="s">&#39;MaxValue&#39;</span><span class="p">,</span> <span class="s">&#39;AllowedValues&#39;</span><span class="p">,</span>
+    <span class="s">&#39;MinLength&#39;</span><span class="p">,</span> <span class="s">&#39;MaxLength&#39;</span><span class="p">,</span> <span class="s">&#39;Description&#39;</span><span class="p">,</span> <span class="s">&#39;UpdateAllowed&#39;</span><span class="p">,</span>
+    <span class="s">&#39;Immutable&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="Schema"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Schema">[docs]</a><span class="k">class</span> <span class="nc">Schema</span><span class="p">(</span><span class="n">constr</span><span class="o">.</span><span class="n">Schema</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Schema class for validating resource properties.</span>
+
+<span class="sd">    This class is used for defining schema constraints for resource properties.</span>
+<span class="sd">    It inherits generic validation features from the base Schema class and add</span>
+<span class="sd">    processing that is specific to resource properties.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">KEYS</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">TYPE</span><span class="p">,</span> <span class="n">DESCRIPTION</span><span class="p">,</span> <span class="n">DEFAULT</span><span class="p">,</span> <span class="n">SCHEMA</span><span class="p">,</span> <span class="n">REQUIRED</span><span class="p">,</span> <span class="n">CONSTRAINTS</span><span class="p">,</span>
+        <span class="n">UPDATE_ALLOWED</span><span class="p">,</span> <span class="n">IMMUTABLE</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s">&#39;type&#39;</span><span class="p">,</span> <span class="s">&#39;description&#39;</span><span class="p">,</span> <span class="s">&#39;default&#39;</span><span class="p">,</span> <span class="s">&#39;schema&#39;</span><span class="p">,</span> <span class="s">&#39;required&#39;</span><span class="p">,</span> <span class="s">&#39;constraints&#39;</span><span class="p">,</span>
+        <span class="s">&#39;update_allowed&#39;</span><span class="p">,</span> <span class="s">&#39;immutable&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_type</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">implemented</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                 <span class="n">update_allowed</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">immutable</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">support_status</span><span class="o">=</span><span class="n">support</span><span class="o">.</span><span class="n">SupportStatus</span><span class="p">(),</span>
+                 <span class="n">allow_conversion</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Schema</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">data_type</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span>
+                                     <span class="n">schema</span><span class="p">,</span> <span class="n">required</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">implemented</span> <span class="o">=</span> <span class="n">implemented</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_allowed</span> <span class="o">=</span> <span class="n">update_allowed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">immutable</span> <span class="o">=</span> <span class="n">immutable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">support_status</span> <span class="o">=</span> <span class="n">support_status</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allow_conversion</span> <span class="o">=</span> <span class="n">allow_conversion</span>
+        <span class="c"># validate structural correctness of schema itself</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Schema.from_legacy"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Schema.from_legacy">[docs]</a>    <span class="k">def</span> <span class="nf">from_legacy</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">schema_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a Property Schema object from a legacy schema dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># Check for fully-fledged Schema objects</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">schema_dict</span><span class="p">,</span> <span class="n">cls</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">schema_dict</span>
+
+        <span class="n">unknown</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">schema_dict</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SCHEMA_KEYS</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidSchemaError</span><span class="p">(</span>
+                <span class="n">message</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Unknown key(s) </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">unknown</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">constraints</span><span class="p">():</span>
+            <span class="k">def</span> <span class="nf">get_num</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">schema_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="n">Schema</span><span class="o">.</span><span class="n">str_to_num</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">val</span>
+
+            <span class="k">if</span> <span class="n">MIN_VALUE</span> <span class="ow">in</span> <span class="n">schema_dict</span> <span class="ow">or</span> <span class="n">MAX_VALUE</span> <span class="ow">in</span> <span class="n">schema_dict</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">constr</span><span class="o">.</span><span class="n">Range</span><span class="p">(</span><span class="n">get_num</span><span class="p">(</span><span class="n">MIN_VALUE</span><span class="p">),</span> <span class="n">get_num</span><span class="p">(</span><span class="n">MAX_VALUE</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">MIN_LENGTH</span> <span class="ow">in</span> <span class="n">schema_dict</span> <span class="ow">or</span> <span class="n">MAX_LENGTH</span> <span class="ow">in</span> <span class="n">schema_dict</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">constr</span><span class="o">.</span><span class="n">Length</span><span class="p">(</span><span class="n">get_num</span><span class="p">(</span><span class="n">MIN_LENGTH</span><span class="p">),</span> <span class="n">get_num</span><span class="p">(</span><span class="n">MAX_LENGTH</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">ALLOWED_VALUES</span> <span class="ow">in</span> <span class="n">schema_dict</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">constr</span><span class="o">.</span><span class="n">AllowedValues</span><span class="p">(</span><span class="n">schema_dict</span><span class="p">[</span><span class="n">ALLOWED_VALUES</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">ALLOWED_PATTERN</span> <span class="ow">in</span> <span class="n">schema_dict</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">constr</span><span class="o">.</span><span class="n">AllowedPattern</span><span class="p">(</span><span class="n">schema_dict</span><span class="p">[</span><span class="n">ALLOWED_PATTERN</span><span class="p">])</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data_type</span> <span class="o">=</span> <span class="n">schema_dict</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidSchemaError</span><span class="p">(</span>
+                <span class="n">message</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;No </span><span class="si">%s</span><span class="s"> specified&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">TYPE</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">SCHEMA</span> <span class="ow">in</span> <span class="n">schema_dict</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">data_type</span> <span class="o">==</span> <span class="n">Schema</span><span class="o">.</span><span class="n">LIST</span><span class="p">:</span>
+                <span class="n">ss</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">from_legacy</span><span class="p">(</span><span class="n">schema_dict</span><span class="p">[</span><span class="n">SCHEMA</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">data_type</span> <span class="o">==</span> <span class="n">Schema</span><span class="o">.</span><span class="n">MAP</span><span class="p">:</span>
+                <span class="n">schema_dicts</span> <span class="o">=</span> <span class="n">schema_dict</span><span class="p">[</span><span class="n">SCHEMA</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="n">ss</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">from_legacy</span><span class="p">(</span><span class="n">sd</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">sd</span> <span class="ow">in</span> <span class="n">schema_dicts</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidSchemaError</span><span class="p">(</span>
+                    <span class="n">message</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%(schema)s</span><span class="s"> supplied for </span><span class="si">%(type)s</span><span class="s"> </span><span class="si">%(data)s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span>
+                    <span class="nb">dict</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">SCHEMA</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">TYPE</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data_type</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ss</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">data_type</span><span class="p">,</span>
+                   <span class="n">description</span><span class="o">=</span><span class="n">schema_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">DESCRIPTION</span><span class="p">),</span>
+                   <span class="n">default</span><span class="o">=</span><span class="n">schema_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">DEFAULT</span><span class="p">),</span>
+                   <span class="n">schema</span><span class="o">=</span><span class="n">ss</span><span class="p">,</span>
+                   <span class="n">required</span><span class="o">=</span><span class="n">schema_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">REQUIRED</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+                   <span class="n">constraints</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">constraints</span><span class="p">()),</span>
+                   <span class="n">implemented</span><span class="o">=</span><span class="n">schema_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">IMPLEMENTED</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+                   <span class="n">update_allowed</span><span class="o">=</span><span class="n">schema_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">UPDATE_ALLOWED</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+                   <span class="n">immutable</span><span class="o">=</span><span class="n">schema_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">IMMUTABLE</span><span class="p">,</span> <span class="bp">False</span><span class="p">))</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Schema.from_parameter"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Schema.from_parameter">[docs]</a>    <span class="k">def</span> <span class="nf">from_parameter</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a Property Schema corresponding to a Parameter Schema.</span>
+
+<span class="sd">        Convert a parameter schema from a provider template to a property</span>
+<span class="sd">        Schema for the corresponding resource facade.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># map param types to property types</span>
+        <span class="n">param_type_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">STRING</span><span class="p">:</span> <span class="n">cls</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">:</span> <span class="n">cls</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">,</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">LIST</span><span class="p">:</span> <span class="n">cls</span><span class="o">.</span><span class="n">LIST</span><span class="p">,</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">MAP</span><span class="p">:</span> <span class="n">cls</span><span class="o">.</span><span class="n">MAP</span><span class="p">,</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">BOOLEAN</span><span class="p">:</span> <span class="n">cls</span><span class="o">.</span><span class="n">BOOLEAN</span>
+        <span class="p">}</span>
+
+        <span class="c"># allow_conversion allows slightly more flexible type conversion</span>
+        <span class="c"># where property-&gt;parameter types don&#39;t align, primarily when</span>
+        <span class="c"># a json parameter value is passed via a Map property, which requires</span>
+        <span class="c"># some coercion to pass strings or lists (which are both valid for</span>
+        <span class="c"># Json parameters but not for Map properties).</span>
+        <span class="n">allow_conversion</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">param</span><span class="o">.</span><span class="n">MAP</span>
+
+        <span class="c"># make update_allowed true by default on TemplateResources</span>
+        <span class="c"># as the template should deal with this.</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">data_type</span><span class="o">=</span><span class="n">param_type_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">MAP</span><span class="p">),</span>
+                   <span class="n">description</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+                   <span class="n">required</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">required</span><span class="p">,</span>
+                   <span class="n">constraints</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">constraints</span><span class="p">,</span>
+                   <span class="n">update_allowed</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                   <span class="n">immutable</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                   <span class="n">allow_conversion</span><span class="o">=</span><span class="n">allow_conversion</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Schema.allowed_param_prop_type"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Schema.allowed_param_prop_type">[docs]</a>    <span class="k">def</span> <span class="nf">allowed_param_prop_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return allowed type of Property Schema converted from parameter.</span>
+
+<span class="sd">        Especially, when generating Schema from parameter, Integer Property</span>
+<span class="sd">        Schema will be supplied by Number parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">param_type_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">INTEGER</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">STRING</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">BOOLEAN</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">BOOLEAN</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">LIST</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">LIST</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">MAP</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">MAP</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">param_type_map</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
+</div>
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">UPDATE_ALLOWED</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_allowed</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">IMMUTABLE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">immutable</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Schema</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__getitem__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="schemata"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.schemata">[docs]</a><span class="k">def</span> <span class="nf">schemata</span><span class="p">(</span><span class="n">schema_dicts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return dictionary of Schema objects for given dictionary of schemata.</span>
+
+<span class="sd">    The input schemata are converted from the legacy (dictionary-based)</span>
+<span class="sd">    format to Schema objects where necessary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">Schema</span><span class="o">.</span><span class="n">from_legacy</span><span class="p">(</span><span class="n">s</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">schema_dicts</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+</div>
+<div class="viewcode-block" id="Property"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Property">[docs]</a><span class="k">class</span> <span class="nc">Property</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">Schema</span><span class="o">.</span><span class="n">from_legacy</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span>
+
+<div class="viewcode-block" id="Property.required"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Property.required">[docs]</a>    <span class="k">def</span> <span class="nf">required</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">required</span>
+</div>
+<div class="viewcode-block" id="Property.implemented"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Property.implemented">[docs]</a>    <span class="k">def</span> <span class="nf">implemented</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">implemented</span>
+</div>
+<div class="viewcode-block" id="Property.update_allowed"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Property.update_allowed">[docs]</a>    <span class="k">def</span> <span class="nf">update_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">update_allowed</span>
+</div>
+<div class="viewcode-block" id="Property.immutable"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Property.immutable">[docs]</a>    <span class="k">def</span> <span class="nf">immutable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">immutable</span>
+</div>
+<div class="viewcode-block" id="Property.has_default"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Property.has_default">[docs]</a>    <span class="k">def</span> <span class="nf">has_default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="Property.default"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Property.default">[docs]</a>    <span class="k">def</span> <span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">default</span>
+</div>
+<div class="viewcode-block" id="Property.type"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Property.type">[docs]</a>    <span class="k">def</span> <span class="nf">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">type</span>
+</div>
+<div class="viewcode-block" id="Property.support_status"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Property.support_status">[docs]</a>    <span class="k">def</span> <span class="nf">support_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">support_status</span>
+</div>
+    <span class="k">def</span> <span class="nf">_get_integer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_default</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">0</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Value &#39;</span><span class="si">%s</span><span class="s">&#39; is not an integer&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">_get_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_default</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">Schema</span><span class="o">.</span><span class="n">str_to_num</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_default</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">()</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Value must be a string&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">_get_children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child_values</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">keys</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+            <span class="n">schemata</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">schema</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">)</span>
+            <span class="n">properties</span> <span class="o">=</span> <span class="n">Properties</span><span class="p">(</span><span class="n">schemata</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">child_values</span><span class="p">),</span>
+                                    <span class="n">parent_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                    <span class="n">context</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+                <span class="n">properties</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+
+            <span class="k">return</span> <span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">properties</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">child_values</span>
+
+    <span class="k">def</span> <span class="nf">_get_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_default</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">()</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+            <span class="c"># This is to handle passing Lists via Json parameters exposed</span>
+            <span class="c"># via a provider resource, in particular lists-of-dicts which</span>
+            <span class="c"># cannot be handled correctly via comma_delimited_list</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">allow_conversion</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">value</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Sequence</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">jsonutils</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;&quot;</span><span class="si">%s</span><span class="s">&quot; is not a map&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_children</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">value</span><span class="p">),</span>
+                                       <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_get_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_default</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">()</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Sequence</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;&quot;</span><span class="si">%s</span><span class="s">&quot; is not a list&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_children</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">value</span><span class="p">),</span>
+                                                 <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)),</span>
+                                                 <span class="n">validate</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">_get_bool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_default</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">()</span> <span class="ow">or</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="n">normalised</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">normalised</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;true&#39;</span><span class="p">,</span> <span class="s">&#39;false&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;&quot;</span><span class="si">%s</span><span class="s">&quot; is not a valid boolean&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">normalised</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">normalised</span> <span class="o">==</span> <span class="s">&#39;true&#39;</span>
+
+<div class="viewcode-block" id="Property.get_value"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Property.get_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get value from raw value and sanitize according to data type.&quot;&quot;&quot;</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="n">Schema</span><span class="o">.</span><span class="n">STRING</span><span class="p">:</span>
+            <span class="n">_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_string</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">Schema</span><span class="o">.</span><span class="n">INTEGER</span><span class="p">:</span>
+            <span class="n">_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_integer</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">Schema</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">:</span>
+            <span class="n">_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_number</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">Schema</span><span class="o">.</span><span class="n">MAP</span><span class="p">:</span>
+            <span class="n">_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_map</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">validate</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">Schema</span><span class="o">.</span><span class="n">LIST</span><span class="p">:</span>
+            <span class="n">_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_list</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">validate</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="n">Schema</span><span class="o">.</span><span class="n">BOOLEAN</span><span class="p">:</span>
+            <span class="n">_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_bool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="c"># property value resolves to None if resource it depends on is not</span>
+        <span class="c"># created. So, if value is None skip constraint validation.</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">validate</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">validate_constraints</span><span class="p">(</span><span class="n">_value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_value</span>
+
+</div></div>
+<div class="viewcode-block" id="Properties"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Properties">[docs]</a><span class="k">class</span> <span class="nc">Properties</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">resolver</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="p">,</span> <span class="n">parent_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">props</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">Property</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">context</span><span class="p">))</span>
+                          <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">schema</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resolve</span> <span class="o">=</span> <span class="n">resolver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">if</span> <span class="n">parent_name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error_prefix</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error_prefix</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">: &#39;</span> <span class="o">%</span> <span class="n">parent_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Properties.schema_from_params"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Properties.schema_from_params">[docs]</a>    <span class="k">def</span> <span class="nf">schema_from_params</span><span class="p">(</span><span class="n">params_snippet</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert a template snippet that defines parameters</span>
+<span class="sd">        into a properties schema</span>
+
+<span class="sd">        :param params_snippet: parameter definition from a template</span>
+<span class="sd">        :returns: an equivalent properties schema for the specified params</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">params_snippet</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">dict</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">Schema</span><span class="o">.</span><span class="n">from_parameter</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">p</span>
+                        <span class="ow">in</span> <span class="n">params_snippet</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">return</span> <span class="p">{}</span>
+</div>
+<div class="viewcode-block" id="Properties.validate"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Properties.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">with_value</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">prop</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c"># check that update_allowed and immutable</span>
+            <span class="c"># do not contradict each other</span>
+            <span class="k">if</span> <span class="n">prop</span><span class="o">.</span><span class="n">update_allowed</span><span class="p">()</span> <span class="ow">and</span> <span class="n">prop</span><span class="o">.</span><span class="n">immutable</span><span class="p">():</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Property </span><span class="si">%(prop)s</span><span class="s">: </span><span class="si">%(ua)s</span><span class="s"> and </span><span class="si">%(im)s</span><span class="s"> &quot;</span>
+                        <span class="s">&quot;cannot both be True&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span>
+                            <span class="s">&#39;prop&#39;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span>
+                            <span class="s">&#39;ua&#39;</span><span class="p">:</span> <span class="n">prop</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">UPDATE_ALLOWED</span><span class="p">,</span>
+                            <span class="s">&#39;im&#39;</span><span class="p">:</span> <span class="n">prop</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">IMMUTABLE</span><span class="p">}</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidSchemaError</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">with_value</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_get_property_value</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Property error : </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">e</span>
+                    <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">StackValidationFailed</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+            <span class="c"># are there unimplemented Properties</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">prop</span><span class="o">.</span><span class="n">implemented</span><span class="p">()</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Property </span><span class="si">%s</span><span class="s"> not implemented yet&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">key</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">StackValidationFailed</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Unknown Property </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">key</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">StackValidationFailed</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_get_property_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%(prefix)s</span><span class="s">Invalid Property </span><span class="si">%(key)s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span>
+                           <span class="p">{</span><span class="s">&#39;prefix&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_prefix</span><span class="p">,</span> <span class="s">&#39;key&#39;</span><span class="p">:</span> <span class="n">key</span><span class="p">})</span>
+
+        <span class="n">prop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">unresolved_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+                    <span class="n">deps</span> <span class="o">=</span> <span class="n">function</span><span class="o">.</span><span class="n">dependencies</span><span class="p">(</span><span class="n">unresolved_value</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="n">res</span><span class="o">.</span><span class="n">INIT</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">deps</span><span class="p">):</span>
+                        <span class="n">validate</span> <span class="o">=</span> <span class="bp">False</span>
+
+                <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">unresolved_value</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">prop</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">validate</span><span class="p">)</span>
+            <span class="c"># the resolver function could raise any number of exceptions,</span>
+            <span class="c"># so handle this generically</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_prefix</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span>
+                                              <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="n">prop</span><span class="o">.</span><span class="n">has_default</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">prop</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">validate</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">prop</span><span class="o">.</span><span class="n">required</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%(prefix)s</span><span class="s">Property </span><span class="si">%(key)s</span><span class="s"> not assigned&#39;</span><span class="p">)</span> <span class="o">%</span>
+                             <span class="p">{</span><span class="s">&#39;prefix&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_prefix</span><span class="p">,</span> <span class="s">&#39;key&#39;</span><span class="p">:</span> <span class="n">key</span><span class="p">})</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_property_value</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_param_def_from_prop</span><span class="p">(</span><span class="n">schema</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a template parameter definition corresponding to a property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">param_type_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">schema</span><span class="o">.</span><span class="n">INTEGER</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">Schema</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">,</span>
+            <span class="n">schema</span><span class="o">.</span><span class="n">STRING</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">Schema</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
+            <span class="n">schema</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">Schema</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">,</span>
+            <span class="n">schema</span><span class="o">.</span><span class="n">BOOLEAN</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">Schema</span><span class="o">.</span><span class="n">BOOLEAN</span><span class="p">,</span>
+            <span class="n">schema</span><span class="o">.</span><span class="n">MAP</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">Schema</span><span class="o">.</span><span class="n">MAP</span><span class="p">,</span>
+            <span class="n">schema</span><span class="o">.</span><span class="n">LIST</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">Schema</span><span class="o">.</span><span class="n">LIST</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">def</span> <span class="nf">param_items</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">parameters</span><span class="o">.</span><span class="n">TYPE</span><span class="p">,</span> <span class="n">param_type_map</span><span class="p">[</span><span class="n">schema</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">schema</span><span class="o">.</span><span class="n">description</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">parameters</span><span class="o">.</span><span class="n">DESCRIPTION</span><span class="p">,</span> <span class="n">schema</span><span class="o">.</span><span class="n">description</span>
+
+            <span class="k">if</span> <span class="n">schema</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">parameters</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">,</span> <span class="n">schema</span><span class="o">.</span><span class="n">default</span>
+
+            <span class="k">for</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="n">schema</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="n">constr</span><span class="o">.</span><span class="n">Length</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">constraint</span><span class="o">.</span><span class="n">min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">parameters</span><span class="o">.</span><span class="n">MIN_LENGTH</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">min</span>
+                    <span class="k">if</span> <span class="n">constraint</span><span class="o">.</span><span class="n">max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">parameters</span><span class="o">.</span><span class="n">MAX_LENGTH</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">max</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="n">constr</span><span class="o">.</span><span class="n">Range</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">constraint</span><span class="o">.</span><span class="n">min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">parameters</span><span class="o">.</span><span class="n">MIN_VALUE</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">min</span>
+                    <span class="k">if</span> <span class="n">constraint</span><span class="o">.</span><span class="n">max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">parameters</span><span class="o">.</span><span class="n">MAX_VALUE</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">max</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="n">constr</span><span class="o">.</span><span class="n">AllowedValues</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">parameters</span><span class="o">.</span><span class="n">ALLOWED_VALUES</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">constraint</span><span class="o">.</span><span class="n">allowed</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="n">constr</span><span class="o">.</span><span class="n">AllowedPattern</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">parameters</span><span class="o">.</span><span class="n">ALLOWED_PATTERN</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">pattern</span>
+
+            <span class="k">if</span> <span class="n">schema</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">schema</span><span class="o">.</span><span class="n">BOOLEAN</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">parameters</span><span class="o">.</span><span class="n">ALLOWED_VALUES</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;True&#39;</span><span class="p">,</span> <span class="s">&#39;true&#39;</span><span class="p">,</span>
+                                                  <span class="s">&#39;False&#39;</span><span class="p">,</span> <span class="s">&#39;false&#39;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">param_items</span><span class="p">())</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_prop_def_from_prop</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">schema</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a provider template property definition for a property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">schema</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Schema</span><span class="o">.</span><span class="n">LIST</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;Fn::Split&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;,&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;Ref&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">}]}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;Ref&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Properties.schema_to_parameters_and_properties"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.properties.html#heat.engine.properties.Properties.schema_to_parameters_and_properties">[docs]</a>    <span class="k">def</span> <span class="nf">schema_to_parameters_and_properties</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">schema</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generates properties with params resolved for a resource&#39;s</span>
+<span class="sd">        properties_schema.</span>
+
+<span class="sd">        :param schema: A resource type&#39;s properties_schema</span>
+<span class="sd">        :returns: A tuple of params and properties dicts</span>
+
+<span class="sd">        ex: input:  {&#39;foo&#39;: {&#39;Type&#39;: &#39;List&#39;}}</span>
+<span class="sd">            output: {&#39;foo&#39;: {&#39;Type&#39;: &#39;CommaDelimitedList&#39;}},</span>
+<span class="sd">                    {&#39;foo&#39;: {&#39;Fn::Split&#39;: {&#39;Ref&#39;: &#39;foo&#39;}}}</span>
+
+<span class="sd">        ex: input:  {&#39;foo&#39;: {&#39;Type&#39;: &#39;String&#39;}, &#39;bar&#39;: {&#39;Type&#39;: &#39;Map&#39;}}</span>
+<span class="sd">            output: {&#39;foo&#39;: {&#39;Type&#39;: &#39;String&#39;}, &#39;bar&#39;: {&#39;Type&#39;: &#39;Json&#39;}},</span>
+<span class="sd">                    {&#39;foo&#39;: {&#39;Ref&#39;: &#39;foo&#39;}, &#39;bar&#39;: {&#39;Ref&#39;: &#39;bar&#39;}}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">param_prop_def_items</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">schema</span><span class="p">):</span>
+            <span class="n">param_def</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_param_def_from_prop</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
+            <span class="n">prop_def</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_prop_def_from_prop</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">param_def</span><span class="p">),</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">prop_def</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">schema</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{},</span> <span class="p">{}</span>
+
+        <span class="n">param_prop_defs</span> <span class="o">=</span> <span class="p">[</span><span class="n">param_prop_def_items</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+                           <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">schemata</span><span class="p">(</span><span class="n">schema</span><span class="p">))</span>
+                           <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">implemented</span><span class="p">]</span>
+        <span class="n">param_items</span><span class="p">,</span> <span class="n">prop_items</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">param_prop_defs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">param_items</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">prop_items</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+=======================================
+The :mod:`heat.scaling.cooldown` Module
+=======================================
+.. automodule:: heat.scaling.cooldown
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

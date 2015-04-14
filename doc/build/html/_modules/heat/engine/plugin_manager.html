@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.plugin_manager &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.engine.plugin_manager</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">oslo_config</span> <span class="kn">import</span> <span class="n">cfg</span>
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LE</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">plugin_loader</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PluginManager"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.plugin_manager.html#heat.engine.plugin_manager.PluginManager">[docs]</a><span class="k">class</span> <span class="nc">PluginManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;A class for managing plugin modules.&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">extra_packages</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Initialise the Heat Engine plugin package, and any others.</span>
+
+<span class="sd">        The heat.engine.plugins package is always created, if it does not</span>
+<span class="sd">        exist, from the plugin directories specified in the config file, and</span>
+<span class="sd">        searched for modules. In addition, any extra packages specified are</span>
+<span class="sd">        also searched for modules. e.g.</span>
+
+<span class="sd">        &gt;&gt;&gt; PluginManager(&#39;heat.engine.resources&#39;)</span>
+
+<span class="sd">        will load all modules in the heat.engine.resources package as well as</span>
+<span class="sd">        any user-supplied plugin modules.</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">def</span> <span class="nf">packages</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">package_name</span> <span class="ow">in</span> <span class="n">extra_packages</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">package_name</span><span class="p">]</span>
+
+            <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">import_opt</span><span class="p">(</span><span class="s">&#39;plugin_dirs&#39;</span><span class="p">,</span> <span class="s">&#39;heat.common.config&#39;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">plugin_loader</span><span class="o">.</span><span class="n">create_subpackage</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">plugin_dirs</span><span class="p">,</span>
+                                                  <span class="s">&#39;heat.engine&#39;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">modules</span><span class="p">():</span>
+            <span class="n">pkg_modules</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">plugin_loader</span><span class="o">.</span><span class="n">load_modules</span><span class="p">,</span>
+                                         <span class="n">packages</span><span class="p">())</span>
+            <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">pkg_modules</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">modules</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">modules</span><span class="p">())</span>
+
+<div class="viewcode-block" id="PluginManager.map_to_modules"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.plugin_manager.html#heat.engine.plugin_manager.PluginManager.map_to_modules">[docs]</a>    <span class="k">def</span> <span class="nf">map_to_modules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Iterate over the results of calling a function on every module.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="PluginMapping"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.plugin_manager.html#heat.engine.plugin_manager.PluginMapping">[docs]</a><span class="k">class</span> <span class="nc">PluginMapping</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;A class for managing plugin mappings.&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Initialise with the mapping name(s) and arguments.</span>
+
+<span class="sd">        `names` can be a single name or a list of names. The first name found</span>
+<span class="sd">        in a given module is the one used. Each module is searched for a</span>
+<span class="sd">        function called &lt;name&gt;_mapping() which is called to retrieve the</span>
+<span class="sd">        mappings provided by that module. Any other arguments passed will be</span>
+<span class="sd">        passed to the mapping functions.</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">names</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">_mapping&#39;</span> <span class="o">%</span> <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+
+<div class="viewcode-block" id="PluginMapping.load_from_module"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.plugin_manager.html#heat.engine.plugin_manager.PluginMapping.load_from_module">[docs]</a>    <span class="k">def</span> <span class="nf">load_from_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return the mapping specified in the given module.</span>
+
+<span class="sd">        If no such mapping is specified, an empty dictionary is returned.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">mapping_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+            <span class="n">mapping_func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">mapping_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">mapping_func</span><span class="p">):</span>
+                <span class="n">fmt_data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;mapping_name&#39;</span><span class="p">:</span> <span class="n">mapping_name</span><span class="p">,</span> <span class="s">&#39;module&#39;</span><span class="p">:</span> <span class="n">module</span><span class="p">}</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">mapping_dict</span> <span class="o">=</span> <span class="n">mapping_func</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="n">LOG</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">_LE</span><span class="p">(</span><span class="s">&#39;Failed to load </span><span class="si">%(mapping_name)s</span><span class="s"> &#39;</span>
+                                  <span class="s">&#39;from </span><span class="si">%(module)s</span><span class="s">&#39;</span><span class="p">),</span> <span class="n">fmt_data</span><span class="p">)</span>
+                    <span class="k">raise</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mapping_dict</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="n">mapping_dict</span>
+                    <span class="k">elif</span> <span class="n">mapping_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                        <span class="n">LOG</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">_LE</span><span class="p">(</span><span class="s">&#39;Invalid type for </span><span class="si">%(mapping_name)s</span><span class="s"> &#39;</span>
+                                      <span class="s">&#39;from </span><span class="si">%(module)s</span><span class="s">&#39;</span><span class="p">),</span> <span class="n">fmt_data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{}</span>
+</div>
+<div class="viewcode-block" id="PluginMapping.load_all"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.plugin_manager.html#heat.engine.plugin_manager.PluginMapping.load_all">[docs]</a>    <span class="k">def</span> <span class="nf">load_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plugin_manager</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Iterate over the mappings from all modules in the plugin manager.</span>
+
+<span class="sd">        Mappings are returned as a list of (key, value) tuples.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">mod_dicts</span> <span class="o">=</span> <span class="n">plugin_manager</span><span class="o">.</span><span class="n">map_to_modules</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load_from_module</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span>
+                                             <span class="ow">in</span> <span class="n">mod_dicts</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.attributes &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.engine.attributes</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">constraints</span> <span class="k">as</span> <span class="n">constr</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">support</span>
+
+
+<div class="viewcode-block" id="Schema"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.attributes.html#heat.engine.attributes.Schema">[docs]</a><span class="k">class</span> <span class="nc">Schema</span><span class="p">(</span><span class="n">constr</span><span class="o">.</span><span class="n">Schema</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple schema class for attributes.</span>
+
+<span class="sd">    Schema objects are serialisable to dictionaries following a superset of</span>
+<span class="sd">    the HOT input Parameter schema using dict().</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">KEYS</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">DESCRIPTION</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s">&#39;description&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">CACHE_MODES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">CACHE_LOCAL</span><span class="p">,</span>
+        <span class="n">CACHE_NONE</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s">&#39;cache_local&#39;</span><span class="p">,</span>
+        <span class="s">&#39;cache_none&#39;</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">support_status</span><span class="o">=</span><span class="n">support</span><span class="o">.</span><span class="n">SupportStatus</span><span class="p">(),</span>
+                 <span class="n">cache_mode</span><span class="o">=</span><span class="n">CACHE_LOCAL</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">support_status</span> <span class="o">=</span> <span class="n">support_status</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_mode</span> <span class="o">=</span> <span class="n">cache_mode</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">DESCRIPTION</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span>
+
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Schema.from_attribute"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.attributes.html#heat.engine.attributes.Schema.from_attribute">[docs]</a>    <span class="k">def</span> <span class="nf">from_attribute</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">schema_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a Property Schema corresponding to a Attribute Schema.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">schema_dict</span><span class="p">,</span> <span class="n">cls</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">schema_dict</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;&lt;name&gt;: &lt;description&gt; schema definition is deprecated. &#39;</span>
+                      <span class="s">&#39;Use &lt;name&gt;: attributes.Schema(&lt;description&gt;) instead.&#39;</span><span class="p">,</span>
+                      <span class="ne">DeprecationWarning</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">schema_dict</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="schemata"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.attributes.html#heat.engine.attributes.schemata">[docs]</a><span class="k">def</span> <span class="nf">schemata</span><span class="p">(</span><span class="n">schema</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return dictionary of Schema objects for given dictionary of schemata.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">Schema</span><span class="o">.</span><span class="n">from_attribute</span><span class="p">(</span><span class="n">s</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">schema</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+</div>
+<div class="viewcode-block" id="Attribute"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.attributes.html#heat.engine.attributes.Attribute">[docs]</a><span class="k">class</span> <span class="nc">Attribute</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An Attribute schema.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">schema</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise with a name and description.</span>
+
+<span class="sd">        :param attr_name: the name of the attribute</span>
+<span class="sd">        :param schema: attribute schema</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">attr_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">Schema</span><span class="o">.</span><span class="n">from_attribute</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Attribute.support_status"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.attributes.html#heat.engine.attributes.Attribute.support_status">[docs]</a>    <span class="k">def</span> <span class="nf">support_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">support_status</span>
+</div>
+<div class="viewcode-block" id="Attribute.as_output"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.attributes.html#heat.engine.attributes.Attribute.as_output">[docs]</a>    <span class="k">def</span> <span class="nf">as_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return an Output schema entry for a provider template with the given</span>
+<span class="sd">        resource name.</span>
+
+<span class="sd">        :param resource_name: the logical name of the provider resource</span>
+<span class="sd">        :returns: This attribute as a template &#39;Output&#39; entry</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s">&quot;Value&quot;</span><span class="p">:</span> <span class="s">&#39;{&quot;Fn::GetAtt&quot;: [&quot;</span><span class="si">%s</span><span class="s">&quot;, &quot;</span><span class="si">%s</span><span class="s">&quot;]}&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">resource_name</span><span class="p">,</span>
+                                                       <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+            <span class="s">&quot;Description&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">description</span>
+        <span class="p">}</span>
+
+</div></div>
+<div class="viewcode-block" id="Attributes"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.attributes.html#heat.engine.attributes.Attributes">[docs]</a><span class="k">class</span> <span class="nc">Attributes</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Models a collection of Resource Attributes.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res_name</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">resolver</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resource_name</span> <span class="o">=</span> <span class="n">res_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolver</span> <span class="o">=</span> <span class="n">resolver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="n">Attributes</span><span class="o">.</span><span class="n">_make_attributes</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_resolved_values</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Attributes.reset_resolved_values"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.attributes.html#heat.engine.attributes.Attributes.reset_resolved_values">[docs]</a>    <span class="k">def</span> <span class="nf">reset_resolved_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_values</span> <span class="o">=</span> <span class="p">{}</span>
+</div>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_make_attributes</span><span class="p">(</span><span class="n">schema</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">Attribute</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">schema</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Attributes.as_outputs"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.attributes.html#heat.engine.attributes.Attributes.as_outputs">[docs]</a>    <span class="k">def</span> <span class="nf">as_outputs</span><span class="p">(</span><span class="n">resource_name</span><span class="p">,</span> <span class="n">resource_class</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param resource_name: logical name of the resource</span>
+<span class="sd">        :param resource_class: resource implementation class</span>
+<span class="sd">        :returns: The attributes of the specified resource_class as a template</span>
+<span class="sd">                  Output map</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">resource_class</span><span class="o">.</span><span class="n">attributes_schema</span>
+        <span class="n">attribs</span> <span class="o">=</span> <span class="n">Attributes</span><span class="o">.</span><span class="n">_make_attributes</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">att</span><span class="o">.</span><span class="n">as_output</span><span class="p">(</span><span class="n">resource_name</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">att</span> <span class="ow">in</span> <span class="n">attribs</span><span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Attributes.schema_from_outputs"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.attributes.html#heat.engine.attributes.Attributes.schema_from_outputs">[docs]</a>    <span class="k">def</span> <span class="nf">schema_from_outputs</span><span class="p">(</span><span class="n">json_snippet</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">json_snippet</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">Schema</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;Description&quot;</span><span class="p">)))</span>
+                        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">json_snippet</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">return</span> <span class="p">{}</span>
+</div>
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%(resource)s</span><span class="s">: Invalid attribute </span><span class="si">%(key)s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span>
+                           <span class="nb">dict</span><span class="p">(</span><span class="n">resource</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_resource_name</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">))</span>
+
+        <span class="n">attrib</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">attrib</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">cache_mode</span> <span class="o">==</span> <span class="n">Schema</span><span class="o">.</span><span class="n">CACHE_NONE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolver</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_values</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_values</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolver</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># only store if not None, it may resolve to an actual value</span>
+            <span class="c"># on subsequent calls</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_values</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s">&quot;Attributes for </span><span class="si">%s</span><span class="s">:</span><span class="se">\n\t</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resource_name</span> <span class="o">+</span>
+                <span class="s">&#39;</span><span class="se">\n\t</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+</div>
+<div class="viewcode-block" id="select_from_attribute"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.attributes.html#heat.engine.attributes.select_from_attribute">[docs]</a><span class="k">def</span> <span class="nf">select_from_attribute</span><span class="p">(</span><span class="n">attribute_value</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Select an element from an attribute value.</span>
+
+<span class="sd">    :param attribute_value: the attribute value.</span>
+<span class="sd">    :param path: a list of path components to select from the attribute.</span>
+<span class="sd">    :returns: the selected attribute component value.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">get_path_component</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">,</span>
+                                       <span class="n">collections</span><span class="o">.</span><span class="n">Sequence</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Can&#39;t traverse attribute path&quot;</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Path components in attributes must be strings&#39;</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">collection</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">get_path_component</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">attribute_value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">None</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

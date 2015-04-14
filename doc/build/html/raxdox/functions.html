@@ -1,0 +1,362 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Intrinsic Functions &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../index.html" />
+    <link rel="prev" title="Docker Resource Types" href="docker.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="docker.html" title="Docker Resource Types"
+             accesskey="P">previous</a></li>
+        <li><a href="index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="intrinsic-functions">
+<span id="rax-hot-functions"></span><h1>Intrinsic Functions<a class="headerlink" href="#intrinsic-functions" title="Permalink to this headline">¶</a></h1>
+<p>HOT provides a set of intrinsic functions that can be used inside HOT templates
+to perform specific tasks, such as getting the value of a resource attribute at
+runtime. A definition of all intrinsic functions available in HOT is given
+below.</p>
+<div class="section" id="get-attr">
+<h2>get_attr<a class="headerlink" href="#get-attr" title="Permalink to this headline">¶</a></h2>
+<p>The <em>get_attr</em> function allows referencing an attribute of a resource. At
+runtime, it will be resolved to the value of an attribute of a resource instance
+created from the respective resource definition of the template.
+The syntax of the get_attr function is as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>get_attr:
+  - &lt;resource name&gt;
+  - &lt;attribute name&gt;
+  - &lt;key/index 1&gt; (optional)
+  - &lt;key/index 2&gt; (optional)
+  - ...
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>resource name</dt>
+<dd>This parameter specifies the resource for which the attributes shall be
+resolved. This resource must be defined within the <em>resources</em> section of
+the template (see also <a class="reference internal" href="hot_spec.html#rax-hot-spec-resources"><em>Resources Section</em></a>).</dd>
+<dt>attribute name</dt>
+<dd>The attribute name is required as it specifies the attribute
+to be resolved. If the attribute returns a complex data structure
+such as a list or a map, then subsequent keys or indexes can be specified
+which navigate the data structure to return the desired value.</dd>
+</dl>
+<p>Some examples of how to use the get_attr function are shown below:</p>
+<div class="highlight-python"><div class="highlight"><pre>resources:
+  my_instance:
+    type: OS::Nova::Server
+    # ...
+
+outputs:
+  instance_ip:
+    description: IP address of the deployed compute instance
+    value: { get_attr: [my_instance, first_address] }
+  instance_private_ip:
+    description: Private IP address of the deployed compute instance
+    value: { get_attr: [my_instance, networks, private, 0] }
+</pre></div>
+</div>
+<p>In this example, if the networks attribute contained the following data:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&quot;public&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;2001:0db8:0000:0000:0000:ff00:0042:8329&quot;</span><span class="p">,</span> <span class="s">&quot;1.2.3.4&quot;</span><span class="p">],</span>
+ <span class="s">&quot;private&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;10.0.0.1&quot;</span><span class="p">]}</span>
+</pre></div>
+</div>
+<p>then the value of the get_attr function would resolve to &#8220;10.0.0.1&#8221;.</p>
+</div>
+<div class="section" id="get-file">
+<h2>get_file<a class="headerlink" href="#get-file" title="Permalink to this headline">¶</a></h2>
+<p>The <em>get_file</em> function allows string content to be substituted into the
+template. It is generally used as a file inclusion mechanism for files
+containing non-heat scripts or configuration files.
+The syntax of the get_file function is as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>get_file: &lt;content key&gt;
+</pre></div>
+</div>
+<p>The <em>content key</em> will be used to look up the files dictionary that is
+provided in the REST API call. The <em>heat</em> client command from
+python-heatclient is <em>get_file</em> aware and will populate the <em>files</em> with
+the actual content of fetched paths and URLs. The <em>heat</em> client command
+supports relative paths and will transform these to absolute URLs which
+will be used as the <em>content key</em> in the files dictionary.</p>
+<p>Note: The argument to <em>get_file</em> should be a static path or URL and not
+rely on intrinsic functions like <em>get_param</em>. In general, the <em>heat</em> client
+does not process intrinsic functions (they are only processed by the heat
+server).</p>
+<p>The example below demonstrates <em>get_file</em> usage with both relative and
+absolute URLs.</p>
+<div class="highlight-python"><div class="highlight"><pre>resources:
+  my_instance:
+    type: OS::Nova::Server
+    properties:
+      # general properties ...
+      user_data:
+        get_file: my_instance_user_data.sh
+  my_other_instance:
+    type: OS::Nova::Server
+    properties:
+      # general properties ...
+      user_data:
+        get_file: http://example.com/my_other_instance_user_data.sh
+</pre></div>
+</div>
+<p>If this template was launched from a local file this would result in
+a <em>files</em> dictionary containing entries with keys
+<em>file:///path/to/my_instance_user_data.sh</em> and
+<em>http://example.com/my_other_instance_user_data.sh</em>.</p>
+</div>
+<div class="section" id="get-param">
+<span id="rax-hot-functions-get-param"></span><h2>get_param<a class="headerlink" href="#get-param" title="Permalink to this headline">¶</a></h2>
+<p>The <em>get_param</em> function allows for referencing an input parameter of a template
+from anywhere within a template. At runtime, it will be resolved to the value
+provided for this input parameter. The syntax of the <em>get_param</em> function is as
+follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>get_param:
+  - &lt;parameter name&gt;
+  - &lt;key/index 1&gt; (optional)
+  - &lt;key/index 2&gt; (optional)
+  - ...
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>parameter name</dt>
+<dd>The parameter name is required as it specifies the parameter
+to be resolved. If the parameter returns a complex data structure
+such as a list or a map, then subsequent keys or indexes can be specified
+which navigate the data structure to return the desired value.</dd>
+</dl>
+<p>A sample use of this function in context of a resource definition
+is shown below.</p>
+<div class="highlight-python"><div class="highlight"><pre>parameters:
+  instance_type:
+    type: string
+    label: Instance Type
+    description: Instance type to be used.
+  server_data:
+    type: json
+
+resources:
+  my_instance:
+    type: OS::Nova::Server
+    properties:
+      flavor: { get_param: instance_type}
+      metadata: { get_param: [ server_data, metadata ] }
+      key_name: { get_param: [ server_data, keys, 0 ] }
+</pre></div>
+</div>
+<p>In this example, if the instance_type/server_data parameters contained
+the following data:</p>
+<div class="highlight-python"><div class="highlight"><pre>{&quot;instance_type&quot;: &quot;m1.tiny&quot;,
+{&quot;server_data&quot;: {&quot;metadata&quot;: {&quot;foo&quot;: &quot;bar&quot;},
+                 &quot;keys&quot;: [&quot;a_key&quot;,&quot;other_key&quot;]}}}
+</pre></div>
+</div>
+<p>then the value of the property &#8216;flavor&#8217; would resolve to &#8220;m1.tiny&#8221;, &#8216;metadata&#8217;
+would resolve to {&#8220;foo&#8221;: &#8220;bar&#8221;} and &#8216;key_name&#8217; would resolve to &#8220;a_key&#8221;.</p>
+</div>
+<div class="section" id="get-resource">
+<h2>get_resource<a class="headerlink" href="#get-resource" title="Permalink to this headline">¶</a></h2>
+<p>The <em>get_resource</em> function allows for referencing another resource within the
+same template. At runtime, it will be resolved to reference ID of the resource,
+which is resource type specific. For example, a reference to a floating IP
+resource will return the respective IP address at runtime.
+The syntax of the get_resource function is as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>get_resource: &lt;resource ID&gt;
+</pre></div>
+</div>
+<p>The <em>resource ID</em> of the referenced resources as used in the current template is
+given as single parameter to the get_resource function.</p>
+</div>
+<div class="section" id="list-join">
+<h2>list_join<a class="headerlink" href="#list-join" title="Permalink to this headline">¶</a></h2>
+<p>The <em>list_join</em> function joins a list of strings with the given delimiter. This
+function is introduced in the Juno release, usable in HOT versions later than
+<cite>2013-05-23</cite>.  The syntax of the list_join function is as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>list_join:
+- &lt;delimiter&gt;
+- &lt;list to join&gt;
+</pre></div>
+</div>
+<p>A sample use of this function with a simple list is shown below.</p>
+<div class="highlight-python"><div class="highlight"><pre>list_join: [&#39;, &#39;, [&#39;one&#39;, &#39;two&#39;, &#39;and three&#39;]]
+</pre></div>
+</div>
+<p>This would resolve to &#8220;one, two, and three&#8221;.</p>
+</div>
+<div class="section" id="resource-facade">
+<h2>resource_facade<a class="headerlink" href="#resource-facade" title="Permalink to this headline">¶</a></h2>
+<p>The <em>resource_facade</em> function allows a provider template to retrieve data
+about its resource facade in the parent template. A provider template is used
+to provide a custom definition of a resource - the facade - in the form of a
+Heat template. The resource&#8217;s properties are passed to the provider template as
+its parameters, but other resource data can be included using this function.)</p>
+<p>The syntax of the <em>resource_facade</em> function is as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>resource_facade: &lt;data type&gt;
+</pre></div>
+</div>
+<p>The <em>data type</em> can be <cite>metadata</cite>, <cite>deletion_policy</cite> or <cite>update_policy</cite>.</p>
+</div>
+<div class="section" id="str-replace">
+<h2>str_replace<a class="headerlink" href="#str-replace" title="Permalink to this headline">¶</a></h2>
+<p>The <em>str_replace</em> function allows for dynamically constructing strings by
+providing a template string with placeholders and a list of mappings to assign
+values to those placeholders at runtime. The placeholders are replaced with
+mapping values wherever a mapping key exactly matches a placeholder.
+The syntax of the str_replace function is as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>str_replace:
+  template: &lt;template string&gt;
+  params: &lt;parameter mappings&gt;
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>template</dt>
+<dd>The <em>template</em> argument defines the template string that contains
+placeholders which will be substituted at runtime.</dd>
+<dt>params</dt>
+<dd>The <em>params</em> argument provides parameter mappings in the form of a
+dictionary, which will be used for placeholder substitution in the template
+string at runtime. Within parameter mappings one can make use of other
+functions (e.g. get_attr to use resource attribute values) for template
+substitution.</dd>
+</dl>
+<p>The example below shows a simple use of the str_replace function in the outputs
+section of a template to build a URL for logging into a deployed application.</p>
+<div class="highlight-python"><div class="highlight"><pre>resources:
+  my_instance:
+    type: OS::Nova::Server
+    # general metadata and properties ...
+
+outputs:
+  Login_URL:
+    description: The URL to log into the deployed application
+    value:
+      str_replace:
+        template: http://host/MyApplication
+        params:
+          host: { get_attr: [ my_instance, first_address ] }
+</pre></div>
+</div>
+<p>The str_replace function can also be used for constructing bigger chunks of text
+like scripts for initializing compute instances as shown in the example below:</p>
+<div class="highlight-python"><div class="highlight"><pre>parameters:
+  DBRootPassword:
+    type: string
+    label: Database Password
+    description: Root password for MySQL
+    hidden: true
+
+resources:
+  my_instance:
+    type: OS::Nova::Server
+    properties:
+      # general properties ...
+      user_data:
+        str_replace:
+          template: |
+            #!/bin/bash
+            echo &quot;Hello world&quot;
+            echo &quot;Setting MySQL root password&quot;
+            mysqladmin -u root password $db_rootpassword
+            # do more things ...
+          params:
+            $db_rootpassword: { get_param: DBRootPassword }
+</pre></div>
+</div>
+<p>In the example above, one can imagine that MySQL is being configured on a
+compute instance and the root password is going to be set based on a user
+provided parameter. The script for doing this is provided as userdata to the
+compute instance, leveraging the str_replace function.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Intrinsic Functions</a><ul>
+<li><a class="reference internal" href="#get-attr">get_attr</a></li>
+<li><a class="reference internal" href="#get-file">get_file</a></li>
+<li><a class="reference internal" href="#get-param">get_param</a></li>
+<li><a class="reference internal" href="#get-resource">get_resource</a></li>
+<li><a class="reference internal" href="#list-join">list_join</a></li>
+<li><a class="reference internal" href="#resource-facade">resource_facade</a></li>
+<li><a class="reference internal" href="#str-replace">str_replace</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="docker.html"
+                        title="previous chapter">Docker Resource Types</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/raxdox/functions.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="docker.html" title="Docker Resource Types"
+             >previous</a></li>
+        <li><a href="index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

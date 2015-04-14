@@ -1,0 +1,193 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.service_stack_watch &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.engine.service_stack_watch</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span> <span class="k">as</span> <span class="n">logging</span>
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">timeutils</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">context</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LE</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LW</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">stack</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">watchrule</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">stack</span> <span class="k">as</span> <span class="n">stack_object</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">watch_rule</span> <span class="k">as</span> <span class="n">watch_rule_object</span>
+<span class="kn">from</span> <span class="nn">heat.rpc</span> <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">rpc_api</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="StackWatch"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.service_stack_watch.html#heat.engine.service_stack_watch.StackWatch">[docs]</a><span class="k">class</span> <span class="nc">StackWatch</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thread_group_mgr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thread_group_mgr</span> <span class="o">=</span> <span class="n">thread_group_mgr</span>
+
+<div class="viewcode-block" id="StackWatch.start_watch_task"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.service_stack_watch.html#heat.engine.service_stack_watch.StackWatch.start_watch_task">[docs]</a>    <span class="k">def</span> <span class="nf">start_watch_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">,</span> <span class="n">cnxt</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">stack_has_a_watchrule</span><span class="p">(</span><span class="n">sid</span><span class="p">):</span>
+            <span class="n">wrs</span> <span class="o">=</span> <span class="n">watch_rule_object</span><span class="o">.</span><span class="n">WatchRule</span><span class="o">.</span><span class="n">get_all_by_stack</span><span class="p">(</span><span class="n">cnxt</span><span class="p">,</span> <span class="n">sid</span><span class="p">)</span>
+
+            <span class="n">now</span> <span class="o">=</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span>
+            <span class="n">start_watch_thread</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">for</span> <span class="n">wr</span> <span class="ow">in</span> <span class="n">wrs</span><span class="p">:</span>
+                <span class="c"># reset the last_evaluated so we don&#39;t fire off alarms when</span>
+                <span class="c"># the engine has not been running.</span>
+                <span class="n">watch_rule_object</span><span class="o">.</span><span class="n">WatchRule</span><span class="o">.</span><span class="n">update_by_id</span><span class="p">(</span>
+                    <span class="n">cnxt</span><span class="p">,</span> <span class="n">wr</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                    <span class="p">{</span><span class="s">&#39;last_evaluated&#39;</span><span class="p">:</span> <span class="n">now</span><span class="p">})</span>
+
+                <span class="k">if</span> <span class="n">wr</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_CEILOMETER_CONTROLLED</span><span class="p">:</span>
+                    <span class="n">start_watch_thread</span> <span class="o">=</span> <span class="bp">True</span>
+
+            <span class="n">children</span> <span class="o">=</span> <span class="n">stack_object</span><span class="o">.</span><span class="n">Stack</span><span class="o">.</span><span class="n">get_all_by_owner_id</span><span class="p">(</span><span class="n">cnxt</span><span class="p">,</span> <span class="n">sid</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">stack_has_a_watchrule</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">id</span><span class="p">):</span>
+                    <span class="n">start_watch_thread</span> <span class="o">=</span> <span class="bp">True</span>
+
+            <span class="k">return</span> <span class="n">start_watch_thread</span>
+
+        <span class="k">if</span> <span class="n">stack_has_a_watchrule</span><span class="p">(</span><span class="n">stack_id</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">thread_group_mgr</span><span class="o">.</span><span class="n">add_timer</span><span class="p">(</span>
+                <span class="n">stack_id</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">periodic_watcher_task</span><span class="p">,</span>
+                <span class="n">sid</span><span class="o">=</span><span class="n">stack_id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StackWatch.check_stack_watches"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.service_stack_watch.html#heat.engine.service_stack_watch.StackWatch.check_stack_watches">[docs]</a>    <span class="k">def</span> <span class="nf">check_stack_watches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sid</span><span class="p">):</span>
+        <span class="c"># Retrieve the stored credentials &amp; create context</span>
+        <span class="c"># Require tenant_safe=False to the stack_get to defeat tenant</span>
+        <span class="c"># scoping otherwise we fail to retrieve the stack</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Periodic watcher task for stack </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">sid</span><span class="p">)</span>
+        <span class="n">admin_context</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get_admin_context</span><span class="p">()</span>
+        <span class="n">db_stack</span> <span class="o">=</span> <span class="n">stack_object</span><span class="o">.</span><span class="n">Stack</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span><span class="n">admin_context</span><span class="p">,</span>
+                                                <span class="n">sid</span><span class="p">,</span>
+                                                <span class="n">tenant_safe</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                                <span class="n">eager_load</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">db_stack</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">_LE</span><span class="p">(</span><span class="s">&quot;Unable to retrieve stack </span><span class="si">%s</span><span class="s"> for periodic task&quot;</span><span class="p">),</span>
+                      <span class="n">sid</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">stk</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">Stack</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">admin_context</span><span class="p">,</span> <span class="n">stack</span><span class="o">=</span><span class="n">db_stack</span><span class="p">,</span>
+                               <span class="n">use_stored_context</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="c"># recurse into any nested stacks.</span>
+        <span class="n">children</span> <span class="o">=</span> <span class="n">stack_object</span><span class="o">.</span><span class="n">Stack</span><span class="o">.</span><span class="n">get_all_by_owner_id</span><span class="p">(</span><span class="n">admin_context</span><span class="p">,</span> <span class="n">sid</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_stack_watches</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+        <span class="c"># Get all watchrules for this stack and evaluate them</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">wrs</span> <span class="o">=</span> <span class="n">watch_rule_object</span><span class="o">.</span><span class="n">WatchRule</span><span class="o">.</span><span class="n">get_all_by_stack</span><span class="p">(</span><span class="n">admin_context</span><span class="p">,</span>
+                                                               <span class="n">sid</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">_LW</span><span class="p">(</span><span class="s">&#39;periodic_task db error watch rule removed? </span><span class="si">%(ex)s</span><span class="s">&#39;</span><span class="p">),</span>
+                     <span class="n">ex</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">def</span> <span class="nf">run_alarm_action</span><span class="p">(</span><span class="n">stk</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="n">details</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">actions</span><span class="p">:</span>
+                <span class="n">action</span><span class="p">(</span><span class="n">details</span><span class="o">=</span><span class="n">details</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">stk</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">metadata_update</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">wr</span> <span class="ow">in</span> <span class="n">wrs</span><span class="p">:</span>
+            <span class="n">rule</span> <span class="o">=</span> <span class="n">watchrule</span><span class="o">.</span><span class="n">WatchRule</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">stk</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="n">watch</span><span class="o">=</span><span class="n">wr</span><span class="p">)</span>
+            <span class="n">actions</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">actions</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">thread_group_mgr</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">sid</span><span class="p">,</span> <span class="n">run_alarm_action</span><span class="p">,</span> <span class="n">stk</span><span class="p">,</span>
+                                            <span class="n">actions</span><span class="p">,</span> <span class="n">rule</span><span class="o">.</span><span class="n">get_details</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="StackWatch.periodic_watcher_task"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.service_stack_watch.html#heat.engine.service_stack_watch.StackWatch.periodic_watcher_task">[docs]</a>    <span class="k">def</span> <span class="nf">periodic_watcher_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Periodic task, created for each stack, triggers watch-rule</span>
+<span class="sd">        evaluation for all rules defined for the stack</span>
+<span class="sd">        sid = stack ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_stack_watches</span><span class="p">(</span><span class="n">sid</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

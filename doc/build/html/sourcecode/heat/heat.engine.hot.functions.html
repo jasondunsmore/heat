@@ -1,0 +1,302 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.hot.functions Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-engine-hot-functions-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.engine.hot.functions</span></tt> Module<a class="headerlink" href="#the-heat-engine-hot-functions-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.hot.functions.</tt><tt class="descname">Digest</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#Digest"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A function for performing digest operations.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>digest:
+  - &lt;algorithm&gt;
+  - &lt;value&gt;
+</pre></div>
+</div>
+<p>Valid algorithms are the ones provided by natively by hashlib (md5, sha1,
+sha224, sha256, sha384, and sha512) or any one provided by OpenSSL.</p>
+<dl class="method">
+<dt>
+<tt class="descname">digest</tt><big>(</big><em>algorithm</em>, <em>value</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#Digest.digest"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#Digest.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">validate_usage</tt><big>(</big><em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#Digest.validate_usage"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.hot.functions.</tt><tt class="descname">GetAtt</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#GetAtt"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.hot.functions.GetAttThenSelect</span></tt></p>
+<p>A function for resolving resource attributes.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>get_attr:
+  - &lt;resource_name&gt;
+  - &lt;attribute_name&gt;
+  - &lt;path1&gt;
+  - ...
+</pre></div>
+</div>
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#GetAtt.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.hot.functions.</tt><tt class="descname">GetAttThenSelect</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#GetAttThenSelect"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.cfn.functions.GetAtt</span></tt></p>
+<p>A function for resolving resource attributes.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>get_attr:
+  - &lt;resource_name&gt;
+  - &lt;attribute_name&gt;
+  - &lt;path1&gt;
+  - ...
+</pre></div>
+</div>
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#GetAttThenSelect.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.hot.functions.</tt><tt class="descname">GetFile</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#GetFile"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A function for including a file inline.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>get_file: &lt;file_key&gt;
+</pre></div>
+</div>
+<p>And resolves to the content stored in the files dictionary under the given
+key.</p>
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#GetFile.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.hot.functions.</tt><tt class="descname">GetParam</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#GetParam"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A function for resolving parameter references.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>get_param: &lt;param_name&gt;
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-python"><div class="highlight"><pre>get_param:
+  - &lt;param_name&gt;
+  - &lt;path1&gt;
+  - ...
+</pre></div>
+</div>
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#GetParam.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.hot.functions.</tt><tt class="descname">Join</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#Join"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.cfn.functions.Join</span></tt></p>
+<p>A function for joining strings.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>{ &quot;list_join&quot; : [ &quot;&lt;delim&gt;&quot;, [ &quot;&lt;string_1&gt;&quot;, &quot;&lt;string_2&gt;&quot;, ... ] }
+</pre></div>
+</div>
+<p>And resolves to:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="s">&quot;&lt;string_1&gt;&lt;delim&gt;&lt;string_2&gt;&lt;delim&gt;...&quot;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.hot.functions.</tt><tt class="descname">Removed</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#Removed"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>This function existed in previous versions of HOT, but has been removed.
+Check the HOT guide for an equivalent native function.</p>
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#Removed.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">validate</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#Removed.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.hot.functions.</tt><tt class="descname">Repeat</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#Repeat"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.function.Function</span></tt></p>
+<p>A function for iterating over a list of items.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>repeat:
+    template:
+        &lt;body&gt;
+    for_each:
+        &lt;var&gt;: &lt;list&gt;
+</pre></div>
+</div>
+<p>The result is a new list of the same size as &lt;list&gt;, where each element
+is a copy of &lt;body&gt; with any occurrences of &lt;var&gt; replaced with the
+corresponding item of &lt;list&gt;.</p>
+<dl class="method">
+<dt>
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#Repeat.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.hot.functions.</tt><tt class="descname">Replace</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#Replace"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.cfn.functions.Replace</span></tt></p>
+<p>A function for performing string substitutions.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>str_replace:
+  template: &lt;key_1&gt; &lt;key_2&gt;
+  params:
+    &lt;key_1&gt;: &lt;value_1&gt;
+    &lt;key_2&gt;: &lt;value_2&gt;
+    ...
+</pre></div>
+</div>
+<p>And resolves to:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="s">&quot;&lt;value_1&gt; &lt;value_2&gt;&quot;</span>
+</pre></div>
+</div>
+<p>This is implemented using Python&#8217;s str.replace on each key. The order in
+which replacements are performed is undefined.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.hot.functions.</tt><tt class="descname">ResourceFacade</tt><big>(</big><em>stack</em>, <em>fn_name</em>, <em>args</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/hot/functions.html#ResourceFacade"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.cfn.functions.ResourceFacade</span></tt></p>
+<p>A function for obtaining data from the facade resource from within the
+corresponding provider template.</p>
+<p>Takes the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>resource_facade: &lt;attribute_type&gt;
+</pre></div>
+</div>
+<p>where the valid attribute types are &#8220;metadata&#8221;, &#8220;deletion_policy&#8221; and
+&#8220;update_policy&#8221;.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">DELETION_POLICY</tt><em class="property"> = 'deletion_policy'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">METADATA</tt><em class="property"> = 'metadata'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">UPDATE_POLICY</tt><em class="property"> = 'update_policy'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.engine.hot.functions.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+=======================================
+The :mod:`heat.api.aws.ec2token` Module
+=======================================
+.. automodule:: heat.api.aws.ec2token
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Template composition &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="template-composition">
+<span id="composition"></span><h1>Template composition<a class="headerlink" href="#template-composition" title="Permalink to this headline">¶</a></h1>
+<p>When writing complex templates you are encouraged to break up your
+template into separate smaller templates. These can then be brought
+together using template resources. This is a mechanism to define a resource
+using a template, thus composing one logical stack with multiple templates.</p>
+<p>Template resources provide a feature similar to the
+<a href="#id1"><span class="problematic" id="id2">:hotref:`AWS::CloudFormation::Stack`</span></a> resource, but also provide a way to:</p>
+<ul class="simple">
+<li>Define new resource types and build your own resource library.</li>
+<li>Override the default behaviour of existing resource types.</li>
+</ul>
+<p>To achieve this:</p>
+<ul class="simple">
+<li>The Orchestration client gets the associated template files and passes them
+along in the <tt class="docutils literal"><span class="pre">files</span></tt> section of the <tt class="docutils literal"><span class="pre">POST</span> <span class="pre">stacks/</span></tt> API request.</li>
+<li>The environment in the Orchestration engine manages the mapping of resource
+type to template creation.</li>
+<li>The Orchestration engine translates template parameters into resource
+properties.</li>
+</ul>
+<p>The following examples illustrate how you can use a custom template to define
+new types of resources. These examples use a custom template stored in a
+<tt class="file docutils literal"><span class="pre">my_nova.yaml</span></tt> file:</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">heat_template_version</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">2014-10-16</span>
+
+<span class="l-Scalar-Plain">parameters</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">key_name</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">string</span>
+    <span class="l-Scalar-Plain">description</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Name of a KeyPair</span>
+
+<span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">server</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">OS::Nova::Server</span>
+    <span class="l-Scalar-Plain">properties</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">key_name</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span><span class="nv">get_param</span><span class="p-Indicator">:</span> <span class="nv">key_name</span><span class="p-Indicator">}</span>
+      <span class="l-Scalar-Plain">flavor</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">m1.small</span>
+      <span class="l-Scalar-Plain">image</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">ubuntu-trusty-x86_64</span>
+</pre></div>
+</div>
+<div class="section" id="use-the-template-filename-as-type">
+<h2>Use the template filename as type<a class="headerlink" href="#use-the-template-filename-as-type" title="Permalink to this headline">¶</a></h2>
+<p>The following template defines the <tt class="file docutils literal"><span class="pre">my_nova.yaml</span></tt> file as value for the
+<tt class="docutils literal"><span class="pre">type</span></tt> property of a resource:</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">heat_template_version</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">2014-10-16</span>
+
+<span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">my_server</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">my_nova.yaml</span>
+    <span class="l-Scalar-Plain">properties</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">key_name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">my_key</span>
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">key_name</span></tt> argument of the <tt class="docutils literal"><span class="pre">my_nova.yaml</span></tt> template gets its value from
+the <tt class="docutils literal"><span class="pre">key_name</span></tt> property of the new template.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The above reference to <tt class="docutils literal"><span class="pre">my_nova.yaml</span></tt> assumes it is in the same directory.
+You can use any of the following forms:</p>
+<ul class="last simple">
+<li>Relative path (<tt class="docutils literal"><span class="pre">my_nova.yaml</span></tt>)</li>
+<li>Absolute path (<tt class="docutils literal"><span class="pre">file:///home/user/templates/my_nova.yaml</span></tt>)</li>
+<li>Http URL (<tt class="docutils literal"><span class="pre">http://example.com/templates/my_nova.yaml</span></tt>)</li>
+<li>Https URL (<tt class="docutils literal"><span class="pre">https://example.com/templates/my_nova.yaml</span></tt>)</li>
+</ul>
+</div>
+<p>To create the stack run:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> heat stack-create -f main.yaml stack1
+</pre></div>
+</div>
+</div>
+<div class="section" id="define-a-new-resource-type">
+<h2>Define a new resource type<a class="headerlink" href="#define-a-new-resource-type" title="Permalink to this headline">¶</a></h2>
+<p>You can associate a name to the <tt class="docutils literal"><span class="pre">my_nova.yaml</span></tt> template in an environment
+file. If the name is already known by the Orchestration module then your new
+resource will override the default one.</p>
+<p>In the following example a new <tt class="docutils literal"><span class="pre">OS::Nova::Server</span></tt> resource overrides the
+default resource of the same name.</p>
+<p>An <tt class="file docutils literal"><span class="pre">env.yaml</span></tt> environment file holds the definition of the new resource:</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">resource_registry</span><span class="p-Indicator">:</span>
+  <span class="s">&quot;OS::Nova::Server&quot;</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">my_nova.yaml</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">See <a class="reference internal" href="environment.html#environments"><em>Environments</em></a> for more detail about environment files.</p>
+</div>
+<p>You can now use the new <tt class="docutils literal"><span class="pre">OS::Nova::Server</span></tt> in your new template:</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">heat_template_version</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">2014-10-16</span>
+
+<span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">my_server</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">OS::Nova::Server</span>
+    <span class="l-Scalar-Plain">properties</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">key_name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">my_key</span>
+</pre></div>
+</div>
+<p>To create the stack run:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> heat stack-create -f main.yaml -e env.yaml example-two
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-access-to-nested-attributes">
+<h2>Get access to nested attributes<a class="headerlink" href="#get-access-to-nested-attributes" title="Permalink to this headline">¶</a></h2>
+<p>There are implicit attributes of a template resource. These are
+accessible as follows:</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">heat_template_version</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">2014-10-16</span>
+
+<span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">my_server</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">my_nova.yaml</span>
+
+<span class="l-Scalar-Plain">outputs</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">test_out</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">value</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span><span class="nv">get_attr</span><span class="p-Indicator">:</span> <span class="nv">my_server</span><span class="p-Indicator">,</span> <span class="nv">resource.server</span><span class="p-Indicator">,</span> <span class="nv">first_address</span><span class="p-Indicator">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="making-your-template-resource-more-transparent">
+<h2>Making your template resource more &#8220;transparent&#8221;<a class="headerlink" href="#making-your-template-resource-more-transparent" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo).</p>
+</div>
+<p>If you wish to be able to return the ID of one of the inner resources
+instead of the nested stack&#8217;s identifier, you can add the special reserved
+output &#8220;OS::stack_id&#8221; to your template resource.</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">heat_template_version</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">2014-10-16</span>
+
+<span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">server</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">OS::Nova::Server</span>
+
+<span class="l-Scalar-Plain">outputs</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">OS::stack_id</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">value</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span><span class="nv">get_resource</span><span class="p-Indicator">:</span> <span class="nv">server</span><span class="p-Indicator">}</span>
+</pre></div>
+</div>
+<p>Now when you use &#8220;get_resource&#8221; from the outer template heat
+will use the nova server id and not the template resource identifier.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../raxdox/index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Template composition</a><ul>
+<li><a class="reference internal" href="#use-the-template-filename-as-type">Use the template filename as type</a></li>
+<li><a class="reference internal" href="#define-a-new-resource-type">Define a new resource type</a></li>
+<li><a class="reference internal" href="#get-access-to-nested-attributes">Get access to nested attributes</a></li>
+<li><a class="reference internal" href="#making-your-template-resource-more-transparent">Making your template resource more &#8220;transparent&#8221;</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/template_guide/composition.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.scheduler Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-engine-scheduler-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.engine.scheduler</span></tt> Module<a class="headerlink" href="#the-heat-engine-scheduler-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.scheduler.</tt><tt class="descname">DependencyTaskGroup</tt><big>(</big><em>dependencies</em>, <em>task=&lt;function &lt;lambda&gt; at 0x5615e60&gt;</em>, <em>reverse=False</em>, <em>name=None</em>, <em>error_wait_time=None</em>, <em>aggregate_exceptions=False</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#DependencyTaskGroup"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>A task which manages a group of subtasks that have ordering dependencies.</p>
+<dl class="method">
+<dt>
+<tt class="descname">cancel_all</tt><big>(</big><em>grace_period=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#DependencyTaskGroup.cancel_all"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">heat.engine.scheduler.</tt><tt class="descname">ExceptionGroup</tt><big>(</big><em>exceptions=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#ExceptionGroup"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></p>
+<p>Container for multiple exceptions.</p>
+<p>This exception is used by DependencyTaskGroup when the flag
+aggregate_exceptions is set to True and it&#8217;s re-raised again when all tasks
+are finished.  This way it can be caught later on so that the individual
+exceptions can be acted upon.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.scheduler.</tt><tt class="descname">PollingTaskGroup</tt><big>(</big><em>tasks</em>, <em>name=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#PollingTaskGroup"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>A task which manages a group of subtasks.</p>
+<p>When the task is started, all of its subtasks are also started. The task
+completes when all subtasks are complete.</p>
+<p>Once started, the subtasks are assumed to be only polling for completion
+of an asynchronous operation, so no attempt is made to give them equal
+scheduling slots.</p>
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><tt class="descname">from_task_with_args</tt><big>(</big><em>task</em>, <em>*arg_lists</em>, <em>**kwarg_lists</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#PollingTaskGroup.from_task_with_args"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a new PollingTaskGroup where each subtask is identical except
+for the arguments passed to it.</p>
+<p>Each argument to use should be passed as a list (or iterable) of values
+such that one is passed in the corresponding position for each subtask.
+The number of subtasks spawned depends on the length of the argument
+lists.
+For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">PollingTaskGroup</span><span class="o">.</span><span class="n">from_task_with_args</span><span class="p">(</span><span class="n">my_task</span><span class="p">,</span>
+                                     <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                                     <span class="n">alpha</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>will start three TaskRunners that will run:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">my_task</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="s">&#39;a&#39;</span><span class="p">)</span>
+<span class="n">my_task</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">)</span>
+<span class="n">my_task</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>respectively.</p>
+<p>If multiple arguments are supplied, each list should be of the same
+length. In the case of any discrepancy, the length of the shortest
+argument list will be used, and any extra arguments discarded.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.scheduler.</tt><tt class="descname">TaskRunner</tt><big>(</big><em>task</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#TaskRunner"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Wrapper for a resumable task (co-routine).</p>
+<dl class="method">
+<dt>
+<tt class="descname">cancel</tt><big>(</big><em>grace_period=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#TaskRunner.cancel"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Cancel the task and mark it as done.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">done</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#TaskRunner.done"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return True if the task is complete.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">run_to_completion</tt><big>(</big><em>wait_time=1</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#TaskRunner.run_to_completion"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Run the task to completion.</p>
+<p>The task will sleep for <cite>wait_time</cite> seconds between steps. To avoid
+sleeping, pass <cite>None</cite> for <cite>wait_time</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">start</tt><big>(</big><em>timeout=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#TaskRunner.start"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Initialise the task and run its first step.</p>
+<p>If a timeout is specified, any attempt to step the task after that
+number of seconds has elapsed will result in a Timeout being
+raised inside the task.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">started</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#TaskRunner.started"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return True if the task has been started.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">step</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#TaskRunner.step"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Run another step of the task, and return True if the task is complete;
+False otherwise.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">heat.engine.scheduler.</tt><tt class="descname">TimedCancel</tt><big>(</big><em>task_runner</em>, <em>timeout</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#TimedCancel"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.engine.scheduler.Timeout</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">trigger</tt><big>(</big><em>generator</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#TimedCancel.trigger"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Trigger the timeout on a given generator.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">heat.engine.scheduler.</tt><tt class="descname">Timeout</tt><big>(</big><em>task_runner</em>, <em>timeout</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#Timeout"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.BaseException</span></tt></p>
+<p>Timeout exception, raised within a task when it has exceeded its allotted
+(wallclock) running time.</p>
+<p>This allows the task to perform any necessary cleanup, as well as use a
+different exception to notify the controlling task if appropriate. If the
+task suppresses the exception altogether, it will be cancelled but the
+controlling task will not be notified of the timeout.</p>
+<dl class="method">
+<dt>
+<tt class="descname">expired</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#Timeout.expired"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">trigger</tt><big>(</big><em>generator</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#Timeout.trigger"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Trigger the timeout on a given generator.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.scheduler.</tt><tt class="descname">task_description</tt><big>(</big><em>task</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#task_description"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a human-readable string description of a task suitable for logging
+the status of the task.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">heat.engine.scheduler.</tt><tt class="descname">wrappertask</tt><big>(</big><em>task</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/scheduler.html#wrappertask"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Decorator for a task that needs to drive a subtask.</p>
+<p>This is essentially a replacement for the Python 3-only &#8220;yield from&#8221;
+keyword (PEP 380), using the &#8220;yield&#8221; keyword that is supported in
+Python 2. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@wrappertask</span>
+<span class="k">def</span> <span class="nf">parent_task</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+
+    <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_task</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.engine.scheduler.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.api &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.engine.api</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span> <span class="k">as</span> <span class="n">logging</span>
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">timeutils</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LE</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">param_utils</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">template_format</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">constraints</span> <span class="k">as</span> <span class="n">constr</span>
+<span class="kn">from</span> <span class="nn">heat.rpc</span> <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">rpc_api</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="extract_args"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.api.html#heat.engine.api.extract_args">[docs]</a><span class="k">def</span> <span class="nf">extract_args</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Extract any arguments passed as parameters through the API and return them</span>
+<span class="sd">    as a dictionary. This allows us to filter the passed args and do type</span>
+<span class="sd">    conversion where appropriate</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">timeout_mins</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_TIMEOUT</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">timeout_mins</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;0&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">timeout</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">timeout_mins</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">_LE</span><span class="p">(</span><span class="s">&#39;Timeout conversion failed&#39;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">timeout</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_TIMEOUT</span><span class="p">]</span> <span class="o">=</span> <span class="n">timeout</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid timeout value </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">timeout</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_DISABLE_ROLLBACK</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+        <span class="n">disable_rollback</span> <span class="o">=</span> <span class="n">param_utils</span><span class="o">.</span><span class="n">extract_bool</span><span class="p">(</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_DISABLE_ROLLBACK</span><span class="p">])</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_DISABLE_ROLLBACK</span><span class="p">]</span> <span class="o">=</span> <span class="n">disable_rollback</span>
+
+    <span class="k">if</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_SHOW_DELETED</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+        <span class="n">params</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_SHOW_DELETED</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_utils</span><span class="o">.</span><span class="n">extract_bool</span><span class="p">(</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_SHOW_DELETED</span><span class="p">])</span>
+
+    <span class="n">adopt_data</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_ADOPT_STACK_DATA</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">adopt_data</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">adopt_data</span> <span class="o">=</span> <span class="n">template_format</span><span class="o">.</span><span class="n">simple_parse</span><span class="p">(</span><span class="n">adopt_data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid adopt data: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">exc</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_ADOPT_STACK_DATA</span><span class="p">]</span> <span class="o">=</span> <span class="n">adopt_data</span>
+
+    <span class="n">tags</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_TAGS</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tags</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tags</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid tags, not a list: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">tags</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid tag, &quot;</span><span class="si">%s</span><span class="s">&quot; is not a string&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">tag</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">80</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid tag, &quot;</span><span class="si">%s</span><span class="s">&quot; is longer than 80 &#39;</span>
+                                   <span class="s">&#39;characters&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">tag</span><span class="p">)</span>
+
+            <span class="c"># Comma is not allowed as per the API WG tagging guidelines</span>
+            <span class="k">if</span> <span class="s">&#39;,&#39;</span> <span class="ow">in</span> <span class="n">tag</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid tag, &quot;</span><span class="si">%s</span><span class="s">&quot; contains a comma&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">tag</span><span class="p">)</span>
+
+        <span class="n">kwargs</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_TAGS</span><span class="p">]</span> <span class="o">=</span> <span class="n">tags</span>
+
+    <span class="k">return</span> <span class="n">kwargs</span>
+
+</div>
+<div class="viewcode-block" id="format_stack_outputs"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.api.html#heat.engine.api.format_stack_outputs">[docs]</a><span class="k">def</span> <span class="nf">format_stack_outputs</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Return a representation of the given output template for the given stack</span>
+<span class="sd">    that matches the API output expectations.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">format_stack_output</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">rpc_api</span><span class="o">.</span><span class="n">OUTPUT_DESCRIPTION</span><span class="p">:</span> <span class="n">outputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;Description&#39;</span><span class="p">,</span>
+                                                       <span class="s">&#39;No description given&#39;</span><span class="p">),</span>
+            <span class="n">rpc_api</span><span class="o">.</span><span class="n">OUTPUT_KEY</span><span class="p">:</span> <span class="n">k</span><span class="p">,</span>
+            <span class="n">rpc_api</span><span class="o">.</span><span class="n">OUTPUT_VALUE</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">outputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;error_msg&#39;</span><span class="p">):</span>
+            <span class="n">output</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">OUTPUT_ERROR</span><span class="p">:</span> <span class="n">outputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;error_msg&#39;</span><span class="p">)})</span>
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="n">format_stack_output</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="format_stack"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.api.html#heat.engine.api.format_stack">[docs]</a><span class="k">def</span> <span class="nf">format_stack</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">preview</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Return a representation of the given stack that matches the API output</span>
+<span class="sd">    expectations.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">updated_time</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">updated_time</span> <span class="ow">and</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">isotime</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">updated_time</span><span class="p">)</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_NAME</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_ID</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">identifier</span><span class="p">()),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_CREATION_TIME</span><span class="p">:</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">isotime</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">created_time</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_UPDATED_TIME</span><span class="p">:</span> <span class="n">updated_time</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_NOTIFICATION_TOPICS</span><span class="p">:</span> <span class="p">[],</span>  <span class="c"># TODO(?) Not implemented yet</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_PARAMETERS</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_DESCRIPTION</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="n">stack</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">DESCRIPTION</span><span class="p">],</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_TMPL_DESCRIPTION</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="n">stack</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">DESCRIPTION</span><span class="p">],</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_CAPABILITIES</span><span class="p">:</span> <span class="p">[],</span>   <span class="c"># TODO(?) Not implemented yet</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_DISABLE_ROLLBACK</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">disable_rollback</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_TIMEOUT</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">timeout_mins</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_OWNER</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_PARENT</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">owner_id</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_USER_PROJECT_ID</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">stack_user_project_id</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_TAGS</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">tags</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">preview</span><span class="p">:</span>
+        <span class="n">update_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_ACTION</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">action</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_STATUS</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">status</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_STATUS_DATA</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">status_reason</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">update_info</span><span class="p">)</span>
+
+    <span class="c"># allow users to view the outputs of stacks</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">action</span> <span class="o">!=</span> <span class="n">stack</span><span class="o">.</span><span class="n">DELETE</span> <span class="ow">and</span> <span class="n">stack</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">stack</span><span class="o">.</span><span class="n">IN_PROGRESS</span><span class="p">):</span>
+        <span class="n">info</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_OUTPUTS</span><span class="p">]</span> <span class="o">=</span> <span class="n">format_stack_outputs</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span>
+                                                           <span class="n">stack</span><span class="o">.</span><span class="n">outputs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">info</span>
+
+</div>
+<div class="viewcode-block" id="format_resource_attributes"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.api.html#heat.engine.api.format_resource_attributes">[docs]</a><span class="k">def</span> <span class="nf">format_resource_attributes</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">with_attr</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">resolver</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resolver</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="n">resolver</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">attributes</span>
+    <span class="k">if</span> <span class="s">&#39;show&#39;</span> <span class="ow">in</span> <span class="n">resolver</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">show_attr</span> <span class="o">=</span> <span class="n">resolver</span><span class="p">[</span><span class="s">&#39;show&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">show_attr</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+            <span class="n">resolver</span> <span class="o">=</span> <span class="n">show_attr</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">with_attr</span><span class="p">:</span>
+        <span class="n">with_attr</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">attributes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">resolver</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">+</span> <span class="n">with_attr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">((</span><span class="n">attr</span><span class="p">,</span> <span class="n">resolve</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">resolver</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="format_resource_properties"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.api.html#heat.engine.api.format_resource_properties">[docs]</a><span class="k">def</span> <span class="nf">format_resource_properties</span><span class="p">(</span><span class="n">resource</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_property</span><span class="p">(</span><span class="n">prop</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">((</span><span class="n">prop</span><span class="p">,</span> <span class="n">get_property</span><span class="p">(</span><span class="n">prop</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">resource</span><span class="o">.</span><span class="n">properties_schema</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+</div>
+<div class="viewcode-block" id="format_stack_resource"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.api.html#heat.engine.api.format_stack_resource">[docs]</a><span class="k">def</span> <span class="nf">format_stack_resource</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">with_props</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                          <span class="n">with_attr</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Return a representation of the given resource that matches the API output</span>
+<span class="sd">    expectations.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">last_updated_time</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">updated_time</span> <span class="ow">or</span> <span class="n">resource</span><span class="o">.</span><span class="n">created_time</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_UPDATED_TIME</span><span class="p">:</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">isotime</span><span class="p">(</span><span class="n">last_updated_time</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_NAME</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_PHYSICAL_ID</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">resource_id</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_ACTION</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">action</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_STATUS</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_STATUS_DATA</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">status_reason</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_TYPE</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">type</span><span class="p">(),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_ID</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">identifier</span><span class="p">()),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_STACK_ID</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">identifier</span><span class="p">()),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_STACK_NAME</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_REQUIRED_BY</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">required_by</span><span class="p">(),</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="s">&#39;nested&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">nested</span><span class="p">)</span> <span class="ow">and</span>
+            <span class="n">resource</span><span class="o">.</span><span class="n">nested</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_NESTED_STACK_ID</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">nested</span><span class="p">()</span><span class="o">.</span><span class="n">identifier</span><span class="p">())</span>
+
+    <span class="k">if</span> <span class="n">resource</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">parent_resource_name</span><span class="p">:</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_PARENT_RESOURCE</span><span class="p">]</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">parent_resource_name</span>
+
+    <span class="k">if</span> <span class="n">detail</span><span class="p">:</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_DESCRIPTION</span><span class="p">]</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">description</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_METADATA</span><span class="p">]</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">metadata_get</span><span class="p">()</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_SCHEMA_ATTRIBUTES</span><span class="p">]</span> <span class="o">=</span> <span class="n">format_resource_attributes</span><span class="p">(</span>
+            <span class="n">resource</span><span class="p">,</span> <span class="n">with_attr</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">with_props</span><span class="p">:</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_SCHEMA_PROPERTIES</span><span class="p">]</span> <span class="o">=</span> <span class="n">format_resource_properties</span><span class="p">(</span>
+            <span class="n">resource</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">res</span>
+
+</div>
+<div class="viewcode-block" id="format_stack_preview"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.api.html#heat.engine.api.format_stack_preview">[docs]</a><span class="k">def</span> <span class="nf">format_stack_preview</span><span class="p">(</span><span class="n">stack</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">format_resource</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="n">format_resource</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">format_stack_resource</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">with_props</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="n">fmt_stack</span> <span class="o">=</span> <span class="n">format_stack</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">preview</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">fmt_resources</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">format_resource</span><span class="p">,</span> <span class="n">stack</span><span class="o">.</span><span class="n">preview_resources</span><span class="p">())</span>
+    <span class="n">fmt_stack</span><span class="p">[</span><span class="s">&#39;resources&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fmt_resources</span>
+
+    <span class="k">return</span> <span class="n">fmt_stack</span>
+
+</div>
+<div class="viewcode-block" id="format_event"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.api.html#heat.engine.api.format_event">[docs]</a><span class="k">def</span> <span class="nf">format_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="n">stack_identifier</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_ID</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">identifier</span><span class="p">()),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_STACK_ID</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">stack_identifier</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_STACK_NAME</span><span class="p">:</span> <span class="n">stack_identifier</span><span class="o">.</span><span class="n">stack_name</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_TIMESTAMP</span><span class="p">:</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">isotime</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">timestamp</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_RES_NAME</span><span class="p">:</span> <span class="n">event</span><span class="o">.</span><span class="n">resource_name</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_RES_PHYSICAL_ID</span><span class="p">:</span> <span class="n">event</span><span class="o">.</span><span class="n">physical_resource_id</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_RES_ACTION</span><span class="p">:</span> <span class="n">event</span><span class="o">.</span><span class="n">action</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_RES_STATUS</span><span class="p">:</span> <span class="n">event</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_RES_STATUS_DATA</span><span class="p">:</span> <span class="n">event</span><span class="o">.</span><span class="n">reason</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_RES_TYPE</span><span class="p">:</span> <span class="n">event</span><span class="o">.</span><span class="n">resource_type</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_RES_PROPERTIES</span><span class="p">:</span> <span class="n">event</span><span class="o">.</span><span class="n">resource_properties</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+
+</div>
+<div class="viewcode-block" id="format_notification_body"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.api.html#heat.engine.api.format_notification_body">[docs]</a><span class="k">def</span> <span class="nf">format_notification_body</span><span class="p">(</span><span class="n">stack</span><span class="p">):</span>
+    <span class="c"># some other possibilities here are:</span>
+    <span class="c"># - template name</span>
+    <span class="c"># - template size</span>
+    <span class="c"># - resource count</span>
+    <span class="k">if</span> <span class="n">stack</span><span class="o">.</span><span class="n">status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">stack</span><span class="o">.</span><span class="n">action</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="s">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="s">&#39;Unknown&#39;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">NOTIFY_TENANT_ID</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">tenant_id</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">NOTIFY_USER_ID</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">NOTIFY_STACK_ID</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span><span class="o">.</span><span class="n">arn</span><span class="p">(),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">NOTIFY_STACK_NAME</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">NOTIFY_STATE</span><span class="p">:</span> <span class="n">state</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">NOTIFY_STATE_REASON</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">status_reason</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">NOTIFY_CREATE_AT</span><span class="p">:</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">isotime</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">created_time</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+</div>
+<div class="viewcode-block" id="format_watch"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.api.html#heat.engine.api.format_watch">[docs]</a><span class="k">def</span> <span class="nf">format_watch</span><span class="p">(</span><span class="n">watch</span><span class="p">):</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_ACTIONS_ENABLED</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_ACTIONS_ENABLED</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_ALARM_ACTIONS</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_ALARM_ACTIONS</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_TOPIC</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_TOPIC</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_UPDATED_TIME</span><span class="p">:</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">isotime</span><span class="p">(</span><span class="n">watch</span><span class="o">.</span><span class="n">updated_at</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DESCRIPTION</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_DESCRIPTION</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_NAME</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_COMPARISON</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_COMPARISON</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DIMENSIONS</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_DIMENSIONS</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[],</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_PERIODS</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_PERIODS</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_INSUFFICIENT_ACTIONS</span><span class="p">:</span>
+        <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_INSUFFICIENT_ACTIONS</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_METRIC_NAME</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_METRIC_NAME</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_NAMESPACE</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_NAMESPACE</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_OK_ACTIONS</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_OK_ACTIONS</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_PERIOD</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_PERIOD</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_REASON</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_STATE_REASON</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_REASON_DATA</span><span class="p">:</span>
+        <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_STATE_REASON_DATA</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_UPDATED_TIME</span><span class="p">:</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">isotime</span><span class="p">(</span>
+            <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_STATE_UPDATED_TIME</span><span class="p">)),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATE_VALUE</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STATISTIC</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_STATISTIC</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_THRESHOLD</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_THRESHOLD</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_UNIT</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RULE_UNIT</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_STACK_ID</span><span class="p">:</span> <span class="n">watch</span><span class="o">.</span><span class="n">stack_id</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+
+</div>
+<div class="viewcode-block" id="format_watch_data"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.api.html#heat.engine.api.format_watch_data">[docs]</a><span class="k">def</span> <span class="nf">format_watch_data</span><span class="p">(</span><span class="n">wd</span><span class="p">):</span>
+
+    <span class="c"># Demangle DB format data into something more easily used in the API</span>
+    <span class="c"># We are expecting a dict with exactly two items, Namespace and</span>
+    <span class="c"># a metric key</span>
+    <span class="n">namespace</span> <span class="o">=</span> <span class="n">wd</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s">&#39;Namespace&#39;</span><span class="p">]</span>
+    <span class="n">metric</span> <span class="o">=</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">wd</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s">&#39;Namespace&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">metric_name</span><span class="p">,</span> <span class="n">metric_data</span> <span class="o">=</span> <span class="n">metric</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">_LE</span><span class="p">(</span><span class="s">&quot;Unexpected number of keys in watch_data.data!&quot;</span><span class="p">))</span>
+        <span class="k">return</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DATA_ALARM</span><span class="p">:</span> <span class="n">wd</span><span class="o">.</span><span class="n">watch_rule</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DATA_METRIC</span><span class="p">:</span> <span class="n">metric_name</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DATA_TIME</span><span class="p">:</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">isotime</span><span class="p">(</span><span class="n">wd</span><span class="o">.</span><span class="n">created_at</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DATA_NAMESPACE</span><span class="p">:</span> <span class="n">namespace</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">WATCH_DATA</span><span class="p">:</span> <span class="n">metric_data</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+
+</div>
+<div class="viewcode-block" id="format_validate_parameter"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.api.html#heat.engine.api.format_validate_parameter">[docs]</a><span class="k">def</span> <span class="nf">format_validate_parameter</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Format a template parameter for validate template API call</span>
+
+<span class="sd">    Formats a template parameter and its schema information from the engine&#39;s</span>
+<span class="sd">    internal representation (i.e. a Parameter object and its associated</span>
+<span class="sd">    Schema object) to a representation expected by the current API (for example</span>
+<span class="sd">    to be compatible to CFN syntax).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># map of Schema object types to API expected types</span>
+    <span class="n">schema_to_api_types</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">param</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">STRING</span><span class="p">:</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_TYPE_STRING</span><span class="p">,</span>
+        <span class="n">param</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">:</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_TYPE_NUMBER</span><span class="p">,</span>
+        <span class="n">param</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">LIST</span><span class="p">:</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_TYPE_COMMA_DELIMITED_LIST</span><span class="p">,</span>
+        <span class="n">param</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">MAP</span><span class="p">:</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_TYPE_JSON</span><span class="p">,</span>
+        <span class="n">param</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">BOOLEAN</span><span class="p">:</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_TYPE_BOOLEAN</span>
+    <span class="p">}</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_TYPE</span><span class="p">:</span> <span class="n">schema_to_api_types</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+                                                    <span class="n">param</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">type</span><span class="p">),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_DESCRIPTION</span><span class="p">:</span> <span class="n">param</span><span class="o">.</span><span class="n">description</span><span class="p">(),</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_NO_ECHO</span><span class="p">:</span> <span class="s">&#39;true&#39;</span> <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">hidden</span><span class="p">()</span> <span class="k">else</span> <span class="s">&#39;false&#39;</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_LABEL</span><span class="p">:</span> <span class="n">param</span><span class="o">.</span><span class="n">label</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">has_value</span><span class="p">():</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_DEFAULT</span><span class="p">]</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+
+    <span class="n">constraint_description</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c"># build constraints</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">param</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">constr</span><span class="o">.</span><span class="n">Length</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_MIN_LENGTH</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">min</span>
+
+            <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_MAX_LENGTH</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">max</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">constr</span><span class="o">.</span><span class="n">Range</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_MIN_VALUE</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">min</span>
+
+            <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_MAX_VALUE</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">max</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">constr</span><span class="o">.</span><span class="n">AllowedValues</span><span class="p">):</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_ALLOWED_VALUES</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">allowed</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">constr</span><span class="o">.</span><span class="n">AllowedPattern</span><span class="p">):</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_ALLOWED_PATTERN</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">pattern</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">constr</span><span class="o">.</span><span class="n">CustomConstraint</span><span class="p">):</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_CUSTOM_CONSTRAINT</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+            <span class="n">constraint_description</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">constraint_description</span><span class="p">:</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_CONSTRAINT_DESCRIPTION</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">constraint_description</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">res</span>
+
+</div>
+<div class="viewcode-block" id="format_software_config"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.api.html#heat.engine.api.format_software_config">[docs]</a><span class="k">def</span> <span class="nf">format_software_config</span><span class="p">(</span><span class="n">sc</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">sc</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_CONFIG_ID</span><span class="p">:</span> <span class="n">sc</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_CONFIG_NAME</span><span class="p">:</span> <span class="n">sc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_CONFIG_GROUP</span><span class="p">:</span> <span class="n">sc</span><span class="o">.</span><span class="n">group</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_CONFIG_CONFIG</span><span class="p">:</span> <span class="n">sc</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;config&#39;</span><span class="p">],</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_CONFIG_INPUTS</span><span class="p">:</span> <span class="n">sc</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;inputs&#39;</span><span class="p">],</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_CONFIG_OUTPUTS</span><span class="p">:</span> <span class="n">sc</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;outputs&#39;</span><span class="p">],</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_CONFIG_OPTIONS</span><span class="p">:</span> <span class="n">sc</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;options&#39;</span><span class="p">],</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_CONFIG_CREATION_TIME</span><span class="p">:</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">isotime</span><span class="p">(</span>
+            <span class="n">sc</span><span class="o">.</span><span class="n">created_at</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+</div>
+<div class="viewcode-block" id="format_software_deployment"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.api.html#heat.engine.api.format_software_deployment">[docs]</a><span class="k">def</span> <span class="nf">format_software_deployment</span><span class="p">(</span><span class="n">sd</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">sd</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_ID</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_SERVER_ID</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">server_id</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_INPUT_VALUES</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">input_values</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_OUTPUT_VALUES</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">output_values</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_ACTION</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">action</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_STATUS</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_STATUS_REASON</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">status_reason</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_CONFIG_ID</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_CREATION_TIME</span><span class="p">:</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">isotime</span><span class="p">(</span>
+            <span class="n">sd</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">sd</span><span class="o">.</span><span class="n">updated_at</span><span class="p">:</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">SOFTWARE_DEPLOYMENT_UPDATED_TIME</span><span class="p">]</span> <span class="o">=</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">isotime</span><span class="p">(</span>
+            <span class="n">sd</span><span class="o">.</span><span class="n">updated_at</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+</div>
+<div class="viewcode-block" id="format_snapshot"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.api.html#heat.engine.api.format_snapshot">[docs]</a><span class="k">def</span> <span class="nf">format_snapshot</span><span class="p">(</span><span class="n">snapshot</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">snapshot</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SNAPSHOT_ID</span><span class="p">:</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SNAPSHOT_NAME</span><span class="p">:</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SNAPSHOT_STATUS</span><span class="p">:</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SNAPSHOT_STATUS_REASON</span><span class="p">:</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">status_reason</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SNAPSHOT_DATA</span><span class="p">:</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+        <span class="n">rpc_api</span><span class="o">.</span><span class="n">SNAPSHOT_CREATION_TIME</span><span class="p">:</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">isotime</span><span class="p">(</span>
+            <span class="n">snapshot</span><span class="o">.</span><span class="n">created_at</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

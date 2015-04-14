@@ -1,0 +1,847 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.service Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-engine-service-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.engine.service</span></tt> Module<a class="headerlink" href="#the-heat-engine-service-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.service.</tt><tt class="descname">EngineListener</tt><big>(</big><em>host</em>, <em>engine_id</em>, <em>thread_group_mgr</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineListener"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.openstack.common.service.Service</span></tt></p>
+<p>Listen on an AMQP queue named for the engine.  Allows individual
+engines to communicate with each other for multi-engine support.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">ACTIONS</tt><em class="property"> = ('stop_stack', 'send')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">SEND</tt><em class="property"> = 'send'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">STOP_STACK</tt><em class="property"> = 'stop_stack'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">listening</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineListener.listening"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Respond affirmatively to confirm that the engine performing the
+action is still alive.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">reset</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">send</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineListener.send"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">start</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineListener.start"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">stop</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">stop_stack</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineListener.stop_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Stop any active threads on a stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">wait</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.service.</tt><tt class="descname">EngineService</tt><big>(</big><em>host</em>, <em>topic</em>, <em>manager=None</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">heat.openstack.common.service.Service</span></tt></p>
+<p>Manages the running instances from creation to destruction.
+All the methods in here are called from the RPC backend.  This is
+all done dynamically so if a call is made via RPC that does not
+have a corresponding method here, an exception will be thrown when
+it attempts to call into this class.  Arguments to these methods
+are also dynamically added and will be named as keyword arguments
+by the RPC caller.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">RPC_API_VERSION</tt><em class="property"> = '1.6'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">abandon_stack</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.abandon_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The abandon_stack method abandons a given stack.
+:param cnxt: RPC context.
+:param stack_identity: Name of the stack you want to abandon.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">authenticated_to_backend</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.authenticated_to_backend"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Verify that the credentials in the RPC context are valid for the
+current cloud backend.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">count_stacks</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.count_stacks"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the number of stacks that match the given filters
+:param cnxt: RPC context.
+:param filters: a dict of ATTR:VALUE to match against stacks
+:param tenant_safe: if true, scope the request by the current tenant
+:param show_deleted: if true, count will include the deleted stacks
+:param show_nested: if true, count will include nested stacks
+:param show_hidden: if true, show hidden stacks
+:returns: a integer representing the number of matched stacks</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">create_periodic_tasks</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.create_periodic_tasks"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">create_software_config</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.create_software_config"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">create_software_deployment</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.create_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">create_stack</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.create_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The create_stack method creates a new stack using the template
+provided.
+Note that at this stage the template has already been fetched from the
+heat-api process if using a template-url.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_name</strong> &#8211; Name of the stack you want to create.</li>
+<li><strong>template</strong> &#8211; Template of stack you want to create.</li>
+<li><strong>params</strong> &#8211; Stack Input Params</li>
+<li><strong>files</strong> &#8211; Files referenced from the template</li>
+<li><strong>args</strong> &#8211; Request parameters/args passed from API</li>
+<li><strong>owner_id</strong> &#8211; parent stack ID for nested stacks, only expected when
+called from another heat-engine (not a user option)</li>
+<li><strong>nested_depth</strong> &#8211; the nested depth for nested stacks, only expected
+when called from another heat-engine</li>
+<li><strong>user_creds_id</strong> &#8211; the parent user_creds record for nested stacks</li>
+<li><strong>stack_user_project_id</strong> &#8211; the parent stack_user_project_id for
+nested stacks</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">create_watch_data</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.create_watch_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>This could be used by CloudWatch and WaitConditions
+and treat HA service events like any other CloudWatch.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">delete_snapshot</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.delete_snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">delete_software_config</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.delete_software_config"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">delete_software_deployment</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.delete_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">delete_stack</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.delete_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The delete_stack method deletes a given stack.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_identity</strong> &#8211; Name of the stack you want to delete.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">describe_stack_resource</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.describe_stack_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">describe_stack_resources</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.describe_stack_resources"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">find_physical_resource</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.find_physical_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return an identifier for the resource with the specified physical
+resource ID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>physical_resource_id</strong> &#8211; The physical resource ID to look up.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">generate_template</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.generate_template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Generate a template based on the specified type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>type_name</strong> &#8211; Name of the resource type to generate a template for.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_revision</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.get_revision"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_template</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.get_template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get the template.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_identity</strong> &#8211; Name of the stack you want to see.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">identify_stack</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.identify_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The identify_stack method returns the full stack identifier for a
+single, live stack given the stack name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_name</strong> &#8211; Name or UUID of the stack to look up.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_events</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.list_events"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The list_events method lists all events associated with a given stack.
+It supports pagination (<tt class="docutils literal"><span class="pre">limit</span></tt> and <tt class="docutils literal"><span class="pre">marker</span></tt>),
+sorting (<tt class="docutils literal"><span class="pre">sort_keys</span></tt> and <tt class="docutils literal"><span class="pre">sort_dir</span></tt>) and filtering(filters)
+of the results.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_identity</strong> &#8211; Name of the stack you want to get events for</li>
+<li><strong>filters</strong> &#8211; a dict with attribute:value to filter the list</li>
+<li><strong>limit</strong> &#8211; the number of events to list (integer or string)</li>
+<li><strong>marker</strong> &#8211; the ID of the last event in the previous page</li>
+<li><strong>sort_keys</strong> &#8211; an array of fields used to sort the list</li>
+<li><strong>sort_dir</strong> &#8211; the direction of the sort (&#8216;asc&#8217; or &#8216;desc&#8217;).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_resource_types</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.list_resource_types"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get a list of supported resource types.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cnxt</strong> &#8211; RPC context.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_services</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.list_services"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_software_deployments</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.list_software_deployments"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_stack_resources</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.list_stack_resources"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_stacks</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.list_stacks"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The list_stacks method returns attributes of all stacks.  It supports
+pagination (<tt class="docutils literal"><span class="pre">limit</span></tt> and <tt class="docutils literal"><span class="pre">marker</span></tt>), sorting (<tt class="docutils literal"><span class="pre">sort_keys</span></tt> and
+<tt class="docutils literal"><span class="pre">sort_dir</span></tt>) and filtering (<tt class="docutils literal"><span class="pre">filters</span></tt>) of the results.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cnxt</strong> &#8211; RPC context</li>
+<li><strong>limit</strong> &#8211; the number of stacks to list (integer or string)</li>
+<li><strong>marker</strong> &#8211; the ID of the last item in the previous page</li>
+<li><strong>sort_keys</strong> &#8211; an array of fields used to sort the list</li>
+<li><strong>sort_dir</strong> &#8211; the direction of the sort (&#8216;asc&#8217; or &#8216;desc&#8217;)</li>
+<li><strong>filters</strong> &#8211; a dict with attribute:value to filter the list</li>
+<li><strong>tenant_safe</strong> &#8211; if true, scope the request by the current tenant</li>
+<li><strong>show_deleted</strong> &#8211; if true, show soft-deleted stacks</li>
+<li><strong>show_nested</strong> &#8211; if true, show nested stacks</li>
+<li><strong>show_hidden</strong> &#8211; if true, show hidden stacks</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a list of formatted stacks</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">metadata_software_deployments</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.metadata_software_deployments"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">metadata_update</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.metadata_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Update the metadata for the given resource.
+DEPRECATED: Use resource_signal instead</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">preview_stack</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.preview_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Simulates a new stack using the provided template.</p>
+<p>Note that at this stage the template has already been fetched from the
+heat-api process if using a template-url.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_name</strong> &#8211; Name of the stack you want to create.</li>
+<li><strong>template</strong> &#8211; Template of stack you want to create.</li>
+<li><strong>params</strong> &#8211; Stack Input Params</li>
+<li><strong>files</strong> &#8211; Files referenced from the template</li>
+<li><strong>args</strong> &#8211; Request parameters/args passed from API</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">reset</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">reset_stack_status</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.reset_stack_status"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">resource_schema</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.resource_schema"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the schema of the specified type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>type_name</strong> &#8211; Name of the resource type to obtain the schema of.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">resource_signal</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.resource_signal"><span class="viewcode-link">[source]</span></a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sync_call</strong> &#8211; indicates whether a synchronized call behavior is
+expected. This is reserved for CFN WaitCondition
+implementation.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">service_manage_cleanup</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.service_manage_cleanup"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">service_manage_report</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.service_manage_report"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">set_watch_state</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.set_watch_state"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Temporarily set the state of a given watch</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>watch_name</strong> &#8211; Name of the watch</li>
+<li><strong>state</strong> &#8211; State (must be one defined in WatchRule class</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">show_snapshot</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.show_snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">show_software_config</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.show_software_config"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">show_software_deployment</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.show_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">show_stack</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.show_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return detailed information about one or all stacks.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_identity</strong> &#8211; Name of the stack you want to show, or None
+to show all</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">show_watch</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.show_watch"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The show_watch method returns the attributes of one watch/alarm</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>watch_name</strong> &#8211; Name of the watch you want to see, or None to see
+all</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">show_watch_metric</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.show_watch_metric"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The show_watch method returns the datapoints for a metric</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>metric_namespace</strong> &#8211; Name of the namespace you want to see, or None
+to see all</li>
+<li><strong>metric_name</strong> &#8211; Name of the metric you want to see, or None to see
+all</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">signal_software_deployment</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.signal_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">stack_cancel_update</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.stack_cancel_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Cancel currently running stack update.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_identity</strong> &#8211; Name of the stack for which to cancel update.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">stack_check</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.stack_check"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Handle request to perform a check action on a stack</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">stack_list_snapshots</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.stack_list_snapshots"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">stack_restore</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.stack_restore"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">stack_resume</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.stack_resume"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Handle request to perform a resume action on a stack</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">stack_snapshot</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.stack_snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">stack_suspend</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.stack_suspend"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Handle request to perform suspend action on a stack</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">start</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.start"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">stop</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.stop"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">update_software_deployment</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.update_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">update_stack</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.update_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The update_stack method updates an existing stack based on the
+provided template and parameters.
+Note that at this stage the template has already been fetched from the
+heat-api process if using a template-url.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_identity</strong> &#8211; Name of the stack you want to create.</li>
+<li><strong>template</strong> &#8211; Template of stack you want to create.</li>
+<li><strong>params</strong> &#8211; Stack Input Params</li>
+<li><strong>files</strong> &#8211; Files referenced from the template</li>
+<li><strong>args</strong> &#8211; Request parameters/args passed from API</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">validate_template</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#EngineService.validate_template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The validate_template method uses the stack parser to check
+the validity of a template.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context.</li>
+<li><strong>template</strong> &#8211; Template of stack you want to create.</li>
+<li><strong>params</strong> &#8211; Stack Input Params</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">wait</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.engine.service.</tt><tt class="descname">ThreadGroupManager</tt><a class="reference internal" href="../../_modules/heat/engine/service.html#ThreadGroupManager"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">add_event</tt><big>(</big><em>stack_id</em>, <em>event</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#ThreadGroupManager.add_event"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">add_timer</tt><big>(</big><em>stack_id</em>, <em>func</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#ThreadGroupManager.add_timer"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Define a periodic task, to be run in a separate thread, in the stack
+threadgroups.  Periodicity is cfg.CONF.periodic_interval</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">remove_event</tt><big>(</big><em>gt</em>, <em>stack_id</em>, <em>event</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#ThreadGroupManager.remove_event"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">send</tt><big>(</big><em>stack_id</em>, <em>message</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#ThreadGroupManager.send"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">start</tt><big>(</big><em>stack_id</em>, <em>func</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#ThreadGroupManager.start"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Run the given method in a sub-thread.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">start_with_acquired_lock</tt><big>(</big><em>stack</em>, <em>lock</em>, <em>func</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#ThreadGroupManager.start_with_acquired_lock"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Run the given method in a sub-thread and release the provided lock
+when the thread finishes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>stack</strong> (<em>heat.engine.parser.Stack</em>) &#8211; Stack to be operated on</li>
+<li><strong>lock</strong> (<em>heat.engine.stack_lock.StackLock</em>) &#8211; The acquired stack lock</li>
+<li><strong>func</strong> (<em>function or instancemethod</em>) &#8211; Callable to be invoked in sub-thread</li>
+<li><strong>args</strong> &#8211; Args to be passed to func</li>
+<li><strong>kwargs</strong> &#8211; Keyword-args to be passed to func</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">start_with_lock</tt><big>(</big><em>cnxt</em>, <em>stack</em>, <em>engine_id</em>, <em>func</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#ThreadGroupManager.start_with_lock"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Try to acquire a stack lock and, if successful, run the given
+method in a sub-thread.  Release the lock when the thread
+finishes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cnxt</strong> &#8211; RPC context</li>
+<li><strong>stack</strong> (<em>heat.engine.parser.Stack</em>) &#8211; Stack to be operated on</li>
+<li><strong>engine_id</strong> &#8211; The UUID of the engine/worker acquiring the lock</li>
+<li><strong>func</strong> (<em>function or instancemethod</em>) &#8211; Callable to be invoked in sub-thread</li>
+<li><strong>args</strong> &#8211; Args to be passed to func</li>
+<li><strong>kwargs</strong> &#8211; Keyword-args to be passed to func.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">stop</tt><big>(</big><em>stack_id</em>, <em>graceful=False</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#ThreadGroupManager.stop"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Stop any active threads on a stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">stop_timers</tt><big>(</big><em>stack_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/engine/service.html#ThreadGroupManager.stop_timers"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.engine.service.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

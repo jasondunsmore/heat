@@ -1,0 +1,245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.stack_lock &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for heat.engine.stack_lock</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">contextlib</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+
+<span class="kn">from</span> <span class="nn">oslo_config</span> <span class="kn">import</span> <span class="n">cfg</span>
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span> <span class="k">as</span> <span class="n">logging</span>
+<span class="kn">import</span> <span class="nn">oslo_messaging</span> <span class="kn">as</span> <span class="nn">messaging</span>
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">excutils</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LI</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LW</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">messaging</span> <span class="k">as</span> <span class="n">rpc_messaging</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">stack_lock</span> <span class="k">as</span> <span class="n">stack_lock_object</span>
+<span class="kn">from</span> <span class="nn">heat.rpc</span> <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">rpc_api</span>
+
+<span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">import_opt</span><span class="p">(</span><span class="s">&#39;engine_life_check_timeout&#39;</span><span class="p">,</span> <span class="s">&#39;heat.common.config&#39;</span><span class="p">)</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="StackLock"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.stack_lock.html#heat.engine.stack_lock.StackLock">[docs]</a><span class="k">class</span> <span class="nc">StackLock</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">engine_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack</span> <span class="o">=</span> <span class="n">stack</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine_id</span> <span class="o">=</span> <span class="n">engine_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">listener</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="StackLock.engine_alive"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.stack_lock.html#heat.engine.stack_lock.StackLock.engine_alive">[docs]</a>    <span class="k">def</span> <span class="nf">engine_alive</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">engine_id</span><span class="p">):</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">rpc_messaging</span><span class="o">.</span><span class="n">get_rpc_client</span><span class="p">(</span>
+            <span class="n">version</span><span class="o">=</span><span class="s">&#39;1.0&#39;</span><span class="p">,</span> <span class="n">topic</span><span class="o">=</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">LISTENER_TOPIC</span><span class="p">,</span>
+            <span class="n">server</span><span class="o">=</span><span class="n">engine_id</span><span class="p">)</span>
+        <span class="n">client_context</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">engine_life_check_timeout</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client_context</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s">&#39;listening&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">messaging</span><span class="o">.</span><span class="n">MessagingTimeout</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="StackLock.generate_engine_id"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.stack_lock.html#heat.engine.stack_lock.StackLock.generate_engine_id">[docs]</a>    <span class="k">def</span> <span class="nf">generate_engine_id</span><span class="p">():</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="StackLock.get_engine_id"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.stack_lock.html#heat.engine.stack_lock.StackLock.get_engine_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_engine_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">stack_lock_object</span><span class="o">.</span><span class="n">StackLock</span><span class="o">.</span><span class="n">get_engine_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StackLock.try_acquire"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.stack_lock.html#heat.engine.stack_lock.StackLock.try_acquire">[docs]</a>    <span class="k">def</span> <span class="nf">try_acquire</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Try to acquire a stack lock, but don&#39;t raise an ActionInProgress</span>
+<span class="sd">        exception or try to steal lock.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">stack_lock_object</span><span class="o">.</span><span class="n">StackLock</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                  <span class="bp">self</span><span class="o">.</span><span class="n">engine_id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StackLock.acquire"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.stack_lock.html#heat.engine.stack_lock.StackLock.acquire">[docs]</a>    <span class="k">def</span> <span class="nf">acquire</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">retry</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Acquire a lock on the stack.</span>
+
+<span class="sd">        :param retry: When True, retry if lock was released while stealing.</span>
+<span class="sd">        :type retry: boolean</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lock_engine_id</span> <span class="o">=</span> <span class="n">stack_lock_object</span><span class="o">.</span><span class="n">StackLock</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                            <span class="bp">self</span><span class="o">.</span><span class="n">engine_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lock_engine_id</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Engine </span><span class="si">%(engine)s</span><span class="s"> acquired lock on stack &quot;</span>
+                      <span class="s">&quot;</span><span class="si">%(stack)s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;engine&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_id</span><span class="p">,</span>
+                                     <span class="s">&#39;stack&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">id</span><span class="p">})</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">lock_engine_id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_id</span> <span class="ow">or</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">engine_alive</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="n">lock_engine_id</span><span class="p">)):</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Lock on stack </span><span class="si">%(stack)s</span><span class="s"> is owned by engine &quot;</span>
+                      <span class="s">&quot;</span><span class="si">%(engine)s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;stack&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                      <span class="s">&#39;engine&#39;</span><span class="p">:</span> <span class="n">lock_engine_id</span><span class="p">})</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">ActionInProgress</span><span class="p">(</span><span class="n">stack_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                             <span class="n">action</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">action</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&quot;Stale lock detected on stack </span><span class="si">%(stack)s</span><span class="s">.  Engine &quot;</span>
+                         <span class="s">&quot;</span><span class="si">%(engine)s</span><span class="s"> will attempt to steal the lock&quot;</span><span class="p">),</span>
+                     <span class="p">{</span><span class="s">&#39;stack&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s">&#39;engine&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_id</span><span class="p">})</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="n">stack_lock_object</span><span class="o">.</span><span class="n">StackLock</span><span class="o">.</span><span class="n">steal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                       <span class="n">lock_engine_id</span><span class="p">,</span>
+                                                       <span class="bp">self</span><span class="o">.</span><span class="n">engine_id</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&quot;Engine </span><span class="si">%(engine)s</span><span class="s"> successfully stole the lock &quot;</span>
+                             <span class="s">&quot;on stack </span><span class="si">%(stack)s</span><span class="s">&quot;</span><span class="p">),</span>
+                         <span class="p">{</span><span class="s">&#39;engine&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_id</span><span class="p">,</span>
+                          <span class="s">&#39;stack&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">id</span><span class="p">})</span>
+                <span class="k">return</span>
+            <span class="k">elif</span> <span class="n">result</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">retry</span><span class="p">:</span>
+                    <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&quot;The lock on stack </span><span class="si">%(stack)s</span><span class="s"> was released &quot;</span>
+                                 <span class="s">&quot;while engine </span><span class="si">%(engine)s</span><span class="s"> was stealing it. &quot;</span>
+                                 <span class="s">&quot;Trying again&quot;</span><span class="p">),</span> <span class="p">{</span><span class="s">&#39;stack&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                   <span class="s">&#39;engine&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_id</span><span class="p">})</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">retry</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_lock_engine_id</span> <span class="o">=</span> <span class="n">result</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&quot;Failed to steal lock on stack </span><span class="si">%(stack)s</span><span class="s">. &quot;</span>
+                             <span class="s">&quot;Engine </span><span class="si">%(engine)s</span><span class="s"> stole the lock first&quot;</span><span class="p">),</span>
+                         <span class="p">{</span><span class="s">&#39;stack&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                          <span class="s">&#39;engine&#39;</span><span class="p">:</span> <span class="n">new_lock_engine_id</span><span class="p">})</span>
+
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">ActionInProgress</span><span class="p">(</span>
+                <span class="n">stack_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">action</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StackLock.release"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.stack_lock.html#heat.engine.stack_lock.StackLock.release">[docs]</a>    <span class="k">def</span> <span class="nf">release</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Release a stack lock.&quot;&quot;&quot;</span>
+        <span class="c"># Only the engine that owns the lock will be releasing it.</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">stack_lock_object</span><span class="o">.</span><span class="n">StackLock</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="n">stack_id</span><span class="p">,</span>
+                                                     <span class="bp">self</span><span class="o">.</span><span class="n">engine_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">_LW</span><span class="p">(</span><span class="s">&quot;Lock was already released on stack </span><span class="si">%s</span><span class="s">!&quot;</span><span class="p">),</span> <span class="n">stack_id</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Engine </span><span class="si">%(engine)s</span><span class="s"> released lock on stack &quot;</span>
+                      <span class="s">&quot;</span><span class="si">%(stack)s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;engine&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_id</span><span class="p">,</span>
+                                     <span class="s">&#39;stack&#39;</span><span class="p">:</span> <span class="n">stack_id</span><span class="p">})</span>
+</div>
+    <span class="nd">@contextlib.contextmanager</span>
+<div class="viewcode-block" id="StackLock.thread_lock"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.stack_lock.html#heat.engine.stack_lock.StackLock.thread_lock">[docs]</a>    <span class="k">def</span> <span class="nf">thread_lock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Acquire a lock and release it only if there is an exception.  The</span>
+<span class="sd">        release method still needs to be scheduled to be run at the</span>
+<span class="sd">        end of the thread using the Thread.link method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="k">yield</span>
+        <span class="k">except</span> <span class="n">exception</span><span class="o">.</span><span class="n">ActionInProgress</span><span class="p">:</span>
+            <span class="k">raise</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c"># noqa</span>
+            <span class="k">with</span> <span class="n">excutils</span><span class="o">.</span><span class="n">save_and_reraise_exception</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="n">stack_id</span><span class="p">)</span>
+</div>
+    <span class="nd">@contextlib.contextmanager</span>
+<div class="viewcode-block" id="StackLock.try_thread_lock"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.stack_lock.html#heat.engine.stack_lock.StackLock.try_thread_lock">[docs]</a>    <span class="k">def</span> <span class="nf">try_thread_lock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Similar to thread_lock, but acquire the lock using try_acquire</span>
+<span class="sd">        and only release it upon any exception after a successful</span>
+<span class="sd">        acquisition.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">try_acquire</span><span class="p">()</span>
+            <span class="k">yield</span> <span class="n">result</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c"># noqa</span>
+            <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># Lock was successfully acquired</span>
+                <span class="k">with</span> <span class="n">excutils</span><span class="o">.</span><span class="n">save_and_reraise_exception</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="n">stack_id</span><span class="p">)</span>
+            <span class="k">raise</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>

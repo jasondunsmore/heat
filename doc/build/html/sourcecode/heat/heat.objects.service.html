@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.objects.service Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.dev78',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-heat-objects-service-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">heat.objects.service</span></tt> Module<a class="headerlink" href="#the-heat-objects-service-module" title="Permalink to this headline">¶</a></h1>
+<p>Service object</p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">heat.objects.service.</tt><tt class="descname">Service</tt><big>(</big><em>context=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/heat/objects/service.html#Service"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">oslo_versionedobjects.base.VersionedObject</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">oslo_versionedobjects.base.VersionedObjectDictCompat</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">oslo_versionedobjects.base.ComparableVersionedObject</span></tt></p>
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><tt class="descname">create</tt><big>(</big><em>context</em>, <em>values</em><big>)</big><a class="reference internal" href="../../_modules/heat/objects/service.html#Service.create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><tt class="descname">delete</tt><big>(</big><em>context</em>, <em>service_id</em>, <em>soft_delete=True</em><big>)</big><a class="reference internal" href="../../_modules/heat/objects/service.html#Service.delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">fields</tt><em class="property"> = {'topic': String(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=False), 'binary': String(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=False), 'host': String(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=False), 'deleted_at': DateTime(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=True), 'report_interval': Integer(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=False), 'engine_id': String(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=False), 'created_at': DateTime(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=False), 'hostname': String(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=False), 'id': String(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=False), 'updated_at': DateTime(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=True)}</em></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><tt class="descname">get_all</tt><big>(</big><em>context</em><big>)</big><a class="reference internal" href="../../_modules/heat/objects/service.html#Service.get_all"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><tt class="descname">get_all_by_args</tt><big>(</big><em>context</em>, <em>host</em>, <em>binary</em>, <em>hostname</em><big>)</big><a class="reference internal" href="../../_modules/heat/objects/service.html#Service.get_all_by_args"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><tt class="descname">get_by_id</tt><big>(</big><em>context</em>, <em>service_id</em><big>)</big><a class="reference internal" href="../../_modules/heat/objects/service.html#Service.get_by_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><tt class="descname">update_by_id</tt><big>(</big><em>context</em>, <em>service_id</em>, <em>values</em><big>)</big><a class="reference internal" href="../../_modules/heat/objects/service.html#Service.update_by_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/sourcecode/heat/heat.objects.service.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012,2015 Rackspace.
+      Last updated on Mon Apr 13 21:08:05 2015, commit 58cb011.
+    </div>
+  </body>
+</html>
