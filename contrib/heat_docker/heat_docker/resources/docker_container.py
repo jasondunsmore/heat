@@ -15,9 +15,10 @@
 #    under the License.
 
 import distutils
+import six
 
 from oslo_log import log as logging
-import six
+from requests import exceptions
 
 from heat.common import exception
 from heat.common.i18n import _
@@ -485,6 +486,10 @@ class DockerContainer(resource.Resource):
         except docker.errors.APIError as ex:
             if ex.response.status_code != 404:
                 raise
+        except exceptions.ConnectionError:
+            # we've lost connection to the target api so assume we can no
+            # longer reach the container
+            return
         return self.resource_id
 
     def check_delete_complete(self, container_id):

@@ -15,8 +15,10 @@
 #    under the License.
 
 import mock
-from oslo_utils import importutils
 import six
+
+from oslo_utils import importutils
+from requests import exceptions
 
 from heat.common import exception
 from heat.common.i18n import _
@@ -131,6 +133,20 @@ class DockerContainerTest(common.HeatTestCase):
                                 docker_res.check_create_complete,
                                 'foo')
         self.assertIn("Container startup failed", six.text_type(exc))
+
+    @mock.patch.object(docker_container.DockerContainer, 'get_client')
+    @mock.patch(docker_container, "docker")
+    def test_del_conn_error(self, test_client, mock_docker):
+        mock_client = mock.Mock()
+        mock_client.kill.side_effect = exceptions.ConnectionError
+        test_client.return_value = mock_client
+        mock_stack = mock.Mock()
+        mock_stack.db_resource_get.return_value = None
+        res_def = mock.Mock(spec=rsrc_defn.ResourceDefinition)
+        docker_res = docker_container.DockerContainer("test", res_def,
+                                                      mock_stack)
+        docker_res.resource_id = 1234
+        self.assertIsNone(docker_res.handle_delete())
 
     def test_start_with_bindings_and_links(self):
         t = template_format.parse(template)
