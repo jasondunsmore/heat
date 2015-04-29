@@ -15,11 +15,13 @@
 
 import copy
 
+from heat.common import exception
 from heat.common.i18n import _
 from heat.engine import attributes
 from heat.engine import constraints
 from heat.engine import properties
 from heat.engine import resource
+from heat.engine.resources import stack_user
 
 try:
     from pyrax.exceptions import Forbidden
@@ -35,7 +37,7 @@ except ImportError:
     PYRAX_INSTALLED = False
 
 
-class Group(resource.Resource):
+class Group(stack_user.StackUser):
 
     """Represents a scaling group."""
 
@@ -294,12 +296,18 @@ class Group(resource.Resource):
         user_data = server_args.get(self.LAUNCH_CONFIG_ARGS_SERVER_USER_DATA)
         cdrive = (server_args.get(self.LAUNCH_CONFIG_ARGS_SERVER_CDRIVE) or
                   bool(user_data is not None and len(user_data.strip())))
+        flavor_ref = server_args[self.LAUNCH_CONFIG_ARGS_SERVER_FLAVOR_REF]
+        flavor = self.client_plugin('nova').get_flavor_id(flavor_ref)
+        if not flavor:
+            raise exception.Error(_("Invalid launchConfig server flavor. "
+                                    "Flavor must be a valid flavor ID or "
+                                    "name."))
 
         return dict(
             launch_config_type=launchconf[self.LAUNCH_CONFIG_TYPE],
             server_name=server_args[self.GROUP_CONFIGURATION_NAME],
             image=server_args[self.LAUNCH_CONFIG_ARGS_SERVER_IMAGE_REF],
-            flavor=server_args[self.LAUNCH_CONFIG_ARGS_SERVER_FLAVOR_REF],
+            flavor=flavor,
             disk_config=server_args.get(
                 self.LAUNCH_CONFIG_ARGS_SERVER_DISK_CONFIG),
             metadata=server_args.get(self.GROUP_CONFIGURATION_METADATA),
