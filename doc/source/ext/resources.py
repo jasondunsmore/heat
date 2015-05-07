@@ -21,8 +21,10 @@ from sphinx.util import compat
 
 from heat.common.i18n import _
 from heat.engine import attributes
+from heat.engine import environment
 from heat.engine import plugin_manager
 from heat.engine import properties
+from heat.engine import resources
 from heat.engine import support
 
 _CODE_NAMES = {'2013.1': 'Grizzly',
@@ -361,46 +363,26 @@ def _filter_resources(prefix=None, path=None, statuses=[]):
     filtered_resources = {}
     for name in sorted(six.iterkeys(all_resources)):
         if prefix_match(name):
-            for cls in all_resources.get(name):
-                if (path_match(cls) and status_match(cls) and
-                        not_hidden_match(cls)):
-                    if filtered_resources.get(name) is not None:
-                        filtered_resources[name].append(cls)
-                    else:
-                        filtered_resources[name] = [cls]
+            cls = all_resources.get(name)
+            if filtered_resources.get(name) is not None:
+                filtered_resources[name].append(cls)
+            else:
+                filtered_resources[name] = [cls]
 
     return sorted(six.iteritems(filtered_resources))
 
 
 def _load_all_resources():
+    env = environment.Environment({}, user_env=False)
     manager = plugin_manager.PluginManager('heat.engine.resources')
     resource_mapping = plugin_manager.PluginMapping('resource')
-    res_plugin_mappings = resource_mapping.load_all(manager)
-
-    for mapping in res_plugin_mappings:
-        name, cls = mapping
-        if all_resources.get(name) is not None:
-            all_resources[name].append(cls)
-        else:
-            all_resources[name] = [cls]
-
-
-def link_resource(app, env, node, contnode):
-    reftarget = node.attributes['reftarget']
-    for resource_name in all_resources:
-        if resource_name.lower() == reftarget.lower():
-            refnode = nodes.reference('', '', internal=True)
-            refnode['reftitle'] = resource_name
-            if resource_name.startswith('AWS'):
-                source = 'template_guide/cfn'
-            else:
-                source = 'template_guide/openstack'
-            uri = app.builder.get_relative_uri(
-                node.attributes['refdoc'], source)
-            refnode['refuri'] = '%s#%s' % (uri, resource_name)
-            refnode.append(contnode)
-            return refnode
-
+    resources._register_resources(env, resource_mapping.load_all(manager))
+    environment.read_global_environment(env)
+    for name in env.registry.get_types(None):
+        try:
+            all_resources[name] = env.get_class(name)
+        except Exception:
+            continue
 
 def setup(app):
     _load_all_resources()
@@ -415,5 +397,3 @@ def setup(app):
     app.add_node(contribresourcepages)
 
     app.add_directive('contribrespages', ContribResourcePages)
-
-    app.connect('missing-reference', link_resource)
