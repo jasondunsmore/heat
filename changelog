@@ -1,0 +1,403 @@
+****************************
+Heat Changelog
+Date: 2015-05-20 17:03:06 UTC
+Previous-Version: PRODUCTION
+Current-Version: l1-20150520-gmaster-1361
+****************************
+Commit: db5aaa72019b0899b03147d230d6b00a27e8caff
+Author: Jason Dunsmore
+Date: Tue May 19 14:50:55 2015 -0500
+Message: Check for encrypted_param_names key in environment
+Closes-bug: 1456700
+Bug-Url: https://bugs.launchpad.net/bugs/1456700
+
+Commit: af3fceed8172e1bd1bf4a9661ed30e93a9fe1aed
+Author: Vijendar Komalla
+Date: Fri May 15 15:21:45 2015 -0500
+Message: Change user_data_format default value in Rackspace server
+Change-Id: Ia722adbf98b616304aa2bd12c23730e3878c30c2
+Gerrit-Review: https://review.openstack.org/#q,Ia722adbf98b616304aa2bd12c23730e3878c30c2,n,z
+
+Commit: 316599bdea1c8370b0a7cd9ba492f661aeb965e3
+Author: Randall Burt
+Date: Tue Apr 14 17:24:31 2015 -0500
+Message: Ignore ConnectionError on container delete
+Closes-bug: 1444173
+Bug-Url: https://bugs.launchpad.net/bugs/1444173
+
+Commit: 3bbc5fdcd2900f572ac0535b589d845db6599538
+Author: Vijendar Komalla
+Date: Thu Mar 5 14:28:50 2015 -0600
+Message: Temp fix for RC network issue
+Change-Id: I689e29d31140fdc5dd0f9fcfbb509229dc170f84
+Gerrit-Review: https://review.openstack.org/#q,I689e29d31140fdc5dd0f9fcfbb509229dc170f84,n,z
+
+Commit: 7e62ce43bb695be7d24ca89b1610ddcc6ab824ab
+Author: Randall Burt
+Date: Thu May 7 16:04:36 2015 -0500
+Message: Re-fix doc generation
+Change-Id: If8d221d48b82e07421e1fa534b66f0a35e201378
+Gerrit-Review: https://review.openstack.org/#q,If8d221d48b82e07421e1fa534b66f0a35e201378,n,z
+
+Commit: 8796a09d08df684f47284b21c4ac437cd71516ab
+Author: Pratik Mallya
+Date: Wed Dec 17 10:15:03 2014 -0600
+Message: Add Resource to use Rackspace RackConnect
+Change-Id: I05624450444a1cc211fc2d2c77a20be354be04b8
+Gerrit-Review: https://review.openstack.org/#q,I05624450444a1cc211fc2d2c77a20be354be04b8,n,z
+
+Commit: ee6b02915dd5aa606e963d3f68e1390417e9ad41
+Author: Randall Burt
+Date: Fri Oct 24 17:51:22 2014 -0500
+Message: Rackspace cloud monitoring resources
+Change-Id: I5c831721a3ec38aedd7db6e9774eb10089afaa06
+Gerrit-Review: https://review.openstack.org/#q,I5c831721a3ec38aedd7db6e9774eb10089afaa06,n,z
+
+Commit: ca97af84553d80645d8d104ca2ef8e1011bc0809
+Author: Randall Burt
+Date: Tue Oct 14 20:00:39 2014 -0500
+Message: Pull account from client url
+Change-Id: I4457d880c868ccd80c2856880bbf89b808a3abe3
+Gerrit-Review: https://review.openstack.org/#q,I4457d880c868ccd80c2856880bbf89b808a3abe3,n,z
+
+Commit: 9c528c2dcb85c0482336923b68a4c6b71b646e2e
+Author: Randall Burt
+Date: Tue Jun 24 20:10:56 2014 -0500
+Message: Temporarily fix need to have passwords in the context by faking trusts.
+Change-Id: If72aa3c723b2e6f512b12426375e9c1a0bda5582
+Gerrit-Review: https://review.openstack.org/#q,If72aa3c723b2e6f512b12426375e9c1a0bda5582,n,z
+
+Commit: 69307b1c2e93140cd8029a226daa09d6b9546b4a
+Author: Randall Burt
+Date: Wed Oct 8 14:06:18 2014 -0500
+Message: Pin clients to known working versions to avoid bugs
+Change-Id: I1003d580a6ea18bdf41ed9957ac48e0649501689
+Gerrit-Review: https://review.openstack.org/#q,I1003d580a6ea18bdf41ed9957ac48e0649501689,n,z
+
+Commit: e61c12f598fe4ff95b5b493246ba4a9fd6a4145b
+Author: Randall Burt
+Date: Thu Feb 26 14:17:14 2015 -0600
+Message: Add old ssh cloud server back as Rackspace::Cloud::Server
+Change-Id: Ica6f04d9eed7f38f230c850bcb12a26c91f4518e
+Gerrit-Review: https://review.openstack.org/#q,Ica6f04d9eed7f38f230c850bcb12a26c91f4518e,n,z
+
+Commit: c40c0a44bd3f4298f4bc532d685fddda0b1ba329
+Author: Randall Burt
+Date: Wed Nov 26 14:47:13 2014 -0600
+Message: Temporarily use patched build of pyrax to fix monitoring
+Change-Id: I1e5f34b75d7d817fc3d6f64bc840781154cd2fc8
+Gerrit-Review: https://review.openstack.org/#q,I1e5f34b75d7d817fc3d6f64bc840781154cd2fc8,n,z
+
+Commit: f4c9d43bccc29e561a4a59f7fc0270d0bbe3dc55
+Author: Andrew Plunk
+Date: Mon Mar 24 16:34:54 2014 -0500
+Message: Chef solo resource
+Blueprint: chef-solo-resource
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/chef-solo-resource
+
+Commit: 475ce91f42528a6904206ac108a83896b22ccb9b
+Author: Randall Burt
+Date: Thu May 8 12:48:51 2014 -0500
+Message: Add support for AWS resources on Rackspace cloud
+
+Commit: 880e45d35bf248ba6036259b96a3f40176c89caf
+Author: Vijendar Komalla
+Date: Tue Apr 7 14:17:42 2015 -0500
+Message: Cloud backup configuration resource
+Change-Id: I1eb8775da2befff59095f5b14c7fe132d674cf6e
+Gerrit-Review: https://review.openstack.org/#q,I1eb8775da2befff59095f5b14c7fe132d674cf6e,n,z
+
+Commit: 815669144759b64088a08fd291704179ea9c41b6
+Author: Jason Dunsmore
+Date: Mon Mar 24 11:35:15 2014 -0500
+Message: Vijendar's Rackspace Windows resource
+
+Commit: 4acd3388dfc64d3b18923f7549a2ad9c8119d0a6
+Author: Jason Dunsmore
+Date: Thu Aug 7 11:27:32 2014 -0500
+Message: Add local requirements for tarball packaging
+Change-Id: I15456f7fb5c8bea15726c61a4e6b962f7cd1023d
+Gerrit-Review: https://review.openstack.org/#q,I15456f7fb5c8bea15726c61a4e6b962f7cd1023d,n,z
+
+Commit: bd9b06248ee0cecc4e2b382a61daa3ddf3d0a19e
+Author: Randall Burt
+Date: Wed Jul 30 16:33:41 2014 -0500
+Message: Remove the client plugins that should be replaced by Rackspace ones.
+
+Commit: 4a7fbfd6d2a38694a62601a33e4f2a09137d1c72
+Author: Randall Burt
+Date: Wed Dec 24 09:55:37 2014 -0600
+Message: install contrib requirements for doc generation
+Change-Id: Ia4dcac1a02be452de56c5fafb03bd1ac8d3aa440
+Gerrit-Review: https://review.openstack.org/#q,Ia4dcac1a02be452de56c5fafb03bd1ac8d3aa440,n,z
+
+Commit: 60300b014952f5b2fa4c2a9010876f5b871f0f66
+Author: Zane Bitter
+Date: Fri May 15 17:18:12 2015 -0400
+Message: Get rid of circular references in Resource and Function
+Closes-bug: 1454873
+Bug-Url: https://bugs.launchpad.net/bugs/1454873
+
+Commit: d52f8c7210eff866dccd6faa5afe8c94c6375e8e
+Author: huangtianhua
+Date: Fri May 15 12:52:02 2015 +0800
+Message: Improve cinder volume validation and tests related
+Related-bug: 1451713
+Bug-Url: https://bugs.launchpad.net/bugs/1451713
+
+Commit: 1446be28653466becea1208a17fb3e2da4edf8db
+Author: Ethan Lynn
+Date: Tue May 12 17:16:30 2015 +0800
+Message: Add CIDR format validation
+Blueprint: enhance-property-constraints
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/enhance-property-constraints
+Change-Id: Ica70147b713992c8523b92b12db0172a2966719c
+Gerrit-Review: https://review.openstack.org/#q,Ica70147b713992c8523b92b12db0172a2966719c,n,z
+
+Commit: 1f25f79ceb50858a91cd7d1eb62587be892cb028
+Author: OpenStack Proposal Bot
+Date: Thu May 14 22:43:04 2015 +0000
+Message: Updated from global requirements
+Change-Id: I935f177ec0e96af8af5e2f00dc0b3b848a1b38c0
+Gerrit-Review: https://review.openstack.org/#q,I935f177ec0e96af8af5e2f00dc0b3b848a1b38c0,n,z
+
+Commit: d29bb1927489d5590f17d2f3ef2904b6f5edd0d4
+Author: Zane Bitter
+Date: Thu May 14 16:50:36 2015 -0400
+Message: Pass stack to thread in resource_signal
+Related-bug: 1454873
+Bug-Url: https://bugs.launchpad.net/bugs/1454873
+
+Commit: 203b8e8ecf91ad7c75dd7072c85930de4f8c1c42
+Author: Zane Bitter
+Date: Thu May 14 16:44:58 2015 -0400
+Message: Retain references to stacks in all unit tests
+Related-bug: 1454873
+Bug-Url: https://bugs.launchpad.net/bugs/1454873
+
+Commit: 2032548c4e501ebf90604bf60a69fdf9f64b981d
+Author: Zane Bitter
+Date: Wed May 13 18:56:32 2015 -0400
+Message: Reference the parent stack, not parent resource in Stack
+Related-bug: 1454873
+Bug-Url: https://bugs.launchpad.net/bugs/1454873
+
+Commit: e54dcf95faacd715e57c8609a4c457ac1e1a50a1
+Author: Sirushti Murugesan
+Date: Thu May 14 16:50:59 2015 +0530
+Message: Fix integration tests for tox>2.0
+Closes-bug: 1455065
+Bug-Url: https://bugs.launchpad.net/bugs/1455065
+Change-Id: I2e33a2d834dfbef5b3e778757a86a2122d1b1719
+Gerrit-Review: https://review.openstack.org/#q,I2e33a2d834dfbef5b3e778757a86a2122d1b1719,n,z
+
+Commit: b87ecfc61451291132307eb34acdbd545871a641
+Author: Angus Salkeld
+Date: Thu May 14 17:35:00 2015 +1000
+Message: Catch warnings consistently during tests
+Change-Id: I7223f8956394208eaf2eb8a1d651ba1425128bc9
+Gerrit-Review: https://review.openstack.org/#q,I7223f8956394208eaf2eb8a1d651ba1425128bc9,n,z
+
+Commit: 563d4e2d559f84e46982cc145de66cbc4fd40da1
+Author: Kanagaraj Manickam
+Date: Wed Apr 29 12:16:54 2015 +0530
+Message: heat_keystone README update for service and endpoint
+Blueprint: keystone-resource-service-endpoint
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/keystone-resource-service-endpoint
+Change-Id: I4e844bc2d31791cd03159cf5b6252f9ebd422a1d
+Gerrit-Review: https://review.openstack.org/#q,I4e844bc2d31791cd03159cf5b6252f9ebd422a1d,n,z
+
+Commit: 34d7ffcd43d51071383f80d338f185ad8c8271f8
+Author: Kanagaraj Manickam
+Date: Wed Apr 29 12:16:04 2015 +0530
+Message: Resource plug-in for keystone endpoint
+Blueprint: keystone-resource-service-endpoint
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/keystone-resource-service-endpoint
+Change-Id: If0d493df5b8a74a8c0e01c3856028663dfa30fb5
+Gerrit-Review: https://review.openstack.org/#q,If0d493df5b8a74a8c0e01c3856028663dfa30fb5,n,z
+
+Commit: b6602683889cba0940847c05af02e09ac533e748
+Author: Kanagaraj Manickam
+Date: Wed Apr 29 12:14:58 2015 +0530
+Message: Resource plug-in for keystone service
+Blueprint: keystone-resource-service-endpoint
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/keystone-resource-service-endpoint
+Change-Id: I002cc9d6a5c2156c015535c163f8a61a8441737e
+Gerrit-Review: https://review.openstack.org/#q,I002cc9d6a5c2156c015535c163f8a61a8441737e,n,z
+
+Commit: 4b5f296accc4823d4a6f24c1c919b32ec943fd39
+Author: Peter Razumovsky
+Date: Thu Apr 30 14:23:45 2015 +0300
+Message: Replace self.properties.get on self.properties[]
+Change-Id: I523eb3feacb0cb7a16a928a92896ce56188e376f
+Gerrit-Review: https://review.openstack.org/#q,I523eb3feacb0cb7a16a928a92896ce56188e376f,n,z
+
+Commit: 2bde5b95c5aeeabe9d62649965d3a8db754ebb3a
+Author: Peter Razumovsky
+Date: Thu Apr 30 13:44:03 2015 +0300
+Message: Fix docs about configuring heat with devstack
+Closes-bug: 1450422
+Bug-Url: https://bugs.launchpad.net/bugs/1450422
+
+Commit: ef6ec7b6520bfb50191b51e338aa8e90ebcaa495
+Author: Sergey Kraynev
+Date: Wed May 13 05:13:30 2015 -0400
+Message: Don't raise error if actions are mismatched
+Closes-bug: 1454589
+Bug-Url: https://bugs.launchpad.net/bugs/1454589
+
+Commit: 965bd8e46eb0e0846925fb2a854c2d6b2a1cc328
+Author: Ethan Lynn
+Date: Wed May 13 16:49:30 2015 +0800
+Message: Constraint port property range from 0 to 655535
+Change-Id: I963a0cf6238087249253a41c3f951163997d2a33
+Gerrit-Review: https://review.openstack.org/#q,I963a0cf6238087249253a41c3f951163997d2a33,n,z
+
+Commit: a26d1fcdd9568c21282878821b6decc7545616b1
+Author: huangtianhua
+Date: Tue May 5 18:25:41 2015 +0800
+Message: Add validation for cinder volume
+Closes-bug: 1451713
+Bug-Url: https://bugs.launchpad.net/bugs/1451713
+
+Commit: 3753da351f6cefc53367abbebc86cce0583d0691
+Author: Ethan Lynn
+Date: Tue May 12 16:41:02 2015 +0800
+Message: Add mac address format validation
+Blueprint: enhance-property-constraints
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/enhance-property-constraints
+Change-Id: I8770177f96dc220bbfaf120a61877d77ddca5510
+Gerrit-Review: https://review.openstack.org/#q,I8770177f96dc220bbfaf120a61877d77ddca5510,n,z
+
+Commit: 5fa6559b0b6c175b9f655c2cb89cdf61b4823eef
+Author: Angus Salkeld
+Date: Wed May 13 14:24:04 2015 +1000
+Message: Add basic Ceilometer alarm test
+
+Commit: 1b451c2be103e38247e552894a3722d0493c34d1
+Author: Vijendar Komalla
+Date: Thu Jan 29 15:16:39 2015 -0600
+Message: Encrypt Heat template hidden parameters
+Blueprint: encrypt-hidden-parameters
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/encrypt-hidden-parameters
+
+Commit: ddfa6363208afa3e5e256e538247996ca4d212e3
+Author: Sirushti Murugesan
+Date: Thu Apr 23 14:57:28 2015 +0530
+Message: Add a py34 env
+Blueprint: heat-python34-support
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/heat-python34-support
+Change-Id: I5f00a96fc70613ca7014370ec826d0a6a6199fde
+Gerrit-Review: https://review.openstack.org/#q,I5f00a96fc70613ca7014370ec826d0a6a6199fde,n,z
+
+Commit: c29af45c336c892a1093aa66277302706948eed5
+Author: Thomas Herve
+Date: Tue May 12 16:42:08 2015 +0200
+Message: Sync oslo incubator
+Change-Id: Ie29a7781eb06ee58eb347c924b9110100ddd56f9
+Gerrit-Review: https://review.openstack.org/#q,Ie29a7781eb06ee58eb347c924b9110100ddd56f9,n,z
+
+Commit: 38f75683193badb47d5a2d46bc857249738038c8
+Author: Tetiana Lashchova
+Date: Tue May 12 14:49:30 2015 +0300
+Message: Import python modules instead of objects
+Change-Id: I98f93c1895789c9d83c35c44f1166ce4c88891da
+Gerrit-Review: https://review.openstack.org/#q,I98f93c1895789c9d83c35c44f1166ce4c88891da,n,z
+
+Commit: e7aeb452f4c1784137c86a3331ec550b1599ee1d
+Author: Ethan Lynn
+Date: Wed Apr 15 11:31:24 2015 +0800
+Message: Add address format check for property
+Blueprint: enhance-property-constraints
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/enhance-property-constraints
+Change-Id: Ie4ad71418aa355a4e24ac6c2a33bd85c19c5ef11
+Gerrit-Review: https://review.openstack.org/#q,Ie4ad71418aa355a4e24ac6c2a33bd85c19c5ef11,n,z
+
+Commit: d12322485b62b4c2e2d8527c19cb432713e7c373
+Author: Moshe Elisha
+Date: Sun May 10 12:52:18 2015 +0000
+Message: Fix resource-signal for OS::Mistral::Workflow
+Closes-bug: 1453539
+Bug-Url: https://bugs.launchpad.net/bugs/1453539
+
+Commit: 7b383f131df1e7a7dcf503096a5298a046574b46
+Author: Sirushti Murugesan
+Date: Sat May 9 12:41:59 2015 +0530
+Message: Update cirros version
+Closes-bug: 1453357
+Bug-Url: https://bugs.launchpad.net/bugs/1453357
+
+Commit: 3e427fdf83c659fd4e00b3939f2fe1cd57a4b1d7
+Author: OpenStack Proposal Bot
+Date: Thu May 7 23:30:39 2015 +0000
+Message: Updated from global requirements
+Change-Id: If09ba44c2e5cf70eb4140e6d397e0d1d1784dc3a
+Gerrit-Review: https://review.openstack.org/#q,If09ba44c2e5cf70eb4140e6d397e0d1d1784dc3a,n,z
+
+Commit: 934d4caca55e0b9e8c3ce3951419d0e21cb347f5
+Author: Thomas Herve
+Date: Tue May 5 18:22:35 2015 +0200
+Message: Move barbican client in main tree
+Blueprint: barbican-as-secret-backend
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/barbican-as-secret-backend
+Change-Id: Id3fabae3f3c949634d22fad0bd425c7bfce509c8
+Gerrit-Review: https://review.openstack.org/#q,Id3fabae3f3c949634d22fad0bd425c7bfce509c8,n,z
+
+Commit: f2edd0d68ea84f8ca212df0ec1d6d92463a030aa
+Author: kairat_kushaev
+Date: Tue May 5 19:22:32 2015 +0300
+Message: Save updated-in-place resources to backup stack
+Closes-bug: 1446575
+Bug-Url: https://bugs.launchpad.net/bugs/1446575
+
+Commit: f17874d84fccf976d2f6b4355ab725fdc9a3fd3b
+Author: huangtianhua
+Date: Wed May 6 18:15:50 2015 +0800
+Message: Support set 'read_only' access mode for cinder volume
+Closes-bug: 1449466
+Bug-Url: https://bugs.launchpad.net/bugs/1449466
+
+Commit: f8f5a945177df82a225a699c4284d2a16391b52b
+Author: Sergey Kraynev
+Date: Tue May 5 10:54:40 2015 -0400
+Message: Use action in check_*_complete method
+Related-bug: 1433340
+Bug-Url: https://bugs.launchpad.net/bugs/1433340
+
+Commit: 022f645ee2321df8f479ca9cc3f4b733c3fefc35
+Author: tengqm
+Date: Wed May 6 03:38:33 2015 -0400
+Message: Split engine service test cases (3)
+Change-Id: Ie2ed122dda16e1cbf8036044d3476e2b328f8796
+Gerrit-Review: https://review.openstack.org/#q,Ie2ed122dda16e1cbf8036044d3476e2b328f8796,n,z
+
+Commit: 063803067178bc26f9e3c1f512ffee402bc59d50
+Author: Sirushti Murugesan
+Date: Fri Apr 10 21:23:04 2015 +0530
+Message: Convergence: Allow creating lightweight stacks
+Blueprint: convergence-lightweight-stack
+Blueprint-Url: https://blueprints.launchpad.net/heat/+spec/convergence-lightweight-stack
+Change-Id: I6dbaa7ee4e9d534c31823b4812efcb387c695a22
+Gerrit-Review: https://review.openstack.org/#q,I6dbaa7ee4e9d534c31823b4812efcb387c695a22,n,z
+
+Commit: 654a0ed26de7f7dc3e255826dc477dffb1393550
+Author: Tetiana Lashchova
+Date: Fri Apr 24 18:17:13 2015 +0300
+Message: Add remaining_executions attribute to OS::Mistral::CronTrigger
+Change-Id: Icf54e6def1d985217e7db46850dbd777f1ad8760
+Gerrit-Review: https://review.openstack.org/#q,Icf54e6def1d985217e7db46850dbd777f1ad8760,n,z
+
+Commit: bb4c91543462863cf8f6f6370aeb8180ecab75e4
+Author: Steve Baker
+Date: Mon May 4 10:33:23 2015 +1200
+Message: Do not specify version for contrib plugins
+Closes-bug: 1450733
+Bug-Url: https://bugs.launchpad.net/bugs/1450733
+
+Commit: 83b8d6d116bad522161b56e54dff1b7398c47b1d
+Author: Jamie Lennox
+Date: Tue Apr 28 12:09:01 2015 +1000
+Message: Don't use scoping information for admin auth
+Change-Id: Id7c30ec2340addb30d5bd463891c9fdd9280009e
+Gerrit-Review: https://review.openstack.org/#q,Id7c30ec2340addb30d5bd463891c9fdd9280009e,n,z
+
