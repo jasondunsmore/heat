@@ -1,0 +1,8 @@
+===============================================
+The :mod:`heat.engine.clients.os.cinder` Module
+===============================================
+.. automodule:: heat.engine.clients.os.cinder
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

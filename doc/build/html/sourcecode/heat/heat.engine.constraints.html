@@ -1,0 +1,411 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.constraints Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-engine-constraints-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.engine.constraints</span></code> Module<a class="headerlink" href="#the-heat-engine-constraints-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.constraints.</code><code class="descname">AllowedPattern</code><span class="sig-paren">(</span><em>pattern</em>, <em>description=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#AllowedPattern"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.Constraint</span></code></p>
+<p>Constrain values to a predefined regular expression pattern.</p>
+<p>Serialises to JSON as:</p>
+<div class="highlight-python"><div class="highlight"><pre>{
+    &#39;allowed_pattern&#39;: &lt;pattern&gt;,
+    &#39;description&#39;: &lt;description&gt;
+}
+</pre></div>
+</div>
+<dl class="attribute">
+<dt>
+<code class="descname">valid_types</code><em class="property"> = ('STRING',)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.constraints.</code><code class="descname">AllowedValues</code><span class="sig-paren">(</span><em>allowed</em>, <em>description=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#AllowedValues"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.Constraint</span></code></p>
+<p>Constrain values to a predefined set.</p>
+<p>Serialises to JSON as:</p>
+<div class="highlight-python"><div class="highlight"><pre>{
+    &#39;allowed_values&#39;: [&lt;allowed1&gt;, &lt;allowed2&gt;, ...],
+    &#39;description&#39;: &lt;description&gt;
+}
+</pre></div>
+</div>
+<dl class="attribute">
+<dt>
+<code class="descname">valid_types</code><em class="property"> = ('STRING', 'INTEGER', 'NUMBER', 'BOOLEAN', 'LIST')</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.constraints.</code><code class="descname">AnyIndexDict</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#AnyIndexDict"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">_abcoll.Mapping</span></code></p>
+<p>A Mapping that returns the same value for any integer index.</p>
+<p>Used for storing the schema for a list. When converted to a dictionary,
+it contains a single item with the key &#8216;*&#8217;.</p>
+<dl class="attribute">
+<dt>
+<code class="descname">ANYTHING</code><em class="property"> = '*'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.constraints.</code><code class="descname">BaseCustomConstraint</code><a class="reference internal" href="../../_modules/heat/engine/constraints.html#BaseCustomConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>A base class for validation using API clients.</p>
+<p>It will provide a better error message, and reduce a bit of duplication.
+Subclass must provide <cite>expected_exceptions</cite> and implement
+<cite>validate_with_client</cite>.</p>
+<dl class="method">
+<dt>
+<code class="descname">error</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#BaseCustomConstraint.error"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">expected_exceptions</code><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate</code><span class="sig-paren">(</span><em>value</em>, <em>context</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#BaseCustomConstraint.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.constraints.</code><code class="descname">Constraint</code><span class="sig-paren">(</span><em>description=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#Constraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">_abcoll.Mapping</span></code></p>
+<p>Parent class for constraints on allowable values for a Property.</p>
+<p>Constraints are serialisable to dictionaries following the HOT input
+Parameter constraints schema using dict().</p>
+<dl class="attribute">
+<dt>
+<code class="descname">DESCRIPTION</code><em class="property"> = 'description'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate</code><span class="sig-paren">(</span><em>value</em>, <em>schema=None</em>, <em>context=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#Constraint.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.constraints.</code><code class="descname">CustomConstraint</code><span class="sig-paren">(</span><em>name</em>, <em>description=None</em>, <em>environment=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#CustomConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.Constraint</span></code></p>
+<p>A constraint delegating validation to an external class.</p>
+<dl class="attribute">
+<dt>
+<code class="descname">custom_constraint</code></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">valid_types</code><em class="property"> = ('STRING', 'INTEGER', 'NUMBER', 'BOOLEAN', 'LIST')</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.constraints.</code><code class="descname">Length</code><span class="sig-paren">(</span><em>min=None</em>, <em>max=None</em>, <em>description=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#Length"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.Range</span></code></p>
+<p>Constrain the length of values within a range.</p>
+<p>Serialises to JSON as:</p>
+<div class="highlight-python"><div class="highlight"><pre>{
+    &#39;length&#39;: {&#39;min&#39;: &lt;min&gt;, &#39;max&#39;: &lt;max&gt;},
+    &#39;description&#39;: &lt;description&gt;
+}
+</pre></div>
+</div>
+<dl class="attribute">
+<dt>
+<code class="descname">valid_types</code><em class="property"> = ('STRING', 'LIST', 'MAP')</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.constraints.</code><code class="descname">Range</code><span class="sig-paren">(</span><em>min=None</em>, <em>max=None</em>, <em>description=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#Range"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.Constraint</span></code></p>
+<p>Constrain values within a range.</p>
+<p>Serialises to JSON as:</p>
+<div class="highlight-python"><div class="highlight"><pre>{
+    &#39;range&#39;: {&#39;min&#39;: &lt;min&gt;, &#39;max&#39;: &lt;max&gt;},
+    &#39;description&#39;: &lt;description&gt;
+}
+</pre></div>
+</div>
+<dl class="attribute">
+<dt>
+<code class="descname">MAX</code><em class="property"> = 'max'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">MIN</code><em class="property"> = 'min'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">valid_types</code><em class="property"> = ('INTEGER', 'NUMBER')</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.constraints.</code><code class="descname">Schema</code><span class="sig-paren">(</span><em>data_type</em>, <em>description=None</em>, <em>default=None</em>, <em>schema=None</em>, <em>required=False</em>, <em>constraints=None</em>, <em>label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#Schema"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">_abcoll.Mapping</span></code></p>
+<p>Schema base class for validating properties or parameters.</p>
+<p>Schema objects are serialisable to dictionaries following a superset of
+the HOT input Parameter schema using dict().</p>
+<p>Serialises to JSON in the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>{
+    &#39;type&#39;: &#39;list&#39;,
+    &#39;required&#39;: False
+    &#39;constraints&#39;: [
+        {
+            &#39;length&#39;: {&#39;min&#39;: 1},
+            &#39;description&#39;: &#39;List must not be empty&#39;
+        }
+    ],
+    &#39;schema&#39;: {
+        &#39;*&#39;: {
+            &#39;type&#39;: &#39;string&#39;
+        }
+    },
+    &#39;description&#39;: &#39;An example list property.&#39;
+}
+</pre></div>
+</div>
+<dl class="attribute">
+<dt>
+<code class="descname">BOOLEAN</code><em class="property"> = 'Boolean'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">BOOLEAN_TYPE</code><em class="property"> = 'BOOLEAN'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">CONSTRAINTS</code><em class="property"> = 'constraints'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">DEFAULT</code><em class="property"> = 'default'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">DESCRIPTION</code><em class="property"> = 'description'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">INTEGER</code><em class="property"> = 'Integer'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">INTEGER_TYPE</code><em class="property"> = 'INTEGER'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">KEYS</code><em class="property"> = ('type', 'description', 'default', 'schema', 'required', 'constraints')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">LIST</code><em class="property"> = 'List'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">LIST_TYPE</code><em class="property"> = 'LIST'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">MAP</code><em class="property"> = 'Map'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">MAP_TYPE</code><em class="property"> = 'MAP'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">NUMBER</code><em class="property"> = 'Number'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">NUMBER_TYPE</code><em class="property"> = 'NUMBER'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">REQUIRED</code><em class="property"> = 'required'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">SCHEMA</code><em class="property"> = 'schema'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">STRING</code><em class="property"> = 'String'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">STRING_TYPE</code><em class="property"> = 'STRING'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">TYPE</code><em class="property"> = 'type'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">TYPES</code><em class="property"> = ('Integer', 'String', 'Number', 'Boolean', 'Map', 'List')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">TYPE_KEYS</code><em class="property"> = ('INTEGER', 'STRING', 'NUMBER', 'BOOLEAN', 'MAP', 'LIST')</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">set_default</code><span class="sig-paren">(</span><em>default=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#Schema.set_default"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Set the default value for this Schema object.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><code class="descname">str_to_num</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#Schema.str_to_num"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Convert a string representation of a number into a numeric type.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">to_schema_type</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#Schema.to_schema_type"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns the value in the schema&#8217;s data type.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate</code><span class="sig-paren">(</span><em>context=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#Schema.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Validates the schema.</p>
+<p>This method checks if the schema itself is valid, and if the
+default value - if present - complies to the schema&#8217;s constraints.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate_constraints</code><span class="sig-paren">(</span><em>value</em>, <em>context=None</em>, <em>skipped=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/constraints.html#Schema.validate_constraints"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.engine.constraints.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

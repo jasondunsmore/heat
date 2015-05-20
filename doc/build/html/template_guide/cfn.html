@@ -1,0 +1,504 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>CloudFormation Compatible Resource Types &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="cloudformation-compatible-resource-types">
+<h1>CloudFormation Compatible Resource Types<a class="headerlink" href="#cloudformation-compatible-resource-types" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="AWS::CloudFormation::WaitConditionHandle">
+<h2>AWS::CloudFormation::WaitConditionHandle<a class="headerlink" href="#AWS::CloudFormation::WaitConditionHandle" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.2 (Juno)</p>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitConditionHandle-attrs">
+<h3>Attributes<a class="headerlink" href="#AWS::CloudFormation::WaitConditionHandle-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>curl_cli</dt>
+<dd>Convenience attribute, provides curl CLI command prefix, which can be used for signalling handle completion or failure.  You can signal success by adding &#8211;data-binary &#8216;{&#8220;status&#8221;: &#8220;SUCCESS&#8221;}&#8217; , or signal failure by adding &#8211;data-binary &#8216;{&#8220;status&#8221;: &#8220;FAILURE&#8221;}&#8217;</dd>
+<dt>endpoint</dt>
+<dd>Endpoint/url which can be used for signalling handle</dd>
+<dt>token</dt>
+<dd>Tokens are not needed for Swift TempURLs.  This attribute is being kept for compatibility with the OS::Heat::WaitConditionHandle resource</dd>
+</dl>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitConditionHandle-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::CloudFormation::WaitConditionHandle-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::CloudFormation::WaitConditionHandle
+</pre>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitConditionHandle-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::CloudFormation::WaitConditionHandle-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::CloudFormation::WaitConditionHandle
+</pre>
+</div>
+<div class="section" id="AWS::CloudFormation::WaitConditionHandle-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::CloudFormation::WaitConditionHandle-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::CloudFormation::WaitConditionHandle&quot;
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="AWS::EC2::Instance">
+<h2>AWS::EC2::Instance<a class="headerlink" href="#AWS::EC2::Instance" title="Permalink to this headline">¶</a></h2>
+<p>Implementation of AWS::EC2::Instance that will create and manage Nova
+compute instances.</p>
+<p><em>Note</em> that if Metadata is used for instance configuration, <cite>heat-cfntools</cite>
+must be present in the target image.</p>
+<div class="section" id="AWS::EC2::Instance-props">
+<h3>Properties<a class="headerlink" href="#AWS::EC2::Instance-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>AvailabilityZone <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Availability zone to launch the instance in.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>BlockDeviceMappings <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Block device mappings to attach to instance.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>DeviceName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A device name where the volume will be attached in the system at /dev/device_name.e.g. vdb</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Ebs <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">The ebs volume to attach to the instance.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>DeleteOnTermination <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Indicate whether the volume should be deleted when the instance is terminated.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;True&#8221;.</p>
+</dd>
+<dt>Iops <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>SnapshotId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the snapshot to create a volume from.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type cinder.snapshot</p>
+</dd>
+<dt>VolumeSize <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The size of the volume, in GB. Must be equal or greater than the size of the snapshot. It is safe to leave this blank and have the Compute service infer the size.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>VolumeType <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+</dl>
+</dd>
+<dt>NoDevice <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>VirtualName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>DisableApiTermination <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>ImageId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Glance image ID or name.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type glance.image</p>
+</dd>
+<dt>InstanceType <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Nova instance type (flavor).</p>
+<p>Can be updated without replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type nova.flavor</p>
+</dd>
+<dt>KernelId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>KeyName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Optional Nova keypair name.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type nova.keypair</p>
+</dd>
+<dt>Monitoring <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>NetworkInterfaces <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Network interfaces to associate with instance.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>NovaSchedulerHints <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Scheduler hints to pass to Nova (Heat extension).</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>Key <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Value <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>PlacementGroupName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>PrivateIpAddress <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>RamDiskId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>SecurityGroupIds <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Security group IDs to assign.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>SecurityGroups <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Security group names to assign.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>SourceDestCheck <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>SubnetId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Subnet ID to launch instance in.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>Tags <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Tags to attach to instance.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>Key <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Value <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>Tenancy <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</dd>
+<dt>UserData <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">User data to pass to instance.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>Volumes <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Volumes to attach to instance.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;[]&#8221;.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>Device <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The device where the volume is exposed on the instance. This assignment may not be honored and it is advised that the path /dev/disk/by-id/virtio-&lt;VolumeId&gt; be used instead.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>VolumeId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the volume to be attached.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type cinder.volume</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::Instance-attrs">
+<h3>Attributes<a class="headerlink" href="#AWS::EC2::Instance-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>AvailabilityZone</dt>
+<dd>The Availability Zone where the specified instance is launched.</dd>
+<dt>PrivateDnsName</dt>
+<dd>Private DNS name of the specified instance.</dd>
+<dt>PrivateIp</dt>
+<dd>Private IP address of the specified instance.</dd>
+<dt>PublicDnsName</dt>
+<dd>Public DNS name of the specified instance.</dd>
+<dt>PublicIp</dt>
+<dd>Public IP address of the specified instance.</dd>
+</dl>
+</div>
+<div class="section" id="AWS::EC2::Instance-hot">
+<h3>HOT Syntax<a class="headerlink" href="#AWS::EC2::Instance-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: AWS::EC2::Instance
+    properties:
+      AvailabilityZone: String
+      BlockDeviceMappings: [{&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, {&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, ...]
+      ImageId: String
+      InstanceType: String
+      KeyName: String
+      NetworkInterfaces: [Value, Value, ...]
+      NovaSchedulerHints: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      SecurityGroupIds: [Value, Value, ...]
+      SecurityGroups: [Value, Value, ...]
+      SubnetId: String
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      UserData: String
+      Volumes: [{&quot;Device&quot;: String, &quot;VolumeId&quot;: String}, {&quot;Device&quot;: String, &quot;VolumeId&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="AWS::EC2::Instance-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#AWS::EC2::Instance-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: String
+      BlockDeviceMappings: [{&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, {&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, ...]
+      ImageId: String
+      InstanceType: String
+      KeyName: String
+      NetworkInterfaces: [Value, Value, ...]
+      NovaSchedulerHints: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      SecurityGroupIds: [Value, Value, ...]
+      SecurityGroups: [Value, Value, ...]
+      SubnetId: String
+      Tags: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...]
+      UserData: String
+      Volumes: [{&quot;Device&quot;: String, &quot;VolumeId&quot;: String}, {&quot;Device&quot;: String, &quot;VolumeId&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="AWS::EC2::Instance-json">
+<h3>JSON Syntax<a class="headerlink" href="#AWS::EC2::Instance-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;AWS::EC2::Instance&quot;,
+      &quot;Properties&quot;: {
+        &quot;AvailabilityZone&quot;: String,
+        &quot;BlockDeviceMappings&quot;: [{&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, {&quot;DeviceName&quot;: String, &quot;Ebs&quot;: {&quot;DeleteOnTermination&quot;: Boolean, &quot;VolumeSize&quot;: String, &quot;SnapshotId&quot;: String}}, ...],
+        &quot;ImageId&quot;: String,
+        &quot;InstanceType&quot;: String,
+        &quot;KeyName&quot;: String,
+        &quot;NetworkInterfaces&quot;: [Value, Value, ...],
+        &quot;NovaSchedulerHints&quot;: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...],
+        &quot;SecurityGroupIds&quot;: [Value, Value, ...],
+        &quot;SecurityGroups&quot;: [Value, Value, ...],
+        &quot;SubnetId&quot;: String,
+        &quot;Tags&quot;: [{&quot;Value&quot;: String, &quot;Key&quot;: String}, {&quot;Value&quot;: String, &quot;Key&quot;: String}, ...],
+        &quot;UserData&quot;: String,
+        &quot;Volumes&quot;: [{&quot;Device&quot;: String, &quot;VolumeId&quot;: String}, {&quot;Device&quot;: String, &quot;VolumeId&quot;: String}, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../raxdox/index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CloudFormation Compatible Resource Types</a><ul>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitConditionHandle">AWS::CloudFormation::WaitConditionHandle</a><ul>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitConditionHandle-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitConditionHandle-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitConditionHandle-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::CloudFormation::WaitConditionHandle-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#AWS::EC2::Instance">AWS::EC2::Instance</a><ul>
+<li><a class="reference internal" href="#AWS::EC2::Instance-props">Properties</a></li>
+<li><a class="reference internal" href="#AWS::EC2::Instance-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#AWS::EC2::Instance-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::Instance-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#AWS::EC2::Instance-json">JSON Syntax</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/template_guide/cfn.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

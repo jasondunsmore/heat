@@ -1,0 +1,8 @@
+==========================================
+The :mod:`heat.engine.notification` Module
+==========================================
+.. automodule:: heat.engine.notification
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

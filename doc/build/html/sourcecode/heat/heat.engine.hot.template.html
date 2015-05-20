@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.hot.template Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-engine-hot-template-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.engine.hot.template</span></code> Module<a class="headerlink" href="#the-heat-engine-hot-template-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.hot.template.</code><code class="descname">HOTemplate20130523</code><span class="sig-paren">(</span><em>template</em>, <em>template_id=None</em>, <em>files=None</em>, <em>env=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/hot/template.html#HOTemplate20130523"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.template.Template</span></code></p>
+<p>A Heat Orchestration Template format stack template.</p>
+<dl class="attribute">
+<dt>
+<code class="descname">DESCRIPTION</code><em class="property"> = 'description'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">MAPPINGS</code><em class="property"> = '__undefined__'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">OUTPUTS</code><em class="property"> = 'outputs'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">PARAMETERS</code><em class="property"> = 'parameters'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">PARAMETER_GROUPS</code><em class="property"> = 'parameter_groups'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">RESOURCES</code><em class="property"> = 'resources'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">SECTIONS</code><em class="property"> = ('heat_template_version', 'description', 'parameter_groups', 'parameters', 'resources', 'outputs', '__undefined__')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">SECTIONS_NO_DIRECT_ACCESS</code><em class="property"> = set(['heat_template_version', 'parameters'])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">VERSION</code><em class="property"> = 'heat_template_version'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">add_resource</code><span class="sig-paren">(</span><em>definition</em>, <em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/hot/template.html#HOTemplate20130523.add_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">functions</code><em class="property"> = {'Fn::ResourceFacade': &lt;class 'heat.engine.cfn.functions.ResourceFacade'&gt;, 'Fn::Select': &lt;class 'heat.engine.cfn.functions.Select'&gt;, 'str_replace': &lt;class 'heat.engine.hot.functions.Replace'&gt;, 'Fn::Split': &lt;class 'heat.engine.cfn.functions.Split'&gt;, 'resource_facade': &lt;class 'heat.engine.hot.functions.ResourceFacade'&gt;, 'get_file': &lt;class 'heat.engine.hot.functions.GetFile'&gt;, 'Fn::MemberListToMap': &lt;class 'heat.engine.cfn.functions.MemberListToMap'&gt;, 'Fn::Replace': &lt;class 'heat.engine.cfn.functions.Replace'&gt;, 'Fn::Base64': &lt;class 'heat.engine.cfn.functions.Base64'&gt;, 'Fn::Join': &lt;class 'heat.engine.cfn.functions.Join'&gt;, 'get_attr': &lt;class 'heat.engine.hot.functions.GetAttThenSelect'&gt;, 'get_param': &lt;class 'heat.engine.hot.functions.GetParam'&gt;, 'Ref': &lt;function Ref at 0x4699848&gt;, 'list_join': &lt;class 'heat.engine.hot.functions.Join'&gt;, 'Fn::GetAZs': &lt;class 'heat.engine.cfn.functions.GetAZs'&gt;, 'get_resource': &lt;class 'heat.engine.cfn.functions.ResourceRef'&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_section_name</code><span class="sig-paren">(</span><em>section</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/hot/template.html#HOTemplate20130523.get_section_name"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">param_schemata</code><span class="sig-paren">(</span><em>param_defaults=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/hot/template.html#HOTemplate20130523.param_schemata"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">parameters</code><span class="sig-paren">(</span><em>stack_identifier</em>, <em>user_params</em>, <em>param_defaults=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/hot/template.html#HOTemplate20130523.parameters"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resource_definitions</code><span class="sig-paren">(</span><em>stack</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/hot/template.html#HOTemplate20130523.resource_definitions"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate_resource_definitions</code><span class="sig-paren">(</span><em>stack</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/hot/template.html#HOTemplate20130523.validate_resource_definitions"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.hot.template.</code><code class="descname">HOTemplate20141016</code><span class="sig-paren">(</span><em>template</em>, <em>template_id=None</em>, <em>files=None</em>, <em>env=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/hot/template.html#HOTemplate20141016"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.hot.template.HOTemplate20130523</span></code></p>
+<dl class="attribute">
+<dt>
+<code class="descname">functions</code><em class="property"> = {'Fn::ResourceFacade': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'Fn::Select': &lt;class 'heat.engine.cfn.functions.Select'&gt;, 'str_replace': &lt;class 'heat.engine.hot.functions.Replace'&gt;, 'Fn::Split': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'resource_facade': &lt;class 'heat.engine.hot.functions.ResourceFacade'&gt;, 'list_join': &lt;class 'heat.engine.hot.functions.Join'&gt;, 'Fn::MemberListToMap': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'Fn::Replace': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'Fn::Base64': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'Fn::Join': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'get_attr': &lt;class 'heat.engine.hot.functions.GetAtt'&gt;, 'get_param': &lt;class 'heat.engine.hot.functions.GetParam'&gt;, 'Ref': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'get_file': &lt;class 'heat.engine.hot.functions.GetFile'&gt;, 'Fn::GetAZs': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'get_resource': &lt;class 'heat.engine.cfn.functions.ResourceRef'&gt;}</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.hot.template.</code><code class="descname">HOTemplate20150430</code><span class="sig-paren">(</span><em>template</em>, <em>template_id=None</em>, <em>files=None</em>, <em>env=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/hot/template.html#HOTemplate20150430"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.hot.template.HOTemplate20141016</span></code></p>
+<dl class="attribute">
+<dt>
+<code class="descname">functions</code><em class="property"> = {'Fn::ResourceFacade': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'Fn::Select': &lt;class 'heat.engine.cfn.functions.Select'&gt;, 'repeat': &lt;class 'heat.engine.hot.functions.Repeat'&gt;, 'Fn::Split': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'resource_facade': &lt;class 'heat.engine.hot.functions.ResourceFacade'&gt;, 'Fn::Replace': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'list_join': &lt;class 'heat.engine.hot.functions.Join'&gt;, 'Fn::MemberListToMap': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'str_replace': &lt;class 'heat.engine.hot.functions.Replace'&gt;, 'Fn::GetAZs': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'Fn::Base64': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'Fn::Join': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'get_attr': &lt;class 'heat.engine.hot.functions.GetAtt'&gt;, 'get_param': &lt;class 'heat.engine.hot.functions.GetParam'&gt;, 'Ref': &lt;class 'heat.engine.hot.functions.Removed'&gt;, 'get_file': &lt;class 'heat.engine.hot.functions.GetFile'&gt;, 'digest': &lt;class 'heat.engine.hot.functions.Digest'&gt;, 'get_resource': &lt;class 'heat.engine.cfn.functions.ResourceRef'&gt;}</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.engine.hot.template.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

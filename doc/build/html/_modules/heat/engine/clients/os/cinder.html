@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.clients.os.cinder &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../../../raxdox/index.html" />
+    <link rel="up" title="heat.engine.clients" href="../../clients.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../clients.html" accesskey="U">heat.engine.clients</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for heat.engine.clients.os.cinder</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">cinderclient</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">cc</span>
+<span class="kn">from</span> <span class="nn">cinderclient</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">keystoneclient</span> <span class="kn">import</span> <span class="n">exceptions</span> <span class="k">as</span> <span class="n">ks_exceptions</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LI</span>
+<span class="kn">from</span> <span class="nn">heat.engine.clients</span> <span class="kn">import</span> <span class="n">client_plugin</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">constraints</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CinderClientPlugin"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.cinder.html#heat.engine.clients.os.cinder.CinderClientPlugin">[docs]</a><span class="k">class</span> <span class="nc">CinderClientPlugin</span><span class="p">(</span><span class="n">client_plugin</span><span class="o">.</span><span class="n">ClientPlugin</span><span class="p">):</span>
+
+    <span class="n">exceptions_module</span> <span class="o">=</span> <span class="n">exceptions</span>
+
+<div class="viewcode-block" id="CinderClientPlugin.get_volume_api_version"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.cinder.html#heat.engine.clients.os.cinder.CinderClientPlugin.get_volume_api_version">[docs]</a>    <span class="k">def</span> <span class="nf">get_volume_api_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns the most recent API version.&#39;&#39;&#39;</span>
+
+        <span class="n">endpoint_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;cinder&#39;</span><span class="p">,</span> <span class="s">&#39;endpoint_type&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="n">service_type</span><span class="o">=</span><span class="s">&#39;volumev2&#39;</span><span class="p">,</span> <span class="n">endpoint_type</span><span class="o">=</span><span class="n">endpoint_type</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">2</span>
+        <span class="k">except</span> <span class="n">ks_exceptions</span><span class="o">.</span><span class="n">EndpointNotFound</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="n">service_type</span><span class="o">=</span><span class="s">&#39;volume&#39;</span><span class="p">,</span>
+                             <span class="n">endpoint_type</span><span class="o">=</span><span class="n">endpoint_type</span><span class="p">)</span>
+                <span class="k">return</span> <span class="mi">1</span>
+            <span class="k">except</span> <span class="n">ks_exceptions</span><span class="o">.</span><span class="n">EndpointNotFound</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+</div>
+    <span class="k">def</span> <span class="nf">_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span>
+
+        <span class="n">volume_api_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_volume_api_version</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">volume_api_version</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">service_type</span> <span class="o">=</span> <span class="s">&#39;volume&#39;</span>
+            <span class="n">client_version</span> <span class="o">=</span> <span class="s">&#39;1&#39;</span>
+        <span class="k">elif</span> <span class="n">volume_api_version</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">service_type</span> <span class="o">=</span> <span class="s">&#39;volumev2&#39;</span>
+            <span class="n">client_version</span> <span class="o">=</span> <span class="s">&#39;2&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;No volume service available.&#39;</span><span class="p">))</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&#39;Creating Cinder client with volume API version </span><span class="si">%d</span><span class="s">.&#39;</span><span class="p">),</span>
+                 <span class="n">volume_api_version</span><span class="p">)</span>
+
+        <span class="n">endpoint_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;cinder&#39;</span><span class="p">,</span> <span class="s">&#39;endpoint_type&#39;</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;service_type&#39;</span><span class="p">:</span> <span class="n">service_type</span><span class="p">,</span>
+            <span class="s">&#39;auth_url&#39;</span><span class="p">:</span> <span class="n">con</span><span class="o">.</span><span class="n">auth_url</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span><span class="p">,</span>
+            <span class="s">&#39;project_id&#39;</span><span class="p">:</span> <span class="n">con</span><span class="o">.</span><span class="n">tenant</span><span class="p">,</span>
+            <span class="s">&#39;username&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+            <span class="s">&#39;api_key&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+            <span class="s">&#39;endpoint_type&#39;</span><span class="p">:</span> <span class="n">endpoint_type</span><span class="p">,</span>
+            <span class="s">&#39;http_log_debug&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;cinder&#39;</span><span class="p">,</span>
+                                                      <span class="s">&#39;http_log_debug&#39;</span><span class="p">),</span>
+            <span class="s">&#39;cacert&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;cinder&#39;</span><span class="p">,</span> <span class="s">&#39;ca_file&#39;</span><span class="p">),</span>
+            <span class="s">&#39;insecure&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;cinder&#39;</span><span class="p">,</span> <span class="s">&#39;insecure&#39;</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="n">client</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="n">client_version</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">management_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="n">service_type</span><span class="o">=</span><span class="n">service_type</span><span class="p">,</span>
+                                      <span class="n">endpoint_type</span><span class="o">=</span><span class="n">endpoint_type</span><span class="p">)</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">auth_token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">auth_token</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">management_url</span> <span class="o">=</span> <span class="n">management_url</span>
+
+        <span class="n">client</span><span class="o">.</span><span class="n">volume_api_version</span> <span class="o">=</span> <span class="n">volume_api_version</span>
+
+        <span class="k">return</span> <span class="n">client</span>
+
+<div class="viewcode-block" id="CinderClientPlugin.get_volume"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.cinder.html#heat.engine.clients.os.cinder.CinderClientPlugin.get_volume">[docs]</a>    <span class="k">def</span> <span class="nf">get_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">()</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">NotFound</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&#39;Volume (</span><span class="si">%(volume)s</span><span class="s">) not found: </span><span class="si">%(ex)s</span><span class="s">&#39;</span><span class="p">),</span>
+                     <span class="p">{</span><span class="s">&#39;volume&#39;</span><span class="p">:</span> <span class="n">volume</span><span class="p">,</span> <span class="s">&#39;ex&#39;</span><span class="p">:</span> <span class="n">ex</span><span class="p">})</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">VolumeNotFound</span><span class="p">(</span><span class="n">volume</span><span class="o">=</span><span class="n">volume</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CinderClientPlugin.get_volume_snapshot"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.cinder.html#heat.engine.clients.os.cinder.CinderClientPlugin.get_volume_snapshot">[docs]</a>    <span class="k">def</span> <span class="nf">get_volume_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snapshot</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">()</span><span class="o">.</span><span class="n">volume_snapshots</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">NotFound</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&#39;VolumeSnapshot (</span><span class="si">%(snapshot)s</span><span class="s">) not found: </span><span class="si">%(ex)s</span><span class="s">&#39;</span><span class="p">),</span>
+                     <span class="p">{</span><span class="s">&#39;snapshot&#39;</span><span class="p">:</span> <span class="n">snapshot</span><span class="p">,</span> <span class="s">&#39;ex&#39;</span><span class="p">:</span> <span class="n">ex</span><span class="p">})</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">VolumeSnapshotNotFound</span><span class="p">(</span><span class="n">snapshot</span><span class="o">=</span><span class="n">snapshot</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CinderClientPlugin.get_volume_type"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.cinder.html#heat.engine.clients.os.cinder.CinderClientPlugin.get_volume_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_volume_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_type</span><span class="p">):</span>
+        <span class="n">vt_id</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">volume_type_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">()</span><span class="o">.</span><span class="n">volume_types</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">vt</span> <span class="ow">in</span> <span class="n">volume_type_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">vt</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">volume_type</span><span class="p">:</span>
+                <span class="n">vt_id</span> <span class="o">=</span> <span class="n">vt</span><span class="o">.</span><span class="n">id</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">vt</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">volume_type</span><span class="p">:</span>
+                <span class="n">vt_id</span> <span class="o">=</span> <span class="n">vt</span><span class="o">.</span><span class="n">id</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">vt_id</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">VolumeTypeNotFound</span><span class="p">(</span><span class="n">volume_type</span><span class="o">=</span><span class="n">volume_type</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">vt_id</span>
+</div>
+<div class="viewcode-block" id="CinderClientPlugin.is_not_found"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.cinder.html#heat.engine.clients.os.cinder.CinderClientPlugin.is_not_found">[docs]</a>    <span class="k">def</span> <span class="nf">is_not_found</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">NotFound</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CinderClientPlugin.is_over_limit"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.cinder.html#heat.engine.clients.os.cinder.CinderClientPlugin.is_over_limit">[docs]</a>    <span class="k">def</span> <span class="nf">is_over_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">OverLimit</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CinderClientPlugin.is_conflict"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.cinder.html#heat.engine.clients.os.cinder.CinderClientPlugin.is_conflict">[docs]</a>    <span class="k">def</span> <span class="nf">is_conflict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">ClientException</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="n">ex</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="mi">409</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="VolumeConstraint"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.cinder.html#heat.engine.clients.os.cinder.VolumeConstraint">[docs]</a><span class="k">class</span> <span class="nc">VolumeConstraint</span><span class="p">(</span><span class="n">constraints</span><span class="o">.</span><span class="n">BaseCustomConstraint</span><span class="p">):</span>
+
+    <span class="n">expected_exceptions</span> <span class="o">=</span> <span class="p">(</span><span class="n">exception</span><span class="o">.</span><span class="n">VolumeNotFound</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="VolumeConstraint.validate_with_client"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.cinder.html#heat.engine.clients.os.cinder.VolumeConstraint.validate_with_client">[docs]</a>    <span class="k">def</span> <span class="nf">validate_with_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">volume</span><span class="p">):</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">client_plugin</span><span class="p">(</span><span class="s">&#39;cinder&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_volume</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="VolumeSnapshotConstraint"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.cinder.html#heat.engine.clients.os.cinder.VolumeSnapshotConstraint">[docs]</a><span class="k">class</span> <span class="nc">VolumeSnapshotConstraint</span><span class="p">(</span><span class="n">constraints</span><span class="o">.</span><span class="n">BaseCustomConstraint</span><span class="p">):</span>
+
+    <span class="n">expected_exceptions</span> <span class="o">=</span> <span class="p">(</span><span class="n">exception</span><span class="o">.</span><span class="n">VolumeSnapshotNotFound</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="VolumeSnapshotConstraint.validate_with_client"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.cinder.html#heat.engine.clients.os.cinder.VolumeSnapshotConstraint.validate_with_client">[docs]</a>    <span class="k">def</span> <span class="nf">validate_with_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">snapshot</span><span class="p">):</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">client_plugin</span><span class="p">(</span><span class="s">&#39;cinder&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_volume_snapshot</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="VolumeTypeConstraint"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.cinder.html#heat.engine.clients.os.cinder.VolumeTypeConstraint">[docs]</a><span class="k">class</span> <span class="nc">VolumeTypeConstraint</span><span class="p">(</span><span class="n">constraints</span><span class="o">.</span><span class="n">BaseCustomConstraint</span><span class="p">):</span>
+
+    <span class="n">expected_exceptions</span> <span class="o">=</span> <span class="p">(</span><span class="n">exception</span><span class="o">.</span><span class="n">VolumeTypeNotFound</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="VolumeTypeConstraint.validate_with_client"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.cinder.html#heat.engine.clients.os.cinder.VolumeTypeConstraint.validate_with_client">[docs]</a>    <span class="k">def</span> <span class="nf">validate_with_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">volume_type</span><span class="p">):</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">client_plugin</span><span class="p">(</span><span class="s">&#39;cinder&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_volume_type</span><span class="p">(</span><span class="n">volume_type</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../clients.html" >heat.engine.clients</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

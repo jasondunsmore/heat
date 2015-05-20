@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.objects.resource_data Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-objects-resource-data-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.objects.resource_data</span></code> Module<a class="headerlink" href="#the-heat-objects-resource-data-module" title="Permalink to this headline">¶</a></h1>
+<p>ResourceData object</p>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.objects.resource_data.</code><code class="descname">ResourceData</code><span class="sig-paren">(</span><em>context=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/objects/resource_data.html#ResourceData"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">oslo_versionedobjects.base.VersionedObject</span></code>, <code class="xref py py-class docutils literal"><span class="pre">oslo_versionedobjects.base.VersionedObjectDictCompat</span></code>, <code class="xref py py-class docutils literal"><span class="pre">oslo_versionedobjects.base.ComparableVersionedObject</span></code></p>
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">delete</code><span class="sig-paren">(</span><em>resource</em>, <em>key</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/objects/resource_data.html#ResourceData.delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">fields</code><em class="property"> = {'redact': Boolean(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=True), 'decrypt_method': String(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=True), 'key': String(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=True), 'resource_id': Integer(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=False), 'created_at': DateTime(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=False), 'id': Integer(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=False), 'value': String(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=True), 'updated_at': DateTime(default=&lt;class 'oslo_versionedobjects.fields.UnspecifiedDefault'&gt;,nullable=True)}</em></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">get_all</code><span class="sig-paren">(</span><em>resource</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/objects/resource_data.html#ResourceData.get_all"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">get_by_key</code><span class="sig-paren">(</span><em>context</em>, <em>resource_id</em>, <em>key</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/objects/resource_data.html#ResourceData.get_by_key"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">get_obj</code><span class="sig-paren">(</span><em>resource</em>, <em>key</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/objects/resource_data.html#ResourceData.get_obj"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">get_val</code><span class="sig-paren">(</span><em>resource</em>, <em>key</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/objects/resource_data.html#ResourceData.get_val"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">set</code><span class="sig-paren">(</span><em>resource</em>, <em>key</em>, <em>value</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/objects/resource_data.html#ResourceData.set"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.objects.resource_data.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+=======================================
+The :mod:`heat.engine.scheduler` Module
+=======================================
+.. automodule:: heat.engine.scheduler
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

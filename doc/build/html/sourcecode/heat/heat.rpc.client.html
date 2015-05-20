@@ -1,0 +1,711 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.rpc.client Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-rpc-client-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.rpc.client</span></code> Module<a class="headerlink" href="#the-heat-rpc-client-module" title="Permalink to this headline">¶</a></h1>
+<p>Client side of the heat engine RPC API.</p>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.rpc.client.</code><code class="descname">EngineClient</code><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Client side of the heat engine rpc API.</p>
+<p>API version history:</p>
+<div class="highlight-python"><div class="highlight"><pre>1.0 - Initial version.
+1.1 - Add support_status argument to list_resource_types()
+1.4 - Add support for service list
+1.9 - Add template_type option to generate_template()
+</pre></div>
+</div>
+<dl class="attribute">
+<dt>
+<code class="descname">BASE_RPC_API_VERSION</code><em class="property"> = '1.0'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">abandon_stack</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.abandon_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The abandon_stack method deletes a given stack but
+resources would not be deleted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ctxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_identity</strong> &#8211; Name of the stack you want to abandon.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">authenticated_to_backend</code><span class="sig-paren">(</span><em>ctxt</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.authenticated_to_backend"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Verify that the credentials in the RPC context are valid for the
+current cloud backend.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ctxt</strong> &#8211; RPC context.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">call</code><span class="sig-paren">(</span><em>ctxt</em>, <em>msg</em>, <em>version=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.call"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">cast</code><span class="sig-paren">(</span><em>ctxt</em>, <em>msg</em>, <em>version=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.cast"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">count_stacks</code><span class="sig-paren">(</span><em>ctxt</em>, <em>filters=None</em>, <em>tenant_safe=True</em>, <em>show_deleted=False</em>, <em>show_nested=False</em>, <em>show_hidden=False</em>, <em>tags=None</em>, <em>tags_any=None</em>, <em>not_tags=None</em>, <em>not_tags_any=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.count_stacks"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the number of stacks that match the given filters
+:param ctxt: RPC context.
+:param filters: a dict of ATTR:VALUE to match against stacks
+:param tenant_safe: if true, scope the request by the current tenant
+:param show_deleted: if true, count will include the deleted stacks
+:param show_nested: if true, count will include nested stacks
+:param show_hidden: if true, count will include hidden stacks
+:param tags: count stacks containing these tags, combine multiple tags</p>
+<blockquote>
+<div>using the boolean AND expression</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>tags_any</strong> &#8211; count stacks containing these tags, combine multiple
+tags using the boolean OR expression</li>
+<li><strong>not_tags</strong> &#8211; count stacks not containing these tags, combine
+multiple tags using the boolean AND expression</li>
+<li><strong>not_tags_any</strong> &#8211; count stacks not containing these tags, combine
+multiple tags using the boolean OR expression</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a integer representing the number of matched stacks</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">create_software_config</code><span class="sig-paren">(</span><em>cnxt</em>, <em>group</em>, <em>name</em>, <em>config</em>, <em>inputs=None</em>, <em>outputs=None</em>, <em>options=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.create_software_config"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">create_software_deployment</code><span class="sig-paren">(</span><em>cnxt</em>, <em>server_id</em>, <em>config_id=None</em>, <em>input_values=None</em>, <em>action='INIT'</em>, <em>status='COMPLETE'</em>, <em>status_reason=''</em>, <em>stack_user_project_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.create_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">create_stack</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_name</em>, <em>template</em>, <em>params</em>, <em>files</em>, <em>args</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.create_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The create_stack method creates a new stack using the template
+provided.
+Note that at this stage the template has already been fetched from the
+heat-api process if using a template-url.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ctxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_name</strong> &#8211; Name of the stack you want to create.</li>
+<li><strong>template</strong> &#8211; Template of stack you want to create.</li>
+<li><strong>params</strong> &#8211; Stack Input Params/Environment</li>
+<li><strong>files</strong> &#8211; files referenced from the environment.</li>
+<li><strong>args</strong> &#8211; Request parameters/args passed from API</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">create_watch_data</code><span class="sig-paren">(</span><em>ctxt</em>, <em>watch_name</em>, <em>stats_data</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.create_watch_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>This could be used by CloudWatch and WaitConditions
+and treat HA service events like any other CloudWatch.
+:param ctxt: RPC context.
+:param watch_name: Name of the watch/alarm
+:param stats_data: The data to post.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">delete_snapshot</code><span class="sig-paren">(</span><em>cnxt</em>, <em>stack_identity</em>, <em>snapshot_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.delete_snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">delete_software_config</code><span class="sig-paren">(</span><em>cnxt</em>, <em>config_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.delete_software_config"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">delete_software_deployment</code><span class="sig-paren">(</span><em>cnxt</em>, <em>deployment_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.delete_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">delete_stack</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em>, <em>cast=True</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.delete_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The delete_stack method deletes a given stack.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ctxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_identity</strong> &#8211; Name of the stack you want to delete.</li>
+<li><strong>cast</strong> &#8211; cast the message or use call (default: True)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">describe_stack_resource</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em>, <em>resource_name</em>, <em>with_attr=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.describe_stack_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get detailed resource information about a particular resource.
+:param ctxt: RPC context.
+:param stack_identity: Name of the stack.
+:param resource_name: the Resource.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">describe_stack_resources</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em>, <em>resource_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.describe_stack_resources"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get detailed resource information about one or more resources.
+:param ctxt: RPC context.
+:param stack_identity: Name of the stack.
+:param resource_name: the Resource.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">find_physical_resource</code><span class="sig-paren">(</span><em>ctxt</em>, <em>physical_resource_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.find_physical_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return an identifier for the resource with the specified physical
+resource ID.
+:param ctxt RPC context.
+:param physcial_resource_id The physical resource ID to look up.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">generate_template</code><span class="sig-paren">(</span><em>ctxt</em>, <em>type_name</em>, <em>template_type='cfn'</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.generate_template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Generate a template based on the specified type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ctxt</strong> &#8211; RPC context.</li>
+<li><strong>type_name</strong> &#8211; The resource type name to generate a template for.</li>
+<li><strong>template_type</strong> &#8211; the template type to generate, cfn or hot.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_revision</code><span class="sig-paren">(</span><em>ctxt</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.get_revision"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_template</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.get_template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get the template.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ctxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_name</strong> &#8211; Name of the stack you want to see.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">identify_stack</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.identify_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The identify_stack method returns the full stack identifier for a
+single, live stack given the stack name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ctxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_name</strong> &#8211; Name of the stack you want to see,
+or None to see all</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">ignore_error_named</code><span class="sig-paren">(</span><em>error</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.ignore_error_named"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Raises the error unless its local name matches the supplied name</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>error</strong> &#8211; Remote raised error to derive the local name from.</li>
+<li><strong>name</strong> &#8211; Name to compare local name to.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">list_events</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em>, <em>filters=None</em>, <em>limit=None</em>, <em>marker=None</em>, <em>sort_keys=None</em>, <em>sort_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.list_events"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The list_events method lists all events associated with a given stack.
+It supports pagination (<code class="docutils literal"><span class="pre">limit</span></code> and <code class="docutils literal"><span class="pre">marker</span></code>),
+sorting (<code class="docutils literal"><span class="pre">sort_keys</span></code> and <code class="docutils literal"><span class="pre">sort_dir</span></code>) and filtering(filters)
+of the results.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ctxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_identity</strong> &#8211; Name of the stack you want to get events for</li>
+<li><strong>filters</strong> &#8211; a dict with attribute:value to filter the list</li>
+<li><strong>limit</strong> &#8211; the number of events to list (integer or string)</li>
+<li><strong>marker</strong> &#8211; the ID of the last event in the previous page</li>
+<li><strong>sort_keys</strong> &#8211; an array of fields used to sort the list</li>
+<li><strong>sort_dir</strong> &#8211; the direction of the sort (&#8216;asc&#8217; or &#8216;desc&#8217;).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">list_resource_types</code><span class="sig-paren">(</span><em>ctxt</em>, <em>support_status=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.list_resource_types"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get a list of valid resource types.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ctxt</strong> &#8211; RPC context.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">list_services</code><span class="sig-paren">(</span><em>cnxt</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.list_services"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">list_software_deployments</code><span class="sig-paren">(</span><em>cnxt</em>, <em>server_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.list_software_deployments"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">list_stack_resources</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em>, <em>nested_depth=0</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.list_stack_resources"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>List the resources belonging to a stack.
+:param ctxt: RPC context.
+:param stack_identity: Name of the stack.
+:param nested_depth: Levels of nested stacks of which list resources.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">list_stacks</code><span class="sig-paren">(</span><em>ctxt</em>, <em>limit=None</em>, <em>marker=None</em>, <em>sort_keys=None</em>, <em>sort_dir=None</em>, <em>filters=None</em>, <em>tenant_safe=True</em>, <em>show_deleted=False</em>, <em>show_nested=False</em>, <em>show_hidden=False</em>, <em>tags=None</em>, <em>tags_any=None</em>, <em>not_tags=None</em>, <em>not_tags_any=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.list_stacks"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The list_stacks method returns attributes of all stacks.  It supports
+pagination (<code class="docutils literal"><span class="pre">limit</span></code> and <code class="docutils literal"><span class="pre">marker</span></code>), sorting (<code class="docutils literal"><span class="pre">sort_keys</span></code> and
+<code class="docutils literal"><span class="pre">sort_dir</span></code>) and filtering (<code class="docutils literal"><span class="pre">filters</span></code>) of the results.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ctxt</strong> &#8211; RPC context.</li>
+<li><strong>limit</strong> &#8211; the number of stacks to list (integer or string)</li>
+<li><strong>marker</strong> &#8211; the ID of the last item in the previous page</li>
+<li><strong>sort_keys</strong> &#8211; an array of fields used to sort the list</li>
+<li><strong>sort_dir</strong> &#8211; the direction of the sort (&#8216;asc&#8217; or &#8216;desc&#8217;)</li>
+<li><strong>filters</strong> &#8211; a dict with attribute:value to filter the list</li>
+<li><strong>tenant_safe</strong> &#8211; if true, scope the request by the current tenant</li>
+<li><strong>show_deleted</strong> &#8211; if true, show soft-deleted stacks</li>
+<li><strong>show_nested</strong> &#8211; if true, show nested stacks</li>
+<li><strong>show_hidden</strong> &#8211; if true, show hidden stacks</li>
+<li><strong>tags</strong> &#8211; show stacks containing these tags, combine multiple
+tags using the boolean AND expression</li>
+<li><strong>tags_any</strong> &#8211; show stacks containing these tags, combine multiple
+tags using the boolean OR expression</li>
+<li><strong>not_tags</strong> &#8211; show stacks not containing these tags, combine
+multiple tags using the boolean AND expression</li>
+<li><strong>not_tags_any</strong> &#8211; show stacks not containing these tags, combine
+multiple tags using the boolean OR expression</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a list of stacks</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">local_error_name</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.local_error_name"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns the name of the error with any _Remote postfix removed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> &#8211; Remote raised error to derive the name from.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><code class="descname">make_msg</code><span class="sig-paren">(</span><em>method</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.make_msg"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">metadata_software_deployments</code><span class="sig-paren">(</span><em>cnxt</em>, <em>server_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.metadata_software_deployments"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">metadata_update</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em>, <em>resource_name</em>, <em>metadata</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.metadata_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Update the metadata for the given resource.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">preview_stack</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_name</em>, <em>template</em>, <em>params</em>, <em>files</em>, <em>args</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.preview_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Simulates a new stack using the provided template.</p>
+<p>Note that at this stage the template has already been fetched from the
+heat-api process if using a template-url.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ctxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_name</strong> &#8211; Name of the stack you want to create.</li>
+<li><strong>template</strong> &#8211; Template of stack you want to create.</li>
+<li><strong>params</strong> &#8211; Stack Input Params/Environment</li>
+<li><strong>files</strong> &#8211; files referenced from the environment.</li>
+<li><strong>args</strong> &#8211; Request parameters/args passed from API</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resource_schema</code><span class="sig-paren">(</span><em>ctxt</em>, <em>type_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.resource_schema"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get the schema for a resource type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ctxt</strong> &#8211; RPC context.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resource_signal</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em>, <em>resource_name</em>, <em>details</em>, <em>sync_call=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.resource_signal"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Generate an alarm on the resource.
+:param ctxt: RPC context.
+:param stack_identity: Name of the stack.
+:param resource_name: the Resource.
+:param details: the details of the signal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">set_watch_state</code><span class="sig-paren">(</span><em>ctxt</em>, <em>watch_name</em>, <em>state</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.set_watch_state"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Temporarily set the state of a given watch
+:param ctxt: RPC context.
+:param watch_name: Name of the watch
+:param state: State (must be one defined in WatchRule class)</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">show_snapshot</code><span class="sig-paren">(</span><em>cnxt</em>, <em>stack_identity</em>, <em>snapshot_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.show_snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">show_software_config</code><span class="sig-paren">(</span><em>cnxt</em>, <em>config_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.show_software_config"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">show_software_deployment</code><span class="sig-paren">(</span><em>cnxt</em>, <em>deployment_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.show_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">show_stack</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.show_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return detailed information about one or all stacks.
+:param ctxt: RPC context.
+:param stack_identity: Name of the stack you want to show, or None to
+show all</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">show_watch</code><span class="sig-paren">(</span><em>ctxt</em>, <em>watch_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.show_watch"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The show_watch method returns the attributes of one watch
+or all watches if no watch_name is passed</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ctxt</strong> &#8211; RPC context.</li>
+<li><strong>watch_name</strong> &#8211; Name of the watch/alarm you want to see,
+or None to see all</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">show_watch_metric</code><span class="sig-paren">(</span><em>ctxt</em>, <em>metric_namespace=None</em>, <em>metric_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.show_watch_metric"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The show_watch_metric method returns the datapoints associated
+with a specified metric, or all metrics if no metric_name is passed</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ctxt</strong> &#8211; RPC context.</li>
+<li><strong>metric_namespace</strong> &#8211; Name of the namespace you want to see,
+or None to see all</li>
+<li><strong>metric_name</strong> &#8211; Name of the metric you want to see,
+or None to see all</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">signal_software_deployment</code><span class="sig-paren">(</span><em>cnxt</em>, <em>deployment_id</em>, <em>details</em>, <em>updated_at=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.signal_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">stack_cancel_update</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.stack_cancel_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">stack_check</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.stack_check"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">stack_list_snapshots</code><span class="sig-paren">(</span><em>cnxt</em>, <em>stack_identity</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.stack_list_snapshots"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">stack_restore</code><span class="sig-paren">(</span><em>cnxt</em>, <em>stack_identity</em>, <em>snapshot_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.stack_restore"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">stack_resume</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.stack_resume"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">stack_snapshot</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.stack_snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">stack_suspend</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.stack_suspend"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">update_software_deployment</code><span class="sig-paren">(</span><em>cnxt</em>, <em>deployment_id</em>, <em>config_id=None</em>, <em>input_values=None</em>, <em>output_values=None</em>, <em>action=None</em>, <em>status=None</em>, <em>status_reason=None</em>, <em>updated_at=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.update_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">update_stack</code><span class="sig-paren">(</span><em>ctxt</em>, <em>stack_identity</em>, <em>template</em>, <em>params</em>, <em>files</em>, <em>args</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.update_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The update_stack method updates an existing stack based on the
+provided template and parameters.
+Note that at this stage the template has already been fetched from the
+heat-api process if using a template-url.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ctxt</strong> &#8211; RPC context.</li>
+<li><strong>stack_name</strong> &#8211; Name of the stack you want to create.</li>
+<li><strong>template</strong> &#8211; Template of stack you want to create.</li>
+<li><strong>params</strong> &#8211; Stack Input Params/Environment</li>
+<li><strong>files</strong> &#8211; files referenced from the environment.</li>
+<li><strong>args</strong> &#8211; Request parameters/args passed from API</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate_template</code><span class="sig-paren">(</span><em>ctxt</em>, <em>template</em>, <em>params=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/rpc/client.html#EngineClient.validate_template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The validate_template method uses the stack parser to check
+the validity of a template.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ctxt</strong> &#8211; RPC context.</li>
+<li><strong>template</strong> &#8211; Template of stack you want to create.</li>
+<li><strong>params</strong> &#8211; Stack Input Params/Environment</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.rpc.client.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+====================================
+The :mod:`heat.engine.update` Module
+====================================
+.. automodule:: heat.engine.update
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

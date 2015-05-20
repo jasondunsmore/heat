@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.api.openstack.v1.views.stacks_view &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../../../../raxdox/index.html" />
+    <link rel="up" title="heat.api.openstack.v1" href="../../v1.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../../openstack.html" >heat.api.openstack</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="../../v1.html" accesskey="U">heat.api.openstack.v1</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for heat.api.openstack.v1.views.stacks_view</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="kn">from</span> <span class="nn">heat.api.openstack.v1</span> <span class="kn">import</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">heat.api.openstack.v1.views</span> <span class="kn">import</span> <span class="n">views_common</span>
+<span class="kn">from</span> <span class="nn">heat.rpc</span> <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">rpc_api</span>
+
+<span class="n">_collection_name</span> <span class="o">=</span> <span class="s">&#39;stacks&#39;</span>
+
+<span class="n">basic_keys</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_ID</span><span class="p">,</span>
+    <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_NAME</span><span class="p">,</span>
+    <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_DESCRIPTION</span><span class="p">,</span>
+    <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_STATUS</span><span class="p">,</span>
+    <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_STATUS_DATA</span><span class="p">,</span>
+    <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_CREATION_TIME</span><span class="p">,</span>
+    <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_DELETION_TIME</span><span class="p">,</span>
+    <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_UPDATED_TIME</span><span class="p">,</span>
+    <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_OWNER</span><span class="p">,</span>
+    <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_PARENT</span><span class="p">,</span>
+    <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_USER_PROJECT_ID</span><span class="p">,</span>
+    <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_TAGS</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="format_stack"><a class="viewcode-back" href="../../../../../../sourcecode/heat/heat.api.openstack.v1.views.stacks_view.html#heat.api.openstack.v1.views.stacks_view.format_stack">[docs]</a><span class="k">def</span> <span class="nf">format_stack</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tenant_safe</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">keys</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_ID</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="s">&#39;stack_id&#39;</span><span class="p">])</span>
+            <span class="k">yield</span> <span class="p">(</span><span class="s">&#39;links&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">util</span><span class="o">.</span><span class="n">make_link</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">value</span><span class="p">)])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tenant_safe</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="p">(</span><span class="s">&#39;project&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="s">&#39;tenant&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_ACTION</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">key</span> <span class="o">==</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_STATUS</span> <span class="ow">and</span>
+              <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_ACTION</span> <span class="ow">in</span> <span class="n">stack</span><span class="p">):</span>
+            <span class="c"># To avoid breaking API compatibility, we join RES_ACTION</span>
+            <span class="c"># and RES_STATUS, so the API format doesn&#39;t expose the</span>
+            <span class="c"># internal split of state into action/status</span>
+            <span class="k">yield</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">stack</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_ACTION</span><span class="p">],</span> <span class="n">value</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># TODO(zaneb): ensure parameters can be formatted for XML</span>
+            <span class="c"># elif key == rpc_api.STACK_PARAMETERS:</span>
+            <span class="c">#     return key, json.dumps(value)</span>
+            <span class="k">yield</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span>
+        <span class="n">transform</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+
+</div>
+<div class="viewcode-block" id="collection"><a class="viewcode-back" href="../../../../../../sourcecode/heat/heat.api.openstack.v1.views.stacks_view.html#heat.api.openstack.v1.views.stacks_view.collection">[docs]</a><span class="k">def</span> <span class="nf">collection</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">stacks</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tenant_safe</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="n">basic_keys</span>
+    <span class="n">formatted_stacks</span> <span class="o">=</span> <span class="p">[</span><span class="n">format_stack</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">tenant_safe</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">stacks</span><span class="p">]</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;stacks&#39;</span><span class="p">:</span> <span class="n">formatted_stacks</span><span class="p">}</span>
+    <span class="n">links</span> <span class="o">=</span> <span class="n">views_common</span><span class="o">.</span><span class="n">get_collection_links</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">formatted_stacks</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">links</span><span class="p">:</span>
+        <span class="n">result</span><span class="p">[</span><span class="s">&#39;links&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">links</span>
+    <span class="k">if</span> <span class="n">count</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">result</span><span class="p">[</span><span class="s">&#39;count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">count</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../../openstack.html" >heat.api.openstack</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="../../v1.html" >heat.api.openstack.v1</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

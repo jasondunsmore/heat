@@ -1,0 +1,8 @@
+==============================
+The :mod:`heat.api.aws` Module
+==============================
+.. automodule:: heat.api.aws
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

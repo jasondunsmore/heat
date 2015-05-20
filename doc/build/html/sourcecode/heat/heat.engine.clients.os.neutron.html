@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.clients.os.neutron Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-engine-clients-os-neutron-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.engine.clients.os.neutron</span></code> Module<a class="headerlink" href="#the-heat-engine-clients-os-neutron-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.clients.os.neutron.</code><code class="descname">CIDRConstraint</code><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#CIDRConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.BaseCustomConstraint</span></code></p>
+<dl class="method">
+<dt>
+<code class="descname">validate</code><span class="sig-paren">(</span><em>value</em>, <em>context</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#CIDRConstraint.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.clients.os.neutron.</code><code class="descname">IPConstraint</code><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#IPConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.BaseCustomConstraint</span></code></p>
+<dl class="method">
+<dt>
+<code class="descname">validate</code><span class="sig-paren">(</span><em>value</em>, <em>context</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#IPConstraint.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.clients.os.neutron.</code><code class="descname">MACConstraint</code><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#MACConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.BaseCustomConstraint</span></code></p>
+<dl class="method">
+<dt>
+<code class="descname">validate</code><span class="sig-paren">(</span><em>value</em>, <em>context</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#MACConstraint.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.clients.os.neutron.</code><code class="descname">NetworkConstraint</code><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#NetworkConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.BaseCustomConstraint</span></code></p>
+<dl class="attribute">
+<dt>
+<code class="descname">expected_exceptions</code><em class="property"> = (&lt;class 'neutronclient.common.exceptions.NeutronClientException'&gt;, &lt;class 'heat.common.exception.NovaNetworkNotFound'&gt;, &lt;class 'heat.common.exception.PhysicalResourceNameAmbiguity'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate_with_client</code><span class="sig-paren">(</span><em>client</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#NetworkConstraint.validate_with_client"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.clients.os.neutron.</code><code class="descname">NeutronClientPlugin</code><span class="sig-paren">(</span><em>context</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#NeutronClientPlugin"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.clients.client_plugin.ClientPlugin</span></code></p>
+<dl class="attribute">
+<dt>
+<code class="descname">exceptions_module</code><em class="property"> = &lt;module 'neutronclient.common.exceptions' from '/var/lib/jenkins/workspace/Heat-Build/heat_repo/.tox/docs/local/lib/python2.7/site-packages/neutronclient/common/exceptions.pyc'&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">find_neutron_resource</code><span class="sig-paren">(</span><em>props</em>, <em>key</em>, <em>key_type</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#NeutronClientPlugin.find_neutron_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_secgroup_uuids</code><span class="sig-paren">(</span><em>security_groups</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#NeutronClientPlugin.get_secgroup_uuids"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns a list of security group UUIDs.</p>
+<p>Args:
+security_groups: List of security group names or UUIDs</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">is_conflict</code><span class="sig-paren">(</span><em>ex</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#NeutronClientPlugin.is_conflict"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">is_no_unique</code><span class="sig-paren">(</span><em>ex</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#NeutronClientPlugin.is_no_unique"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">is_not_found</code><span class="sig-paren">(</span><em>ex</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#NeutronClientPlugin.is_not_found"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">is_over_limit</code><span class="sig-paren">(</span><em>ex</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#NeutronClientPlugin.is_over_limit"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">network_id_from_subnet_id</code><span class="sig-paren">(</span><em>subnet_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#NeutronClientPlugin.network_id_from_subnet_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resolve_network</code><span class="sig-paren">(</span><em>props</em>, <em>net_key</em>, <em>net_id_key</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#NeutronClientPlugin.resolve_network"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resolve_port</code><span class="sig-paren">(</span><em>props</em>, <em>port_key</em>, <em>port_id_key</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#NeutronClientPlugin.resolve_port"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resolve_router</code><span class="sig-paren">(</span><em>props</em>, <em>router_key</em>, <em>router_id_key</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#NeutronClientPlugin.resolve_router"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resolve_subnet</code><span class="sig-paren">(</span><em>props</em>, <em>subnet_key</em>, <em>subnet_id_key</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#NeutronClientPlugin.resolve_subnet"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.clients.os.neutron.</code><code class="descname">PortConstraint</code><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#PortConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.BaseCustomConstraint</span></code></p>
+<dl class="attribute">
+<dt>
+<code class="descname">expected_exceptions</code><em class="property"> = (&lt;class 'neutronclient.common.exceptions.NeutronClientException'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate_with_client</code><span class="sig-paren">(</span><em>client</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#PortConstraint.validate_with_client"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.clients.os.neutron.</code><code class="descname">RouterConstraint</code><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#RouterConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.BaseCustomConstraint</span></code></p>
+<dl class="attribute">
+<dt>
+<code class="descname">expected_exceptions</code><em class="property"> = (&lt;class 'neutronclient.common.exceptions.NeutronClientException'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate_with_client</code><span class="sig-paren">(</span><em>client</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#RouterConstraint.validate_with_client"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.clients.os.neutron.</code><code class="descname">SubnetConstraint</code><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#SubnetConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.BaseCustomConstraint</span></code></p>
+<dl class="attribute">
+<dt>
+<code class="descname">expected_exceptions</code><em class="property"> = (&lt;class 'neutronclient.common.exceptions.NeutronClientException'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate_with_client</code><span class="sig-paren">(</span><em>client</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/neutron.html#SubnetConstraint.validate_with_client"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.engine.clients.os.neutron.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to the Heat developer documentation! &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-the-heat-developer-documentation">
+<h1>Welcome to the Heat developer documentation!<a class="headerlink" href="#welcome-to-the-heat-developer-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Heat is a service to <a class="reference internal" href="glossary.html#term-orchestrate"><span class="xref std std-term">orchestrate</span></a> multiple composite cloud
+applications using the AWS CloudFormation template format, through
+both an OpenStack-native ReST API and a CloudFormation-compatible Query API.</p>
+<div class="section" id="what-is-the-purpose-of-the-project-and-vision-for-it">
+<h2>What is the purpose of the project and vision for it?<a class="headerlink" href="#what-is-the-purpose-of-the-project-and-vision-for-it" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Heat provides a template based orchestration for describing a cloud application by executing appropriate <a class="reference internal" href="glossary.html#term-openstack"><span class="xref std std-term">OpenStack</span></a> API calls to generate running cloud applications.</li>
+<li>The software integrates other core components of OpenStack into a one-file template system. The templates allow creation of most OpenStack resource types (such as instances, floating ips, volumes, security groups, users, etc), as well as some more advanced functionality such as instance high availability, instance autoscaling, and nested stacks. By providing very tight integration with other OpenStack core projects, all OpenStack core projects could receive a larger user base.</li>
+<li>Allow deployers to integrate with Heat directly or by adding custom plugins.</li>
+</ul>
+<p>This documentation offers information on how heat works and how to contribute to the project.</p>
+</div>
+<div class="section" id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/index.html">Getting Started Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="templates/index.html">HOT Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="templates/index.html#cfn-templates">CFN Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="template_guide/index.html">Template Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="man-pages">
+<h2>Man Pages<a class="headerlink" href="#man-pages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="man/index.html">Man pages for services and utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="man/index.html#heat-services">Heat services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="man/index.html#heat-utilities">Heat utilities</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="developers-documentation">
+<h2>Developers Documentation<a class="headerlink" href="#developers-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Heat architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pluginguide.html">Heat Resource Plug-in Development Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schedulerhints.html">Heat Stack Lifecycle Scheduler Hints</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="api-documentation">
+<h2>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="http://api.openstack.org/api-ref-orchestration-v1.html">Heat REST API Reference (OpenStack API Complete Reference - Orchestration)</a></li>
+</ul>
+</div>
+<div class="section" id="operations-documentation">
+<h2>Operations Documentation<a class="headerlink" href="#operations-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="scale_deployment.html">Scaling a Deployment</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="code-documentation">
+<h2>Code Documentation<a class="headerlink" href="#code-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sourcecode/autoindex.html">Source Code Index</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sourcecode/autoindex.html#heat">Heat</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.version.html">The <code class="docutils literal"><span class="pre">heat.version</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.html">The <code class="docutils literal"><span class="pre">heat</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.scaling.lbutils.html">The <code class="docutils literal"><span class="pre">heat.scaling.lbutils</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.scaling.template.html">The <code class="docutils literal"><span class="pre">heat.scaling.template</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.scaling.html">The <code class="docutils literal"><span class="pre">heat.scaling</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.scaling.cooldown.html">The <code class="docutils literal"><span class="pre">heat.scaling.cooldown</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.rpc.worker_api.html">The <code class="docutils literal"><span class="pre">heat.rpc.worker_api</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.rpc.worker_client.html">The <code class="docutils literal"><span class="pre">heat.rpc.worker_client</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.rpc.html">The <code class="docutils literal"><span class="pre">heat.rpc</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.rpc.api.html">The <code class="docutils literal"><span class="pre">heat.rpc.api</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.rpc.client.html">The <code class="docutils literal"><span class="pre">heat.rpc.client</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.service.html">The <code class="docutils literal"><span class="pre">heat.objects.service</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.event.html">The <code class="docutils literal"><span class="pre">heat.objects.event</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.software_config.html">The <code class="docutils literal"><span class="pre">heat.objects.software_config</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.raw_template.html">The <code class="docutils literal"><span class="pre">heat.objects.raw_template</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.watch_rule.html">The <code class="docutils literal"><span class="pre">heat.objects.watch_rule</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.user_creds.html">The <code class="docutils literal"><span class="pre">heat.objects.user_creds</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.watch_data.html">The <code class="docutils literal"><span class="pre">heat.objects.watch_data</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.fields.html">The <code class="docutils literal"><span class="pre">heat.objects.fields</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.html">The <code class="docutils literal"><span class="pre">heat.objects</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.stack.html">The <code class="docutils literal"><span class="pre">heat.objects.stack</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.stack_tag.html">The <code class="docutils literal"><span class="pre">heat.objects.stack_tag</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.snapshot.html">The <code class="docutils literal"><span class="pre">heat.objects.snapshot</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.resource.html">The <code class="docutils literal"><span class="pre">heat.objects.resource</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.stack_lock.html">The <code class="docutils literal"><span class="pre">heat.objects.stack_lock</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.resource_data.html">The <code class="docutils literal"><span class="pre">heat.objects.resource_data</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.sync_point.html">The <code class="docutils literal"><span class="pre">heat.objects.sync_point</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.objects.software_deployment.html">The <code class="docutils literal"><span class="pre">heat.objects.software_deployment</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.html">The <code class="docutils literal"><span class="pre">heat.api</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.aws.html">The <code class="docutils literal"><span class="pre">heat.api.aws</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.aws.utils.html">The <code class="docutils literal"><span class="pre">heat.api.aws.utils</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.aws.ec2token.html">The <code class="docutils literal"><span class="pre">heat.api.aws.ec2token</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.aws.exception.html">The <code class="docutils literal"><span class="pre">heat.api.aws.exception</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.cfn.html">The <code class="docutils literal"><span class="pre">heat.api.cfn</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.cfn.versions.html">The <code class="docutils literal"><span class="pre">heat.api.cfn.versions</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.cfn.v1.signal.html">The <code class="docutils literal"><span class="pre">heat.api.cfn.v1.signal</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.cfn.v1.html">The <code class="docutils literal"><span class="pre">heat.api.cfn.v1</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.cfn.v1.stacks.html">The <code class="docutils literal"><span class="pre">heat.api.cfn.v1.stacks</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.openstack.html">The <code class="docutils literal"><span class="pre">heat.api.openstack</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.openstack.versions.html">The <code class="docutils literal"><span class="pre">heat.api.openstack.versions</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.openstack.v1.services.html">The <code class="docutils literal"><span class="pre">heat.api.openstack.v1.services</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.openstack.v1.software_deployments.html">The <code class="docutils literal"><span class="pre">heat.api.openstack.v1.software_deployments</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.openstack.v1.software_configs.html">The <code class="docutils literal"><span class="pre">heat.api.openstack.v1.software_configs</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.openstack.v1.html">The <code class="docutils literal"><span class="pre">heat.api.openstack.v1</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.openstack.v1.stacks.html">The <code class="docutils literal"><span class="pre">heat.api.openstack.v1.stacks</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.openstack.v1.util.html">The <code class="docutils literal"><span class="pre">heat.api.openstack.v1.util</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.openstack.v1.actions.html">The <code class="docutils literal"><span class="pre">heat.api.openstack.v1.actions</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.openstack.v1.build_info.html">The <code class="docutils literal"><span class="pre">heat.api.openstack.v1.build_info</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.openstack.v1.events.html">The <code class="docutils literal"><span class="pre">heat.api.openstack.v1.events</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.openstack.v1.views.html">The <code class="docutils literal"><span class="pre">heat.api.openstack.v1.views</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.openstack.v1.views.views_common.html">The <code class="docutils literal"><span class="pre">heat.api.openstack.v1.views.views_common</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.openstack.v1.views.stacks_view.html">The <code class="docutils literal"><span class="pre">heat.api.openstack.v1.views.stacks_view</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.middleware.ssl.html">The <code class="docutils literal"><span class="pre">heat.api.middleware.ssl</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.middleware.html">The <code class="docutils literal"><span class="pre">heat.api.middleware</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.middleware.fault.html">The <code class="docutils literal"><span class="pre">heat.api.middleware.fault</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.middleware.version_negotiation.html">The <code class="docutils literal"><span class="pre">heat.api.middleware.version_negotiation</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.cloudwatch.html">The <code class="docutils literal"><span class="pre">heat.api.cloudwatch</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.cloudwatch.versions.html">The <code class="docutils literal"><span class="pre">heat.api.cloudwatch.versions</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.api.cloudwatch.watch.html">The <code class="docutils literal"><span class="pre">heat.api.cloudwatch.watch</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.service.html">The <code class="docutils literal"><span class="pre">heat.engine.service</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.event.html">The <code class="docutils literal"><span class="pre">heat.engine.event</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.service_software_config.html">The <code class="docutils literal"><span class="pre">heat.engine.service_software_config</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.environment.html">The <code class="docutils literal"><span class="pre">heat.engine.environment</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.timestamp.html">The <code class="docutils literal"><span class="pre">heat.engine.timestamp</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.service_stack_watch.html">The <code class="docutils literal"><span class="pre">heat.engine.service_stack_watch</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.plugin_manager.html">The <code class="docutils literal"><span class="pre">heat.engine.plugin_manager</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.scheduler.html">The <code class="docutils literal"><span class="pre">heat.engine.scheduler</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.volume_tasks.html">The <code class="docutils literal"><span class="pre">heat.engine.volume_tasks</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.iso_8601.html">The <code class="docutils literal"><span class="pre">heat.engine.iso_8601</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.watchrule.html">The <code class="docutils literal"><span class="pre">heat.engine.watchrule</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.template.html">The <code class="docutils literal"><span class="pre">heat.engine.template</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.parameters.html">The <code class="docutils literal"><span class="pre">heat.engine.parameters</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.html">The <code class="docutils literal"><span class="pre">heat.engine</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.lifecycle_plugin.html">The <code class="docutils literal"><span class="pre">heat.engine.lifecycle_plugin</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.stack.html">The <code class="docutils literal"><span class="pre">heat.engine.stack</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.dependencies.html">The <code class="docutils literal"><span class="pre">heat.engine.dependencies</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.api.html">The <code class="docutils literal"><span class="pre">heat.engine.api</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.parser.html">The <code class="docutils literal"><span class="pre">heat.engine.parser</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.resource.html">The <code class="docutils literal"><span class="pre">heat.engine.resource</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.worker.html">The <code class="docutils literal"><span class="pre">heat.engine.worker</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.support.html">The <code class="docutils literal"><span class="pre">heat.engine.support</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.properties.html">The <code class="docutils literal"><span class="pre">heat.engine.properties</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.stack_lock.html">The <code class="docutils literal"><span class="pre">heat.engine.stack_lock</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.attributes.html">The <code class="docutils literal"><span class="pre">heat.engine.attributes</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.nova_utils.html">The <code class="docutils literal"><span class="pre">heat.engine.nova_utils</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.rsrc_defn.html">The <code class="docutils literal"><span class="pre">heat.engine.rsrc_defn</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.parameter_groups.html">The <code class="docutils literal"><span class="pre">heat.engine.parameter_groups</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.function.html">The <code class="docutils literal"><span class="pre">heat.engine.function</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.update.html">The <code class="docutils literal"><span class="pre">heat.engine.update</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.sync_point.html">The <code class="docutils literal"><span class="pre">heat.engine.sync_point</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.constraints.html">The <code class="docutils literal"><span class="pre">heat.engine.constraints</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.cfn.functions.html">The <code class="docutils literal"><span class="pre">heat.engine.cfn.functions</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.cfn.template.html">The <code class="docutils literal"><span class="pre">heat.engine.cfn.template</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.cfn.html">The <code class="docutils literal"><span class="pre">heat.engine.cfn</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.hot.functions.html">The <code class="docutils literal"><span class="pre">heat.engine.hot.functions</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.hot.template.html">The <code class="docutils literal"><span class="pre">heat.engine.hot.template</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.hot.parameters.html">The <code class="docutils literal"><span class="pre">heat.engine.hot.parameters</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.hot.html">The <code class="docutils literal"><span class="pre">heat.engine.hot</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.clients.html">The <code class="docutils literal"><span class="pre">heat.engine.clients</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.clients.client_plugin.html">The <code class="docutils literal"><span class="pre">heat.engine.clients.client_plugin</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.clients.os.sahara.html">The <code class="docutils literal"><span class="pre">heat.engine.clients.os.sahara</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.clients.os.barbican.html">The <code class="docutils literal"><span class="pre">heat.engine.clients.os.barbican</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.clients.os.neutron.html">The <code class="docutils literal"><span class="pre">heat.engine.clients.os.neutron</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.clients.os.html">The <code class="docutils literal"><span class="pre">heat.engine.clients.os</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.clients.os.nova.html">The <code class="docutils literal"><span class="pre">heat.engine.clients.os.nova</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.clients.os.trove.html">The <code class="docutils literal"><span class="pre">heat.engine.clients.os.trove</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.clients.os.ceilometer.html">The <code class="docutils literal"><span class="pre">heat.engine.clients.os.ceilometer</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.clients.os.cinder.html">The <code class="docutils literal"><span class="pre">heat.engine.clients.os.cinder</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.clients.os.glance.html">The <code class="docutils literal"><span class="pre">heat.engine.clients.os.glance</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.clients.os.swift.html">The <code class="docutils literal"><span class="pre">heat.engine.clients.os.swift</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.clients.os.heat_plugin.html">The <code class="docutils literal"><span class="pre">heat.engine.clients.os.heat_plugin</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.clients.os.keystone.html">The <code class="docutils literal"><span class="pre">heat.engine.clients.os.keystone</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.notification.autoscaling.html">The <code class="docutils literal"><span class="pre">heat.engine.notification.autoscaling</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.notification.html">The <code class="docutils literal"><span class="pre">heat.engine.notification</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sourcecode/heat/heat.engine.notification.stack.html">The <code class="docutils literal"><span class="pre">heat.engine.notification.stack</span></code> Module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span>Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span>Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span>Search Page</span></a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="raxdox/index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to the Heat developer documentation!</a><ul>
+<li><a class="reference internal" href="#what-is-the-purpose-of-the-project-and-vision-for-it">What is the purpose of the project and vision for it?</a></li>
+<li><a class="reference internal" href="#getting-started">Getting Started</a></li>
+<li><a class="reference internal" href="#man-pages">Man Pages</a></li>
+<li><a class="reference internal" href="#developers-documentation">Developers Documentation</a></li>
+<li><a class="reference internal" href="#api-documentation">API Documentation</a></li>
+<li><a class="reference internal" href="#operations-documentation">Operations Documentation</a></li>
+<li><a class="reference internal" href="#code-documentation">Code Documentation</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+=========================================
+The :mod:`heat.objects.sync_point` Module
+=========================================
+.. automodule:: heat.objects.sync_point
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

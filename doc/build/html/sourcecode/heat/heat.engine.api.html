@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.api Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-engine-api-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.engine.api</span></code> Module<a class="headerlink" href="#the-heat-engine-api-module" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.api.</code><code class="descname">extract_args</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/api.html#extract_args"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Extract any arguments passed as parameters through the API and return them
+as a dictionary. This allows us to filter the passed args and do type
+conversion where appropriate</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.api.</code><code class="descname">format_event</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/api.html#format_event"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.api.</code><code class="descname">format_notification_body</code><span class="sig-paren">(</span><em>stack</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/api.html#format_notification_body"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.api.</code><code class="descname">format_resource_attributes</code><span class="sig-paren">(</span><em>resource</em>, <em>with_attr=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/api.html#format_resource_attributes"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.api.</code><code class="descname">format_resource_properties</code><span class="sig-paren">(</span><em>resource</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/api.html#format_resource_properties"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.api.</code><code class="descname">format_snapshot</code><span class="sig-paren">(</span><em>snapshot</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/api.html#format_snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.api.</code><code class="descname">format_software_config</code><span class="sig-paren">(</span><em>sc</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/api.html#format_software_config"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.api.</code><code class="descname">format_software_deployment</code><span class="sig-paren">(</span><em>sd</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/api.html#format_software_deployment"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.api.</code><code class="descname">format_stack</code><span class="sig-paren">(</span><em>stack</em>, <em>preview=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/api.html#format_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a representation of the given stack that matches the API output
+expectations.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.api.</code><code class="descname">format_stack_outputs</code><span class="sig-paren">(</span><em>stack</em>, <em>outputs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/api.html#format_stack_outputs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a representation of the given output template for the given stack
+that matches the API output expectations.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.api.</code><code class="descname">format_stack_preview</code><span class="sig-paren">(</span><em>stack</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/api.html#format_stack_preview"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.api.</code><code class="descname">format_stack_resource</code><span class="sig-paren">(</span><em>resource</em>, <em>detail=True</em>, <em>with_props=False</em>, <em>with_attr=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/api.html#format_stack_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a representation of the given resource that matches the API output
+expectations.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.api.</code><code class="descname">format_validate_parameter</code><span class="sig-paren">(</span><em>param</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/api.html#format_validate_parameter"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Format a template parameter for validate template API call</p>
+<p>Formats a template parameter and its schema information from the engine&#8217;s
+internal representation (i.e. a Parameter object and its associated
+Schema object) to a representation expected by the current API (for example
+to be compatible to CFN syntax).</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.api.</code><code class="descname">format_watch</code><span class="sig-paren">(</span><em>watch</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/api.html#format_watch"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.api.</code><code class="descname">format_watch_data</code><span class="sig-paren">(</span><em>wd</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/api.html#format_watch_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.engine.api.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

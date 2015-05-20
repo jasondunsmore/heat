@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat-manage &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="heat-manage">
+<h1>heat-manage<a class="headerlink" href="#heat-manage" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="synopsis">
+<h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal"><span class="pre">heat-manage</span> <span class="pre">&lt;action&gt;</span> <span class="pre">[options]</span></code></p>
+</div>
+<div class="section" id="description">
+<h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>heat-manage helps manage heat specific database operations.</p>
+</div>
+<div class="section" id="options">
+<h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<p>The standard pattern for executing a heat-manage command is:
+<code class="docutils literal"><span class="pre">heat-manage</span> <span class="pre">&lt;command&gt;</span> <span class="pre">[&lt;args&gt;]</span></code></p>
+<p>Run with -h to see a list of available commands:
+<code class="docutils literal"><span class="pre">heat-manage</span> <span class="pre">-h</span></code></p>
+<p>Commands are db_version, db_sync, purge_deleted and service. Detailed descriptions are below.</p>
+<div class="section" id="heat-db-version">
+<h3>Heat Db version<a class="headerlink" href="#heat-db-version" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal"><span class="pre">heat-manage</span> <span class="pre">db_version</span></code></p>
+<blockquote>
+<div>Print out the db schema revision.</div></blockquote>
+<p><code class="docutils literal"><span class="pre">heat-manage</span> <span class="pre">db_sync</span></code></p>
+<blockquote>
+<div>Sync the database up to the most recent version.</div></blockquote>
+<p><code class="docutils literal"><span class="pre">heat-manage</span> <span class="pre">purge_deleted</span> <span class="pre">[-g</span> <span class="pre">{days,hours,minutes,seconds}]</span> <span class="pre">[age]</span></code></p>
+<blockquote>
+<div>Purge db entries marked as deleted and older than [age].</div></blockquote>
+<p><code class="docutils literal"><span class="pre">heat-manage</span> <span class="pre">service</span> <span class="pre">list</span></code></p>
+<blockquote>
+<div>Shows details for all currently running heat engines.</div></blockquote>
+<p><code class="docutils literal"><span class="pre">heat-manage</span> <span class="pre">--version</span></code></p>
+<blockquote>
+<div>Shows program&#8217;s version number and exit. The output could be empty if
+the distribution didn&#8217;t specify any version information.</div></blockquote>
+</div>
+</div>
+<div class="section" id="files">
+<h2>FILES<a class="headerlink" href="#files" title="Permalink to this headline">¶</a></h2>
+<p>The /etc/heat/heat.conf file contains global options which can be
+used to configure some aspects of heat-manage, for example the DB
+connection and logging.</p>
+</div>
+<div class="section" id="bugs">
+<h2>BUGS<a class="headerlink" href="#bugs" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Heat issues are tracked in Launchpad so you can view or report bugs here
+<a class="reference external" href="https://bugs.launchpad.net/heat">OpenStack Heat Bugs</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../raxdox/index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">heat-manage</a><ul>
+<li><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
+<li><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li><a class="reference internal" href="#options">OPTIONS</a><ul>
+<li><a class="reference internal" href="#heat-db-version">Heat Db version</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#files">FILES</a></li>
+<li><a class="reference internal" href="#bugs">BUGS</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/man/heat-manage.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

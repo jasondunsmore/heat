@@ -1,0 +1,245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Environments &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="environments">
+<span id="id1"></span><h1>Environments<a class="headerlink" href="#environments" title="Permalink to this headline">¶</a></h1>
+<p>The environment is used to affect the runtime behavior of the
+template. It provides a way to override the resource
+implementations and provide a mechanism to place parameters
+that the service needs.</p>
+<p>To fully understand the runtime behavior you also have to consider
+what plug-ins the cloud operator has installed.</p>
+<div class="section" id="format">
+<h2>Format<a class="headerlink" href="#format" title="Permalink to this headline">¶</a></h2>
+<p>It is a yaml text file with three main sections &#8220;resource_registry&#8221;,
+&#8220;parameters&#8221; and &#8220;parameter_defaults&#8221;.</p>
+</div>
+<div class="section" id="command-line-usage">
+<h2>Command line usage<a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre>heat stack-create my_stack -e my_env.yaml -P &quot;some_parm=bla&quot; -f my_tmpl.yaml
+</pre></div>
+</div>
+</div>
+<div class="section" id="global-and-effective-environments">
+<h2>Global and effective environments<a class="headerlink" href="#global-and-effective-environments" title="Permalink to this headline">¶</a></h2>
+<p>The environment used for a stack is the combination of (1) the
+environment given by the user with the template for the stack and (2)
+a global environment that is determined by the cloud operator.
+Combination is asymmetric: an entry in the user environment takes
+precedence over the global environment.  The OpenStack software
+includes a default global environment, which supplies some resource
+types that are included in the standard documentation.  The cloud
+operator can add additional environment entries.</p>
+<p>The cloud operator can add to the global environment
+by putting environment files in a configurable directory wherever
+the heat engine runs.  The configuration variable is named
+&#8220;environment_dir&#8221; is found in the &#8220;[DEFAULT]&#8221; section
+of &#8220;/etc/heat/heat.conf&#8221;.  The default for that directory is
+&#8220;/etc/heat/environment.d&#8221;.  Its contents are combined in whatever
+order the shell delivers them when the service starts up,
+which is the time when these files are read.</p>
+<p>If the &#8220;my_env.yaml&#8221; file from the example above had been put in the
+&#8220;environment_dir&#8221; then the user&#8217;s command line could be this:</p>
+<div class="highlight-python"><div class="highlight"><pre>heat stack-create my_stack -P &quot;some_parm=bla&quot; -f my_tmpl.yaml
+</pre></div>
+</div>
+</div>
+<div class="section" id="usage-examples">
+<h2>Usage examples<a class="headerlink" href="#usage-examples" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pass-parameters-into-heat">
+<h3>1) Pass parameters into heat<a class="headerlink" href="#pass-parameters-into-heat" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>parameters:
+  KeyName: heat_key
+  InstanceType: m1.micro
+  ImageId: F18-x86_64-cfntools
+</pre></div>
+</div>
+</div>
+<div class="section" id="define-defaults-to-parameters">
+<h3>2) Define defaults to parameters<a class="headerlink" href="#define-defaults-to-parameters" title="Permalink to this headline">¶</a></h3>
+<p>This is especially useful when you have many template resources and
+you want the same value in each. Note: these defaults will get passed
+down into all template resources.</p>
+<div class="highlight-python"><div class="highlight"><pre>parameter_defaults:
+  KeyName: heat_key
+</pre></div>
+</div>
+</div>
+<div class="section" id="deal-with-the-mapping-of-quantum-to-neutron">
+<h3>3) Deal with the mapping of Quantum to Neutron<a class="headerlink" href="#deal-with-the-mapping-of-quantum-to-neutron" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>resource_registry:
+  &quot;OS::Quantum*&quot;: &quot;OS::Neutron*&quot;
+</pre></div>
+</div>
+<p>So all existing resources which can be matched with &#8220;OS::Neutron*&#8221;
+will be mapped to &#8220;OS::Quantum*&#8221; accordingly.</p>
+</div>
+<div class="section" id="override-a-resource-type-with-a-custom-template-resource">
+<h3>4) Override a resource type with a custom template resource<a class="headerlink" href="#override-a-resource-type-with-a-custom-template-resource" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>resource_registry:
+  &quot;AWS::EC2::Instance&quot;: file:///home/mine/my_instance_with_better_defaults.yaml
+</pre></div>
+</div>
+<p>Please note that the template resource URL here must end with &#8221;.yaml&#8221;
+or &#8221;.template&#8221;, or it will not be treated as a custom template
+resource. The supported URL types are &#8220;http, https and file&#8221;.</p>
+</div>
+<div class="section" id="always-map-resource-type-x-to-y">
+<h3>5) Always map resource type X to Y<a class="headerlink" href="#always-map-resource-type-x-to-y" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>resource_registry:
+  &quot;OS::Networking::FloatingIP&quot;: &quot;OS::Nova::FloatingIP&quot;
+</pre></div>
+</div>
+</div>
+<div class="section" id="use-default-resources-except-one-for-a-particular-resource-in-the-template">
+<h3>6) Use default resources except one for a particular resource in the template<a class="headerlink" href="#use-default-resources-except-one-for-a-particular-resource-in-the-template" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>resource_registry:
+  resources:
+    my_db_server:
+      &quot;OS::DBInstance&quot;: file:///home/mine/all_my_cool_templates/db.yaml
+</pre></div>
+</div>
+</div>
+<div class="section" id="pause-stack-creation-update-on-a-given-resource">
+<h3>7) Pause stack creation/update on a given resource<a class="headerlink" href="#pause-stack-creation-update-on-a-given-resource" title="Permalink to this headline">¶</a></h3>
+<p>If you want to debug your stack as it&#8217;s being created or updated or if you want
+to run it in phases you can set <cite>pre-create</cite> and <cite>pre-update</cite> hooks in the
+<cite>resources</cite> section of <cite>resource_registry</cite>.</p>
+<p>To set a hook, add either <cite>hooks: pre-create</cite> or <cite>hooks: pre-update</cite> to the
+resource&#8217;s dictionary. You can also use the <cite>[pre-create, pre-update]</cite> to stop
+on both actions.</p>
+<p>Hooks can be combined with other <cite>resources</cite> properties (e.g. provider
+templates or type mapping).</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre>resource_registry:
+  resources:
+    my_server:
+      &quot;OS::DBInstance&quot;: file:///home/mine/all_my_cool_templates/db.yaml
+      hooks: pre-create
+    nested_stack:
+      nested_resource:
+        hooks: pre-update
+      another_resource:
+        hooks: [pre-create, pre-update]
+</pre></div>
+</div>
+<p>When heat encounters a resource that has a hook, it will pause the resource
+action until the hook is cleared. Any resources that depend on it will wait as
+well. Any resources that don&#8217;t will be created in parallel (unless they have
+hooks, too).</p>
+<p>It is also possible to do a partial match by putting an asterisk (<cite>*</cite>) in the
+name.</p>
+<p>This example:</p>
+<div class="highlight-python"><div class="highlight"><pre>resource_registry:
+  resources:
+    &quot;*_server&quot;:
+      hooks: pre-create
+</pre></div>
+</div>
+<p>will pause while creating <cite>app_server</cite> and <cite>database_server</cite> but not <cite>server</cite>
+or <cite>app_network</cite>.</p>
+<p>Hook is cleared by signaling the resource with <cite>{unset_hook: pre-create}</cite> (or
+<cite>pre-update</cite>).</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../raxdox/index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Environments</a><ul>
+<li><a class="reference internal" href="#format">Format</a></li>
+<li><a class="reference internal" href="#command-line-usage">Command line usage</a></li>
+<li><a class="reference internal" href="#global-and-effective-environments">Global and effective environments</a></li>
+<li><a class="reference internal" href="#usage-examples">Usage examples</a><ul>
+<li><a class="reference internal" href="#pass-parameters-into-heat">1) Pass parameters into heat</a></li>
+<li><a class="reference internal" href="#define-defaults-to-parameters">2) Define defaults to parameters</a></li>
+<li><a class="reference internal" href="#deal-with-the-mapping-of-quantum-to-neutron">3) Deal with the mapping of Quantum to Neutron</a></li>
+<li><a class="reference internal" href="#override-a-resource-type-with-a-custom-template-resource">4) Override a resource type with a custom template resource</a></li>
+<li><a class="reference internal" href="#always-map-resource-type-x-to-y">5) Always map resource type X to Y</a></li>
+<li><a class="reference internal" href="#use-default-resources-except-one-for-a-particular-resource-in-the-template">6) Use default resources except one for a particular resource in the template</a></li>
+<li><a class="reference internal" href="#pause-stack-creation-update-on-a-given-resource">7) Pause stack creation/update on a given resource</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/template_guide/environment.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

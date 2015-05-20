@@ -1,0 +1,8 @@
+==============================================
+The :mod:`heat.objects.software_config` Module
+==============================================
+.. automodule:: heat.objects.software_config
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>oslo_i18n._message &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for oslo_i18n._message</h1><div class="highlight"><pre>
+<span class="c"># Copyright 2012 Red Hat, Inc.</span>
+<span class="c"># Copyright 2013 IBM Corp.</span>
+<span class="c"># All Rights Reserved.</span>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+<span class="sd">&quot;&quot;&quot;Private Message class for lazy translation support.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">gettext</span>
+<span class="kn">import</span> <span class="nn">locale</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">oslo_i18n</span> <span class="kn">import</span> <span class="n">_locale</span>
+<span class="kn">from</span> <span class="nn">oslo_i18n</span> <span class="kn">import</span> <span class="n">_translate</span>
+
+
+<span class="k">class</span> <span class="nc">Message</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A Message object is a unicode object that can be translated.</span>
+
+<span class="sd">    Translation of Message is done explicitly using the translate() method.</span>
+<span class="sd">    For all non-translation intents and purposes, a Message is simply unicode,</span>
+<span class="sd">    and can be treated as such.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">msgid</span><span class="p">,</span> <span class="n">msgtext</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                <span class="n">domain</span><span class="o">=</span><span class="s">&#39;oslo&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a new Message object.</span>
+
+<span class="sd">        In order for translation to work gettext requires a message ID, this</span>
+<span class="sd">        msgid will be used as the base unicode text. It is also possible</span>
+<span class="sd">        for the msgid and the base unicode text to be different by passing</span>
+<span class="sd">        the msgtext parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># If the base msgtext is not given, we use the default translation</span>
+        <span class="c"># of the msgid (which is in English) just in case the system locale is</span>
+        <span class="c"># not English, so that the base text will be in that locale by default.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">msgtext</span><span class="p">:</span>
+            <span class="n">msgtext</span> <span class="o">=</span> <span class="n">Message</span><span class="o">.</span><span class="n">_translate_msgid</span><span class="p">(</span><span class="n">msgid</span><span class="p">,</span> <span class="n">domain</span><span class="p">)</span>
+        <span class="c"># We want to initialize the parent unicode with the actual object that</span>
+        <span class="c"># would have been plain unicode if &#39;Message&#39; was not enabled.</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Message</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">msgtext</span><span class="p">)</span>
+        <span class="n">msg</span><span class="o">.</span><span class="n">msgid</span> <span class="o">=</span> <span class="n">msgid</span>
+        <span class="n">msg</span><span class="o">.</span><span class="n">domain</span> <span class="o">=</span> <span class="n">domain</span>
+        <span class="n">msg</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span>
+        <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">desired_locale</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Translate this message to the desired locale.</span>
+
+<span class="sd">        :param desired_locale: The desired locale to translate the message to,</span>
+<span class="sd">                               if no locale is provided the message will be</span>
+<span class="sd">                               translated to the system&#39;s default locale.</span>
+
+<span class="sd">        :returns: the translated message in unicode</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">translated_message</span> <span class="o">=</span> <span class="n">Message</span><span class="o">.</span><span class="n">_translate_msgid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msgid</span><span class="p">,</span>
+                                                      <span class="bp">self</span><span class="o">.</span><span class="n">domain</span><span class="p">,</span>
+                                                      <span class="n">desired_locale</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># No need for more translation</span>
+            <span class="k">return</span> <span class="n">translated_message</span>
+
+        <span class="c"># This Message object may have been formatted with one or more</span>
+        <span class="c"># Message objects as substitution arguments, given either as a single</span>
+        <span class="c"># argument, part of a tuple, or as one or more values in a dictionary.</span>
+        <span class="c"># When translating this Message we need to translate those Messages too</span>
+        <span class="n">translated_params</span> <span class="o">=</span> <span class="n">_translate</span><span class="o">.</span><span class="n">translate_args</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+                                                      <span class="n">desired_locale</span><span class="p">)</span>
+
+        <span class="n">translated_message</span> <span class="o">=</span> <span class="n">translated_message</span> <span class="o">%</span> <span class="n">translated_params</span>
+
+        <span class="k">return</span> <span class="n">translated_message</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_translate_msgid</span><span class="p">(</span><span class="n">msgid</span><span class="p">,</span> <span class="n">domain</span><span class="p">,</span> <span class="n">desired_locale</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">desired_locale</span><span class="p">:</span>
+            <span class="n">system_locale</span> <span class="o">=</span> <span class="n">locale</span><span class="o">.</span><span class="n">getdefaultlocale</span><span class="p">()</span>
+            <span class="c"># If the system locale is not available to the runtime use English</span>
+            <span class="n">desired_locale</span> <span class="o">=</span> <span class="n">system_locale</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="s">&#39;en_US&#39;</span>
+
+        <span class="n">locale_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">_locale</span><span class="o">.</span><span class="n">get_locale_dir_variable_name</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">lang</span> <span class="o">=</span> <span class="n">gettext</span><span class="o">.</span><span class="n">translation</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span>
+                                   <span class="n">localedir</span><span class="o">=</span><span class="n">locale_dir</span><span class="p">,</span>
+                                   <span class="n">languages</span><span class="o">=</span><span class="p">[</span><span class="n">desired_locale</span><span class="p">],</span>
+                                   <span class="n">fallback</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">translator</span> <span class="o">=</span> <span class="n">lang</span><span class="o">.</span><span class="n">gettext</span> <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span> <span class="k">else</span> <span class="n">lang</span><span class="o">.</span><span class="n">ugettext</span>
+
+        <span class="n">translated_message</span> <span class="o">=</span> <span class="n">translator</span><span class="p">(</span><span class="n">msgid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">translated_message</span>
+
+    <span class="k">def</span> <span class="nf">__mod__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="c"># When we mod a Message we want the actual operation to be performed</span>
+        <span class="c"># by the parent class (i.e. unicode()), the only thing  we do here is</span>
+        <span class="c"># save the original msgid and the parameters in case of a translation</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sanitize_mod_params</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="n">unicode_mod</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Message</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__mod__</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">modded</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msgid</span><span class="p">,</span>
+                         <span class="n">msgtext</span><span class="o">=</span><span class="n">unicode_mod</span><span class="p">,</span>
+                         <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+                         <span class="n">domain</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">domain</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">modded</span>
+
+    <span class="k">def</span> <span class="nf">_sanitize_mod_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sanitize the object being modded with this Message.</span>
+
+<span class="sd">        - Add support for modding &#39;None&#39; so translation supports it</span>
+<span class="sd">        - Trim the modded object, which can be a large dictionary, to only</span>
+<span class="sd">        those keys that would actually be used in a translation</span>
+<span class="sd">        - Snapshot the object being modded, in case the message is</span>
+<span class="sd">        translated, it will be used as it was when the Message was created</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">other</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">(</span><span class="n">other</span><span class="p">,)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="c"># Merge the dictionaries</span>
+            <span class="c"># Copy each item in case one does not support deep copy.</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_param</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+                              <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_param</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+                          <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_param</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">params</span>
+
+    <span class="k">def</span> <span class="nf">_copy_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="c"># Fallback to casting to unicode this will handle the</span>
+            <span class="c"># python code-like objects that can&#39;t be deep-copied</span>
+            <span class="k">return</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">oslo_i18n._i18n</span> <span class="kn">import</span> <span class="n">_</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Message objects do not support addition.&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__radd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__add__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY2</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="c"># NOTE(luisg): Logging in python 2.6 tries to str() log records,</span>
+            <span class="c"># and it expects specifically a UnicodeError in order to proceed.</span>
+            <span class="kn">from</span> <span class="nn">oslo_i18n._i18n</span> <span class="kn">import</span> <span class="n">_</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Message objects do not support str() because they may &#39;</span>
+                    <span class="s">&#39;contain non-ascii characters. &#39;</span>
+                    <span class="s">&#39;Please use unicode() or translate() instead.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">UnicodeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,652 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.parameters &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../raxdox/index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for heat.engine.parameters</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="kn">from</span> <span class="nn">oslo_serialization</span> <span class="kn">import</span> <span class="n">jsonutils</span>
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">encodeutils</span>
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">strutils</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">constraints</span> <span class="k">as</span> <span class="n">constr</span>
+
+
+<span class="n">PARAMETER_KEYS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">TYPE</span><span class="p">,</span> <span class="n">DEFAULT</span><span class="p">,</span> <span class="n">NO_ECHO</span><span class="p">,</span> <span class="n">ALLOWED_VALUES</span><span class="p">,</span> <span class="n">ALLOWED_PATTERN</span><span class="p">,</span>
+    <span class="n">MAX_LENGTH</span><span class="p">,</span> <span class="n">MIN_LENGTH</span><span class="p">,</span> <span class="n">MAX_VALUE</span><span class="p">,</span> <span class="n">MIN_VALUE</span><span class="p">,</span>
+    <span class="n">DESCRIPTION</span><span class="p">,</span> <span class="n">CONSTRAINT_DESCRIPTION</span><span class="p">,</span> <span class="n">LABEL</span>
+<span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s">&#39;Type&#39;</span><span class="p">,</span> <span class="s">&#39;Default&#39;</span><span class="p">,</span> <span class="s">&#39;NoEcho&#39;</span><span class="p">,</span> <span class="s">&#39;AllowedValues&#39;</span><span class="p">,</span> <span class="s">&#39;AllowedPattern&#39;</span><span class="p">,</span>
+    <span class="s">&#39;MaxLength&#39;</span><span class="p">,</span> <span class="s">&#39;MinLength&#39;</span><span class="p">,</span> <span class="s">&#39;MaxValue&#39;</span><span class="p">,</span> <span class="s">&#39;MinValue&#39;</span><span class="p">,</span>
+    <span class="s">&#39;Description&#39;</span><span class="p">,</span> <span class="s">&#39;ConstraintDescription&#39;</span><span class="p">,</span> <span class="s">&#39;Label&#39;</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="Schema"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Schema">[docs]</a><span class="k">class</span> <span class="nc">Schema</span><span class="p">(</span><span class="n">constr</span><span class="o">.</span><span class="n">Schema</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Parameter schema.&#39;&#39;&#39;</span>
+
+    <span class="n">KEYS</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">TYPE</span><span class="p">,</span> <span class="n">DESCRIPTION</span><span class="p">,</span> <span class="n">DEFAULT</span><span class="p">,</span> <span class="n">SCHEMA</span><span class="p">,</span> <span class="n">CONSTRAINTS</span><span class="p">,</span> <span class="n">HIDDEN</span><span class="p">,</span> <span class="n">LABEL</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s">&#39;Type&#39;</span><span class="p">,</span> <span class="s">&#39;Description&#39;</span><span class="p">,</span> <span class="s">&#39;Default&#39;</span><span class="p">,</span> <span class="s">&#39;Schema&#39;</span><span class="p">,</span> <span class="s">&#39;Constraints&#39;</span><span class="p">,</span> <span class="s">&#39;NoEcho&#39;</span><span class="p">,</span>
+        <span class="s">&#39;Label&#39;</span>
+    <span class="p">)</span>
+
+    <span class="n">PARAMETER_KEYS</span> <span class="o">=</span> <span class="n">PARAMETER_KEYS</span>
+
+    <span class="c"># For Parameters the type name for Schema.LIST is CommaDelimitedList</span>
+    <span class="c"># and the type name for Schema.MAP is Json</span>
+    <span class="n">TYPES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">STRING</span><span class="p">,</span> <span class="n">NUMBER</span><span class="p">,</span> <span class="n">LIST</span><span class="p">,</span> <span class="n">MAP</span><span class="p">,</span> <span class="n">BOOLEAN</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s">&#39;String&#39;</span><span class="p">,</span> <span class="s">&#39;Number&#39;</span><span class="p">,</span> <span class="s">&#39;CommaDelimitedList&#39;</span><span class="p">,</span> <span class="s">&#39;Json&#39;</span><span class="p">,</span> <span class="s">&#39;Boolean&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_type</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">constraints</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">hidden</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Schema</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">data_type</span><span class="o">=</span><span class="n">data_type</span><span class="p">,</span>
+                                     <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+                                     <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span>
+                                     <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
+                                     <span class="n">required</span><span class="o">=</span><span class="n">default</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">,</span>
+                                     <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
+                                     <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="n">hidden</span>
+
+    <span class="c"># Schema class validates default value for lists assuming list type. For</span>
+    <span class="c"># comma delimited list string supported in parameters Schema class, the</span>
+    <span class="c"># default value has to be parsed into a list if necessary so that</span>
+    <span class="c"># validation works.</span>
+    <span class="k">def</span> <span class="nf">_validate_default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">default_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">LIST</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">default_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidSchemaError</span><span class="p">(</span>
+                        <span class="n">message</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Default must be a comma-delimited list &#39;</span>
+                                  <span class="s">&#39;string: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">err</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">validate_constraints</span><span class="p">(</span><span class="n">default_value</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span>
+                                          <span class="p">[</span><span class="n">constr</span><span class="o">.</span><span class="n">CustomConstraint</span><span class="p">])</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span>
+                    <span class="n">exception</span><span class="o">.</span><span class="n">StackValidationFailed</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidSchemaError</span><span class="p">(</span>
+                    <span class="n">message</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid default </span><span class="si">%(default)s</span><span class="s"> (</span><span class="si">%(exc)s</span><span class="s">)&#39;</span><span class="p">)</span> <span class="o">%</span>
+                    <span class="nb">dict</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">,</span> <span class="n">exc</span><span class="o">=</span><span class="n">exc</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Schema.set_default"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Schema.set_default">[docs]</a>    <span class="k">def</span> <span class="nf">set_default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Schema</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">set_default</span><span class="p">(</span><span class="n">default</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">required</span> <span class="o">=</span> <span class="n">default</span> <span class="ow">is</span> <span class="bp">None</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Schema.get_num"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Schema.get_num">[docs]</a>    <span class="k">def</span> <span class="nf">get_num</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">Schema</span><span class="o">.</span><span class="n">str_to_num</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">val</span>
+</div>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_check_dict</span><span class="p">(</span><span class="n">schema_dict</span><span class="p">,</span> <span class="n">allowed_keys</span><span class="p">,</span> <span class="n">entity</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">schema_dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidSchemaError</span><span class="p">(</span>
+                <span class="n">message</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Invalid </span><span class="si">%s</span><span class="s">, expected a mapping&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">entity</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">schema_dict</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed_keys</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidSchemaError</span><span class="p">(</span>
+                    <span class="n">message</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Invalid key &#39;</span><span class="si">%(key)s</span><span class="s">&#39; for </span><span class="si">%(entity)s</span><span class="s">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span>
+                        <span class="s">&quot;key&quot;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span> <span class="s">&quot;entity&quot;</span><span class="p">:</span> <span class="n">entity</span><span class="p">})</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_validate_dict</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">schema_dict</span><span class="p">):</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">_check_dict</span><span class="p">(</span><span class="n">schema_dict</span><span class="p">,</span>
+                        <span class="n">cls</span><span class="o">.</span><span class="n">PARAMETER_KEYS</span><span class="p">,</span>
+                        <span class="s">&quot;parameter (</span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="n">param_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cls</span><span class="o">.</span><span class="n">TYPE</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">schema_dict</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidSchemaError</span><span class="p">(</span>
+                <span class="n">message</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Missing parameter type for parameter: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">)</span> <span class="o">%</span>
+                <span class="n">param_name</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Schema.from_dict"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Schema.from_dict">[docs]</a>    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">schema_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a Parameter Schema object from a legacy schema dictionary.</span>
+
+<span class="sd">        :param param_name: name of the parameter owning the schema; used</span>
+<span class="sd">               for more verbose logging</span>
+<span class="sd">        :type  param_name: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">_validate_dict</span><span class="p">(</span><span class="n">param_name</span><span class="p">,</span> <span class="n">schema_dict</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">constraints</span><span class="p">():</span>
+            <span class="n">desc</span> <span class="o">=</span> <span class="n">schema_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">CONSTRAINT_DESCRIPTION</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">MIN_VALUE</span> <span class="ow">in</span> <span class="n">schema_dict</span> <span class="ow">or</span> <span class="n">MAX_VALUE</span> <span class="ow">in</span> <span class="n">schema_dict</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">constr</span><span class="o">.</span><span class="n">Range</span><span class="p">(</span><span class="n">Schema</span><span class="o">.</span><span class="n">get_num</span><span class="p">(</span><span class="n">MIN_VALUE</span><span class="p">,</span> <span class="n">schema_dict</span><span class="p">),</span>
+                                   <span class="n">Schema</span><span class="o">.</span><span class="n">get_num</span><span class="p">(</span><span class="n">MAX_VALUE</span><span class="p">,</span> <span class="n">schema_dict</span><span class="p">),</span>
+                                   <span class="n">desc</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">MIN_LENGTH</span> <span class="ow">in</span> <span class="n">schema_dict</span> <span class="ow">or</span> <span class="n">MAX_LENGTH</span> <span class="ow">in</span> <span class="n">schema_dict</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">constr</span><span class="o">.</span><span class="n">Length</span><span class="p">(</span><span class="n">Schema</span><span class="o">.</span><span class="n">get_num</span><span class="p">(</span><span class="n">MIN_LENGTH</span><span class="p">,</span> <span class="n">schema_dict</span><span class="p">),</span>
+                                    <span class="n">Schema</span><span class="o">.</span><span class="n">get_num</span><span class="p">(</span><span class="n">MAX_LENGTH</span><span class="p">,</span> <span class="n">schema_dict</span><span class="p">),</span>
+                                    <span class="n">desc</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ALLOWED_VALUES</span> <span class="ow">in</span> <span class="n">schema_dict</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">constr</span><span class="o">.</span><span class="n">AllowedValues</span><span class="p">(</span><span class="n">schema_dict</span><span class="p">[</span><span class="n">ALLOWED_VALUES</span><span class="p">],</span> <span class="n">desc</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ALLOWED_PATTERN</span> <span class="ow">in</span> <span class="n">schema_dict</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">constr</span><span class="o">.</span><span class="n">AllowedPattern</span><span class="p">(</span><span class="n">schema_dict</span><span class="p">[</span><span class="n">ALLOWED_PATTERN</span><span class="p">],</span> <span class="n">desc</span><span class="p">)</span>
+
+        <span class="c"># make update_allowed true by default on TemplateResources</span>
+        <span class="c"># as the template should deal with this.</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">schema_dict</span><span class="p">[</span><span class="n">TYPE</span><span class="p">],</span>
+                   <span class="n">description</span><span class="o">=</span><span class="n">schema_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">DESCRIPTION</span><span class="p">),</span>
+                   <span class="n">default</span><span class="o">=</span><span class="n">schema_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">DEFAULT</span><span class="p">),</span>
+                   <span class="n">constraints</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">constraints</span><span class="p">()),</span>
+                   <span class="n">hidden</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">schema_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">NO_ECHO</span><span class="p">,</span>
+                                              <span class="s">&#39;false&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;true&#39;</span><span class="p">,</span>
+                   <span class="n">label</span><span class="o">=</span><span class="n">schema_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">LABEL</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Schema.validate_value"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Schema.validate_value">[docs]</a>    <span class="k">def</span> <span class="nf">validate_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Schema</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">validate_constraints</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">TYPE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">HIDDEN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Schema</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__getitem__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Parameter"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Parameter">[docs]</a><span class="k">class</span> <span class="nc">Parameter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;A template parameter.&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Create a new Parameter of the appropriate type.&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">cls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Parameter</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Parameter</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+
+        <span class="c"># Check for fully-fledged Schema objects</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">Schema</span><span class="p">):</span>
+            <span class="n">schema</span> <span class="o">=</span> <span class="n">Schema</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">schema</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">schema</span><span class="o">.</span><span class="n">STRING</span><span class="p">:</span>
+            <span class="n">ParamClass</span> <span class="o">=</span> <span class="n">StringParam</span>
+        <span class="k">elif</span> <span class="n">schema</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">schema</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">:</span>
+            <span class="n">ParamClass</span> <span class="o">=</span> <span class="n">NumberParam</span>
+        <span class="k">elif</span> <span class="n">schema</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">schema</span><span class="o">.</span><span class="n">LIST</span><span class="p">:</span>
+            <span class="n">ParamClass</span> <span class="o">=</span> <span class="n">CommaDelimitedListParam</span>
+        <span class="k">elif</span> <span class="n">schema</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">schema</span><span class="o">.</span><span class="n">MAP</span><span class="p">:</span>
+            <span class="n">ParamClass</span> <span class="o">=</span> <span class="n">JsonParam</span>
+        <span class="k">elif</span> <span class="n">schema</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">schema</span><span class="o">.</span><span class="n">BOOLEAN</span><span class="p">:</span>
+            <span class="n">ParamClass</span> <span class="o">=</span> <span class="n">BooleanParam</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid Parameter type &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">schema</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ParamClass</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Initialise the Parameter with a name, schema and optional user-supplied</span>
+<span class="sd">        value.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_default</span> <span class="o">=</span> <span class="bp">None</span>
+
+<div class="viewcode-block" id="Parameter.validate"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Parameter.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validate_value</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validates the parameter.</span>
+
+<span class="sd">        This method validates if the parameter&#39;s schema is valid,</span>
+<span class="sd">        and if the default value - if present - or the user-provided</span>
+<span class="sd">        value for the parameter comply with the schema.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">err_msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Parameter &#39;</span><span class="si">%(name)s</span><span class="s">&#39; is invalid: </span><span class="si">%(exp)s</span><span class="s">&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">validate_value</span><span class="p">:</span>
+                <span class="k">return</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_validate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_value</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_default</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_validate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(),</span> <span class="n">context</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">UserParameterMissing</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">exception</span><span class="o">.</span><span class="n">StackValidationFailed</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">err_msg</span> <span class="o">%</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">exp</span><span class="o">=</span><span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">StackValidationFailed</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidSchemaError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">err_msg</span> <span class="o">%</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">exp</span><span class="o">=</span><span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidSchemaError</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Parameter.value"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Parameter.value">[docs]</a>    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get the parameter value, optionally sanitising it for output.&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_value</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_default</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+
+        <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">UserParameterMissing</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Parameter.has_value"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Parameter.has_value">[docs]</a>    <span class="k">def</span> <span class="nf">has_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Parameter has a user or default value.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_default</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Parameter.hidden"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Parameter.hidden">[docs]</a>    <span class="k">def</span> <span class="nf">hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Return whether the parameter should be sanitised in any output to</span>
+<span class="sd">        the user.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">hidden</span>
+</div>
+<div class="viewcode-block" id="Parameter.description"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Parameter.description">[docs]</a>    <span class="k">def</span> <span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return the description of the parameter.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">description</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span>
+</div>
+<div class="viewcode-block" id="Parameter.label"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Parameter.label">[docs]</a>    <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return the label or param name.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">label</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+</div>
+<div class="viewcode-block" id="Parameter.has_default"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Parameter.has_default">[docs]</a>    <span class="k">def</span> <span class="nf">has_default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return whether the parameter has a default value.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">or</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">user_default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Parameter.default"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Parameter.default">[docs]</a>    <span class="k">def</span> <span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return the default value of the parameter.&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_default</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">default</span>
+</div>
+<div class="viewcode-block" id="Parameter.set_default"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Parameter.set_default">[docs]</a>    <span class="k">def</span> <span class="nf">set_default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_default</span> <span class="o">=</span> <span class="n">value</span>
+</div>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return a string representation of the parameter.&#39;&#39;&#39;</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">():</span>
+            <span class="k">return</span> <span class="s">&#39;******&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">encodeutils</span><span class="o">.</span><span class="n">safe_encode</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="NumberParam"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.NumberParam">[docs]</a><span class="k">class</span> <span class="nc">NumberParam</span><span class="p">(</span><span class="n">Parameter</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;A template parameter of type &quot;Number&quot;.&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__int__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return an integer representation of the parameter.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">NumberParam</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">__float__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return a float representation of the parameter.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">NumberParam</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">Schema</span><span class="o">.</span><span class="n">str_to_num</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">StackValidationFailed</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">validate_value</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NumberParam.value"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.NumberParam.value">[docs]</a>    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Schema</span><span class="o">.</span><span class="n">str_to_num</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">NumberParam</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
+
+</div></div>
+<div class="viewcode-block" id="BooleanParam"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.BooleanParam">[docs]</a><span class="k">class</span> <span class="nc">BooleanParam</span><span class="p">(</span><span class="n">Parameter</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;A template parameter of type &quot;Boolean&quot;.&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">strutils</span><span class="o">.</span><span class="n">bool_from_string</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">StackValidationFailed</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">validate_value</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BooleanParam.value"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.BooleanParam.value">[docs]</a>    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">raw_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">raw_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">strutils</span><span class="o">.</span><span class="n">bool_from_string</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">raw_value</span><span class="p">),</span> <span class="n">strict</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="StringParam"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.StringParam">[docs]</a><span class="k">class</span> <span class="nc">StringParam</span><span class="p">(</span><span class="n">Parameter</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;A template parameter of type &quot;String&quot;.&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">validate_value</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CommaDelimitedListParam"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.CommaDelimitedListParam">[docs]</a><span class="k">class</span> <span class="nc">CommaDelimitedListParam</span><span class="p">(</span><span class="n">Parameter</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Sequence</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;A template parameter of type &quot;CommaDelimitedList&quot;.&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CommaDelimitedListParam</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_value</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parsed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_value</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parsed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parsed</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="CommaDelimitedListParam.parse"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.CommaDelimitedListParam.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="c"># only parse when value is not already a list</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">[]</span>
+                <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Value must be a comma-delimited list string: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span> <span class="o">%</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">value</span>
+</div>
+<div class="viewcode-block" id="CommaDelimitedListParam.value"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.CommaDelimitedListParam.value">[docs]</a>    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_value</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parsed</span>
+
+        <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">UserParameterMissing</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return the length of the list.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parsed</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return an item from the list.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parsed</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">():</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">CommaDelimitedListParam</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__str__</span><span class="p">()</span>
+        <span class="k">return</span> <span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">validate_value</span><span class="p">(</span><span class="n">parsed</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="JsonParam"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.JsonParam">[docs]</a><span class="k">class</span> <span class="nc">JsonParam</span><span class="p">(</span><span class="n">Parameter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A template parameter who&#39;s value is map or list.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">JsonParam</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_value</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parsed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_value</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parsed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parsed</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="JsonParam.parse"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.JsonParam.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+                <span class="c"># turn off oslo_serialization&#39;s clever to_primitive()</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">jsonutils</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">jsonutils</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Value must be valid JSON: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">err</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span>
+</div>
+<div class="viewcode-block" id="JsonParam.value"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.JsonParam.value">[docs]</a>    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_value</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parsed</span>
+
+        <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">UserParameterMissing</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parsed</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parsed</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parsed</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">():</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">JsonParam</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__str__</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">encodeutils</span><span class="o">.</span><span class="n">safe_decode</span><span class="p">(</span><span class="n">jsonutils</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">()))</span>
+
+    <span class="k">def</span> <span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">validate_value</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Parameters"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Parameters">[docs]</a><span class="k">class</span> <span class="nc">Parameters</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    The parameters of a stack, with type checking, defaults &amp;c. specified by</span>
+<span class="sd">    the stack&#39;s template.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">PSEUDO_PARAMETERS</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">PARAM_STACK_ID</span><span class="p">,</span> <span class="n">PARAM_STACK_NAME</span><span class="p">,</span> <span class="n">PARAM_REGION</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s">&#39;AWS::StackId&#39;</span><span class="p">,</span> <span class="s">&#39;AWS::StackName&#39;</span><span class="p">,</span> <span class="s">&#39;AWS::Region&#39;</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack_identifier</span><span class="p">,</span> <span class="n">tmpl</span><span class="p">,</span> <span class="n">user_params</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">param_defaults</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Create the parameter container for a stack from the stack name and</span>
+<span class="sd">        template, optionally setting the user-supplied parameter values.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">user_params</span> <span class="o">=</span> <span class="n">user_params</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">param_defaults</span> <span class="o">=</span> <span class="n">param_defaults</span> <span class="ow">or</span> <span class="p">{}</span>
+
+        <span class="k">def</span> <span class="nf">user_parameter</span><span class="p">(</span><span class="n">schema_item</span><span class="p">):</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">schema</span> <span class="o">=</span> <span class="n">schema_item</span>
+            <span class="k">return</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span>
+                             <span class="n">user_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tmpl</span> <span class="o">=</span> <span class="n">tmpl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_params</span> <span class="o">=</span> <span class="n">user_params</span>
+
+        <span class="n">schemata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmpl</span><span class="o">.</span><span class="n">param_schemata</span><span class="p">()</span>
+        <span class="n">user_parameters</span> <span class="o">=</span> <span class="p">(</span><span class="n">user_parameter</span><span class="p">(</span><span class="n">si</span><span class="p">)</span> <span class="k">for</span> <span class="n">si</span> <span class="ow">in</span>
+                           <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">schemata</span><span class="p">))</span>
+        <span class="n">pseudo_parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pseudo_parameters</span><span class="p">(</span><span class="n">stack_identifier</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                            <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="n">pseudo_parameters</span><span class="p">,</span>
+                                                        <span class="n">user_parameters</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">pd</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">(</span><span class="n">param_defaults</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">pd</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">pd</span><span class="p">]</span><span class="o">.</span><span class="n">set_default</span><span class="p">(</span><span class="n">param_defaults</span><span class="p">[</span><span class="n">pd</span><span class="p">])</span>
+
+<div class="viewcode-block" id="Parameters.validate"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Parameters.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validate_value</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Validates all parameters.</span>
+
+<span class="sd">        This method validates if all user-provided parameters are actually</span>
+<span class="sd">        defined in the template, and if all parameters are valid.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_tmpl_parameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_user_parameters</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">itervalues</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">):</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">validate_value</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return whether the specified parameter exists.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return an iterator over the parameter names.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return the number of parameters defined.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get a parameter value.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Parameters.map"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Parameters.map">[docs]</a>    <span class="k">def</span> <span class="nf">map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">filter_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Map the supplied filter function onto each Parameter (with an</span>
+<span class="sd">        optional filter function) and return the resulting dictionary.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">func</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
+                    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span> <span class="k">if</span> <span class="n">filter_func</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Parameters.set_stack_id"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.parameters.html#heat.engine.parameters.Parameters.set_stack_id">[docs]</a>    <span class="k">def</span> <span class="nf">set_stack_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack_identifier</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the StackId pseudo parameter value</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">stack_identifier</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">PARAM_STACK_ID</span><span class="p">]</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">set_default</span><span class="p">(</span>
+                <span class="n">stack_identifier</span><span class="o">.</span><span class="n">arn</span><span class="p">())</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+    <span class="k">def</span> <span class="nf">_validate_user_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">schemata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmpl</span><span class="o">.</span><span class="n">param_schemata</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_params</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">param</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">schemata</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">UnknownUserParameter</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">param</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_validate_tmpl_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">param</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmpl</span><span class="o">.</span><span class="n">t</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;Parameters&#39;</span> <span class="ow">or</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;parameters&#39;</span><span class="p">:</span>
+                <span class="n">param</span> <span class="o">=</span> <span class="n">key</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">param</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">template_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmpl</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">or</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">attrs</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">template_params</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">InvalidTemplateParameter</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_pseudo_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack_identifier</span><span class="p">):</span>
+        <span class="n">stack_id</span> <span class="o">=</span> <span class="p">(</span><span class="n">stack_identifier</span><span class="o">.</span><span class="n">arn</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">stack_identifier</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="s">&#39;None&#39;</span><span class="p">)</span>
+        <span class="n">stack_name</span> <span class="o">=</span> <span class="n">stack_identifier</span> <span class="ow">and</span> <span class="n">stack_identifier</span><span class="o">.</span><span class="n">stack_name</span>
+
+        <span class="k">yield</span> <span class="n">Parameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PARAM_STACK_ID</span><span class="p">,</span>
+                        <span class="n">Schema</span><span class="p">(</span><span class="n">Schema</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Stack ID&#39;</span><span class="p">),</span>
+                               <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">stack_id</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">stack_name</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Parameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PARAM_STACK_NAME</span><span class="p">,</span>
+                            <span class="n">Schema</span><span class="p">(</span><span class="n">Schema</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Stack Name&#39;</span><span class="p">),</span>
+                                   <span class="n">default</span><span class="o">=</span><span class="n">stack_name</span><span class="p">))</span>
+            <span class="k">yield</span> <span class="n">Parameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PARAM_REGION</span><span class="p">,</span>
+                            <span class="n">Schema</span><span class="p">(</span><span class="n">Schema</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
+                                   <span class="n">default</span><span class="o">=</span><span class="s">&#39;ap-southeast-1&#39;</span><span class="p">,</span>
+                                   <span class="n">constraints</span><span class="o">=</span><span class="p">[</span>
+                                       <span class="n">constr</span><span class="o">.</span><span class="n">AllowedValues</span><span class="p">([</span><span class="s">&#39;us-east-1&#39;</span><span class="p">,</span>
+                                                             <span class="s">&#39;us-west-1&#39;</span><span class="p">,</span>
+                                                             <span class="s">&#39;us-west-2&#39;</span><span class="p">,</span>
+                                                             <span class="s">&#39;sa-east-1&#39;</span><span class="p">,</span>
+                                                             <span class="s">&#39;eu-west-1&#39;</span><span class="p">,</span>
+                                                             <span class="s">&#39;ap-southeast-1&#39;</span><span class="p">,</span>
+                                                             <span class="s">&#39;ap-northeast-1&#39;</span><span class="p">]</span>
+                                                            <span class="p">)]))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.lifecycle_plugin &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../raxdox/index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for heat.engine.lifecycle_plugin</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+
+<div class="viewcode-block" id="LifecyclePlugin"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.lifecycle_plugin.html#heat.engine.lifecycle_plugin.LifecyclePlugin">[docs]</a><span class="k">class</span> <span class="nc">LifecyclePlugin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Base class for pre-op and post-op work on a stack.</span>
+<span class="sd">    Implementations should extend this class and override the methods.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+<div class="viewcode-block" id="LifecyclePlugin.do_pre_op"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.lifecycle_plugin.html#heat.engine.lifecycle_plugin.LifecyclePlugin.do_pre_op">[docs]</a>    <span class="k">def</span> <span class="nf">do_pre_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnxt</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">current_stack</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Method to be run by heat before stack operations.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="LifecyclePlugin.do_post_op"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.lifecycle_plugin.html#heat.engine.lifecycle_plugin.LifecyclePlugin.do_post_op">[docs]</a>    <span class="k">def</span> <span class="nf">do_post_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnxt</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">current_stack</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                   <span class="n">is_stack_failure</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Method to be run by heat after stack operations, including failures.</span>
+
+<span class="sd">        On failure to execute all the registered pre_ops, this method will be</span>
+<span class="sd">        called if and only if the corresponding pre_op was successfully called.</span>
+<span class="sd">        On failures of the actual stack operation, this method will</span>
+<span class="sd">        be called if all the pre operations were successfully called.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="LifecyclePlugin.get_ordinal"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.lifecycle_plugin.html#heat.engine.lifecycle_plugin.LifecyclePlugin.get_ordinal">[docs]</a>    <span class="k">def</span> <span class="nf">get_ordinal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        An ordinal used to order class instances for pre and post</span>
+<span class="sd">        operation execution.</span>
+
+<span class="sd">        The values returned by get_ordinal are used to create a partial order</span>
+<span class="sd">        for pre and post operation method invocations. The default ordinal</span>
+<span class="sd">        value of 100 may be overridden.</span>
+<span class="sd">        If class1inst.ordinal() &lt; class2inst.ordinal(), then the method on</span>
+<span class="sd">        class1inst will be executed before the method on class2inst.</span>
+<span class="sd">        If class1inst.ordinal() &gt; class2inst.ordinal(), then the method on</span>
+<span class="sd">        class1inst will be executed after the method on class2inst.</span>
+<span class="sd">        If class1inst.ordinal() == class2inst.ordinal(), then the order of</span>
+<span class="sd">        method invocation is indeterminate.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="mi">100</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

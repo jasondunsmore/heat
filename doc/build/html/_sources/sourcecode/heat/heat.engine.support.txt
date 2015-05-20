@@ -1,0 +1,8 @@
+=====================================
+The :mod:`heat.engine.support` Module
+=====================================
+.. automodule:: heat.engine.support
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

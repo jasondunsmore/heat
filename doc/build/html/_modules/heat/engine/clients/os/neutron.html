@@ -1,0 +1,304 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.clients.os.neutron &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../../../raxdox/index.html" />
+    <link rel="up" title="heat.engine.clients" href="../../clients.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../clients.html" accesskey="U">heat.engine.clients</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for heat.engine.clients.os.neutron</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">netaddr</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">neutronclient.common</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">neutronclient.neutron</span> <span class="kn">import</span> <span class="n">v2_0</span> <span class="k">as</span> <span class="n">neutronV20</span>
+<span class="kn">from</span> <span class="nn">neutronclient.v2_0</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">nc</span>
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">netutils</span>
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">uuidutils</span>
+
+<span class="kn">from</span> <span class="nn">oslo.config</span> <span class="kn">import</span> <span class="n">cfg</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.engine.clients</span> <span class="kn">import</span> <span class="n">client_plugin</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">constraints</span>
+
+
+<div class="viewcode-block" id="NeutronClientPlugin"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.NeutronClientPlugin">[docs]</a><span class="k">class</span> <span class="nc">NeutronClientPlugin</span><span class="p">(</span><span class="n">client_plugin</span><span class="o">.</span><span class="n">ClientPlugin</span><span class="p">):</span>
+
+    <span class="n">exceptions_module</span> <span class="o">=</span> <span class="n">exceptions</span>
+
+    <span class="k">def</span> <span class="nf">_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span>
+
+        <span class="n">endpoint_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;neutron&#39;</span><span class="p">,</span> <span class="s">&#39;endpoint_type&#39;</span><span class="p">)</span>
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="n">service_type</span><span class="o">=</span><span class="s">&#39;network&#39;</span><span class="p">,</span>
+                                <span class="n">endpoint_type</span><span class="o">=</span><span class="n">endpoint_type</span><span class="p">,</span>
+                                <span class="n">region_name</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">region_name_for_services</span><span class="p">)</span>
+
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&quot;v2.0&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;auth_url&#39;</span><span class="p">:</span> <span class="n">con</span><span class="o">.</span><span class="n">auth_url</span><span class="p">,</span>
+            <span class="s">&#39;service_type&#39;</span><span class="p">:</span> <span class="s">&#39;network&#39;</span><span class="p">,</span>
+            <span class="s">&#39;token&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">auth_token</span><span class="p">,</span>
+            <span class="s">&#39;endpoint_url&#39;</span><span class="p">:</span> <span class="n">endpoint</span><span class="p">,</span>
+            <span class="s">&#39;endpoint_type&#39;</span><span class="p">:</span> <span class="n">endpoint_type</span><span class="p">,</span>
+            <span class="s">&#39;ca_cert&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;neutron&#39;</span><span class="p">,</span> <span class="s">&#39;ca_file&#39;</span><span class="p">),</span>
+            <span class="s">&#39;insecure&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;neutron&#39;</span><span class="p">,</span> <span class="s">&#39;insecure&#39;</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">nc</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NeutronClientPlugin.is_not_found"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.NeutronClientPlugin.is_not_found">[docs]</a>    <span class="k">def</span> <span class="nf">is_not_found</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="p">(</span><span class="n">exceptions</span><span class="o">.</span><span class="n">NotFound</span><span class="p">,</span>
+                           <span class="n">exceptions</span><span class="o">.</span><span class="n">NetworkNotFoundClient</span><span class="p">,</span>
+                           <span class="n">exceptions</span><span class="o">.</span><span class="n">PortNotFoundClient</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">NeutronClientException</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="n">ex</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="NeutronClientPlugin.is_conflict"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.NeutronClientPlugin.is_conflict">[docs]</a>    <span class="k">def</span> <span class="nf">is_conflict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="n">bad_conflicts</span> <span class="o">=</span> <span class="p">(</span><span class="n">exceptions</span><span class="o">.</span><span class="n">OverQuotaClient</span><span class="p">,)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">Conflict</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">bad_conflicts</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="NeutronClientPlugin.is_over_limit"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.NeutronClientPlugin.is_over_limit">[docs]</a>    <span class="k">def</span> <span class="nf">is_over_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">NeutronClientException</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="n">ex</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">413</span>
+</div>
+<div class="viewcode-block" id="NeutronClientPlugin.is_no_unique"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.NeutronClientPlugin.is_no_unique">[docs]</a>    <span class="k">def</span> <span class="nf">is_no_unique</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">NeutronClientNoUniqueMatch</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="NeutronClientPlugin.find_neutron_resource"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.NeutronClientPlugin.find_neutron_resource">[docs]</a>    <span class="k">def</span> <span class="nf">find_neutron_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">props</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">key_type</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">neutronV20</span><span class="o">.</span><span class="n">find_resourceid_by_name_or_id</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">(),</span> <span class="n">key_type</span><span class="p">,</span> <span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+</div>
+    <span class="k">def</span> <span class="nf">_resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">props</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">id_key</span><span class="p">,</span> <span class="n">key_type</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+            <span class="n">props</span><span class="p">[</span><span class="n">id_key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_neutron_resource</span><span class="p">(</span>
+                <span class="n">props</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">key_type</span><span class="p">)</span>
+            <span class="n">props</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">props</span><span class="p">[</span><span class="n">id_key</span><span class="p">]</span>
+
+<div class="viewcode-block" id="NeutronClientPlugin.resolve_network"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.NeutronClientPlugin.resolve_network">[docs]</a>    <span class="k">def</span> <span class="nf">resolve_network</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">props</span><span class="p">,</span> <span class="n">net_key</span><span class="p">,</span> <span class="n">net_id_key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve</span><span class="p">(</span><span class="n">props</span><span class="p">,</span> <span class="n">net_key</span><span class="p">,</span> <span class="n">net_id_key</span><span class="p">,</span> <span class="s">&#39;network&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="NeutronClientPlugin.resolve_subnet"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.NeutronClientPlugin.resolve_subnet">[docs]</a>    <span class="k">def</span> <span class="nf">resolve_subnet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">props</span><span class="p">,</span> <span class="n">subnet_key</span><span class="p">,</span> <span class="n">subnet_id_key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve</span><span class="p">(</span><span class="n">props</span><span class="p">,</span> <span class="n">subnet_key</span><span class="p">,</span> <span class="n">subnet_id_key</span><span class="p">,</span> <span class="s">&#39;subnet&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="NeutronClientPlugin.resolve_router"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.NeutronClientPlugin.resolve_router">[docs]</a>    <span class="k">def</span> <span class="nf">resolve_router</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">props</span><span class="p">,</span> <span class="n">router_key</span><span class="p">,</span> <span class="n">router_id_key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve</span><span class="p">(</span><span class="n">props</span><span class="p">,</span> <span class="n">router_key</span><span class="p">,</span> <span class="n">router_id_key</span><span class="p">,</span> <span class="s">&#39;router&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="NeutronClientPlugin.resolve_port"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.NeutronClientPlugin.resolve_port">[docs]</a>    <span class="k">def</span> <span class="nf">resolve_port</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">props</span><span class="p">,</span> <span class="n">port_key</span><span class="p">,</span> <span class="n">port_id_key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve</span><span class="p">(</span><span class="n">props</span><span class="p">,</span> <span class="n">port_key</span><span class="p">,</span> <span class="n">port_id_key</span><span class="p">,</span> <span class="s">&#39;port&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="NeutronClientPlugin.network_id_from_subnet_id"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.NeutronClientPlugin.network_id_from_subnet_id">[docs]</a>    <span class="k">def</span> <span class="nf">network_id_from_subnet_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subnet_id</span><span class="p">):</span>
+        <span class="n">subnet_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">()</span><span class="o">.</span><span class="n">show_subnet</span><span class="p">(</span><span class="n">subnet_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">subnet_info</span><span class="p">[</span><span class="s">&#39;subnet&#39;</span><span class="p">][</span><span class="s">&#39;network_id&#39;</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="NeutronClientPlugin.get_secgroup_uuids"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.NeutronClientPlugin.get_secgroup_uuids">[docs]</a>    <span class="k">def</span> <span class="nf">get_secgroup_uuids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">security_groups</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a list of security group UUIDs.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">        security_groups: List of security group names or UUIDs</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">seclist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">all_groups</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">for</span> <span class="n">sg</span> <span class="ow">in</span> <span class="n">security_groups</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">uuidutils</span><span class="o">.</span><span class="n">is_uuid_like</span><span class="p">(</span><span class="n">sg</span><span class="p">):</span>
+                <span class="n">seclist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sg</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">all_groups</span><span class="p">:</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">()</span><span class="o">.</span><span class="n">list_security_groups</span><span class="p">()</span>
+                    <span class="n">all_groups</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s">&#39;security_groups&#39;</span><span class="p">]</span>
+                <span class="n">same_name_groups</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">all_groups</span> <span class="k">if</span> <span class="n">g</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">sg</span><span class="p">]</span>
+                <span class="n">groups</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">same_name_groups</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">PhysicalResourceNotFound</span><span class="p">(</span><span class="n">resource_id</span><span class="o">=</span><span class="n">sg</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">seclist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">groups</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c"># for admin roles, can get the other users&#39;</span>
+                    <span class="c"># securityGroups, so we should match the tenant_id with</span>
+                    <span class="c"># the groups, and return the own one</span>
+                    <span class="n">own_groups</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">same_name_groups</span>
+                                  <span class="k">if</span> <span class="n">g</span><span class="p">[</span><span class="s">&#39;tenant_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">tenant_id</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">own_groups</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">seclist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">own_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">PhysicalResourceNameAmbiguity</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">sg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">seclist</span>
+
+</div></div>
+<div class="viewcode-block" id="NetworkConstraint"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.NetworkConstraint">[docs]</a><span class="k">class</span> <span class="nc">NetworkConstraint</span><span class="p">(</span><span class="n">constraints</span><span class="o">.</span><span class="n">BaseCustomConstraint</span><span class="p">):</span>
+
+    <span class="n">expected_exceptions</span> <span class="o">=</span> <span class="p">(</span><span class="n">exceptions</span><span class="o">.</span><span class="n">NeutronClientException</span><span class="p">,</span>
+                           <span class="n">exception</span><span class="o">.</span><span class="n">NovaNetworkNotFound</span><span class="p">,</span>
+                           <span class="n">exception</span><span class="o">.</span><span class="n">PhysicalResourceNameAmbiguity</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NetworkConstraint.validate_with_client"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.NetworkConstraint.validate_with_client">[docs]</a>    <span class="k">def</span> <span class="nf">validate_with_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="c"># This is temporary internal work around for RC issue</span>
+        <span class="c"># (https://redmine.ohthree.com/issues/11582)</span>
+        <span class="c"># Skip network  constraint validation for RC customers</span>
+        <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">roles</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s">&quot;rackconnect&quot;</span> <span class="ow">in</span> <span class="n">role</span><span class="p">:</span>
+                <span class="k">return</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">neutron_client</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s">&#39;neutron&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="c"># is not using neutron</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">client_plugin</span><span class="p">(</span><span class="s">&#39;nova&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_nova_network_id</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">neutronV20</span><span class="o">.</span><span class="n">find_resourceid_by_name_or_id</span><span class="p">(</span>
+                <span class="n">neutron_client</span><span class="p">,</span> <span class="s">&#39;network&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="PortConstraint"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.PortConstraint">[docs]</a><span class="k">class</span> <span class="nc">PortConstraint</span><span class="p">(</span><span class="n">constraints</span><span class="o">.</span><span class="n">BaseCustomConstraint</span><span class="p">):</span>
+
+    <span class="n">expected_exceptions</span> <span class="o">=</span> <span class="p">(</span><span class="n">exceptions</span><span class="o">.</span><span class="n">NeutronClientException</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="PortConstraint.validate_with_client"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.PortConstraint.validate_with_client">[docs]</a>    <span class="k">def</span> <span class="nf">validate_with_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">neutron_client</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s">&#39;neutron&#39;</span><span class="p">)</span>
+        <span class="n">neutronV20</span><span class="o">.</span><span class="n">find_resourceid_by_name_or_id</span><span class="p">(</span>
+            <span class="n">neutron_client</span><span class="p">,</span> <span class="s">&#39;port&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="RouterConstraint"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.RouterConstraint">[docs]</a><span class="k">class</span> <span class="nc">RouterConstraint</span><span class="p">(</span><span class="n">constraints</span><span class="o">.</span><span class="n">BaseCustomConstraint</span><span class="p">):</span>
+
+    <span class="n">expected_exceptions</span> <span class="o">=</span> <span class="p">(</span><span class="n">exceptions</span><span class="o">.</span><span class="n">NeutronClientException</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="RouterConstraint.validate_with_client"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.RouterConstraint.validate_with_client">[docs]</a>    <span class="k">def</span> <span class="nf">validate_with_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">neutron_client</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s">&#39;neutron&#39;</span><span class="p">)</span>
+        <span class="n">neutronV20</span><span class="o">.</span><span class="n">find_resourceid_by_name_or_id</span><span class="p">(</span>
+            <span class="n">neutron_client</span><span class="p">,</span> <span class="s">&#39;router&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="SubnetConstraint"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.SubnetConstraint">[docs]</a><span class="k">class</span> <span class="nc">SubnetConstraint</span><span class="p">(</span><span class="n">constraints</span><span class="o">.</span><span class="n">BaseCustomConstraint</span><span class="p">):</span>
+
+    <span class="n">expected_exceptions</span> <span class="o">=</span> <span class="p">(</span><span class="n">exceptions</span><span class="o">.</span><span class="n">NeutronClientException</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="SubnetConstraint.validate_with_client"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.SubnetConstraint.validate_with_client">[docs]</a>    <span class="k">def</span> <span class="nf">validate_with_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">neutron_client</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s">&#39;neutron&#39;</span><span class="p">)</span>
+        <span class="n">neutronV20</span><span class="o">.</span><span class="n">find_resourceid_by_name_or_id</span><span class="p">(</span>
+            <span class="n">neutron_client</span><span class="p">,</span> <span class="s">&#39;subnet&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="IPConstraint"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.IPConstraint">[docs]</a><span class="k">class</span> <span class="nc">IPConstraint</span><span class="p">(</span><span class="n">constraints</span><span class="o">.</span><span class="n">BaseCustomConstraint</span><span class="p">):</span>
+
+<div class="viewcode-block" id="IPConstraint.validate"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.IPConstraint.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_error_message</span> <span class="o">=</span> <span class="s">&#39;Invalid IP address&#39;</span>
+        <span class="k">return</span> <span class="n">netutils</span><span class="o">.</span><span class="n">is_valid_ip</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="MACConstraint"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.MACConstraint">[docs]</a><span class="k">class</span> <span class="nc">MACConstraint</span><span class="p">(</span><span class="n">constraints</span><span class="o">.</span><span class="n">BaseCustomConstraint</span><span class="p">):</span>
+
+<div class="viewcode-block" id="MACConstraint.validate"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.MACConstraint.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_error_message</span> <span class="o">=</span> <span class="s">&#39;Invalid MAC address.&#39;</span>
+        <span class="k">return</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">valid_mac</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="CIDRConstraint"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.CIDRConstraint">[docs]</a><span class="k">class</span> <span class="nc">CIDRConstraint</span><span class="p">(</span><span class="n">constraints</span><span class="o">.</span><span class="n">BaseCustomConstraint</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">_validate_whitespace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_error_message</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;Invalid net cidr &#39;</span><span class="si">%s</span><span class="s">&#39; contains &quot;</span>
+                               <span class="s">&quot;whitespace&quot;</span> <span class="o">%</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+<div class="viewcode-block" id="CIDRConstraint.validate"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.neutron.html#heat.engine.clients.os.neutron.CIDRConstraint.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">netaddr</span><span class="o">.</span><span class="n">IPNetwork</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_whitespace</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error_message</span> <span class="o">=</span> <span class="s">&#39;Invalid net cidr </span><span class="si">%s</span><span class="s"> &#39;</span> <span class="o">%</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../clients.html" >heat.engine.clients</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

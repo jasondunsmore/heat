@@ -1,0 +1,8 @@
+===================================
+The :mod:`heat.engine.stack` Module
+===================================
+.. automodule:: heat.engine.stack
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

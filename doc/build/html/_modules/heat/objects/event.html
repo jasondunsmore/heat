@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.objects.event &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../raxdox/index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for heat.objects.event</h1><div class="highlight"><pre>
+<span class="c"># Copyright 2014 Intel Corp.</span>
+<span class="c">#</span>
+<span class="c"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c"># a copy of the License at</span>
+<span class="c">#</span>
+<span class="c"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c"># License for the specific language governing permissions and limitations</span>
+<span class="c"># under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Event object</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">oslo_versionedobjects</span> <span class="kn">import</span> <span class="n">base</span>
+<span class="kn">from</span> <span class="nn">oslo_versionedobjects</span> <span class="kn">import</span> <span class="n">fields</span>
+
+<span class="kn">from</span> <span class="nn">heat.db</span> <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">db_api</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">fields</span> <span class="k">as</span> <span class="n">heat_fields</span>
+
+
+<div class="viewcode-block" id="Event"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.event.html#heat.objects.event.Event">[docs]</a><span class="k">class</span> <span class="nc">Event</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">VersionedObject</span><span class="p">,</span> <span class="n">base</span><span class="o">.</span><span class="n">VersionedObjectDictCompat</span><span class="p">):</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(),</span>
+        <span class="s">&#39;stack_id&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(),</span>
+        <span class="s">&#39;uuid&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(),</span>
+        <span class="s">&#39;resource_action&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;resource_status&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;resource_name&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;physical_resource_id&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;resource_status_reason&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;resource_type&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;resource_properties&#39;</span><span class="p">:</span> <span class="n">heat_fields</span><span class="o">.</span><span class="n">JsonField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;created_at&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;updated_at&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_from_db_object</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">db_event</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="n">event</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">db_event</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">_context</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">obj_reset_changes</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">event</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Event.get_by_id"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.event.html#heat.objects.event.Event.get_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_by_id</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">event_id</span><span class="p">):</span>
+        <span class="n">db_event</span> <span class="o">=</span> <span class="n">db_api</span><span class="o">.</span><span class="n">event_get</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">event_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">cls</span><span class="p">(</span><span class="n">context</span><span class="p">),</span> <span class="n">db_event</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Event.get_all"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.event.html#heat.objects.event.Event.get_all">[docs]</a>    <span class="k">def</span> <span class="nf">get_all</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">cls</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">cls</span><span class="p">(),</span> <span class="n">db_event</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">db_event</span> <span class="ow">in</span> <span class="n">db_api</span><span class="o">.</span><span class="n">event_get_all</span><span class="p">(</span><span class="n">context</span><span class="p">)]</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Event.get_all_by_tenant"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.event.html#heat.objects.event.Event.get_all_by_tenant">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_by_tenant</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">cls</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">cls</span><span class="p">(),</span> <span class="n">db_event</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">db_event</span> <span class="ow">in</span> <span class="n">db_api</span><span class="o">.</span><span class="n">event_get_all_by_tenant</span><span class="p">(</span><span class="n">context</span><span class="p">,</span>
+                                                               <span class="o">**</span><span class="n">kwargs</span><span class="p">)]</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Event.get_all_by_stack"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.event.html#heat.objects.event.Event.get_all_by_stack">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_by_stack</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">cls</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">cls</span><span class="p">(),</span> <span class="n">db_event</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">db_event</span> <span class="ow">in</span> <span class="n">db_api</span><span class="o">.</span><span class="n">event_get_all_by_stack</span><span class="p">(</span><span class="n">context</span><span class="p">,</span>
+                                                              <span class="n">stack_id</span><span class="p">,</span>
+                                                              <span class="o">**</span><span class="n">kwargs</span><span class="p">)]</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Event.count_all_by_stack"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.event.html#heat.objects.event.Event.count_all_by_stack">[docs]</a>    <span class="k">def</span> <span class="nf">count_all_by_stack</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">db_api</span><span class="o">.</span><span class="n">event_count_all_by_stack</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Event.create"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.event.html#heat.objects.event.Event.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">cls</span><span class="p">(),</span>
+                                   <span class="n">db_api</span><span class="o">.</span><span class="n">event_create</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,2732 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>OpenStack Resource Types &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="openstack-resource-types">
+<h1>OpenStack Resource Types<a class="headerlink" href="#openstack-resource-types" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="OS::Cinder::Volume">
+<h2>OS::Cinder::Volume<a class="headerlink" href="#OS::Cinder::Volume" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="OS::Cinder::Volume-props">
+<h3>Properties<a class="headerlink" href="#OS::Cinder::Volume-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>availability_zone <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The availability zone in which the volume will be created.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>backup_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">If specified, the backup to create the volume from.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>description <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A description of the volume.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">If specified, the name or ID of the image to create the volume from.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type glance.image</p>
+</dd>
+<dt>metadata <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Key/value pairs to associate with the volume.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A name used to distinguish the volume.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>read_only <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.2 (Liberty)</p>
+</div>
+<p>Enables or disables read-only access mode of volume.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>scheduler_hints <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p>Arbitrary key-value pairs specified by the client to help the Cinder scheduler creating a volume.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>size <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">The size of the volume in GB. On update only increase in size is supported.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">The value must be at least 1.</p>
+</dd>
+<dt>snapshot_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">If specified, the snapshot to create the volume from.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type cinder.snapshot</p>
+</dd>
+<dt>source_volid <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">If specified, the volume to use as source.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type cinder.volume</p>
+</dd>
+<dt>volume_type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">If specified, the type of volume to use, mapping to a specific backend.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type cinder.vtype</p>
+</dd>
+<dt>imageRef <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">DEPRECATED since 2014.1 (Icehouse) - Use property image.</p>
+</div>
+<p>The ID of the image to create the volume from.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Cinder::Volume-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Cinder::Volume-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>attachments</dt>
+<dd>The list of attachments of the volume.</dd>
+<dt>availability_zone</dt>
+<dd>The availability zone in which the volume is located.</dd>
+<dt>bootable</dt>
+<dd>Boolean indicating if the volume can be booted or not.</dd>
+<dt>created_at</dt>
+<dd>The timestamp indicating volume creation.</dd>
+<dt>display_description</dt>
+<dd>Description of the volume.</dd>
+<dt>display_name</dt>
+<dd>Name of the volume.</dd>
+<dt>encrypted</dt>
+<dd>Boolean indicating if the volume is encrypted or not.</dd>
+<dt>metadata</dt>
+<dd>Key/value pairs associated with the volume.</dd>
+<dt>metadata_values</dt>
+<dd>Key/value pairs associated with the volume in raw dict form.</dd>
+<dt>size</dt>
+<dd>The size of the volume in GB.</dd>
+<dt>snapshot_id</dt>
+<dd>The snapshot the volume was created from, if any.</dd>
+<dt>source_volid</dt>
+<dd>The volume used as source, if any.</dd>
+<dt>status</dt>
+<dd>The current status of the volume.</dd>
+<dt>volume_type</dt>
+<dd>The type of the volume mapping to a backend, if any.</dd>
+</dl>
+</div>
+<div class="section" id="OS::Cinder::Volume-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Cinder::Volume-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Cinder::Volume
+    properties:
+      availability_zone: String
+      backup_id: String
+      description: String
+      image: String
+      metadata: {...}
+      name: String
+      read_only: Boolean
+      scheduler_hints: {...}
+      size: Integer
+      snapshot_id: String
+      source_volid: String
+      volume_type: String
+</pre>
+</div>
+<div class="section" id="OS::Cinder::Volume-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Cinder::Volume-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Cinder::Volume
+    Properties:
+      availability_zone: String
+      backup_id: String
+      description: String
+      image: String
+      metadata: {...}
+      name: String
+      read_only: Boolean
+      scheduler_hints: {...}
+      size: Integer
+      snapshot_id: String
+      source_volid: String
+      volume_type: String
+</pre>
+</div>
+<div class="section" id="OS::Cinder::Volume-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Cinder::Volume-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Cinder::Volume&quot;,
+      &quot;Properties&quot;: {
+        &quot;availability_zone&quot;: String,
+        &quot;backup_id&quot;: String,
+        &quot;description&quot;: String,
+        &quot;image&quot;: String,
+        &quot;metadata&quot;: {...},
+        &quot;name&quot;: String,
+        &quot;read_only&quot;: Boolean,
+        &quot;scheduler_hints&quot;: {...},
+        &quot;size&quot;: Integer,
+        &quot;snapshot_id&quot;: String,
+        &quot;source_volid&quot;: String,
+        &quot;volume_type&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Cinder::VolumeAttachment">
+<h2>OS::Cinder::VolumeAttachment<a class="headerlink" href="#OS::Cinder::VolumeAttachment" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="OS::Cinder::VolumeAttachment-props">
+<h3>Properties<a class="headerlink" href="#OS::Cinder::VolumeAttachment-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>instance_uuid <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the server to which the volume attaches.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>mountpoint <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The location where the volume is exposed on the instance. This assignment may not be honored and it is advised that the path /dev/disk/by-id/virtio-&lt;VolumeId&gt; be used instead.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>volume_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the volume to be attached.</p>
+<p>Can be updated without replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type cinder.volume</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Cinder::VolumeAttachment-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Cinder::VolumeAttachment-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Cinder::VolumeAttachment
+    properties:
+      instance_uuid: String
+      mountpoint: String
+      volume_id: String
+</pre>
+</div>
+<div class="section" id="OS::Cinder::VolumeAttachment-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Cinder::VolumeAttachment-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Cinder::VolumeAttachment
+    Properties:
+      instance_uuid: String
+      mountpoint: String
+      volume_id: String
+</pre>
+</div>
+<div class="section" id="OS::Cinder::VolumeAttachment-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Cinder::VolumeAttachment-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Cinder::VolumeAttachment&quot;,
+      &quot;Properties&quot;: {
+        &quot;instance_uuid&quot;: String,
+        &quot;mountpoint&quot;: String,
+        &quot;volume_id&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Heat::CloudConfig">
+<h2>OS::Heat::CloudConfig<a class="headerlink" href="#OS::Heat::CloudConfig" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.1 (Icehouse)</p>
+</div>
+<p>A configuration resource for representing cloud-init cloud-config.</p>
+<p>This resource allows cloud-config YAML to be defined and stored by the
+config API. Any intrinsic functions called in the config will be resolved
+before storing the result.</p>
+<p>This resource will generally be referenced by OS::Nova::Server user_data,
+or OS::Heat::MultipartMime parts config. Since cloud-config is boot-only
+configuration, any changes to the definition will result in the
+replacement of all servers which reference it.</p>
+<div class="section" id="OS::Heat::CloudConfig-props">
+<h3>Properties<a class="headerlink" href="#OS::Heat::CloudConfig-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>cloud_config <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Map representing the cloud-config data structure which will be formatted as YAML.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::CloudConfig-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Heat::CloudConfig-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>config</dt>
+<dd>The config value of the software config.</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::CloudConfig-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Heat::CloudConfig-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Heat::CloudConfig
+    properties:
+      cloud_config: {...}
+</pre>
+</div>
+<div class="section" id="OS::Heat::CloudConfig-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Heat::CloudConfig-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Heat::CloudConfig
+    Properties:
+      cloud_config: {...}
+</pre>
+</div>
+<div class="section" id="OS::Heat::CloudConfig-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Heat::CloudConfig-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Heat::CloudConfig&quot;,
+      &quot;Properties&quot;: {
+        &quot;cloud_config&quot;: {...}
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Heat::MultipartMime">
+<h2>OS::Heat::MultipartMime<a class="headerlink" href="#OS::Heat::MultipartMime" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.1 (Icehouse)</p>
+</div>
+<p>A resource which assembles a collection of software configurations
+as a multi-part mime message.</p>
+<p>Parts in the message can be populated with inline configuration or
+references to other config resources. If the referenced resource is itself
+a valid multi-part mime message, that will be broken into parts and
+those parts appended to this message.</p>
+<p>The resulting multi-part mime message will be stored by the configs API
+and can be referenced in properties such as OS::Nova::Server user_data.</p>
+<p>This resource is generally used to build a list of cloud-init
+configuration elements including scripts and cloud-config. Since
+cloud-init is boot-only configuration, any changes to the definition
+will result in the replacement of all servers which reference it.</p>
+<div class="section" id="OS::Heat::MultipartMime-props">
+<h3>Properties<a class="headerlink" href="#OS::Heat::MultipartMime-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>parts <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Parts belonging to this message.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;[]&#8221;.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>config <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Content of part to attach, either inline or by referencing the ID of another software config resource</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>filename <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Optional filename to associate with part.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>subtype <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Optional subtype to specify with the type.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Whether the part content is text or multipart.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;text&#8221;.</p>
+<p class="last">Allowed values: text, multipart</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::MultipartMime-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Heat::MultipartMime-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>config</dt>
+<dd>The config value of the software config.</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::MultipartMime-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Heat::MultipartMime-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Heat::MultipartMime
+    properties:
+      parts: [{&quot;type&quot;: String, &quot;subtype&quot;: String, &quot;config&quot;: String, &quot;filename&quot;: String}, {&quot;type&quot;: String, &quot;subtype&quot;: String, &quot;config&quot;: String, &quot;filename&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="OS::Heat::MultipartMime-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Heat::MultipartMime-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Heat::MultipartMime
+    Properties:
+      parts: [{&quot;type&quot;: String, &quot;subtype&quot;: String, &quot;config&quot;: String, &quot;filename&quot;: String}, {&quot;type&quot;: String, &quot;subtype&quot;: String, &quot;config&quot;: String, &quot;filename&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="OS::Heat::MultipartMime-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Heat::MultipartMime-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Heat::MultipartMime&quot;,
+      &quot;Properties&quot;: {
+        &quot;parts&quot;: [{&quot;type&quot;: String, &quot;subtype&quot;: String, &quot;config&quot;: String, &quot;filename&quot;: String}, {&quot;type&quot;: String, &quot;subtype&quot;: String, &quot;config&quot;: String, &quot;filename&quot;: String}, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Heat::RandomString">
+<h2>OS::Heat::RandomString<a class="headerlink" href="#OS::Heat::RandomString" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.1 (Icehouse)</p>
+</div>
+<p>A resource which generates a random string.</p>
+<p>This is useful for configuring passwords and secrets on services.</p>
+<div class="section" id="OS::Heat::RandomString-props">
+<h3>Properties<a class="headerlink" href="#OS::Heat::RandomString-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>character_classes <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">A list of character class and their constraints to generate the random string from.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>class <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A character class and its corresponding min constraint to generate the random string from.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;lettersdigits&#8221;.</p>
+<p class="last">Allowed values: lettersdigits, letters, lowercase, uppercase, digits, hexdigits, octdigits</p>
+</dd>
+<dt>min <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">The minimum number of characters from this character class that will be in the generated string.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;1&#8221;.</p>
+<p class="last">The value must be in the range 1 to 512.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>character_sequences <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">A list of character sequences and their constraints to generate the random string from.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>min <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">The minimum number of characters from this sequence that will be in the generated string.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;1&#8221;.</p>
+<p class="last">The value must be in the range 1 to 512.</p>
+</dd>
+<dt>sequence <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A character sequence and its corresponding min constraint to generate the random string from.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>length <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Length of the string to generate.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;32&#8221;.</p>
+<p class="last">The value must be in the range 1 to 512.</p>
+</dd>
+<dt>salt <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Value which can be set or changed on stack update to trigger the resource for replacement with a new random string . The salt value itself is ignored by the random generator.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>sequence <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">DEPRECATED since 2014.2 (Juno) - Use property character_classes.</p>
+</div>
+<p>Sequence of characters to build the random string from.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: lettersdigits, letters, lowercase, uppercase, digits, hexdigits, octdigits</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::RandomString-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Heat::RandomString-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>value</dt>
+<dd>The random string generated by this resource. This value is also available by referencing the resource.</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::RandomString-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Heat::RandomString-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Heat::RandomString
+    properties:
+      character_classes: [{&quot;class&quot;: String, &quot;min&quot;: Integer}, {&quot;class&quot;: String, &quot;min&quot;: Integer}, ...]
+      character_sequences: [{&quot;min&quot;: Integer, &quot;sequence&quot;: String}, {&quot;min&quot;: Integer, &quot;sequence&quot;: String}, ...]
+      length: Integer
+      salt: String
+</pre>
+</div>
+<div class="section" id="OS::Heat::RandomString-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Heat::RandomString-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Heat::RandomString
+    Properties:
+      character_classes: [{&quot;class&quot;: String, &quot;min&quot;: Integer}, {&quot;class&quot;: String, &quot;min&quot;: Integer}, ...]
+      character_sequences: [{&quot;min&quot;: Integer, &quot;sequence&quot;: String}, {&quot;min&quot;: Integer, &quot;sequence&quot;: String}, ...]
+      length: Integer
+      salt: String
+</pre>
+</div>
+<div class="section" id="OS::Heat::RandomString-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Heat::RandomString-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Heat::RandomString&quot;,
+      &quot;Properties&quot;: {
+        &quot;character_classes&quot;: [{&quot;class&quot;: String, &quot;min&quot;: Integer}, {&quot;class&quot;: String, &quot;min&quot;: Integer}, ...],
+        &quot;character_sequences&quot;: [{&quot;min&quot;: Integer, &quot;sequence&quot;: String}, {&quot;min&quot;: Integer, &quot;sequence&quot;: String}, ...],
+        &quot;length&quot;: Integer,
+        &quot;salt&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Heat::ResourceGroup">
+<h2>OS::Heat::ResourceGroup<a class="headerlink" href="#OS::Heat::ResourceGroup" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.1 (Icehouse)</p>
+</div>
+<p>A resource that creates one or more identically configured nested
+resources.</p>
+<p>In addition to the <cite>refs</cite> attribute, this resource implements synthetic
+attributes that mirror those of the resources in the group.  When
+getting an attribute from this resource, however, a list of attribute
+values for each resource in the group is returned. To get attribute values
+for a single resource in the group, synthetic attributes of the form
+<cite>resource.{resource index}.{attribute name}</cite> can be used. The resource ID
+of a particular resource in the group can be obtained via the synthetic
+attribute <cite>resource.{resource index}</cite>.</p>
+<p>While each resource in the group will be identically configured, this
+resource does allow for some index-based customization of the properties
+of the resources in the group. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>resources:
+  my_indexed_group:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: 3
+      resource_def:
+        type: OS::Nova::Server
+        properties:
+          # create a unique name for each server
+          # using its index in the group
+          name: my_server_%index%
+          image: CentOS 6.5
+          flavor: 4GB Performance
+</pre></div>
+</div>
+<p>would result in a group of three servers having the same image and flavor,
+but names of <cite>my_server_0</cite>, <cite>my_server_1</cite>, and <cite>my_server_2</cite>. The variable
+used for substitution can be customized by using the <cite>index_var</cite> property.</p>
+<div class="section" id="OS::Heat::ResourceGroup-props">
+<h3>Properties<a class="headerlink" href="#OS::Heat::ResourceGroup-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>count <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">The number of instances to create.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;1&#8221;.</p>
+<p class="last">The value must be at least 0.</p>
+</dd>
+<dt>index_var <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.2 (Juno)</p>
+</div>
+<p>A variable that this resource will use to replace with the current index of a given resource in the group. Can be used, for example, to customize the name property of grouped servers in order to differentiate them when listed with nova client.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;%index%&#8221;.</p>
+<p class="last">The length must be at least 3.</p>
+</dd>
+<dt>removal_policies <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p>Policies for removal of resources on update</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;[]&#8221;.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Policy to be processed when doing an update which requires removal of specific resources.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>resource_list <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">List of resources to be removed when doing an update which requires removal of specific resources. The resource may be specified several ways: (1) The resource name, as in the nested stack, (2) The resource reference returned from get_resource in a template, as available via the &#8216;refs&#8217; attribute Note this is destructive on update when specified; even if the count is not being reduced, and once a resource name is removed, it&#8217;s name is never reused in subsequent updates</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;[]&#8221;.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>resource_def <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Resource definition for the resources in the group. The value of this property is the definition of a resource just as if it had been declared in the template itself.</p>
+<p>Can be updated without replacement.</p>
+<p>Required property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>properties <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Property values for the resources in the group</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The type of the resources in the group</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::ResourceGroup-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Heat::ResourceGroup-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>attributes</dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.2 (Juno)</p>
+</div>
+<p class="last">A map of resource names to the specified attribute of each individual resource.  Requires heat_template_version: 2014-10-16.</p>
+</dd>
+<dt>refs</dt>
+<dd>A list of resource IDs for the resources in the group</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::ResourceGroup-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Heat::ResourceGroup-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: Integer
+      index_var: String
+      removal_policies: [{&quot;resource_list&quot;: [Value, Value, ...]}, {&quot;resource_list&quot;: [Value, Value, ...]}, ...]
+      resource_def: {&quot;type&quot;: String, &quot;properties&quot;: {...}}
+</pre>
+</div>
+<div class="section" id="OS::Heat::ResourceGroup-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Heat::ResourceGroup-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Heat::ResourceGroup
+    Properties:
+      count: Integer
+      index_var: String
+      removal_policies: [{&quot;resource_list&quot;: [Value, Value, ...]}, {&quot;resource_list&quot;: [Value, Value, ...]}, ...]
+      resource_def: {&quot;type&quot;: String, &quot;properties&quot;: {...}}
+</pre>
+</div>
+<div class="section" id="OS::Heat::ResourceGroup-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Heat::ResourceGroup-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Heat::ResourceGroup&quot;,
+      &quot;Properties&quot;: {
+        &quot;count&quot;: Integer,
+        &quot;index_var&quot;: String,
+        &quot;removal_policies&quot;: [{&quot;resource_list&quot;: [Value, Value, ...]}, {&quot;resource_list&quot;: [Value, Value, ...]}, ...],
+        &quot;resource_def&quot;: {&quot;type&quot;: String, &quot;properties&quot;: {...}}
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Heat::SoftwareConfig">
+<h2>OS::Heat::SoftwareConfig<a class="headerlink" href="#OS::Heat::SoftwareConfig" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.1 (Icehouse)</p>
+</div>
+<p>A resource for describing and storing software configuration.</p>
+<p>The software_configs API which backs this resource creates immutable
+configs, so any change to the template resource definition will result
+in a new config being created, and the old one being deleted.</p>
+<p>Configs can be defined in the same template which uses them, or they can
+be created in one stack, and passed to another stack via a parameter.</p>
+<p>A config resource can be referenced in other resource properties which
+are config-aware. This includes the properties OS::Nova::Server user_data,
+OS::Heat::SoftwareDeployment config and OS::Heat::MultipartMime parts
+config.</p>
+<p>Along with the config script itself, this resource can define schemas for
+inputs and outputs which the config script is expected to consume and
+produce. Inputs and outputs are optional and will map to concepts which
+are specific to the configuration tool being used.</p>
+<div class="section" id="OS::Heat::SoftwareConfig-props">
+<h3>Properties<a class="headerlink" href="#OS::Heat::SoftwareConfig-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>config <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Configuration script or manifest which specifies what actual configuration is performed.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>group <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Namespace to group this software config by when delivered to a server. This may imply what configuration tool is going to perform the configuration.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;Heat::Ungrouped&#8221;.</p>
+</dd>
+<dt>inputs <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Schema representing the inputs that this software config is expecting.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>default <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Default value for the input if none is specified.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>description <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Description of the input.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of the input.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Type of the value of the input.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;String&#8221;.</p>
+<p class="last">Allowed values: String, Number, CommaDelimitedList, Json</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>options <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Map containing options specific to the configuration management tool used by this resource.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>outputs <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Schema representing the outputs that this software config will produce.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>description <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Description of the output.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>error_output <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Denotes that the deployment is in an error state if this output has a value.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of the output.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Type of the value of the output.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;String&#8221;.</p>
+<p class="last">Allowed values: String, Number, CommaDelimitedList, Json</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::SoftwareConfig-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Heat::SoftwareConfig-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>config</dt>
+<dd>The config value of the software config.</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::SoftwareConfig-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Heat::SoftwareConfig-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config: String
+      group: String
+      inputs: [{&quot;default&quot;: String, &quot;type&quot;: String, &quot;name&quot;: String, &quot;description&quot;: String}, {&quot;default&quot;: String, &quot;type&quot;: String, &quot;name&quot;: String, &quot;description&quot;: String}, ...]
+      options: {...}
+      outputs: [{&quot;type&quot;: String, &quot;name&quot;: String, &quot;error_output&quot;: Boolean, &quot;description&quot;: String}, {&quot;type&quot;: String, &quot;name&quot;: String, &quot;error_output&quot;: Boolean, &quot;description&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="OS::Heat::SoftwareConfig-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Heat::SoftwareConfig-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Heat::SoftwareConfig
+    Properties:
+      config: String
+      group: String
+      inputs: [{&quot;default&quot;: String, &quot;type&quot;: String, &quot;name&quot;: String, &quot;description&quot;: String}, {&quot;default&quot;: String, &quot;type&quot;: String, &quot;name&quot;: String, &quot;description&quot;: String}, ...]
+      options: {...}
+      outputs: [{&quot;type&quot;: String, &quot;name&quot;: String, &quot;error_output&quot;: Boolean, &quot;description&quot;: String}, {&quot;type&quot;: String, &quot;name&quot;: String, &quot;error_output&quot;: Boolean, &quot;description&quot;: String}, ...]
+</pre>
+</div>
+<div class="section" id="OS::Heat::SoftwareConfig-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Heat::SoftwareConfig-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Heat::SoftwareConfig&quot;,
+      &quot;Properties&quot;: {
+        &quot;config&quot;: String,
+        &quot;group&quot;: String,
+        &quot;inputs&quot;: [{&quot;default&quot;: String, &quot;type&quot;: String, &quot;name&quot;: String, &quot;description&quot;: String}, {&quot;default&quot;: String, &quot;type&quot;: String, &quot;name&quot;: String, &quot;description&quot;: String}, ...],
+        &quot;options&quot;: {...},
+        &quot;outputs&quot;: [{&quot;type&quot;: String, &quot;name&quot;: String, &quot;error_output&quot;: Boolean, &quot;description&quot;: String}, {&quot;type&quot;: String, &quot;name&quot;: String, &quot;error_output&quot;: Boolean, &quot;description&quot;: String}, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Heat::SoftwareDeployment">
+<h2>OS::Heat::SoftwareDeployment<a class="headerlink" href="#OS::Heat::SoftwareDeployment" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.1 (Icehouse)</p>
+</div>
+<p>This resource associates a server with some configuration which
+is to be deployed to that server.</p>
+<p>A deployment allows input values to be specified which map to the inputs
+schema defined in the config resource. These input values are interpreted
+by the configuration tool in a tool-specific manner.</p>
+<p>Whenever this resource goes to an IN_PROGRESS state, it creates an
+ephemeral config that includes the inputs values plus a number of extra
+inputs which have names prefixed with <a href="#id1"><span class="problematic" id="id2">deploy_</span></a>. The extra inputs relate
+to the current state of the stack, along with the information and
+credentials required to signal back the deployment results.</p>
+<p>Unless signal_transport=NO_SIGNAL, this resource will remain in an
+IN_PROGRESS state until the server signals it with the output values
+for that deployment. Those output values are then available as resource
+attributes, along with the default attributes deploy_stdout,
+deploy_stderr and deploy_status_code.</p>
+<p>Specifying actions other than the default CREATE and UPDATE will result
+in the deployment being triggered in those actions. For example this would
+allow cleanup configuration to be performed during actions SUSPEND and
+DELETE. A config could be designed to only work with some specific
+actions, or a config can read the value of the deploy_action input to
+allow conditional logic to perform different configuration for different
+actions.</p>
+<div class="section" id="OS::Heat::SoftwareDeployment-props">
+<h3>Properties<a class="headerlink" href="#OS::Heat::SoftwareDeployment-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>actions <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Which stack actions will result in this deployment being triggered.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;[&#8216;CREATE&#8217;, &#8216;UPDATE&#8217;]&#8221;.</p>
+<p class="last">Allowed values: CREATE, UPDATE, DELETE, SUSPEND, RESUME</p>
+</dd>
+<dt>config <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">ID of software configuration resource to execute when applying to the server.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>input_values <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Input values to apply to the software configuration on this server.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of the derived config associated with this deployment. This is used to apply a sort order to the list of configurations currently deployed to a server.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>server <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">ID of Nova server to apply configuration to.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type nova.server</p>
+</dd>
+<dt>signal_transport <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">How the server should signal to heat with the deployment output values. CFN_SIGNAL will allow an HTTP POST to a CFN keypair signed URL. TEMP_URL_SIGNAL will create a Swift TempURL to be signaled via HTTP PUT. HEAT_SIGNAL will allow calls to the Heat API resource-signal using the provided keystone credentials. NO_SIGNAL will result in the resource going to the COMPLETE state without waiting for any signal.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;CFN_SIGNAL&#8221;.</p>
+<p class="last">Allowed values: CFN_SIGNAL, TEMP_URL_SIGNAL, HEAT_SIGNAL, NO_SIGNAL</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::SoftwareDeployment-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Heat::SoftwareDeployment-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>deploy_status_code</dt>
+<dd>Returned status code from the configuration execution</dd>
+<dt>deploy_stderr</dt>
+<dd>Captured stderr from the configuration execution.</dd>
+<dt>deploy_stdout</dt>
+<dd>Captured stdout from the configuration execution.</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::SoftwareDeployment-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Heat::SoftwareDeployment-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      actions: [Value, Value, ...]
+      config: String
+      input_values: {...}
+      name: String
+      server: String
+      signal_transport: String
+</pre>
+</div>
+<div class="section" id="OS::Heat::SoftwareDeployment-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Heat::SoftwareDeployment-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Heat::SoftwareDeployment
+    Properties:
+      actions: [Value, Value, ...]
+      config: String
+      input_values: {...}
+      name: String
+      server: String
+      signal_transport: String
+</pre>
+</div>
+<div class="section" id="OS::Heat::SoftwareDeployment-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Heat::SoftwareDeployment-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Heat::SoftwareDeployment&quot;,
+      &quot;Properties&quot;: {
+        &quot;actions&quot;: [Value, Value, ...],
+        &quot;config&quot;: String,
+        &quot;input_values&quot;: {...},
+        &quot;name&quot;: String,
+        &quot;server&quot;: String,
+        &quot;signal_transport&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Heat::SoftwareDeployments">
+<h2>OS::Heat::SoftwareDeployments<a class="headerlink" href="#OS::Heat::SoftwareDeployments" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.2 (Juno)</p>
+</div>
+<div class="section" id="OS::Heat::SoftwareDeployments-props">
+<h3>Properties<a class="headerlink" href="#OS::Heat::SoftwareDeployments-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>actions <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Which stack actions will result in this deployment being triggered.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;[&#8216;CREATE&#8217;, &#8216;UPDATE&#8217;]&#8221;.</p>
+<p class="last">Allowed values: CREATE, UPDATE, DELETE, SUSPEND, RESUME</p>
+</dd>
+<dt>config <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">ID of software configuration resource to execute when applying to the server.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>input_values <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Input values to apply to the software configuration on this server.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of the derived config associated with this deployment. This is used to apply a sort order to the list of configurations currently deployed to a server.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>servers <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">A map of Nova names and IDs to apply configuration to.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>signal_transport <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">How the server should signal to heat with the deployment output values. CFN_SIGNAL will allow an HTTP POST to a CFN keypair signed URL. TEMP_URL_SIGNAL will create a Swift TempURL to be signaled via HTTP PUT. HEAT_SIGNAL will allow calls to the Heat API resource-signal using the provided keystone credentials. NO_SIGNAL will result in the resource going to the COMPLETE state without waiting for any signal.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;CFN_SIGNAL&#8221;.</p>
+<p class="last">Allowed values: CFN_SIGNAL, TEMP_URL_SIGNAL, HEAT_SIGNAL, NO_SIGNAL</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::SoftwareDeployments-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Heat::SoftwareDeployments-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>deploy_status_codes</dt>
+<dd>A map of Nova names and returned status code from the configuration execution</dd>
+<dt>deploy_stderrs</dt>
+<dd>A map of Nova names and captured stderrs from the configuration execution to each server.</dd>
+<dt>deploy_stdouts</dt>
+<dd>A map of Nova names and captured stdouts from the configuration execution to each server.</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::SoftwareDeployments-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Heat::SoftwareDeployments-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Heat::SoftwareDeployments
+    properties:
+      actions: [Value, Value, ...]
+      config: String
+      input_values: {...}
+      name: String
+      servers: {...}
+      signal_transport: String
+</pre>
+</div>
+<div class="section" id="OS::Heat::SoftwareDeployments-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Heat::SoftwareDeployments-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Heat::SoftwareDeployments
+    Properties:
+      actions: [Value, Value, ...]
+      config: String
+      input_values: {...}
+      name: String
+      servers: {...}
+      signal_transport: String
+</pre>
+</div>
+<div class="section" id="OS::Heat::SoftwareDeployments-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Heat::SoftwareDeployments-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Heat::SoftwareDeployments&quot;,
+      &quot;Properties&quot;: {
+        &quot;actions&quot;: [Value, Value, ...],
+        &quot;config&quot;: String,
+        &quot;input_values&quot;: {...},
+        &quot;name&quot;: String,
+        &quot;servers&quot;: {...},
+        &quot;signal_transport&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Heat::Stack">
+<h2>OS::Heat::Stack<a class="headerlink" href="#OS::Heat::Stack" title="Permalink to this headline">¶</a></h2>
+<p>A Resource representing a stack which can be created using specified
+context.</p>
+<div class="section" id="OS::Heat::Stack-props">
+<h3>Properties<a class="headerlink" href="#OS::Heat::Stack-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>context <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Context for this stack.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>region_name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Region name in which this stack will be created.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</dd>
+<dt>parameters <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Set of parameters passed to this stack.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property, defaults to &#8220;{}&#8221;.</p>
+</dd>
+<dt>template <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Template that specifies the stack to be created as a resource.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>timeout <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Number of minutes to wait for this stack creation.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::Stack-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Heat::Stack-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>outputs</dt>
+<dd>A dict of key-value pairs output from the stack.</dd>
+<dt>stack_name</dt>
+<dd>Name of the stack.</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::Stack-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Heat::Stack-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Heat::Stack
+    properties:
+      context: {&quot;region_name&quot;: String}
+      parameters: {...}
+      template: String
+      timeout: Integer
+</pre>
+</div>
+<div class="section" id="OS::Heat::Stack-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Heat::Stack-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Heat::Stack
+    Properties:
+      context: {&quot;region_name&quot;: String}
+      parameters: {...}
+      template: String
+      timeout: Integer
+</pre>
+</div>
+<div class="section" id="OS::Heat::Stack-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Heat::Stack-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Heat::Stack&quot;,
+      &quot;Properties&quot;: {
+        &quot;context&quot;: {&quot;region_name&quot;: String},
+        &quot;parameters&quot;: {...},
+        &quot;template&quot;: String,
+        &quot;timeout&quot;: Integer
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Heat::SwiftSignal">
+<h2>OS::Heat::SwiftSignal<a class="headerlink" href="#OS::Heat::SwiftSignal" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.2 (Juno)</p>
+</div>
+<div class="section" id="OS::Heat::SwiftSignal-props">
+<h3>Properties<a class="headerlink" href="#OS::Heat::SwiftSignal-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>count <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">The number of success signals that must be received before the stack creation process continues.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;1&#8221;.</p>
+<p class="last">The value must be in the range 1 to 1000.</p>
+</dd>
+<dt>handle <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">URL of TempURL where resource will signal completion and optionally upload data.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>timeout <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">The maximum number of seconds to wait for the resource to signal completion.  Once the timeout is reached, creation of the signal resource will fail.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">The value must be in the range 1 to 43200.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::SwiftSignal-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Heat::SwiftSignal-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>data</dt>
+<dd>JSON data that was uploaded via the SwiftSignalHandle.</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::SwiftSignal-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Heat::SwiftSignal-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Heat::SwiftSignal
+    properties:
+      count: Integer
+      handle: String
+      timeout: Number
+</pre>
+</div>
+<div class="section" id="OS::Heat::SwiftSignal-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Heat::SwiftSignal-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Heat::SwiftSignal
+    Properties:
+      count: Integer
+      handle: String
+      timeout: Number
+</pre>
+</div>
+<div class="section" id="OS::Heat::SwiftSignal-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Heat::SwiftSignal-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Heat::SwiftSignal&quot;,
+      &quot;Properties&quot;: {
+        &quot;count&quot;: Integer,
+        &quot;handle&quot;: String,
+        &quot;timeout&quot;: Number
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Heat::SwiftSignalHandle">
+<h2>OS::Heat::SwiftSignalHandle<a class="headerlink" href="#OS::Heat::SwiftSignalHandle" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.2 (Juno)</p>
+</div>
+<div class="section" id="OS::Heat::SwiftSignalHandle-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Heat::SwiftSignalHandle-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>curl_cli</dt>
+<dd>Convenience attribute, provides curl CLI command prefix, which can be used for signalling handle completion or failure.  You can signal success by adding &#8211;data-binary &#8216;{&#8220;status&#8221;: &#8220;SUCCESS&#8221;}&#8217; , or signal failure by adding &#8211;data-binary &#8216;{&#8220;status&#8221;: &#8220;FAILURE&#8221;}&#8217;</dd>
+<dt>endpoint</dt>
+<dd>Endpoint/url which can be used for signalling handle</dd>
+<dt>token</dt>
+<dd>Tokens are not needed for Swift TempURLs.  This attribute is being kept for compatibility with the OS::Heat::WaitConditionHandle resource</dd>
+</dl>
+</div>
+<div class="section" id="OS::Heat::SwiftSignalHandle-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Heat::SwiftSignalHandle-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Heat::SwiftSignalHandle
+</pre>
+</div>
+<div class="section" id="OS::Heat::SwiftSignalHandle-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Heat::SwiftSignalHandle-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Heat::SwiftSignalHandle
+</pre>
+</div>
+<div class="section" id="OS::Heat::SwiftSignalHandle-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Heat::SwiftSignalHandle-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Heat::SwiftSignalHandle&quot;
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Neutron::Net">
+<h2>OS::Neutron::Net<a class="headerlink" href="#OS::Neutron::Net" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="OS::Neutron::Net-props">
+<h3>Properties<a class="headerlink" href="#OS::Neutron::Net-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>admin_state_up <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">A boolean value specifying the administrative status of the network.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property, defaults to &#8220;True&#8221;.</p>
+</dd>
+<dt>dhcp_agent_ids <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">The IDs of the DHCP agent to schedule the network. Note that the default policy setting in Neutron restricts usage of this property to administrative users only.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A string specifying a symbolic name for the network, which is not required to be unique.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>shared <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Whether this network should be shared across all tenants. Note that the default policy setting restricts usage of this attribute to administrative users only.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+<dt>tenant_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the tenant which will own the network. Only administrative users can set the tenant identifier; this cannot be changed using authorization policies.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>value_specs <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Extra parameters to include in the &#8220;network&#8221; object in the creation request. Parameters are often specific to installed hardware or extensions.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property, defaults to &#8220;{}&#8221;.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Neutron::Net-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Neutron::Net-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>admin_state_up</dt>
+<dd>The administrative status of the network.</dd>
+<dt>name</dt>
+<dd>The name of the network.</dd>
+<dt>show</dt>
+<dd>All attributes.</dd>
+<dt>status</dt>
+<dd>The status of the network.</dd>
+<dt>subnets</dt>
+<dd>Subnets of this network.</dd>
+<dt>tenant_id</dt>
+<dd>The tenant owning this network.</dd>
+</dl>
+</div>
+<div class="section" id="OS::Neutron::Net-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Neutron::Net-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Neutron::Net
+    properties:
+      admin_state_up: Boolean
+      dhcp_agent_ids: [Value, Value, ...]
+      name: String
+      shared: Boolean
+      tenant_id: String
+      value_specs: {...}
+</pre>
+</div>
+<div class="section" id="OS::Neutron::Net-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Neutron::Net-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Neutron::Net
+    Properties:
+      admin_state_up: Boolean
+      dhcp_agent_ids: [Value, Value, ...]
+      name: String
+      shared: Boolean
+      tenant_id: String
+      value_specs: {...}
+</pre>
+</div>
+<div class="section" id="OS::Neutron::Net-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Neutron::Net-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Neutron::Net&quot;,
+      &quot;Properties&quot;: {
+        &quot;admin_state_up&quot;: Boolean,
+        &quot;dhcp_agent_ids&quot;: [Value, Value, ...],
+        &quot;name&quot;: String,
+        &quot;shared&quot;: Boolean,
+        &quot;tenant_id&quot;: String,
+        &quot;value_specs&quot;: {...}
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Neutron::Port">
+<h2>OS::Neutron::Port<a class="headerlink" href="#OS::Neutron::Port" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="OS::Neutron::Port-props">
+<h3>Properties<a class="headerlink" href="#OS::Neutron::Port-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>admin_state_up <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">The administrative state of this port.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property, defaults to &#8220;True&#8221;.</p>
+</dd>
+<dt>allowed_address_pairs <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Additional MAC/IP address pairs allowed to pass through the port.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>ip_address <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">IP address to allow through this port.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type ip_addr</p>
+</dd>
+<dt>mac_address <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">MAC address to allow through this port.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type mac_addr</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>binding:vnic_type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p>The vnic type to be bound on the neutron port. To support SR-IOV PCI passthrough networking, you can request that the neutron port to be realized as normal (virtual nic), direct (pci passthrough), or macvtap (virtual interface with a tap-like software interface). Note that this only works for Neutron deployments that support the bindings extension.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: normal, direct, macvtap</p>
+</dd>
+<dt>device_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Device ID of this port.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>device_owner <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of the network owning the port. The value is typically network:floatingip or network:router_interface or network:dhcp</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>fixed_ips <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Desired IPs for this port.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;[]&#8221;.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>ip_address <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">IP address desired in the subnet for this port.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type ip_addr</p>
+</dd>
+<dt>subnet <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.2 (Juno)</p>
+</div>
+<p>Subnet in which to allocate the IP address for this port.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type neutron.subnet</p>
+</dd>
+<dt>subnet_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">DEPRECATED since 2014.2  - Use property subnet.</p>
+</div>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type neutron.subnet</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>mac_address <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">MAC address to give to this port.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type mac_addr</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A symbolic name for this port.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>network <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.2 (Juno)</p>
+</div>
+<p>Network this port belongs to. If you plan to use current port to assign Floating IP, you should specify fixed_ips with subnet</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type neutron.network</p>
+</dd>
+<dt>replacement_policy <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Policy on how to respond to a stack-update for this resource. REPLACE_ALWAYS will replace the port regardless of any property changes. AUTO will update the existing port for any changed update-allowed property.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;AUTO&#8221;.</p>
+<p class="last">Allowed values: REPLACE_ALWAYS, AUTO</p>
+</dd>
+<dt>security_groups <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Security group IDs to associate with this port.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>value_specs <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Extra parameters to include in the &#8220;port&#8221; object in the creation request.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;{}&#8221;.</p>
+</dd>
+<dt>network_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">DEPRECATED since 2014.2 (Juno) - Use property network.</p>
+</div>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type neutron.network</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Neutron::Port-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Neutron::Port-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>admin_state_up</dt>
+<dd>The administrative state of this port.</dd>
+<dt>allowed_address_pairs</dt>
+<dd>Additional MAC/IP address pairs allowed to pass through a port.</dd>
+<dt>device_id</dt>
+<dd>Unique identifier for the device.</dd>
+<dt>device_owner</dt>
+<dd>Name of the network owning the port.</dd>
+<dt>fixed_ips</dt>
+<dd>Fixed IP addresses.</dd>
+<dt>mac_address</dt>
+<dd>MAC address of the port.</dd>
+<dt>name</dt>
+<dd>Friendly name of the port.</dd>
+<dt>network_id</dt>
+<dd>Unique identifier for the network owning the port.</dd>
+<dt>security_groups</dt>
+<dd>A list of security groups for the port.</dd>
+<dt>show</dt>
+<dd>All attributes.</dd>
+<dt>status</dt>
+<dd>The status of the port.</dd>
+<dt>subnets</dt>
+<dd>A list of all subnet attributes for the port.</dd>
+<dt>tenant_id</dt>
+<dd>Tenant owning the port.</dd>
+</dl>
+</div>
+<div class="section" id="OS::Neutron::Port-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Neutron::Port-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Neutron::Port
+    properties:
+      admin_state_up: Boolean
+      allowed_address_pairs: [{&quot;ip_address&quot;: String, &quot;mac_address&quot;: String}, {&quot;ip_address&quot;: String, &quot;mac_address&quot;: String}, ...]
+      binding:vnic_type: String
+      device_id: String
+      device_owner: String
+      fixed_ips: [{&quot;subnet_id&quot;: String, &quot;subnet&quot;: String, &quot;ip_address&quot;: String}, {&quot;subnet_id&quot;: String, &quot;subnet&quot;: String, &quot;ip_address&quot;: String}, ...]
+      mac_address: String
+      name: String
+      network: String
+      replacement_policy: String
+      security_groups: [Value, Value, ...]
+      value_specs: {...}
+</pre>
+</div>
+<div class="section" id="OS::Neutron::Port-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Neutron::Port-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Neutron::Port
+    Properties:
+      admin_state_up: Boolean
+      allowed_address_pairs: [{&quot;ip_address&quot;: String, &quot;mac_address&quot;: String}, {&quot;ip_address&quot;: String, &quot;mac_address&quot;: String}, ...]
+      binding:vnic_type: String
+      device_id: String
+      device_owner: String
+      fixed_ips: [{&quot;subnet_id&quot;: String, &quot;subnet&quot;: String, &quot;ip_address&quot;: String}, {&quot;subnet_id&quot;: String, &quot;subnet&quot;: String, &quot;ip_address&quot;: String}, ...]
+      mac_address: String
+      name: String
+      network: String
+      replacement_policy: String
+      security_groups: [Value, Value, ...]
+      value_specs: {...}
+</pre>
+</div>
+<div class="section" id="OS::Neutron::Port-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Neutron::Port-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Neutron::Port&quot;,
+      &quot;Properties&quot;: {
+        &quot;admin_state_up&quot;: Boolean,
+        &quot;allowed_address_pairs&quot;: [{&quot;ip_address&quot;: String, &quot;mac_address&quot;: String}, {&quot;ip_address&quot;: String, &quot;mac_address&quot;: String}, ...],
+        &quot;binding:vnic_type&quot;: String,
+        &quot;device_id&quot;: String,
+        &quot;device_owner&quot;: String,
+        &quot;fixed_ips&quot;: [{&quot;subnet_id&quot;: String, &quot;subnet&quot;: String, &quot;ip_address&quot;: String}, {&quot;subnet_id&quot;: String, &quot;subnet&quot;: String, &quot;ip_address&quot;: String}, ...],
+        &quot;mac_address&quot;: String,
+        &quot;name&quot;: String,
+        &quot;network&quot;: String,
+        &quot;replacement_policy&quot;: String,
+        &quot;security_groups&quot;: [Value, Value, ...],
+        &quot;value_specs&quot;: {...}
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Neutron::Subnet">
+<h2>OS::Neutron::Subnet<a class="headerlink" href="#OS::Neutron::Subnet" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="OS::Neutron::Subnet-props">
+<h3>Properties<a class="headerlink" href="#OS::Neutron::Subnet-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>allocation_pools <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">The start and end addresses for the allocation pools.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>end <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type ip_addr</p>
+</dd>
+<dt>start <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type ip_addr</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>cidr <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The CIDR.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type net_cidr</p>
+</dd>
+<dt>dns_nameservers <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">A specified set of DNS name servers to be used.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property, defaults to &#8220;[]&#8221;.</p>
+</dd>
+<dt>enable_dhcp <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Set to true if DHCP is enabled and false if DHCP is disabled.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property, defaults to &#8220;True&#8221;.</p>
+</dd>
+<dt>gateway_ip <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The gateway IP address. Set to any of [ null | ~ | &#8220;&#8221; ] to create the subnet without a gateway. If omitted, the first IP address within the subnet is assigned to the gateway.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>host_routes <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>destination <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>nexthop <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type ip_addr</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>ip_version <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">The IP version, which is 4 or 6.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;4&#8221;.</p>
+<p class="last">Allowed values: 4, 6</p>
+</dd>
+<dt>ipv6_address_mode <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p>IPv6 address mode. dhcpv6-stateful, dhcpv6-stateless, or slaac.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: dhcpv6-stateful, dhcpv6-stateless, slaac</p>
+</dd>
+<dt>ipv6_ra_mode <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p>IPv6 RA (Router Advertisement) mode. dhcpv6-stateful, dhcpv6-stateless, or slaac.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: dhcpv6-stateful, dhcpv6-stateless, slaac</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The name of the subnet.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>network <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.2 (Juno)</p>
+</div>
+<p>The ID of the attached network.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type neutron.network</p>
+</dd>
+<dt>tenant_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the tenant who owns the network. Only administrative users can specify a tenant ID other than their own.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>value_specs <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Extra parameters to include in the creation request.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property, defaults to &#8220;{}&#8221;.</p>
+</dd>
+<dt>network_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">DEPRECATED since 2014.2 (Juno) - Use property network.</p>
+</div>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type neutron.network</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Neutron::Subnet-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Neutron::Subnet-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>allocation_pools</dt>
+<dd>Ip allocation pools and their ranges.</dd>
+<dt>cidr</dt>
+<dd>CIDR block notation for this subnet.</dd>
+<dt>dns_nameservers</dt>
+<dd>List of dns nameservers.</dd>
+<dt>enable_dhcp</dt>
+<dd>&#8216;true&#8217; if DHCP is enabled for this subnet; &#8216;false&#8217; otherwise.</dd>
+<dt>gateway_ip</dt>
+<dd>Ip of the subnet&#8217;s gateway.</dd>
+<dt>host_routes</dt>
+<dd>Additional routes for this subnet.</dd>
+<dt>ip_version</dt>
+<dd>Ip version for the subnet.</dd>
+<dt>name</dt>
+<dd>Friendly name of the subnet.</dd>
+<dt>network_id</dt>
+<dd>Parent network of the subnet.</dd>
+<dt>show</dt>
+<dd>All attributes.</dd>
+<dt>tenant_id</dt>
+<dd>Tenant owning the subnet.</dd>
+</dl>
+</div>
+<div class="section" id="OS::Neutron::Subnet-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Neutron::Subnet-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Neutron::Subnet
+    properties:
+      allocation_pools: [{&quot;start&quot;: String, &quot;end&quot;: String}, {&quot;start&quot;: String, &quot;end&quot;: String}, ...]
+      cidr: String
+      dns_nameservers: [Value, Value, ...]
+      enable_dhcp: Boolean
+      gateway_ip: String
+      host_routes: [{&quot;nexthop&quot;: String, &quot;destination&quot;: String}, {&quot;nexthop&quot;: String, &quot;destination&quot;: String}, ...]
+      ip_version: Integer
+      ipv6_address_mode: String
+      ipv6_ra_mode: String
+      name: String
+      network: String
+      tenant_id: String
+      value_specs: {...}
+</pre>
+</div>
+<div class="section" id="OS::Neutron::Subnet-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Neutron::Subnet-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Neutron::Subnet
+    Properties:
+      allocation_pools: [{&quot;start&quot;: String, &quot;end&quot;: String}, {&quot;start&quot;: String, &quot;end&quot;: String}, ...]
+      cidr: String
+      dns_nameservers: [Value, Value, ...]
+      enable_dhcp: Boolean
+      gateway_ip: String
+      host_routes: [{&quot;nexthop&quot;: String, &quot;destination&quot;: String}, {&quot;nexthop&quot;: String, &quot;destination&quot;: String}, ...]
+      ip_version: Integer
+      ipv6_address_mode: String
+      ipv6_ra_mode: String
+      name: String
+      network: String
+      tenant_id: String
+      value_specs: {...}
+</pre>
+</div>
+<div class="section" id="OS::Neutron::Subnet-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Neutron::Subnet-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Neutron::Subnet&quot;,
+      &quot;Properties&quot;: {
+        &quot;allocation_pools&quot;: [{&quot;start&quot;: String, &quot;end&quot;: String}, {&quot;start&quot;: String, &quot;end&quot;: String}, ...],
+        &quot;cidr&quot;: String,
+        &quot;dns_nameservers&quot;: [Value, Value, ...],
+        &quot;enable_dhcp&quot;: Boolean,
+        &quot;gateway_ip&quot;: String,
+        &quot;host_routes&quot;: [{&quot;nexthop&quot;: String, &quot;destination&quot;: String}, {&quot;nexthop&quot;: String, &quot;destination&quot;: String}, ...],
+        &quot;ip_version&quot;: Integer,
+        &quot;ipv6_address_mode&quot;: String,
+        &quot;ipv6_ra_mode&quot;: String,
+        &quot;name&quot;: String,
+        &quot;network&quot;: String,
+        &quot;tenant_id&quot;: String,
+        &quot;value_specs&quot;: {...}
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Nova::KeyPair">
+<h2>OS::Nova::KeyPair<a class="headerlink" href="#OS::Nova::KeyPair" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.1 (Icehouse)</p>
+</div>
+<p>A resource for creating Nova key pairs.</p>
+<p><strong>Note</strong> that if a new key is generated setting <cite>save_private_key</cite> to
+<cite>True</cite> results in the system saving the private key which can then be
+retrieved via the <cite>private_key</cite> attribute of this resource.</p>
+<p>Setting the <cite>public_key</cite> property means that the <cite>private_key</cite> attribute
+of this resource will always return an empty string regardless of the
+<cite>save_private_key</cite> setting since there will be no private key data to
+save.</p>
+<div class="section" id="OS::Nova::KeyPair-props">
+<h3>Properties<a class="headerlink" href="#OS::Nova::KeyPair-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The name of the key pair.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">The length must be in the range 1 to 255.</p>
+</dd>
+<dt>public_key <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The optional public key. This allows users to supply the public key from a pre-existing key pair. If not supplied, a new key pair will be generated.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>save_private_key <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">True if the system should remember a generated private key; False otherwise.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Nova::KeyPair-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Nova::KeyPair-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>private_key</dt>
+<dd>The private key if it has been saved.</dd>
+<dt>public_key</dt>
+<dd>The public key.</dd>
+</dl>
+</div>
+<div class="section" id="OS::Nova::KeyPair-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Nova::KeyPair-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Nova::KeyPair
+    properties:
+      name: String
+      public_key: String
+      save_private_key: Boolean
+</pre>
+</div>
+<div class="section" id="OS::Nova::KeyPair-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Nova::KeyPair-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Nova::KeyPair
+    Properties:
+      name: String
+      public_key: String
+      save_private_key: Boolean
+</pre>
+</div>
+<div class="section" id="OS::Nova::KeyPair-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Nova::KeyPair-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Nova::KeyPair&quot;,
+      &quot;Properties&quot;: {
+        &quot;name&quot;: String,
+        &quot;public_key&quot;: String,
+        &quot;save_private_key&quot;: Boolean
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Swift::Container">
+<h2>OS::Swift::Container<a class="headerlink" href="#OS::Swift::Container" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="OS::Swift::Container-props">
+<h3>Properties<a class="headerlink" href="#OS::Swift::Container-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>PurgeOnDelete <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p>If True, delete any objects in the container when the container is deleted. Otherwise, deleting a non-empty container will result in an error.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+<dt>X-Account-Meta <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">A map of user-defined meta data to associate with the account. Each key in the map will set the header X-Account-Meta-{key} with the corresponding value.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;{}&#8221;.</p>
+</dd>
+<dt>X-Container-Meta <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">A map of user-defined meta data to associate with the container. Each key in the map will set the header X-Container-Meta-{key} with the corresponding value.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;{}&#8221;.</p>
+</dd>
+<dt>X-Container-Read <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Specify the ACL permissions on who can read objects in the container.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>X-Container-Write <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Specify the ACL permissions on who can write objects to the container.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name for the container. If not specified, a unique name will be generated.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Swift::Container-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Swift::Container-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>BytesUsed</dt>
+<dd>The number of bytes stored in the container.</dd>
+<dt>DomainName</dt>
+<dd>The host from the container URL.</dd>
+<dt>HeadContainer</dt>
+<dd>A map containing all headers for the container.</dd>
+<dt>ObjectCount</dt>
+<dd>The number of objects stored in the container.</dd>
+<dt>RootURL</dt>
+<dd>The parent URL of the container.</dd>
+<dt>WebsiteURL</dt>
+<dd>The URL of the container.</dd>
+</dl>
+</div>
+<div class="section" id="OS::Swift::Container-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Swift::Container-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Swift::Container
+    properties:
+      PurgeOnDelete: Boolean
+      X-Account-Meta: {...}
+      X-Container-Meta: {...}
+      X-Container-Read: String
+      X-Container-Write: String
+      name: String
+</pre>
+</div>
+<div class="section" id="OS::Swift::Container-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Swift::Container-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Swift::Container
+    Properties:
+      PurgeOnDelete: Boolean
+      X-Account-Meta: {...}
+      X-Container-Meta: {...}
+      X-Container-Read: String
+      X-Container-Write: String
+      name: String
+</pre>
+</div>
+<div class="section" id="OS::Swift::Container-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Swift::Container-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Swift::Container&quot;,
+      &quot;Properties&quot;: {
+        &quot;PurgeOnDelete&quot;: Boolean,
+        &quot;X-Account-Meta&quot;: {...},
+        &quot;X-Container-Meta&quot;: {...},
+        &quot;X-Container-Read&quot;: String,
+        &quot;X-Container-Write&quot;: String,
+        &quot;name&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="OS::Trove::Instance">
+<h2>OS::Trove::Instance<a class="headerlink" href="#OS::Trove::Instance" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2014.1 (Icehouse)</p>
+</div>
+<p>OpenStack cloud database instance resource.</p>
+<div class="section" id="OS::Trove::Instance-props">
+<h3>Properties<a class="headerlink" href="#OS::Trove::Instance-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>availability_zone <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of the availability zone for DB instance.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>databases <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">List of databases to be created on DB instance creation.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;[]&#8221;.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>character_set <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Set of symbols and encodings.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;utf8&#8221;.</p>
+</dd>
+<dt>collate <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Set of rules for comparing characters in a character set.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;utf8_general_ci&#8221;.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Specifies database names for creating databases on instance creation.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p>The length must be no greater than 64.</p>
+<p class="last">Value must match pattern: [a-zA-Z0-9_]+[a-zA-Z0-9_&#64;?#\s]*[a-zA-Z0-9_]+</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>datastore_type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of registered datastore type.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">The length must be no greater than 255.</p>
+</dd>
+<dt>datastore_version <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of the registered datastore version. It must exist for provided datastore type. Defaults to using single active version. If several active versions exist for provided datastore type, explicit value for this parameter must be specified.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">The length must be no greater than 255.</p>
+</dd>
+<dt>flavor <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Reference to a flavor for creating DB instance.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type trove.flavor</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of the DB instance to create.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">The length must be no greater than 255.</p>
+</dd>
+<dt>networks <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">List of network interfaces to create on instance.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;[]&#8221;.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>fixed_ip <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Fixed IPv4 address for this NIC.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type ip_addr</p>
+</dd>
+<dt>network <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name or UUID of the network to attach this NIC to. Either port or network must be specified.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type neutron.network</p>
+</dd>
+<dt>port <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name or UUID of Neutron port to attach this NIC to. Either port or network must be specified.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type neutron.port</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>restore_point <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">DB instance restore point.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>size <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Database volume size in GB.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">The value must be in the range 1 to 150.</p>
+</dd>
+<dt>users <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">List of users to be created on DB instance creation.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;[]&#8221;.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>databases <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Names of databases that those users can access on instance creation.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p>The length must be at least 1.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</dd>
+<dt>host <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The host from which a user is allowed to connect to the database.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;%&#8221;.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">User name to create a user on instance creation.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p>The length must be no greater than 16.</p>
+<p class="last">Value must match pattern: [a-zA-Z0-9_]+[a-zA-Z0-9_&#64;?#\s]*[a-zA-Z0-9_]+</p>
+</dd>
+<dt>password <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Password for those users on instance creation.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must match pattern: [a-zA-Z0-9_]+[a-zA-Z0-9_&#64;?#\s]*[a-zA-Z0-9_]+</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="OS::Trove::Instance-attrs">
+<h3>Attributes<a class="headerlink" href="#OS::Trove::Instance-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>hostname</dt>
+<dd>Hostname of the instance.</dd>
+<dt>href</dt>
+<dd>Api endpoint reference of the instance.</dd>
+</dl>
+</div>
+<div class="section" id="OS::Trove::Instance-hot">
+<h3>HOT Syntax<a class="headerlink" href="#OS::Trove::Instance-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: OS::Trove::Instance
+    properties:
+      availability_zone: String
+      databases: [{&quot;character_set&quot;: String, &quot;name&quot;: String, &quot;collate&quot;: String}, {&quot;character_set&quot;: String, &quot;name&quot;: String, &quot;collate&quot;: String}, ...]
+      datastore_type: String
+      datastore_version: String
+      flavor: String
+      name: String
+      networks: [{&quot;fixed_ip&quot;: String, &quot;network&quot;: String, &quot;port&quot;: String}, {&quot;fixed_ip&quot;: String, &quot;network&quot;: String, &quot;port&quot;: String}, ...]
+      restore_point: String
+      size: Integer
+      users: [{&quot;host&quot;: String, &quot;password&quot;: String, &quot;name&quot;: String, &quot;databases&quot;: [String, String, ...]}, {&quot;host&quot;: String, &quot;password&quot;: String, &quot;name&quot;: String, &quot;databases&quot;: [String, String, ...]}, ...]
+</pre>
+</div>
+<div class="section" id="OS::Trove::Instance-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#OS::Trove::Instance-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: OS::Trove::Instance
+    Properties:
+      availability_zone: String
+      databases: [{&quot;character_set&quot;: String, &quot;name&quot;: String, &quot;collate&quot;: String}, {&quot;character_set&quot;: String, &quot;name&quot;: String, &quot;collate&quot;: String}, ...]
+      datastore_type: String
+      datastore_version: String
+      flavor: String
+      name: String
+      networks: [{&quot;fixed_ip&quot;: String, &quot;network&quot;: String, &quot;port&quot;: String}, {&quot;fixed_ip&quot;: String, &quot;network&quot;: String, &quot;port&quot;: String}, ...]
+      restore_point: String
+      size: Integer
+      users: [{&quot;host&quot;: String, &quot;password&quot;: String, &quot;name&quot;: String, &quot;databases&quot;: [String, String, ...]}, {&quot;host&quot;: String, &quot;password&quot;: String, &quot;name&quot;: String, &quot;databases&quot;: [String, String, ...]}, ...]
+</pre>
+</div>
+<div class="section" id="OS::Trove::Instance-json">
+<h3>JSON Syntax<a class="headerlink" href="#OS::Trove::Instance-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;OS::Trove::Instance&quot;,
+      &quot;Properties&quot;: {
+        &quot;availability_zone&quot;: String,
+        &quot;databases&quot;: [{&quot;character_set&quot;: String, &quot;name&quot;: String, &quot;collate&quot;: String}, {&quot;character_set&quot;: String, &quot;name&quot;: String, &quot;collate&quot;: String}, ...],
+        &quot;datastore_type&quot;: String,
+        &quot;datastore_version&quot;: String,
+        &quot;flavor&quot;: String,
+        &quot;name&quot;: String,
+        &quot;networks&quot;: [{&quot;fixed_ip&quot;: String, &quot;network&quot;: String, &quot;port&quot;: String}, {&quot;fixed_ip&quot;: String, &quot;network&quot;: String, &quot;port&quot;: String}, ...],
+        &quot;restore_point&quot;: String,
+        &quot;size&quot;: Integer,
+        &quot;users&quot;: [{&quot;host&quot;: String, &quot;password&quot;: String, &quot;name&quot;: String, &quot;databases&quot;: [String, String, ...]}, {&quot;host&quot;: String, &quot;password&quot;: String, &quot;name&quot;: String, &quot;databases&quot;: [String, String, ...]}, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../raxdox/index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">OpenStack Resource Types</a><ul>
+<li><a class="reference internal" href="#OS::Cinder::Volume">OS::Cinder::Volume</a><ul>
+<li><a class="reference internal" href="#OS::Cinder::Volume-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Cinder::Volume-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Cinder::Volume-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Cinder::Volume-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Cinder::Volume-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Cinder::VolumeAttachment">OS::Cinder::VolumeAttachment</a><ul>
+<li><a class="reference internal" href="#OS::Cinder::VolumeAttachment-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Cinder::VolumeAttachment-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Cinder::VolumeAttachment-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Cinder::VolumeAttachment-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Heat::CloudConfig">OS::Heat::CloudConfig</a><ul>
+<li><a class="reference internal" href="#OS::Heat::CloudConfig-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Heat::CloudConfig-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Heat::CloudConfig-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::CloudConfig-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::CloudConfig-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Heat::MultipartMime">OS::Heat::MultipartMime</a><ul>
+<li><a class="reference internal" href="#OS::Heat::MultipartMime-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Heat::MultipartMime-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Heat::MultipartMime-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::MultipartMime-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::MultipartMime-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Heat::RandomString">OS::Heat::RandomString</a><ul>
+<li><a class="reference internal" href="#OS::Heat::RandomString-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Heat::RandomString-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Heat::RandomString-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::RandomString-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::RandomString-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Heat::ResourceGroup">OS::Heat::ResourceGroup</a><ul>
+<li><a class="reference internal" href="#OS::Heat::ResourceGroup-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Heat::ResourceGroup-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Heat::ResourceGroup-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::ResourceGroup-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::ResourceGroup-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Heat::SoftwareConfig">OS::Heat::SoftwareConfig</a><ul>
+<li><a class="reference internal" href="#OS::Heat::SoftwareConfig-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Heat::SoftwareConfig-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Heat::SoftwareConfig-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::SoftwareConfig-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::SoftwareConfig-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Heat::SoftwareDeployment">OS::Heat::SoftwareDeployment</a><ul>
+<li><a class="reference internal" href="#OS::Heat::SoftwareDeployment-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Heat::SoftwareDeployment-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Heat::SoftwareDeployment-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::SoftwareDeployment-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::SoftwareDeployment-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Heat::SoftwareDeployments">OS::Heat::SoftwareDeployments</a><ul>
+<li><a class="reference internal" href="#OS::Heat::SoftwareDeployments-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Heat::SoftwareDeployments-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Heat::SoftwareDeployments-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::SoftwareDeployments-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::SoftwareDeployments-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Heat::Stack">OS::Heat::Stack</a><ul>
+<li><a class="reference internal" href="#OS::Heat::Stack-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Heat::Stack-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Heat::Stack-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::Stack-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::Stack-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Heat::SwiftSignal">OS::Heat::SwiftSignal</a><ul>
+<li><a class="reference internal" href="#OS::Heat::SwiftSignal-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Heat::SwiftSignal-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Heat::SwiftSignal-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::SwiftSignal-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::SwiftSignal-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Heat::SwiftSignalHandle">OS::Heat::SwiftSignalHandle</a><ul>
+<li><a class="reference internal" href="#OS::Heat::SwiftSignalHandle-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Heat::SwiftSignalHandle-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::SwiftSignalHandle-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Heat::SwiftSignalHandle-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Neutron::Net">OS::Neutron::Net</a><ul>
+<li><a class="reference internal" href="#OS::Neutron::Net-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Neutron::Net-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Neutron::Net-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Neutron::Net-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Neutron::Net-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Neutron::Port">OS::Neutron::Port</a><ul>
+<li><a class="reference internal" href="#OS::Neutron::Port-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Neutron::Port-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Neutron::Port-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Neutron::Port-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Neutron::Port-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Neutron::Subnet">OS::Neutron::Subnet</a><ul>
+<li><a class="reference internal" href="#OS::Neutron::Subnet-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Neutron::Subnet-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Neutron::Subnet-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Neutron::Subnet-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Neutron::Subnet-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Nova::KeyPair">OS::Nova::KeyPair</a><ul>
+<li><a class="reference internal" href="#OS::Nova::KeyPair-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Nova::KeyPair-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Nova::KeyPair-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Nova::KeyPair-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Nova::KeyPair-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Swift::Container">OS::Swift::Container</a><ul>
+<li><a class="reference internal" href="#OS::Swift::Container-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Swift::Container-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Swift::Container-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Swift::Container-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Swift::Container-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#OS::Trove::Instance">OS::Trove::Instance</a><ul>
+<li><a class="reference internal" href="#OS::Trove::Instance-props">Properties</a></li>
+<li><a class="reference internal" href="#OS::Trove::Instance-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#OS::Trove::Instance-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#OS::Trove::Instance-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#OS::Trove::Instance-json">JSON Syntax</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/template_guide/openstack.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

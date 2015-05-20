@@ -1,0 +1,8 @@
+==============================
+The :mod:`heat.scaling` Module
+==============================
+.. automodule:: heat.scaling
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

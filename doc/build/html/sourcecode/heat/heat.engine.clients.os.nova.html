@@ -1,0 +1,342 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.clients.os.nova Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-engine-clients-os-nova-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.engine.clients.os.nova</span></code> Module<a class="headerlink" href="#the-heat-engine-clients-os-nova-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.clients.os.nova.</code><code class="descname">FlavorConstraint</code><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#FlavorConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.BaseCustomConstraint</span></code></p>
+<dl class="attribute">
+<dt>
+<code class="descname">expected_exceptions</code><em class="property"> = (&lt;class 'heat.common.exception.FlavorMissing'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate_with_client</code><span class="sig-paren">(</span><em>client</em>, <em>flavor</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#FlavorConstraint.validate_with_client"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.clients.os.nova.</code><code class="descname">KeypairConstraint</code><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#KeypairConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.BaseCustomConstraint</span></code></p>
+<dl class="attribute">
+<dt>
+<code class="descname">expected_exceptions</code><em class="property"> = (&lt;class 'heat.common.exception.UserKeyPairMissing'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate_with_client</code><span class="sig-paren">(</span><em>client</em>, <em>key_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#KeypairConstraint.validate_with_client"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.clients.os.nova.</code><code class="descname">NovaClientPlugin</code><span class="sig-paren">(</span><em>context</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.clients.client_plugin.ClientPlugin</span></code></p>
+<dl class="method">
+<dt>
+<code class="descname">absolute_limits</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.absolute_limits"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the absolute limits as a dictionary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">build_userdata</code><span class="sig-paren">(</span><em>metadata</em>, <em>userdata=None</em>, <em>instance_user=None</em>, <em>user_data_format='HEAT_CFNTOOLS'</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.build_userdata"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Build multipart data blob for CloudInit which includes user-supplied
+Metadata, user data, and the required Heat in-instance configuration.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<em>heat.engine.Resource</em>) &#8211; the resource implementation</li>
+<li><strong>userdata</strong> (<em>str or None</em>) &#8211; user data string</li>
+<li><strong>instance_user</strong> (<em>string</em>) &#8211; the user to create on the server</li>
+<li><strong>user_data_format</strong> (<em>string</em>) &#8211; Format of user data to return</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">multipart mime as a string</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">check_rebuild</code><span class="sig-paren">(</span><em>server</em>, <em>image_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.check_rebuild"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Verify that a rebuilding server is rebuilt.
+Raise error if it ends up in an ERROR state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">check_resize</code><span class="sig-paren">(</span><em>server</em>, <em>flavor</em>, <em>flavor_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.check_resize"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Verify that a resizing server is properly resized.
+If that&#8217;s the case, confirm the resize, if not raise an error.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">deferred_server_statuses</code><em class="property"> = ['BUILD', 'HARD_REBOOT', 'PASSWORD', 'REBOOT', 'RESCUE', 'RESIZE', 'REVERT_RESIZE', 'SHUTOFF', 'SUSPENDED', 'VERIFY_RESIZE']</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">delete_server</code><span class="sig-paren">(</span><em>server</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.delete_server"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Deletes a server and waits for it to disappear from Nova.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">exceptions_module</code><em class="property"> = &lt;module 'novaclient.exceptions' from '/var/lib/jenkins/workspace/Heat-Build/heat_repo/.tox/docs/local/lib/python2.7/site-packages/novaclient/exceptions.pyc'&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_console_urls</code><span class="sig-paren">(</span><em>server</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.get_console_urls"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return dict-like structure of server&#8217;s console urls.</p>
+<p>The actual console url is lazily resolved on access.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_flavor_id</code><span class="sig-paren">(</span><em>flavor</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.get_flavor_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get the id for the specified flavor name.
+If the specified value is flavor id, just return it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>flavor</strong> &#8211; the name of the flavor to find</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the id of :flavor:</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">exception.FlavorMissing</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_ip</code><span class="sig-paren">(</span><em>server</em>, <em>net_type</em>, <em>ip_version</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.get_ip"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the server&#8217;s IP of the given type and version.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_keypair</code><span class="sig-paren">(</span><em>key_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.get_keypair"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get the public key specified by :key_name:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key_name</strong> &#8211; the name of the key to look for</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the keypair (name, public_key) for :key_name:</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">exception.UserKeyPairMissing</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_net_id_by_label</code><span class="sig-paren">(</span><em>label</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.get_net_id_by_label"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_nova_network_id</code><span class="sig-paren">(</span><em>net_identifier</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.get_nova_network_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_server</code><span class="sig-paren">(</span><em>server</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.get_server"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_status</code><span class="sig-paren">(</span><em>server</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.get_status"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the server&#8217;s status.
+:param server: server object
+:returns: status as a string</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">is_bad_request</code><span class="sig-paren">(</span><em>ex</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.is_bad_request"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">is_conflict</code><span class="sig-paren">(</span><em>ex</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.is_conflict"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">is_not_found</code><span class="sig-paren">(</span><em>ex</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.is_not_found"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">is_over_limit</code><span class="sig-paren">(</span><em>ex</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.is_over_limit"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">is_unprocessable_entity</code><span class="sig-paren">(</span><em>ex</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.is_unprocessable_entity"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">meta_serialize</code><span class="sig-paren">(</span><em>metadata</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.meta_serialize"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Serialize non-string metadata values before sending them to
+Nova.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">meta_update</code><span class="sig-paren">(</span><em>server</em>, <em>metadata</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.meta_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Delete/Add the metadata in nova as needed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">rebuild</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.rebuild"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Rebuild the server and call check_rebuild to verify.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">refresh_server</code><span class="sig-paren">(</span><em>server</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.refresh_server"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Refresh server&#8217;s attributes and log warnings for non-critical
+API errors.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">rename</code><span class="sig-paren">(</span><em>server</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.rename"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Update the name for a server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resize</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.resize"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Resize the server and then call check_resize task to verify.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">server_to_ipaddress</code><span class="sig-paren">(</span><em>server</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#NovaClientPlugin.server_to_ipaddress"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the server&#8217;s IP address, fetching it from Nova.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.clients.os.nova.</code><code class="descname">ServerConstraint</code><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#ServerConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.BaseCustomConstraint</span></code></p>
+<dl class="attribute">
+<dt>
+<code class="descname">expected_exceptions</code><em class="property"> = (&lt;class 'heat.common.exception.ServerNotFound'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate_with_client</code><span class="sig-paren">(</span><em>client</em>, <em>server</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/clients/os/nova.html#ServerConstraint.validate_with_client"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.engine.clients.os.nova.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

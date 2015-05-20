@@ -1,0 +1,8 @@
+=====================================================
+The :mod:`heat.engine.service_software_config` Module
+=====================================================
+.. automodule:: heat.engine.service_software_config
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

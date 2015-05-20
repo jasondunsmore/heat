@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.api.openstack.v1.util &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../../../raxdox/index.html" />
+    <link rel="up" title="heat.api.openstack.v1" href="../v1.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../openstack.html" >heat.api.openstack</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="../v1.html" accesskey="U">heat.api.openstack.v1</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for heat.api.openstack.v1.util</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">from</span> <span class="nn">webob</span> <span class="kn">import</span> <span class="n">exc</span>
+
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">identifier</span>
+
+
+<div class="viewcode-block" id="policy_enforce"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.openstack.v1.util.html#heat.api.openstack.v1.util.policy_enforce">[docs]</a><span class="k">def</span> <span class="nf">policy_enforce</span><span class="p">(</span><span class="n">handler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Decorator that enforces policies.</span>
+
+<span class="sd">    Checks the path matches the request context and enforce policy defined in</span>
+<span class="sd">    policy.json.</span>
+
+<span class="sd">    This is a handler method decorator.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@six.wraps</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">handle_stack_method</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">tenant_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">tenant_id</span> <span class="o">!=</span> <span class="n">tenant_id</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exc</span><span class="o">.</span><span class="n">HTTPForbidden</span><span class="p">()</span>
+        <span class="n">allowed</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">enforce</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">context</span><span class="p">,</span>
+                                             <span class="n">action</span><span class="o">=</span><span class="n">handler</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+                                             <span class="n">scope</span><span class="o">=</span><span class="n">controller</span><span class="o">.</span><span class="n">REQUEST_SCOPE</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">allowed</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exc</span><span class="o">.</span><span class="n">HTTPForbidden</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">handler</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">handle_stack_method</span>
+
+</div>
+<div class="viewcode-block" id="identified_stack"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.openstack.v1.util.html#heat.api.openstack.v1.util.identified_stack">[docs]</a><span class="k">def</span> <span class="nf">identified_stack</span><span class="p">(</span><span class="n">handler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Decorator that passes a stack identifier instead of path components.</span>
+
+<span class="sd">    This is a handler method decorator.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@policy_enforce</span>
+    <span class="nd">@six.wraps</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">handle_stack_method</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">stack_name</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">stack_identity</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">HeatIdentifier</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">tenant_id</span><span class="p">,</span>
+                                                   <span class="n">stack_name</span><span class="p">,</span>
+                                                   <span class="n">stack_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">handler</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">stack_identity</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">handle_stack_method</span>
+
+</div>
+<div class="viewcode-block" id="make_url"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.openstack.v1.util.html#heat.api.openstack.v1.util.make_url">[docs]</a><span class="k">def</span> <span class="nf">make_url</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">identity</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the URL for the supplied identity dictionary.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">stack_identity</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">HeatIdentifier</span><span class="p">(</span><span class="o">**</span><span class="n">identity</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">err_reason</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid Stack address&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">exc</span><span class="o">.</span><span class="n">HTTPInternalServerError</span><span class="p">(</span><span class="n">err_reason</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">req</span><span class="o">.</span><span class="n">relative_url</span><span class="p">(</span><span class="n">stack_identity</span><span class="o">.</span><span class="n">url_path</span><span class="p">(),</span> <span class="bp">True</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="make_link"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.openstack.v1.util.html#heat.api.openstack.v1.util.make_link">[docs]</a><span class="k">def</span> <span class="nf">make_link</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">identity</span><span class="p">,</span> <span class="n">relationship</span><span class="o">=</span><span class="s">&#39;self&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a link structure for the supplied identity dictionary.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;href&#39;</span><span class="p">:</span> <span class="n">make_url</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">identity</span><span class="p">),</span> <span class="s">&#39;rel&#39;</span><span class="p">:</span> <span class="n">relationship</span><span class="p">}</span>
+
+</div>
+<div class="viewcode-block" id="get_allowed_params"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.openstack.v1.util.html#heat.api.openstack.v1.util.get_allowed_params">[docs]</a><span class="k">def</span> <span class="nf">get_allowed_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">whitelist</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Extract from ``params`` all entries listed in ``whitelist``.</span>
+
+<span class="sd">    The returning dict will contain an entry for a key if, and only if,</span>
+<span class="sd">    there&#39;s an entry in ``whitelist`` for that key and at least one entry in</span>
+<span class="sd">    ``params``. If ``params`` contains multiple entries for the same key, it</span>
+<span class="sd">    will yield an array of values: ``{key: [v1, v2,...]}``</span>
+
+<span class="sd">    :param params: a NestedMultiDict from webob.Request.params</span>
+<span class="sd">    :param whitelist: an array of strings to whitelist</span>
+
+<span class="sd">    :returns: a dict with {key: value} pairs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">allowed_params</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">get_type</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">whitelist</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">get_type</span> <span class="o">==</span> <span class="s">&#39;single&#39;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">get_type</span> <span class="o">==</span> <span class="s">&#39;multi&#39;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">getall</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">get_type</span> <span class="o">==</span> <span class="s">&#39;mixed&#39;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">getall</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+            <span class="n">allowed_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">return</span> <span class="n">allowed_params</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../openstack.html" >heat.api.openstack</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="../v1.html" >heat.api.openstack.v1</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+=======================================
+The :mod:`heat.objects.resource` Module
+=======================================
+.. automodule:: heat.objects.resource
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

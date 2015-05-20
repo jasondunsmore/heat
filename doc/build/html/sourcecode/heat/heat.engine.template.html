@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.template Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-engine-template-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.engine.template</span></code> Module<a class="headerlink" href="#the-heat-engine-template-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.template.</code><code class="descname">Template</code><span class="sig-paren">(</span><em>template</em>, <em>template_id=None</em>, <em>files=None</em>, <em>env=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/template.html#Template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">_abcoll.Mapping</span></code></p>
+<p>A stack template.</p>
+<dl class="method">
+<dt>
+<code class="descname">add_resource</code><span class="sig-paren">(</span><em>definition</em>, <em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.add_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Add a resource to the template.</p>
+<p>The resource is passed as a ResourceDefinition object. If no name is
+specified, the name from the ResourceDefinition should be used.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_section_name</code><span class="sig-paren">(</span><em>section</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.get_section_name"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a correct section name.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">load</code><span class="sig-paren">(</span><em>context</em>, <em>template_id</em>, <em>t=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.load"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Retrieve a Template with the given ID from the database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">param_schemata</code><span class="sig-paren">(</span><em>param_defaults=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.param_schemata"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a dict of parameters.Schema objects for the parameters.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">parameters</code><span class="sig-paren">(</span><em>stack_identifier</em>, <em>user_params</em>, <em>param_defaults=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.parameters"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a parameters.Parameters object for the stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">parse</code><span class="sig-paren">(</span><em>stack</em>, <em>snippet</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.parse"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">remove_resource</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.remove_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Remove a resource from the template.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resource_definitions</code><span class="sig-paren">(</span><em>stack</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.resource_definitions"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a dictionary of ResourceDefinition objects.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">store</code><span class="sig-paren">(</span><em>context=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.store"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Store the Template in the database and return its ID.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Validate the template.</p>
+<p>Validates the top-level sections of the template as well as syntax
+inside select sections. Some sections are not checked here but in
+code parts that are responsible for working with the respective
+sections (e.g. parameters are check by parameters schema class).</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate_resource_definitions</code><span class="sig-paren">(</span><em>stack</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.validate_resource_definitions"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Check section&#8217;s type of ResourceDefinitions.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">validate_resource_key_type</code><span class="sig-paren">(</span><em>key</em>, <em>valid_types</em>, <em>typename</em>, <em>allowed_keys</em>, <em>rsrc_name</em>, <em>rsrc_data</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/template.html#Template.validate_resource_key_type"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Validation type of the specific resource key.</p>
+<p>Used in validate_resource_definition and check correctness of
+key&#8217;s type.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.engine.template.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

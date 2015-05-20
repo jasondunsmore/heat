@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.clients.os.glance &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../../../raxdox/index.html" />
+    <link rel="up" title="heat.engine.clients" href="../../clients.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../clients.html" accesskey="U">heat.engine.clients</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for heat.engine.clients.os.glance</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">glanceclient</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">gc</span>
+<span class="kn">from</span> <span class="nn">glanceclient</span> <span class="kn">import</span> <span class="n">exc</span>
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span> <span class="k">as</span> <span class="n">logging</span>
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">uuidutils</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LI</span>
+<span class="kn">from</span> <span class="nn">heat.engine.clients</span> <span class="kn">import</span> <span class="n">client_plugin</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">constraints</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="GlanceClientPlugin"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.glance.html#heat.engine.clients.os.glance.GlanceClientPlugin">[docs]</a><span class="k">class</span> <span class="nc">GlanceClientPlugin</span><span class="p">(</span><span class="n">client_plugin</span><span class="o">.</span><span class="n">ClientPlugin</span><span class="p">):</span>
+
+    <span class="n">exceptions_module</span> <span class="o">=</span> <span class="n">exc</span>
+
+    <span class="k">def</span> <span class="nf">_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span>
+        <span class="n">endpoint_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;glance&#39;</span><span class="p">,</span> <span class="s">&#39;endpoint_type&#39;</span><span class="p">)</span>
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="n">service_type</span><span class="o">=</span><span class="s">&#39;image&#39;</span><span class="p">,</span>
+                                <span class="n">endpoint_type</span><span class="o">=</span><span class="n">endpoint_type</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;auth_url&#39;</span><span class="p">:</span> <span class="n">con</span><span class="o">.</span><span class="n">auth_url</span><span class="p">,</span>
+            <span class="s">&#39;service_type&#39;</span><span class="p">:</span> <span class="s">&#39;image&#39;</span><span class="p">,</span>
+            <span class="s">&#39;project_id&#39;</span><span class="p">:</span> <span class="n">con</span><span class="o">.</span><span class="n">tenant</span><span class="p">,</span>
+            <span class="s">&#39;token&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">auth_token</span><span class="p">,</span>
+            <span class="s">&#39;endpoint_type&#39;</span><span class="p">:</span> <span class="n">endpoint_type</span><span class="p">,</span>
+            <span class="s">&#39;cacert&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;glance&#39;</span><span class="p">,</span> <span class="s">&#39;ca_file&#39;</span><span class="p">),</span>
+            <span class="s">&#39;cert_file&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;glance&#39;</span><span class="p">,</span> <span class="s">&#39;cert_file&#39;</span><span class="p">),</span>
+            <span class="s">&#39;key_file&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;glance&#39;</span><span class="p">,</span> <span class="s">&#39;key_file&#39;</span><span class="p">),</span>
+            <span class="s">&#39;insecure&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;glance&#39;</span><span class="p">,</span> <span class="s">&#39;insecure&#39;</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">gc</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="s">&#39;1&#39;</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GlanceClientPlugin.is_not_found"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.glance.html#heat.engine.clients.os.glance.GlanceClientPlugin.is_not_found">[docs]</a>    <span class="k">def</span> <span class="nf">is_not_found</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">exc</span><span class="o">.</span><span class="n">HTTPNotFound</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GlanceClientPlugin.is_over_limit"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.glance.html#heat.engine.clients.os.glance.GlanceClientPlugin.is_over_limit">[docs]</a>    <span class="k">def</span> <span class="nf">is_over_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">exc</span><span class="o">.</span><span class="n">HTTPOverLimit</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GlanceClientPlugin.is_conflict"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.glance.html#heat.engine.clients.os.glance.GlanceClientPlugin.is_conflict">[docs]</a>    <span class="k">def</span> <span class="nf">is_conflict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">exc</span><span class="o">.</span><span class="n">HTTPConflict</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GlanceClientPlugin.get_image_id"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.glance.html#heat.engine.clients.os.glance.GlanceClientPlugin.get_image_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_image_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_identifier</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Return an id for the specified image name or identifier.</span>
+
+<span class="sd">        :param image_identifier: image name or a UUID-like identifier</span>
+<span class="sd">        :returns: the id of the requested :image_identifier:</span>
+<span class="sd">        :raises: exception.ImageNotFound,</span>
+<span class="sd">                 exception.PhysicalResourceNameAmbiguity</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">uuidutils</span><span class="o">.</span><span class="n">is_uuid_like</span><span class="p">(</span><span class="n">image_identifier</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">image_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">()</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">image_identifier</span><span class="p">)</span><span class="o">.</span><span class="n">id</span>
+            <span class="k">except</span> <span class="n">exc</span><span class="o">.</span><span class="n">HTTPNotFound</span><span class="p">:</span>
+                <span class="n">image_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_image_id_by_name</span><span class="p">(</span><span class="n">image_identifier</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">image_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_image_id_by_name</span><span class="p">(</span><span class="n">image_identifier</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">image_id</span>
+</div>
+<div class="viewcode-block" id="GlanceClientPlugin.get_image_id_by_name"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.glance.html#heat.engine.clients.os.glance.GlanceClientPlugin.get_image_id_by_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_image_id_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_identifier</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Return an id for the specified image name.</span>
+
+<span class="sd">        :param image_identifier: image name</span>
+<span class="sd">        :returns: the id of the requested :image_identifier:</span>
+<span class="sd">        :raises: exception.ImageNotFound,</span>
+<span class="sd">                 exception.PhysicalResourceNameAmbiguity</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">filters</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">image_identifier</span><span class="p">}</span>
+            <span class="n">image_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">()</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">exc</span><span class="o">.</span><span class="n">ClientException</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span>
+                <span class="n">_</span><span class="p">(</span><span class="s">&quot;Error retrieving image list from glance: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">ex</span><span class="p">)</span>
+        <span class="n">num_matches</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">image_list</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">num_matches</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&quot;Image </span><span class="si">%s</span><span class="s"> was not found in glance&quot;</span><span class="p">),</span>
+                     <span class="n">image_identifier</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">ImageNotFound</span><span class="p">(</span><span class="n">image_name</span><span class="o">=</span><span class="n">image_identifier</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">num_matches</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&quot;Multiple images </span><span class="si">%s</span><span class="s"> were found in glance with name&quot;</span><span class="p">),</span>
+                     <span class="n">image_identifier</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">PhysicalResourceNameAmbiguity</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">image_identifier</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">image_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span>
+
+</div></div>
+<div class="viewcode-block" id="ImageConstraint"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.glance.html#heat.engine.clients.os.glance.ImageConstraint">[docs]</a><span class="k">class</span> <span class="nc">ImageConstraint</span><span class="p">(</span><span class="n">constraints</span><span class="o">.</span><span class="n">BaseCustomConstraint</span><span class="p">):</span>
+
+    <span class="n">expected_exceptions</span> <span class="o">=</span> <span class="p">(</span><span class="n">exception</span><span class="o">.</span><span class="n">ImageNotFound</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="ImageConstraint.validate_with_client"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.engine.clients.os.glance.html#heat.engine.clients.os.glance.ImageConstraint.validate_with_client">[docs]</a>    <span class="k">def</span> <span class="nf">validate_with_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">client_plugin</span><span class="p">(</span><span class="s">&#39;glance&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_image_id</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../clients.html" >heat.engine.clients</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

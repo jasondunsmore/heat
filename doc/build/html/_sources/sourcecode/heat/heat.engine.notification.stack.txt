@@ -1,0 +1,8 @@
+================================================
+The :mod:`heat.engine.notification.stack` Module
+================================================
+.. automodule:: heat.engine.notification.stack
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

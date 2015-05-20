@@ -1,0 +1,778 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.api.cfn.v1.stacks &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../../../raxdox/index.html" />
+    <link rel="up" title="heat.api.cfn.v1" href="../v1.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../cfn.html" >heat.api.cfn</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="../v1.html" accesskey="U">heat.api.cfn.v1</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for heat.api.cfn.v1.stacks</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Stack endpoint for Heat CloudFormation v1 API.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span> <span class="k">as</span> <span class="n">logging</span>
+<span class="kn">from</span> <span class="nn">oslo_serialization</span> <span class="kn">import</span> <span class="n">jsonutils</span>
+
+<span class="kn">from</span> <span class="nn">heat.api.aws</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.api.aws</span> <span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">api_utils</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">exception</span> <span class="k">as</span> <span class="n">heat_exception</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LI</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">identifier</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">policy</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">template_format</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">urlfetch</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">wsgi</span>
+<span class="kn">from</span> <span class="nn">heat.rpc</span> <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">rpc_api</span>
+<span class="kn">from</span> <span class="nn">heat.rpc</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">rpc_client</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="StackController"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.StackController">[docs]</a><span class="k">class</span> <span class="nc">StackController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    WSGI controller for stacks resource in Heat CloudFormation v1 API</span>
+<span class="sd">    Implements the API actions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="n">options</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span> <span class="o">=</span> <span class="n">rpc_client</span><span class="o">.</span><span class="n">EngineClient</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">policy</span> <span class="o">=</span> <span class="n">policy</span><span class="o">.</span><span class="n">Enforcer</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s">&#39;cloudformation&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_enforce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Authorize an action against the policy.json.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">enforce</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">heat_exception</span><span class="o">.</span><span class="n">Forbidden</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Action </span><span class="si">%s</span><span class="s"> not allowed for user&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">action</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatAccessDeniedError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="c"># We expect policy.enforce to either pass or raise Forbidden</span>
+            <span class="c"># however, if anything else happens, we want to raise</span>
+            <span class="c"># HeatInternalFailureError, failure to do this results in</span>
+            <span class="c"># the user getting a big stacktrace spew as an API response</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Error authorizing action </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">action</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatInternalFailureError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_id_format</span><span class="p">(</span><span class="n">resp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Format the StackId field in the response as an ARN, and process other</span>
+<span class="sd">        IDs into the correct format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s">&#39;StackId&#39;</span> <span class="ow">in</span> <span class="n">resp</span><span class="p">:</span>
+            <span class="n">identity</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">HeatIdentifier</span><span class="p">(</span><span class="o">**</span><span class="n">resp</span><span class="p">[</span><span class="s">&#39;StackId&#39;</span><span class="p">])</span>
+            <span class="n">resp</span><span class="p">[</span><span class="s">&#39;StackId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">identity</span><span class="o">.</span><span class="n">arn</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s">&#39;EventId&#39;</span> <span class="ow">in</span> <span class="n">resp</span><span class="p">:</span>
+            <span class="n">identity</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">EventIdentifier</span><span class="p">(</span><span class="o">**</span><span class="n">resp</span><span class="p">[</span><span class="s">&#39;EventId&#39;</span><span class="p">])</span>
+            <span class="n">resp</span><span class="p">[</span><span class="s">&#39;EventId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">identity</span><span class="o">.</span><span class="n">event_id</span>
+        <span class="k">return</span> <span class="n">resp</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_extract_user_params</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract a dictionary of user input parameters for the stack</span>
+
+<span class="sd">        In the AWS API parameters, each user parameter appears as two key-value</span>
+<span class="sd">        pairs with keys of the form below::</span>
+
+<span class="sd">          Parameters.member.1.ParameterKey</span>
+<span class="sd">          Parameters.member.1.ParameterValue</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">extract_param_pairs</span><span class="p">(</span><span class="n">params</span><span class="p">,</span>
+                                             <span class="n">prefix</span><span class="o">=</span><span class="s">&#39;Parameters&#39;</span><span class="p">,</span>
+                                             <span class="n">keyname</span><span class="o">=</span><span class="s">&#39;ParameterKey&#39;</span><span class="p">,</span>
+                                             <span class="n">valuename</span><span class="o">=</span><span class="s">&#39;ParameterValue&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_identity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">stack_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a stack identifier from the given stack name or ARN.</span>
+
+<span class="sd">        In the case of a stack name, the identifier will be looked up in the</span>
+<span class="sd">        engine over RPC.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">identifier</span><span class="o">.</span><span class="n">HeatIdentifier</span><span class="o">.</span><span class="n">from_arn</span><span class="p">(</span><span class="n">stack_name</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">identify_stack</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">stack_name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="StackController.list"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.StackController.list">[docs]</a>    <span class="k">def</span> <span class="nf">list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements ListStacks API action</span>
+<span class="sd">        Lists summary information for all stacks</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;ListStacks&#39;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">format_stack_summary</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Reformat engine output into the AWS &quot;StackSummary&quot; format</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="c"># Map the engine-api format to the AWS StackSummary datatype</span>
+            <span class="n">keymap</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_CREATION_TIME</span><span class="p">:</span> <span class="s">&#39;CreationTime&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_UPDATED_TIME</span><span class="p">:</span> <span class="s">&#39;LastUpdatedTime&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_ID</span><span class="p">:</span> <span class="s">&#39;StackId&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_NAME</span><span class="p">:</span> <span class="s">&#39;StackName&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_STATUS_DATA</span><span class="p">:</span> <span class="s">&#39;StackStatusReason&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_TMPL_DESCRIPTION</span><span class="p">:</span> <span class="s">&#39;TemplateDescription&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">reformat_dict_keys</span><span class="p">(</span><span class="n">keymap</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+
+            <span class="n">action</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_ACTION</span><span class="p">]</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_STATUS</span><span class="p">]</span>
+            <span class="n">result</span><span class="p">[</span><span class="s">&#39;StackStatus&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">action</span><span class="p">,</span> <span class="n">status</span><span class="p">))</span>
+
+            <span class="c"># AWS docs indicate DeletionTime is omitted for current stacks</span>
+            <span class="c"># This is still TODO(unknown) in the engine, we don&#39;t keep data for</span>
+            <span class="c"># stacks after they are deleted</span>
+            <span class="k">if</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_DELETION_TIME</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="s">&#39;DeletionTime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_DELETION_TIME</span><span class="p">]</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_format</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stack_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">list_stacks</span><span class="p">(</span><span class="n">con</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">map_remote_error</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;StackSummaries&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">format_stack_summary</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">stack_list</span><span class="p">]}</span>
+
+        <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&#39;ListStacks&#39;</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StackController.describe"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.StackController.describe">[docs]</a>    <span class="k">def</span> <span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements DescribeStacks API action</span>
+<span class="sd">        Gets detailed information for a stack (or all stacks)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;DescribeStacks&#39;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">format_stack_outputs</span><span class="p">(</span><span class="n">o</span><span class="p">):</span>
+            <span class="n">keymap</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">OUTPUT_DESCRIPTION</span><span class="p">:</span> <span class="s">&#39;Description&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">OUTPUT_KEY</span><span class="p">:</span> <span class="s">&#39;OutputKey&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">OUTPUT_VALUE</span><span class="p">:</span> <span class="s">&#39;OutputValue&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="k">def</span> <span class="nf">replacecolon</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">k_v</span><span class="p">:</span> <span class="p">(</span><span class="n">k_v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="s">&#39;.&#39;</span><span class="p">),</span> <span class="n">k_v</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+
+            <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">attrs</span><span class="p">):</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Recursively replace all : with . in dict keys</span>
+<span class="sd">                so that they are not interpreted as xml namespaces.</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">replacecolon</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">new</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                        <span class="n">new</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">new</span>
+
+            <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">reformat_dict_keys</span><span class="p">(</span><span class="n">keymap</span><span class="p">,</span> <span class="n">transform</span><span class="p">(</span><span class="n">o</span><span class="p">))</span>
+
+        <span class="k">def</span> <span class="nf">format_stack</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Reformat engine output into the AWS &quot;StackSummary&quot; format</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">keymap</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_CAPABILITIES</span><span class="p">:</span> <span class="s">&#39;Capabilities&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_CREATION_TIME</span><span class="p">:</span> <span class="s">&#39;CreationTime&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_DESCRIPTION</span><span class="p">:</span> <span class="s">&#39;Description&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_DISABLE_ROLLBACK</span><span class="p">:</span> <span class="s">&#39;DisableRollback&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_NOTIFICATION_TOPICS</span><span class="p">:</span> <span class="s">&#39;NotificationARNs&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_PARAMETERS</span><span class="p">:</span> <span class="s">&#39;Parameters&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_ID</span><span class="p">:</span> <span class="s">&#39;StackId&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_NAME</span><span class="p">:</span> <span class="s">&#39;StackName&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_STATUS_DATA</span><span class="p">:</span> <span class="s">&#39;StackStatusReason&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_TIMEOUT</span><span class="p">:</span> <span class="s">&#39;TimeoutInMinutes&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_UPDATED_TIME</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">keymap</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_UPDATED_TIME</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;LastUpdatedTime&#39;</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">reformat_dict_keys</span><span class="p">(</span><span class="n">keymap</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+
+            <span class="n">action</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_ACTION</span><span class="p">]</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_STATUS</span><span class="p">]</span>
+            <span class="n">result</span><span class="p">[</span><span class="s">&#39;StackStatus&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">action</span><span class="p">,</span> <span class="n">status</span><span class="p">))</span>
+
+            <span class="c"># Reformat outputs, these are handled separately as they are</span>
+            <span class="c"># only present in the engine output for a completely created</span>
+            <span class="c"># stack</span>
+            <span class="n">result</span><span class="p">[</span><span class="s">&#39;Outputs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_OUTPUTS</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">s</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">STACK_OUTPUTS</span><span class="p">]:</span>
+                    <span class="n">result</span><span class="p">[</span><span class="s">&#39;Outputs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_stack_outputs</span><span class="p">(</span><span class="n">o</span><span class="p">))</span>
+
+            <span class="c"># Reformat Parameters dict-of-dict into AWS API format</span>
+            <span class="c"># This is a list-of-dict with nasty &quot;ParameterKey&quot; : key</span>
+            <span class="c"># &quot;ParameterValue&quot; : value format.</span>
+            <span class="n">result</span><span class="p">[</span><span class="s">&#39;Parameters&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[{</span><span class="s">&#39;ParameterKey&#39;</span><span class="p">:</span> <span class="n">k</span><span class="p">,</span>
+                                    <span class="s">&#39;ParameterValue&#39;</span><span class="p">:</span> <span class="n">v</span><span class="p">}</span>
+                                    <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;Parameters&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_format</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span>
+        <span class="c"># If no StackName parameter is passed, we pass None into the engine</span>
+        <span class="c"># this returns results for all stacks (visible to this user), which</span>
+        <span class="c"># is the behavior described in the AWS DescribeStacks API docs</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s">&#39;StackName&#39;</span> <span class="ow">in</span> <span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
+                <span class="n">identity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_identity</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;StackName&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">identity</span> <span class="o">=</span> <span class="bp">None</span>
+
+            <span class="n">stack_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">show_stack</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">identity</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">map_remote_error</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;Stacks&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">format_stack</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">stack_list</span><span class="p">]}</span>
+
+        <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&#39;DescribeStacks&#39;</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_get_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get template file contents, either from local file or URL</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s">&#39;TemplateBody&#39;</span> <span class="ow">in</span> <span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;TemplateBody ...&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;TemplateBody&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="s">&#39;TemplateUrl&#39;</span> <span class="ow">in</span> <span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;TemplateUrl&#39;</span><span class="p">]</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;TemplateUrl </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">urlfetch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Failed to fetch template: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">exc</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatInvalidParameterValueError</span><span class="p">(</span><span class="n">detail</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="n">CREATE_OR_UPDATE_ACTION</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">CREATE_STACK</span><span class="p">,</span> <span class="n">UPDATE_STACK</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s">&quot;CreateStack&quot;</span><span class="p">,</span> <span class="s">&quot;UpdateStack&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="StackController.create"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.StackController.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;CreateStack&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_or_update</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CREATE_STACK</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StackController.update"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.StackController.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;UpdateStack&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_or_update</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">UPDATE_STACK</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StackController.create_or_update"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.StackController.create_or_update">[docs]</a>    <span class="k">def</span> <span class="nf">create_or_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements CreateStack and UpdateStack API actions.</span>
+<span class="sd">        Create or update stack as defined in template file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">extract_args</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Extract request parameters/arguments and reformat them to match</span>
+<span class="sd">            the engine API.  FIXME: we currently only support a subset of</span>
+<span class="sd">            the AWS defined parameters (both here and in the engine)</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="c"># TODO(shardy) : Capabilities, NotificationARNs</span>
+            <span class="n">keymap</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;TimeoutInMinutes&#39;</span><span class="p">:</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_TIMEOUT</span><span class="p">,</span>
+                      <span class="s">&#39;DisableRollback&#39;</span><span class="p">:</span> <span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_DISABLE_ROLLBACK</span><span class="p">}</span>
+
+            <span class="k">if</span> <span class="s">&#39;DisableRollback&#39;</span> <span class="ow">in</span> <span class="n">params</span> <span class="ow">and</span> <span class="s">&#39;OnFailure&#39;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;DisableRollback and OnFailure &#39;</span>
+                        <span class="s">&#39;may not be used together&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatInvalidParameterCombinationError</span><span class="p">(</span>
+                    <span class="n">detail</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keymap</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                    <span class="n">result</span><span class="p">[</span><span class="n">keymap</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s">&#39;OnFailure&#39;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s">&#39;OnFailure&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s">&#39;DO_NOTHING&#39;</span><span class="p">:</span>
+                    <span class="n">result</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_DISABLE_ROLLBACK</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;true&#39;</span>
+                <span class="k">elif</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;ROLLBACK&#39;</span><span class="p">,</span> <span class="s">&#39;DELETE&#39;</span><span class="p">):</span>
+                    <span class="n">result</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_DISABLE_ROLLBACK</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;false&#39;</span>
+
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="k">if</span> <span class="n">action</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">CREATE_OR_UPDATE_ACTION</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Unexpected action </span><span class="si">%(action)s</span><span class="s">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">({</span><span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">action</span><span class="p">})</span>
+            <span class="c"># This should not happen, so return HeatInternalFailureError</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatInternalFailureError</span><span class="p">(</span><span class="n">detail</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">engine_action</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">CREATE_STACK</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">create_stack</span><span class="p">,</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">UPDATE_STACK</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">update_stack</span><span class="p">}</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span>
+
+        <span class="c"># Extract the stack input parameters</span>
+        <span class="n">stack_parms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_user_params</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+
+        <span class="c"># Extract any additional arguments (&quot;Request Parameters&quot;)</span>
+        <span class="n">create_args</span> <span class="o">=</span> <span class="n">extract_args</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">templ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_template</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">gaierror</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid Template URL&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatInvalidParameterValueError</span><span class="p">(</span><span class="n">detail</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">templ</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;TemplateBody or TemplateUrl were not given.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatMissingParameterError</span><span class="p">(</span><span class="n">detail</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stack</span> <span class="o">=</span> <span class="n">template_format</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">templ</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;The Template must be a JSON or YAML document.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatInvalidParameterValueError</span><span class="p">(</span><span class="n">detail</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;template&#39;</span><span class="p">:</span> <span class="n">stack</span><span class="p">,</span>
+                <span class="s">&#39;params&#39;</span><span class="p">:</span> <span class="n">stack_parms</span><span class="p">,</span>
+                <span class="s">&#39;files&#39;</span><span class="p">:</span> <span class="p">{},</span>
+                <span class="s">&#39;args&#39;</span><span class="p">:</span> <span class="n">create_args</span><span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stack_name</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;StackName&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">CREATE_STACK</span><span class="p">:</span>
+                <span class="n">args</span><span class="p">[</span><span class="s">&#39;stack_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stack_name</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">args</span><span class="p">[</span><span class="s">&#39;stack_identity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_identity</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">stack_name</span><span class="p">)</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="n">engine_action</span><span class="p">[</span><span class="n">action</span><span class="p">](</span><span class="n">con</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">map_remote_error</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">identity</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">HeatIdentifier</span><span class="p">(</span><span class="o">**</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;StackId&#39;</span><span class="p">:</span> <span class="n">identity</span><span class="o">.</span><span class="n">arn</span><span class="p">()}</span>
+
+        <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StackController.cancel_update"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.StackController.cancel_update">[docs]</a>    <span class="k">def</span> <span class="nf">cancel_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="s">&#39;CancelUpdateStack&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+        <span class="n">con</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span>
+        <span class="n">stack_name</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;StackName&#39;</span><span class="p">]</span>
+        <span class="n">stack_identity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_identity</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">stack_name</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">stack_cancel_update</span><span class="p">(</span>
+                <span class="n">con</span><span class="p">,</span> <span class="n">stack_identity</span><span class="o">=</span><span class="n">stack_identity</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">map_remote_error</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="p">{})</span>
+</div>
+<div class="viewcode-block" id="StackController.get_template"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.StackController.get_template">[docs]</a>    <span class="k">def</span> <span class="nf">get_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements the GetTemplate API action.</span>
+<span class="sd">        Get the template body for an existing stack.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;GetTemplate&#39;</span><span class="p">)</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">identity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_identity</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;StackName&#39;</span><span class="p">])</span>
+            <span class="n">templ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">identity</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">map_remote_error</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">templ</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;stack not not found&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatInvalidParameterValueError</span><span class="p">(</span><span class="n">detail</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&#39;GetTemplate&#39;</span><span class="p">,</span>
+                                         <span class="p">{</span><span class="s">&#39;TemplateBody&#39;</span><span class="p">:</span> <span class="n">templ</span><span class="p">})</span>
+</div>
+<div class="viewcode-block" id="StackController.estimate_template_cost"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.StackController.estimate_template_cost">[docs]</a>    <span class="k">def</span> <span class="nf">estimate_template_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements the EstimateTemplateCost API action</span>
+<span class="sd">        Get the estimated monthly cost of a template</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;EstimateTemplateCost&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&#39;EstimateTemplateCost&#39;</span><span class="p">,</span>
+                                         <span class="p">{</span><span class="s">&#39;Url&#39;</span><span class="p">:</span>
+                                          <span class="s">&#39;http://en.wikipedia.org/wiki/Gratis&#39;</span>
+                                          <span class="p">}</span>
+                                         <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StackController.validate_template"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.StackController.validate_template">[docs]</a>    <span class="k">def</span> <span class="nf">validate_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements the ValidateTemplate API action.</span>
+<span class="sd">        Validates the specified template.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;ValidateTemplate&#39;</span><span class="p">)</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">templ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_template</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">gaierror</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid Template URL&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatInvalidParameterValueError</span><span class="p">(</span><span class="n">detail</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">templ</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;TemplateBody or TemplateUrl were not given.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatMissingParameterError</span><span class="p">(</span><span class="n">detail</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">template</span> <span class="o">=</span> <span class="n">template_format</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">templ</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;The Template must be a JSON or YAML document.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatInvalidParameterValueError</span><span class="p">(</span><span class="n">detail</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&#39;validate_template&#39;</span><span class="p">))</span>
+
+        <span class="k">def</span> <span class="nf">format_validate_parameter</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Reformat engine output into the AWS &quot;ValidateTemplate&quot; format</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s">&#39;ParameterKey&#39;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span>
+                <span class="s">&#39;DefaultValue&#39;</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_DEFAULT</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">),</span>
+                <span class="s">&#39;Description&#39;</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_DESCRIPTION</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">),</span>
+                <span class="s">&#39;NoEcho&#39;</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">PARAM_NO_ECHO</span><span class="p">,</span> <span class="s">&#39;false&#39;</span><span class="p">)</span>
+            <span class="p">}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">validate_template</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s">&#39;Error&#39;</span> <span class="ow">in</span> <span class="n">res</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&#39;ValidateTemplate&#39;</span><span class="p">,</span>
+                                                 <span class="n">res</span><span class="p">[</span><span class="s">&#39;Error&#39;</span><span class="p">])</span>
+
+            <span class="n">res</span><span class="p">[</span><span class="s">&#39;Parameters&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">format_validate_parameter</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+                                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">res</span><span class="p">[</span><span class="s">&#39;Parameters&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+            <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&#39;ValidateTemplate&#39;</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">map_remote_error</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StackController.delete"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.StackController.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements the DeleteStack API action.</span>
+<span class="sd">        Deletes the specified stack.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;DeleteStack&#39;</span><span class="p">)</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">identity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_identity</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;StackName&#39;</span><span class="p">])</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">delete_stack</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">identity</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">map_remote_error</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&#39;DeleteStack&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&#39;DeleteStack&#39;</span><span class="p">,</span> <span class="n">res</span><span class="p">[</span><span class="s">&#39;Error&#39;</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="StackController.events_list"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.StackController.events_list">[docs]</a>    <span class="k">def</span> <span class="nf">events_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements the DescribeStackEvents API action.</span>
+<span class="sd">        Returns events related to a specified stack (or all stacks).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;DescribeStackEvents&#39;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">format_stack_event</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Reformat engine output into the AWS &quot;StackEvent&quot; format</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">keymap</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_ID</span><span class="p">:</span> <span class="s">&#39;EventId&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_RES_NAME</span><span class="p">:</span> <span class="s">&#39;LogicalResourceId&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_RES_PHYSICAL_ID</span><span class="p">:</span> <span class="s">&#39;PhysicalResourceId&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_RES_PROPERTIES</span><span class="p">:</span> <span class="s">&#39;ResourceProperties&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_RES_STATUS_DATA</span><span class="p">:</span> <span class="s">&#39;ResourceStatusReason&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_RES_TYPE</span><span class="p">:</span> <span class="s">&#39;ResourceType&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_STACK_ID</span><span class="p">:</span> <span class="s">&#39;StackId&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_STACK_NAME</span><span class="p">:</span> <span class="s">&#39;StackName&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_TIMESTAMP</span><span class="p">:</span> <span class="s">&#39;Timestamp&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">reformat_dict_keys</span><span class="p">(</span><span class="n">keymap</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_RES_ACTION</span><span class="p">]</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">EVENT_RES_STATUS</span><span class="p">]</span>
+            <span class="n">result</span><span class="p">[</span><span class="s">&#39;ResourceStatus&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">action</span><span class="p">,</span> <span class="n">status</span><span class="p">))</span>
+            <span class="n">result</span><span class="p">[</span><span class="s">&#39;ResourceProperties&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jsonutils</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">result</span><span class="p">[</span>
+                <span class="s">&#39;ResourceProperties&#39;</span><span class="p">])</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_format</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span>
+        <span class="n">stack_name</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;StackName&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">identity</span> <span class="o">=</span> <span class="n">stack_name</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_identity</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">stack_name</span><span class="p">)</span>
+            <span class="n">events</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">list_events</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">identity</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">map_remote_error</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">format_stack_event</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">events</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&#39;DescribeStackEvents&#39;</span><span class="p">,</span>
+                                         <span class="p">{</span><span class="s">&#39;StackEvents&#39;</span><span class="p">:</span> <span class="n">result</span><span class="p">})</span>
+</div>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_resource_status</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_ACTION</span><span class="p">]</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_STATUS</span><span class="p">]</span>
+        <span class="k">return</span> <span class="s">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">action</span><span class="p">,</span> <span class="n">status</span><span class="p">))</span>
+
+<div class="viewcode-block" id="StackController.describe_stack_resource"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.StackController.describe_stack_resource">[docs]</a>    <span class="k">def</span> <span class="nf">describe_stack_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements the DescribeStackResource API action.</span>
+<span class="sd">        Return the details of the given resource belonging to the given stack.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;DescribeStackResource&#39;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">format_resource_detail</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+            <span class="c"># Reformat engine output into the AWS &quot;StackResourceDetail&quot; format</span>
+            <span class="n">keymap</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_DESCRIPTION</span><span class="p">:</span> <span class="s">&#39;Description&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_UPDATED_TIME</span><span class="p">:</span> <span class="s">&#39;LastUpdatedTimestamp&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_NAME</span><span class="p">:</span> <span class="s">&#39;LogicalResourceId&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_METADATA</span><span class="p">:</span> <span class="s">&#39;Metadata&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_PHYSICAL_ID</span><span class="p">:</span> <span class="s">&#39;PhysicalResourceId&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_STATUS_DATA</span><span class="p">:</span> <span class="s">&#39;ResourceStatusReason&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_TYPE</span><span class="p">:</span> <span class="s">&#39;ResourceType&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_STACK_ID</span><span class="p">:</span> <span class="s">&#39;StackId&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_STACK_NAME</span><span class="p">:</span> <span class="s">&#39;StackName&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">reformat_dict_keys</span><span class="p">(</span><span class="n">keymap</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+            <span class="n">result</span><span class="p">[</span><span class="s">&#39;ResourceStatus&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resource_status</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_format</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">identity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_identity</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;StackName&#39;</span><span class="p">])</span>
+            <span class="n">resource_details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">describe_stack_resource</span><span class="p">(</span>
+                <span class="n">con</span><span class="p">,</span>
+                <span class="n">stack_identity</span><span class="o">=</span><span class="n">identity</span><span class="p">,</span>
+                <span class="n">resource_name</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;LogicalResourceId&#39;</span><span class="p">))</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">map_remote_error</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">format_resource_detail</span><span class="p">(</span><span class="n">resource_details</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&#39;DescribeStackResource&#39;</span><span class="p">,</span>
+                                         <span class="p">{</span><span class="s">&#39;StackResourceDetail&#39;</span><span class="p">:</span> <span class="n">result</span><span class="p">})</span>
+</div>
+<div class="viewcode-block" id="StackController.describe_stack_resources"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.StackController.describe_stack_resources">[docs]</a>    <span class="k">def</span> <span class="nf">describe_stack_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements the DescribeStackResources API action</span>
+<span class="sd">        Return details of resources specified by the parameters.</span>
+
+<span class="sd">        `StackName`: returns all resources belonging to the stack.</span>
+
+<span class="sd">        `PhysicalResourceId`: returns all resources belonging to the stack this</span>
+<span class="sd">        resource is associated with.</span>
+
+<span class="sd">        Only one of the parameters may be specified.</span>
+
+<span class="sd">        Optional parameter:</span>
+
+<span class="sd">        `LogicalResourceId`: filter the resources list by the logical resource</span>
+<span class="sd">        id.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;DescribeStackResources&#39;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">format_stack_resource</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Reformat engine output into the AWS &quot;StackResource&quot; format</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">keymap</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_DESCRIPTION</span><span class="p">:</span> <span class="s">&#39;Description&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_NAME</span><span class="p">:</span> <span class="s">&#39;LogicalResourceId&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_PHYSICAL_ID</span><span class="p">:</span> <span class="s">&#39;PhysicalResourceId&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_STATUS_DATA</span><span class="p">:</span> <span class="s">&#39;ResourceStatusReason&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_TYPE</span><span class="p">:</span> <span class="s">&#39;ResourceType&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_STACK_ID</span><span class="p">:</span> <span class="s">&#39;StackId&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_STACK_NAME</span><span class="p">:</span> <span class="s">&#39;StackName&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_UPDATED_TIME</span><span class="p">:</span> <span class="s">&#39;Timestamp&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">reformat_dict_keys</span><span class="p">(</span><span class="n">keymap</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+            <span class="n">result</span><span class="p">[</span><span class="s">&#39;ResourceStatus&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resource_status</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_format</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span>
+        <span class="n">stack_name</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;StackName&#39;</span><span class="p">)</span>
+        <span class="n">physical_resource_id</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;PhysicalResourceId&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stack_name</span> <span class="ow">and</span> <span class="n">physical_resource_id</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;Use `StackName` or `PhysicalResourceId` but not both&#39;</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">HeatInvalidParameterCombinationError</span><span class="p">(</span><span class="n">detail</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stack_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">identity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_identity</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">stack_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">identity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">find_physical_resource</span><span class="p">(</span>
+                    <span class="n">con</span><span class="p">,</span>
+                    <span class="n">physical_resource_id</span><span class="o">=</span><span class="n">physical_resource_id</span><span class="p">)</span>
+            <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">describe_stack_resources</span><span class="p">(</span>
+                <span class="n">con</span><span class="p">,</span>
+                <span class="n">stack_identity</span><span class="o">=</span><span class="n">identity</span><span class="p">,</span>
+                <span class="n">resource_name</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;LogicalResourceId&#39;</span><span class="p">))</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">map_remote_error</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">format_stack_resource</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&#39;DescribeStackResources&#39;</span><span class="p">,</span>
+                                         <span class="p">{</span><span class="s">&#39;StackResources&#39;</span><span class="p">:</span> <span class="n">result</span><span class="p">})</span>
+</div>
+<div class="viewcode-block" id="StackController.list_stack_resources"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.StackController.list_stack_resources">[docs]</a>    <span class="k">def</span> <span class="nf">list_stack_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements the ListStackResources API action</span>
+<span class="sd">        Return summary of the resources belonging to the specified stack.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="s">&#39;ListStackResources&#39;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">format_resource_summary</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Reformat engine output into the AWS &quot;StackResourceSummary&quot; format</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">keymap</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_UPDATED_TIME</span><span class="p">:</span> <span class="s">&#39;LastUpdatedTimestamp&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_NAME</span><span class="p">:</span> <span class="s">&#39;LogicalResourceId&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_PHYSICAL_ID</span><span class="p">:</span> <span class="s">&#39;PhysicalResourceId&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_STATUS_DATA</span><span class="p">:</span> <span class="s">&#39;ResourceStatusReason&#39;</span><span class="p">,</span>
+                <span class="n">rpc_api</span><span class="o">.</span><span class="n">RES_TYPE</span><span class="p">:</span> <span class="s">&#39;ResourceType&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">reformat_dict_keys</span><span class="p">(</span><span class="n">keymap</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+            <span class="n">result</span><span class="p">[</span><span class="s">&#39;ResourceStatus&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resource_status</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="n">con</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">context</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">identity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_identity</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;StackName&#39;</span><span class="p">])</span>
+            <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpc_client</span><span class="o">.</span><span class="n">list_stack_resources</span><span class="p">(</span>
+                <span class="n">con</span><span class="p">,</span>
+                <span class="n">stack_identity</span><span class="o">=</span><span class="n">identity</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">exception</span><span class="o">.</span><span class="n">map_remote_error</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="n">summaries</span> <span class="o">=</span> <span class="p">[</span><span class="n">format_resource_summary</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">api_utils</span><span class="o">.</span><span class="n">format_response</span><span class="p">(</span><span class="s">&#39;ListStackResources&#39;</span><span class="p">,</span>
+                                         <span class="p">{</span><span class="s">&#39;StackResourceSummaries&#39;</span><span class="p">:</span> <span class="n">summaries</span><span class="p">})</span>
+
+</div></div>
+<div class="viewcode-block" id="create_resource"><a class="viewcode-back" href="../../../../../sourcecode/heat/heat.api.cfn.v1.stacks.html#heat.api.cfn.v1.stacks.create_resource">[docs]</a><span class="k">def</span> <span class="nf">create_resource</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stacks resource factory method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">deserializer</span> <span class="o">=</span> <span class="n">wsgi</span><span class="o">.</span><span class="n">JSONRequestDeserializer</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">wsgi</span><span class="o">.</span><span class="n">Resource</span><span class="p">(</span><span class="n">StackController</span><span class="p">(</span><span class="n">options</span><span class="p">),</span> <span class="n">deserializer</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../cfn.html" >heat.api.cfn</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="../v1.html" >heat.api.cfn.v1</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

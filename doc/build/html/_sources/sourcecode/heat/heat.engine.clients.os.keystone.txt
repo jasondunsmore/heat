@@ -1,0 +1,8 @@
+=================================================
+The :mod:`heat.engine.clients.os.keystone` Module
+=================================================
+.. automodule:: heat.engine.clients.os.keystone
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

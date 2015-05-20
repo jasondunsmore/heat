@@ -1,0 +1,8 @@
+========================================
+The :mod:`heat.api.cfn.v1.stacks` Module
+========================================
+.. automodule:: heat.api.cfn.v1.stacks
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

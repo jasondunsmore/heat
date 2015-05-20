@@ -1,0 +1,8 @@
+=======================================
+The :mod:`heat.api.cfn.versions` Module
+=======================================
+.. automodule:: heat.api.cfn.versions
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

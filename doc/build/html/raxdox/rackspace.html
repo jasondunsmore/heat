@@ -1,0 +1,3361 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Rackspace Resource Types &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="index.html" />
+    <link rel="next" title="Docker Resource Types" href="docker.html" />
+    <link rel="prev" title="OpenStack Resource Types" href="openstack.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="docker.html" title="Docker Resource Types"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="openstack.html" title="OpenStack Resource Types"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="rackspace-resource-types">
+<h1>Rackspace Resource Types<a class="headerlink" href="#rackspace-resource-types" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="Rackspace::AutoScale::Group">
+<h2>Rackspace::AutoScale::Group<a class="headerlink" href="#Rackspace::AutoScale::Group" title="Permalink to this headline">¶</a></h2>
+<p>Represents a scaling group.</p>
+<div class="section" id="Rackspace::AutoScale::Group-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::AutoScale::Group-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>groupConfiguration <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Group configuration.</p>
+<p>Can be updated without replacement.</p>
+<p>Required property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>cooldown <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">Number of seconds after capacity changes during which further capacity changes are disabled.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>maxEntities <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Maximum number of entities in this scaling group.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>metadata <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Arbitrary key/value metadata to associate with this group.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>minEntities <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Minimum number of entities in this scaling group.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of the scaling group.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</dd>
+<dt>launchConfiguration <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Launch configuration.</p>
+<p>Can be updated without replacement.</p>
+<p>Required property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>args <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Type-specific server launching arguments.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>loadBalancers <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">List of load balancers to hook the server up to. If not specified, no load balancing will be configured.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>loadBalancerId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">ID of the load balancer.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>port <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Server port to connect the load balancer to.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>server <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Server creation arguments, as accepted by the Cloud Servers server creation API.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>config_drive <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Enable config drive on the instance.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>diskConfig <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Configuration specifying the partition layout. AUTO to create a partition utilizing the entire disk, and MANUAL to create a partition matching the source image.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: AUTO, MANUAL</p>
+</dd>
+<dt>flavorRef <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Flavor ID.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>imageRef <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Image ID.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>key_name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of a previously created SSH keypair to allow key-based authentication to the server.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>metadata <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Metadata key and value pairs.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Server name.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>networks <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Networks to attach to. If unspecified, the instance will be attached to the public Internet and private ServiceNet networks.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>uuid <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">UUID of network to attach to.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>personality <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">File path and contents.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>user_data <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">User data for bootstrapping the instance.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Launch configuration method. Only launch_server is currently supported.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Allowed values: launch_server</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::AutoScale::Group-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::AutoScale::Group-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::AutoScale::Group
+    properties:
+      groupConfiguration: {&quot;maxEntities&quot;: Integer, &quot;cooldown&quot;: Number, &quot;name&quot;: String, &quot;minEntities&quot;: Integer, &quot;metadata&quot;: {...}}
+      launchConfiguration: {&quot;args&quot;: {&quot;loadBalancers&quot;: [{&quot;port&quot;: Integer, &quot;loadBalancerId&quot;: String}, {&quot;port&quot;: Integer, &quot;loadBalancerId&quot;: String}, ...], &quot;server&quot;: {&quot;networks&quot;: [{&quot;uuid&quot;: String}, {&quot;uuid&quot;: String}, ...], &quot;diskConfig&quot;: String, &quot;name&quot;: String, &quot;imageRef&quot;: String, &quot;key_name&quot;: String, &quot;flavorRef&quot;: String, &quot;personality&quot;: {...}, &quot;config_drive&quot;: Boolean, &quot;user_data&quot;: String, &quot;metadata&quot;: {...}}}, &quot;type&quot;: String}
+</pre>
+</div>
+<div class="section" id="Rackspace::AutoScale::Group-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::AutoScale::Group-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::AutoScale::Group
+    Properties:
+      groupConfiguration: {&quot;maxEntities&quot;: Integer, &quot;cooldown&quot;: Number, &quot;name&quot;: String, &quot;minEntities&quot;: Integer, &quot;metadata&quot;: {...}}
+      launchConfiguration: {&quot;args&quot;: {&quot;loadBalancers&quot;: [{&quot;port&quot;: Integer, &quot;loadBalancerId&quot;: String}, {&quot;port&quot;: Integer, &quot;loadBalancerId&quot;: String}, ...], &quot;server&quot;: {&quot;networks&quot;: [{&quot;uuid&quot;: String}, {&quot;uuid&quot;: String}, ...], &quot;diskConfig&quot;: String, &quot;name&quot;: String, &quot;imageRef&quot;: String, &quot;key_name&quot;: String, &quot;flavorRef&quot;: String, &quot;personality&quot;: {...}, &quot;config_drive&quot;: Boolean, &quot;user_data&quot;: String, &quot;metadata&quot;: {...}}}, &quot;type&quot;: String}
+</pre>
+</div>
+<div class="section" id="Rackspace::AutoScale::Group-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::AutoScale::Group-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::AutoScale::Group&quot;,
+      &quot;Properties&quot;: {
+        &quot;groupConfiguration&quot;: {&quot;maxEntities&quot;: Integer, &quot;cooldown&quot;: Number, &quot;name&quot;: String, &quot;minEntities&quot;: Integer, &quot;metadata&quot;: {...}},
+        &quot;launchConfiguration&quot;: {&quot;args&quot;: {&quot;loadBalancers&quot;: [{&quot;port&quot;: Integer, &quot;loadBalancerId&quot;: String}, {&quot;port&quot;: Integer, &quot;loadBalancerId&quot;: String}, ...], &quot;server&quot;: {&quot;networks&quot;: [{&quot;uuid&quot;: String}, {&quot;uuid&quot;: String}, ...], &quot;diskConfig&quot;: String, &quot;name&quot;: String, &quot;imageRef&quot;: String, &quot;key_name&quot;: String, &quot;flavorRef&quot;: String, &quot;personality&quot;: {...}, &quot;config_drive&quot;: Boolean, &quot;user_data&quot;: String, &quot;metadata&quot;: {...}}}, &quot;type&quot;: String}
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::AutoScale::ScalingPolicy">
+<h2>Rackspace::AutoScale::ScalingPolicy<a class="headerlink" href="#Rackspace::AutoScale::ScalingPolicy" title="Permalink to this headline">¶</a></h2>
+<p>Represents a Rackspace Auto Scale scaling policy.</p>
+<div class="section" id="Rackspace::AutoScale::ScalingPolicy-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::AutoScale::ScalingPolicy-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>args <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Type-specific arguments for the policy.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>change <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Amount to add to or remove from current number of instances. Incompatible with changePercent and desiredCapacity.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>changePercent <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">Percentage-based change to add or remove from current number of instances. Incompatible with change and desiredCapacity.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>cooldown <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">Number of seconds after a policy execution during which further executions are disabled.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>desiredCapacity <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Absolute number to set the number of instances to. Incompatible with change and changePercent.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>group <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Scaling group ID that this policy belongs to.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of this scaling policy.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Type of this scaling policy. Specifies how the policy is executed.</p>
+<p>Can be updated without replacement.</p>
+<p>Required property.</p>
+<p class="last">Allowed values: webhook, schedule, cloud_monitoring</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::AutoScale::ScalingPolicy-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::AutoScale::ScalingPolicy-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::AutoScale::ScalingPolicy
+    properties:
+      args: {...}
+      change: Integer
+      changePercent: Number
+      cooldown: Number
+      desiredCapacity: Integer
+      group: String
+      name: String
+      type: String
+</pre>
+</div>
+<div class="section" id="Rackspace::AutoScale::ScalingPolicy-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::AutoScale::ScalingPolicy-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::AutoScale::ScalingPolicy
+    Properties:
+      args: {...}
+      change: Integer
+      changePercent: Number
+      cooldown: Number
+      desiredCapacity: Integer
+      group: String
+      name: String
+      type: String
+</pre>
+</div>
+<div class="section" id="Rackspace::AutoScale::ScalingPolicy-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::AutoScale::ScalingPolicy-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::AutoScale::ScalingPolicy&quot;,
+      &quot;Properties&quot;: {
+        &quot;args&quot;: {...},
+        &quot;change&quot;: Integer,
+        &quot;changePercent&quot;: Number,
+        &quot;cooldown&quot;: Number,
+        &quot;desiredCapacity&quot;: Integer,
+        &quot;group&quot;: String,
+        &quot;name&quot;: String,
+        &quot;type&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::AutoScale::WebHook">
+<h2>Rackspace::AutoScale::WebHook<a class="headerlink" href="#Rackspace::AutoScale::WebHook" title="Permalink to this headline">¶</a></h2>
+<p>Represents a Rackspace AutoScale webhook.</p>
+<p>Exposes the URLs of the webhook as attributes.</p>
+<div class="section" id="Rackspace::AutoScale::WebHook-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::AutoScale::WebHook-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>metadata <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Arbitrary key/value metadata for this webhook.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The name of this webhook.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>policy <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The policy that this webhook should apply to, in {group_id}:{policy_id} format. Generally a Ref to a Policy resource.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::AutoScale::WebHook-attrs">
+<h3>Attributes<a class="headerlink" href="#Rackspace::AutoScale::WebHook-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>capabilityUrl</dt>
+<dd>The url for executing the webhook (doesn&#8217;t require auth).</dd>
+<dt>executeUrl</dt>
+<dd>The url for executing the webhook (requires auth).</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::AutoScale::WebHook-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::AutoScale::WebHook-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::AutoScale::WebHook
+    properties:
+      metadata: {...}
+      name: String
+      policy: String
+</pre>
+</div>
+<div class="section" id="Rackspace::AutoScale::WebHook-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::AutoScale::WebHook-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::AutoScale::WebHook
+    Properties:
+      metadata: {...}
+      name: String
+      policy: String
+</pre>
+</div>
+<div class="section" id="Rackspace::AutoScale::WebHook-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::AutoScale::WebHook-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::AutoScale::WebHook&quot;,
+      &quot;Properties&quot;: {
+        &quot;metadata&quot;: {...},
+        &quot;name&quot;: String,
+        &quot;policy&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::Cloud::BackupConfig">
+<h2>Rackspace::Cloud::BackupConfig<a class="headerlink" href="#Rackspace::Cloud::BackupConfig" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p>Rackspace cloud backup configuration resource.</p>
+<div class="section" id="Rackspace::Cloud::BackupConfig-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::Cloud::BackupConfig-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>BackupConfigurationName <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Cloud backup configuration name.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>DayOfWeekId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Indicates the day of the week. Valid values are 0 through 6, with 0 representing Sunday and 6 representing Saturday. null is also a valid value when the Frequency value is &#8220;Manually&#8221; ,&#8221;Hourly&#8221;, or &#8220;Daily&#8221;.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Enabled <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Indicates backup configuration is enabled or not.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property, defaults to &#8220;True&#8221;.</p>
+</dd>
+<dt>Exclusions <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Indicates the list of files and folders not to back up.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>FileItemType <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">File item type.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: Folder, File</p>
+</dd>
+<dt>FilePath <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">File or folder path.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>Frequency <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Frequency of backup schedule. Valid values are Manually, Hourly, Daily, and Weekly. </p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;Daily&#8221;.</p>
+<p class="last">Allowed values: Manually, Hourly, Daily, Weekly</p>
+</dd>
+<dt>HourInterval <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Indicates the hour. Valid values are 1 through 23, as well as null when the Frequency value is &#8220;Manually&#8221; ,&#8221;Daily&#8221;, or &#8220;Weekly&#8221;.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>Inclusions <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Indicates the list of files and folders to back up.</p>
+<p>Can be updated without replacement.</p>
+<p>Required property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>FileItemType <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">File item type.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: Folder, File</p>
+</dd>
+<dt>FilePath <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">File  or folder path.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>IsActive <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Indicates backup configuration is active.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;True&#8221;.</p>
+<p class="last">Allowed values: True, False</p>
+</dd>
+<dt>NotifyFailure <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Indicates if emails are sent after a failed backup. Valid values are true or false. </p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>NotifyRecipients <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Indicates the email address to notify in case of backup success or failure. </p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>NotifySuccess <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Indicates if emails are sent after a successful backup. Valid values are true or false. </p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+<dt>StartTimeAmPm <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Indicates AM or PM. Valid values are &#8220;AM&#8221; or &#8220;PM&#8221;, as well as null when the Frequency value is &#8220;Manually&#8221; or &#8220;Hourly&#8221;.</p>
+<p>Can be updated without replacement.</p>
+<p>Required property.</p>
+<p class="last">Allowed values: AM, PM, </p>
+</dd>
+<dt>StartTimeHour <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Indicates the hour when the backup runs. Valid values are 1 through 12, as well as null when the Frequency value is &#8220;Manually&#8221; or &#8220;Hourly&#8221;. </p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>StartTimeMinute <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Indicates the minute when the backup runs. Valid values are 0 through 59, as well as null when the Frequency value is &#8220;Manually&#8221; or &#8220;Hourly&#8221;. </p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>TimeZoneId <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Specifies the time zone where the backup runs, for example &#8220;Eastern Standard Time&#8221;.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>VersionRetention <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Indicates how many days backup revisions are maintained. Valid values are 0, 30 , and 60. 0 means indefinite.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;60&#8221;.</p>
+<p class="last">Allowed values: 0, 30, 60</p>
+</dd>
+<dt>host_ip_address <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Cloud server ip address.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::Cloud::BackupConfig-attrs">
+<h3>Attributes<a class="headerlink" href="#Rackspace::Cloud::BackupConfig-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>backup_agent_id</dt>
+<dd>Backup agent ID.</dd>
+<dt>backup_config_details</dt>
+<dd>Backup config details.</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::Cloud::BackupConfig-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::Cloud::BackupConfig-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::Cloud::BackupConfig
+    properties:
+      BackupConfigurationName: String
+      DayOfWeekId: String
+      Enabled: Boolean
+      Exclusions: [{&quot;FileItemType&quot;: String, &quot;FilePath&quot;: String}, {&quot;FileItemType&quot;: String, &quot;FilePath&quot;: String}, ...]
+      Frequency: String
+      HourInterval: String
+      Inclusions: [{&quot;FileItemType&quot;: String, &quot;FilePath&quot;: String}, {&quot;FileItemType&quot;: String, &quot;FilePath&quot;: String}, ...]
+      IsActive: Boolean
+      NotifyFailure: Boolean
+      NotifyRecipients: String
+      NotifySuccess: Boolean
+      StartTimeAmPm: String
+      StartTimeHour: String
+      StartTimeMinute: String
+      TimeZoneId: String
+      VersionRetention: Integer
+      host_ip_address: String
+</pre>
+</div>
+<div class="section" id="Rackspace::Cloud::BackupConfig-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::Cloud::BackupConfig-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::Cloud::BackupConfig
+    Properties:
+      BackupConfigurationName: String
+      DayOfWeekId: String
+      Enabled: Boolean
+      Exclusions: [{&quot;FileItemType&quot;: String, &quot;FilePath&quot;: String}, {&quot;FileItemType&quot;: String, &quot;FilePath&quot;: String}, ...]
+      Frequency: String
+      HourInterval: String
+      Inclusions: [{&quot;FileItemType&quot;: String, &quot;FilePath&quot;: String}, {&quot;FileItemType&quot;: String, &quot;FilePath&quot;: String}, ...]
+      IsActive: Boolean
+      NotifyFailure: Boolean
+      NotifyRecipients: String
+      NotifySuccess: Boolean
+      StartTimeAmPm: String
+      StartTimeHour: String
+      StartTimeMinute: String
+      TimeZoneId: String
+      VersionRetention: Integer
+      host_ip_address: String
+</pre>
+</div>
+<div class="section" id="Rackspace::Cloud::BackupConfig-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::Cloud::BackupConfig-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::Cloud::BackupConfig&quot;,
+      &quot;Properties&quot;: {
+        &quot;BackupConfigurationName&quot;: String,
+        &quot;DayOfWeekId&quot;: String,
+        &quot;Enabled&quot;: Boolean,
+        &quot;Exclusions&quot;: [{&quot;FileItemType&quot;: String, &quot;FilePath&quot;: String}, {&quot;FileItemType&quot;: String, &quot;FilePath&quot;: String}, ...],
+        &quot;Frequency&quot;: String,
+        &quot;HourInterval&quot;: String,
+        &quot;Inclusions&quot;: [{&quot;FileItemType&quot;: String, &quot;FilePath&quot;: String}, {&quot;FileItemType&quot;: String, &quot;FilePath&quot;: String}, ...],
+        &quot;IsActive&quot;: Boolean,
+        &quot;NotifyFailure&quot;: Boolean,
+        &quot;NotifyRecipients&quot;: String,
+        &quot;NotifySuccess&quot;: Boolean,
+        &quot;StartTimeAmPm&quot;: String,
+        &quot;StartTimeHour&quot;: String,
+        &quot;StartTimeMinute&quot;: String,
+        &quot;TimeZoneId&quot;: String,
+        &quot;VersionRetention&quot;: Integer,
+        &quot;host_ip_address&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::Cloud::ChefSolo">
+<h2>Rackspace::Cloud::ChefSolo<a class="headerlink" href="#Rackspace::Cloud::ChefSolo" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Rackspace::Cloud::ChefSolo-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::Cloud::ChefSolo-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>Berksfile.lock <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The Berksfile.lock to use with berkshelf to specify cookbook versions for the chef run.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>chef_version <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The version of chef to install on the host.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>clients <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Clients to be written to the kitchen for the chef run.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>data_bags <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Data_bags to write to the kitchen during the chef run.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>environments <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Environments to be written to the kitchen for the chef run.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>host <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The host to run chef-solo on.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>kitchen <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A git url to the kitchen to clone. This can be used in place of a Berks or Chef file to install cookbooks on the host.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>node <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">The node file for the chef run. May have a run_list, attributes, etc.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>private_key <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ssh key to connect to the host with.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>roles <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Roles to be written to the kitchen for the chef run.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>username <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The username to connect to the host with.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>users <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Users to be written to the kitchen for the chef run.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>Berksfile <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">DEPRECATED - Use property kitchen.</p>
+</div>
+<p>The Berksfile to use with berkshelf to download cookbooks on the host for the chef run.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>Cheffile <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">DEPRECATED - Use property kitchen.</p>
+</div>
+<p>The Cheffile to use with librarian-chef to download cookbooks on the host for the chef run.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::Cloud::ChefSolo-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::Cloud::ChefSolo-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::Cloud::ChefSolo
+    properties:
+      Berksfile.lock: String
+      chef_version: String
+      clients: {...}
+      data_bags: {...}
+      environments: {...}
+      host: String
+      kitchen: String
+      node: {...}
+      private_key: String
+      roles: {...}
+      username: String
+      users: {...}
+</pre>
+</div>
+<div class="section" id="Rackspace::Cloud::ChefSolo-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::Cloud::ChefSolo-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::Cloud::ChefSolo
+    Properties:
+      Berksfile.lock: String
+      chef_version: String
+      clients: {...}
+      data_bags: {...}
+      environments: {...}
+      host: String
+      kitchen: String
+      node: {...}
+      private_key: String
+      roles: {...}
+      username: String
+      users: {...}
+</pre>
+</div>
+<div class="section" id="Rackspace::Cloud::ChefSolo-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::Cloud::ChefSolo-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::Cloud::ChefSolo&quot;,
+      &quot;Properties&quot;: {
+        &quot;Berksfile.lock&quot;: String,
+        &quot;chef_version&quot;: String,
+        &quot;clients&quot;: {...},
+        &quot;data_bags&quot;: {...},
+        &quot;environments&quot;: {...},
+        &quot;host&quot;: String,
+        &quot;kitchen&quot;: String,
+        &quot;node&quot;: {...},
+        &quot;private_key&quot;: String,
+        &quot;roles&quot;: {...},
+        &quot;username&quot;: String,
+        &quot;users&quot;: {...}
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::Cloud::DNS">
+<h2>Rackspace::Cloud::DNS<a class="headerlink" href="#Rackspace::Cloud::DNS" title="Permalink to this headline">¶</a></h2>
+<p>Represents a DNS resource.</p>
+<div class="section" id="Rackspace::Cloud::DNS-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::Cloud::DNS-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>comment <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Optional free form text comment</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">The length must be no greater than 160.</p>
+</dd>
+<dt>emailAddress <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Email address to use for contacting the domain administrator.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Specifies the name for the domain or subdomain. Must be a valid domain name.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">The length must be at least 3.</p>
+</dd>
+<dt>records <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Domain records</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>comment <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Optional free form text comment</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">The length must be no greater than 160.</p>
+</dd>
+<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Type specific record data</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Specifies the name for the domain or subdomain. Must be a valid domain name.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">The length must be at least 3.</p>
+</dd>
+<dt>priority <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Required for MX and SRV records, but forbidden for other record types. If specified, must be an integer from 0 to 65535.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">The value must be in the range 0 to 65535.</p>
+</dd>
+<dt>ttl <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">How long other servers should cache recorddata.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;3600&#8221;.</p>
+<p class="last">The value must be at least 300.</p>
+</dd>
+<dt>type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Specifies the record type.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Allowed values: A, AAAA, NS, MX, CNAME, TXT, SRV</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>ttl <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">How long other servers should cache recorddata.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;3600&#8221;.</p>
+<p class="last">The value must be at least 300.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::Cloud::DNS-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::Cloud::DNS-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::Cloud::DNS
+    properties:
+      comment: String
+      emailAddress: String
+      name: String
+      records: [{&quot;comment&quot;: String, &quot;name&quot;: String, &quot;data&quot;: String, &quot;priority&quot;: Integer, &quot;ttl&quot;: Integer, &quot;type&quot;: String}, {&quot;comment&quot;: String, &quot;name&quot;: String, &quot;data&quot;: String, &quot;priority&quot;: Integer, &quot;ttl&quot;: Integer, &quot;type&quot;: String}, ...]
+      ttl: Integer
+</pre>
+</div>
+<div class="section" id="Rackspace::Cloud::DNS-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::Cloud::DNS-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::Cloud::DNS
+    Properties:
+      comment: String
+      emailAddress: String
+      name: String
+      records: [{&quot;comment&quot;: String, &quot;name&quot;: String, &quot;data&quot;: String, &quot;priority&quot;: Integer, &quot;ttl&quot;: Integer, &quot;type&quot;: String}, {&quot;comment&quot;: String, &quot;name&quot;: String, &quot;data&quot;: String, &quot;priority&quot;: Integer, &quot;ttl&quot;: Integer, &quot;type&quot;: String}, ...]
+      ttl: Integer
+</pre>
+</div>
+<div class="section" id="Rackspace::Cloud::DNS-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::Cloud::DNS-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::Cloud::DNS&quot;,
+      &quot;Properties&quot;: {
+        &quot;comment&quot;: String,
+        &quot;emailAddress&quot;: String,
+        &quot;name&quot;: String,
+        &quot;records&quot;: [{&quot;comment&quot;: String, &quot;name&quot;: String, &quot;data&quot;: String, &quot;priority&quot;: Integer, &quot;ttl&quot;: Integer, &quot;type&quot;: String}, {&quot;comment&quot;: String, &quot;name&quot;: String, &quot;data&quot;: String, &quot;priority&quot;: Integer, &quot;ttl&quot;: Integer, &quot;type&quot;: String}, ...],
+        &quot;ttl&quot;: Integer
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::Cloud::LoadBalancer">
+<h2>Rackspace::Cloud::LoadBalancer<a class="headerlink" href="#Rackspace::Cloud::LoadBalancer" title="Permalink to this headline">¶</a></h2>
+<p>Represents a Rackspace Cloud Loadbalancer.</p>
+<div class="section" id="Rackspace::Cloud::LoadBalancer-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::Cloud::LoadBalancer-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>accessList <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>address <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Allowed values: ALLOW, DENY</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>algorithm <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: LEAST_CONNECTIONS, RANDOM, ROUND_ROBIN, WEIGHTED_LEAST_CONNECTIONS, WEIGHTED_ROUND_ROBIN</p>
+</dd>
+<dt>connectionLogging <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>connectionThrottle <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>maxConnectionRate <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">The value must be in the range 0 to 100000.</p>
+</dd>
+<dt>maxConnections <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">The value must be in the range 1 to 100000.</p>
+</dd>
+<dt>minConnections <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">The value must be in the range 1 to 1000.</p>
+</dd>
+<dt>rateInterval <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">The value must be in the range 1 to 3600.</p>
+</dd>
+</dl>
+</dd>
+<dt>contentCaching <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: ENABLED, DISABLED</p>
+</dd>
+<dt>errorPage <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>halfClosed <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>healthMonitor <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>attemptsBeforeDeactivation <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">The value must be in the range 1 to 10.</p>
+</dd>
+<dt>bodyRegex <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>delay <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">The value must be in the range 1 to 3600.</p>
+</dd>
+<dt>hostHeader <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>path <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>statusRegex <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>timeout <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">The value must be in the range 1 to 300.</p>
+</dd>
+<dt>type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Allowed values: CONNECT, HTTP, HTTPS</p>
+</dd>
+</dl>
+</dd>
+<dt>httpsRedirect <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p>Enables or disables HTTP to HTTPS redirection for the load balancer. When enabled, any HTTP request returns status code 301 (Moved Permanently), and the requester is redirected to the requested URL via the HTTPS protocol on port 443. Only available for HTTPS protocol (port=443), or HTTP protocol with a properly configured SSL termination (secureTrafficOnly=true, securePort=443).</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+<dt>metadata <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>nodes <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p>Required property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>addresses <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">IP addresses for the load balancer node. Must have at least one address.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</dd>
+<dt>condition <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;ENABLED&#8221;.</p>
+<p class="last">Allowed values: ENABLED, DISABLED</p>
+</dd>
+<dt>port <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: PRIMARY, SECONDARY</p>
+</dd>
+<dt>weight <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">The value must be in the range 1 to 100.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>port <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>protocol <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p>Required property.</p>
+<p class="last">Allowed values: DNS_TCP, DNS_UDP, FTP, HTTP, HTTPS, IMAPS, IMAPv4, LDAP, LDAPS, MYSQL, POP3, POP3S, SMTP, TCP, TCP_CLIENT_FIRST, UDP, UDP_STREAM, SFTP</p>
+</dd>
+<dt>sessionPersistence <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: HTTP_COOKIE, SOURCE_IP</p>
+</dd>
+<dt>sslTermination <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>certificate <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>intermediateCertificate <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>privatekey <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>securePort <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;443&#8221;.</p>
+</dd>
+<dt>secureTrafficOnly <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+</dl>
+</dd>
+<dt>timeout <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">The value must be in the range 1 to 120.</p>
+</dd>
+<dt>virtualIps <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Required property.</p>
+<p>The length must be at least 1.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>id <span class="classifier-delimiter">:</span> <span class="classifier">Number</span></dt>
+<dd><p class="first">ID of a shared VIP to use instead of creating a new one. This property cannot be specified if type or version is specified.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>ipVersion <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">IP version of the VIP. This property cannot be specified if &#8216;id&#8217; is specified. This property must be specified if id is not specified.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: IPV6, IPV4</p>
+</dd>
+<dt>type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The type of VIP (public or internal). This property cannot be specified if &#8216;id&#8217; is specified. This property must be specified if id is not specified.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: SERVICENET, PUBLIC</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::Cloud::LoadBalancer-attrs">
+<h3>Attributes<a class="headerlink" href="#Rackspace::Cloud::LoadBalancer-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>PublicIp</dt>
+<dd>Public IP address of the specified instance.</dd>
+<dt>virtualIps</dt>
+<dd>A list of assigned virtual ip addresses</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::Cloud::LoadBalancer-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::Cloud::LoadBalancer-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::Cloud::LoadBalancer
+    properties:
+      accessList: [{&quot;type&quot;: String, &quot;address&quot;: String}, {&quot;type&quot;: String, &quot;address&quot;: String}, ...]
+      algorithm: String
+      connectionLogging: Boolean
+      connectionThrottle: {&quot;maxConnectionRate&quot;: Number, &quot;maxConnections&quot;: Integer, &quot;rateInterval&quot;: Number, &quot;minConnections&quot;: Integer}
+      contentCaching: String
+      errorPage: String
+      halfClosed: Boolean
+      healthMonitor: {&quot;attemptsBeforeDeactivation&quot;: Number, &quot;delay&quot;: Number, &quot;hostHeader&quot;: String, &quot;statusRegex&quot;: String, &quot;timeout&quot;: Number, &quot;bodyRegex&quot;: String, &quot;path&quot;: String, &quot;type&quot;: String}
+      httpsRedirect: Boolean
+      metadata: {...}
+      name: String
+      nodes: [{&quot;weight&quot;: Number, &quot;type&quot;: String, &quot;addresses&quot;: [String, String, ...], &quot;condition&quot;: String, &quot;port&quot;: Integer}, {&quot;weight&quot;: Number, &quot;type&quot;: String, &quot;addresses&quot;: [String, String, ...], &quot;condition&quot;: String, &quot;port&quot;: Integer}, ...]
+      port: Integer
+      protocol: String
+      sessionPersistence: String
+      sslTermination: {&quot;privatekey&quot;: String, &quot;securePort&quot;: Integer, &quot;secureTrafficOnly&quot;: Boolean, &quot;certificate&quot;: String, &quot;intermediateCertificate&quot;: String}
+      timeout: Number
+      virtualIps: [{&quot;ipVersion&quot;: String, &quot;type&quot;: String, &quot;id&quot;: Number}, {&quot;ipVersion&quot;: String, &quot;type&quot;: String, &quot;id&quot;: Number}, ...]
+</pre>
+</div>
+<div class="section" id="Rackspace::Cloud::LoadBalancer-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::Cloud::LoadBalancer-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::Cloud::LoadBalancer
+    Properties:
+      accessList: [{&quot;type&quot;: String, &quot;address&quot;: String}, {&quot;type&quot;: String, &quot;address&quot;: String}, ...]
+      algorithm: String
+      connectionLogging: Boolean
+      connectionThrottle: {&quot;maxConnectionRate&quot;: Number, &quot;maxConnections&quot;: Integer, &quot;rateInterval&quot;: Number, &quot;minConnections&quot;: Integer}
+      contentCaching: String
+      errorPage: String
+      halfClosed: Boolean
+      healthMonitor: {&quot;attemptsBeforeDeactivation&quot;: Number, &quot;delay&quot;: Number, &quot;hostHeader&quot;: String, &quot;statusRegex&quot;: String, &quot;timeout&quot;: Number, &quot;bodyRegex&quot;: String, &quot;path&quot;: String, &quot;type&quot;: String}
+      httpsRedirect: Boolean
+      metadata: {...}
+      name: String
+      nodes: [{&quot;weight&quot;: Number, &quot;type&quot;: String, &quot;addresses&quot;: [String, String, ...], &quot;condition&quot;: String, &quot;port&quot;: Integer}, {&quot;weight&quot;: Number, &quot;type&quot;: String, &quot;addresses&quot;: [String, String, ...], &quot;condition&quot;: String, &quot;port&quot;: Integer}, ...]
+      port: Integer
+      protocol: String
+      sessionPersistence: String
+      sslTermination: {&quot;privatekey&quot;: String, &quot;securePort&quot;: Integer, &quot;secureTrafficOnly&quot;: Boolean, &quot;certificate&quot;: String, &quot;intermediateCertificate&quot;: String}
+      timeout: Number
+      virtualIps: [{&quot;ipVersion&quot;: String, &quot;type&quot;: String, &quot;id&quot;: Number}, {&quot;ipVersion&quot;: String, &quot;type&quot;: String, &quot;id&quot;: Number}, ...]
+</pre>
+</div>
+<div class="section" id="Rackspace::Cloud::LoadBalancer-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::Cloud::LoadBalancer-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::Cloud::LoadBalancer&quot;,
+      &quot;Properties&quot;: {
+        &quot;accessList&quot;: [{&quot;type&quot;: String, &quot;address&quot;: String}, {&quot;type&quot;: String, &quot;address&quot;: String}, ...],
+        &quot;algorithm&quot;: String,
+        &quot;connectionLogging&quot;: Boolean,
+        &quot;connectionThrottle&quot;: {&quot;maxConnectionRate&quot;: Number, &quot;maxConnections&quot;: Integer, &quot;rateInterval&quot;: Number, &quot;minConnections&quot;: Integer},
+        &quot;contentCaching&quot;: String,
+        &quot;errorPage&quot;: String,
+        &quot;halfClosed&quot;: Boolean,
+        &quot;healthMonitor&quot;: {&quot;attemptsBeforeDeactivation&quot;: Number, &quot;delay&quot;: Number, &quot;hostHeader&quot;: String, &quot;statusRegex&quot;: String, &quot;timeout&quot;: Number, &quot;bodyRegex&quot;: String, &quot;path&quot;: String, &quot;type&quot;: String},
+        &quot;httpsRedirect&quot;: Boolean,
+        &quot;metadata&quot;: {...},
+        &quot;name&quot;: String,
+        &quot;nodes&quot;: [{&quot;weight&quot;: Number, &quot;type&quot;: String, &quot;addresses&quot;: [String, String, ...], &quot;condition&quot;: String, &quot;port&quot;: Integer}, {&quot;weight&quot;: Number, &quot;type&quot;: String, &quot;addresses&quot;: [String, String, ...], &quot;condition&quot;: String, &quot;port&quot;: Integer}, ...],
+        &quot;port&quot;: Integer,
+        &quot;protocol&quot;: String,
+        &quot;sessionPersistence&quot;: String,
+        &quot;sslTermination&quot;: {&quot;privatekey&quot;: String, &quot;securePort&quot;: Integer, &quot;secureTrafficOnly&quot;: Boolean, &quot;certificate&quot;: String, &quot;intermediateCertificate&quot;: String},
+        &quot;timeout&quot;: Number,
+        &quot;virtualIps&quot;: [{&quot;ipVersion&quot;: String, &quot;type&quot;: String, &quot;id&quot;: Number}, {&quot;ipVersion&quot;: String, &quot;type&quot;: String, &quot;id&quot;: Number}, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::Cloud::Network">
+<h2>Rackspace::Cloud::Network<a class="headerlink" href="#Rackspace::Cloud::Network" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">DEPRECATED since 2015.1 (Kilo) - Use OS::Neutron::Net instead.</p>
+</div>
+<p>A resource for creating Rackspace Cloud Networks.</p>
+<p>See <a class="reference external" href="http://www.rackspace.com/cloud/networks/">http://www.rackspace.com/cloud/networks/</a> for service
+documentation.</p>
+<div class="section" id="Rackspace::Cloud::Network-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::Cloud::Network-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>cidr <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The IP block from which to allocate the network. For example, 172.16.0.0/24 or 2001:DB8::/64.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type net_cidr</p>
+</dd>
+<dt>label <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The name of the network.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">The length must be in the range 3 to 64.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::Cloud::Network-attrs">
+<h3>Attributes<a class="headerlink" href="#Rackspace::Cloud::Network-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>cidr</dt>
+<dd>The CIDR for an isolated private network.</dd>
+<dt>label</dt>
+<dd>The name of the network.</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::Cloud::Network-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::Cloud::Network-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::Cloud::Network
+    properties:
+      cidr: String
+      label: String
+</pre>
+</div>
+<div class="section" id="Rackspace::Cloud::Network-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::Cloud::Network-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::Cloud::Network
+    Properties:
+      cidr: String
+      label: String
+</pre>
+</div>
+<div class="section" id="Rackspace::Cloud::Network-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::Cloud::Network-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::Cloud::Network&quot;,
+      &quot;Properties&quot;: {
+        &quot;cidr&quot;: String,
+        &quot;label&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::Cloud::Server">
+<h2>Rackspace::Cloud::Server<a class="headerlink" href="#Rackspace::Cloud::Server" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">DEPRECATED - Use OS::Nova::Server instead.</p>
+</div>
+<p>Resource for Rackspace Cloud Servers.</p>
+<div class="section" id="Rackspace::Cloud::Server-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::Cloud::Server-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>admin_pass <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The administrator password for the server.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>availability_zone <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of the availability zone for server placement.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>block_device_mapping <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Block device mappings for this server.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>delete_on_termination <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Indicate whether the volume should be deleted when the server is terminated.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>device_name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A device name where the volume will be attached in the system at /dev/device_name. This value is typically vda.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>snapshot_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the snapshot to create a volume from.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type cinder.snapshot</p>
+</dd>
+<dt>volume_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the volume to boot from. Only one of volume_id or snapshot_id should be provided.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type cinder.volume</p>
+</dd>
+<dt>volume_size <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">The size of the volume, in GB. It is safe to leave this blank and have the Compute service infer the size.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>block_device_mapping_v2 <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p>Block device mappings v2 for this server.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>boot_index <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Integer used for ordering the boot disks.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>delete_on_termination <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Indicate whether the volume should be deleted when the server is terminated.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>device_name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A device name where the volume will be attached in the system at /dev/device_name. This value is typically vda.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>device_type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Device type: at the moment we can make distinction only between disk and cdrom.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: cdrom, disk</p>
+</dd>
+<dt>disk_bus <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Bus of the device: hypervisor driver chooses a suitable default if omitted.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: ide, lame_bus, scsi, usb, virtio</p>
+</dd>
+<dt>image_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the image to create a volume from.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type glance.image</p>
+</dd>
+<dt>snapshot_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the snapshot to create a volume from.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type cinder.snapshot</p>
+</dd>
+<dt>swap_size <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">The size of the swap, in MB.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>volume_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The volume_id can be boot or non-boot device to the server.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type cinder.volume</p>
+</dd>
+<dt>volume_size <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Size of the block device in GB. If it is omitted, hypervisor driver calculates size.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>config_drive <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">If True, enable config drive on the server.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>diskConfig <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Control how the disk is partitioned when the server is created.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: AUTO, MANUAL</p>
+</dd>
+<dt>flavor <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID or name of the flavor to boot onto.</p>
+<p>Can be updated without replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type nova.flavor</p>
+</dd>
+<dt>flavor_update_policy <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Policy on how to apply a flavor update; either by requesting a server resize or by replacing the entire server.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;RESIZE&#8221;.</p>
+<p class="last">Allowed values: RESIZE, REPLACE</p>
+</dd>
+<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID or name of the image to boot with.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type glance.image</p>
+</dd>
+<dt>image_update_policy <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Policy on how to apply an image-id update; either by requesting a server rebuild or by replacing the entire server</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;REBUILD&#8221;.</p>
+<p class="last">Allowed values: REBUILD, REPLACE, REBUILD_PRESERVE_EPHEMERAL</p>
+</dd>
+<dt>key_name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of keypair to inject into the server.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type nova.keypair</p>
+</dd>
+<dt>metadata <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Arbitrary key/value metadata to store for this server. Both keys and values must be 255 characters or less.  Non-string values will be serialized to JSON (and the serialized string must be 255 characters or less).</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Server name.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>networks <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">An ordered list of nics to be added to this server, with information about connected networks, fixed ips, port etc.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>fixed_ip <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Fixed IP address to specify for the port created on the requested network.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type ip_addr</p>
+</dd>
+<dt>network <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name or ID of network to create a port on.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type neutron.network</p>
+</dd>
+<dt>port <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">ID of an existing port to associate with this server.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type neutron.port</p>
+</dd>
+<dt>uuid <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">DEPRECATED since 2014.1 (Icehouse) - Use property network.</p>
+</div>
+<p>ID of network to create a port on.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type neutron.network</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>personality <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">A map of files to create/overwrite on the server upon boot. Keys are file names and values are the file contents.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;{}&#8221;.</p>
+</dd>
+<dt>reservation_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A UUID for the set of servers being requested.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>save_admin_pass <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">True if the system should remember the admin password; False otherwise.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+<dt>scheduler_hints <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Arbitrary key-value pairs specified by the client to help boot a server.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>security_groups <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">List of security group names or IDs. Cannot be used if neutron ports are associated with this server; assign security groups to the ports instead.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;[]&#8221;.</p>
+</dd>
+<dt>software_config_transport <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">How the server should receive the metadata required for software configuration. POLL_SERVER_CFN will allow calls to the cfn API action DescribeStackResource authenticated with the provided keypair. POLL_SERVER_HEAT will allow calls to the Heat API resource-show using the provided keystone credentials. POLL_TEMP_URL will create and populate a Swift TempURL with metadata for polling.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;POLL_SERVER_CFN&#8221;.</p>
+<p class="last">Allowed values: POLL_SERVER_CFN, POLL_SERVER_HEAT, POLL_TEMP_URL</p>
+</dd>
+<dt>user_data <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">User data script to be executed by cloud-init.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;&#8221;.</p>
+</dd>
+<dt>user_data_format <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">How the user_data should be formatted for the server. For HEAT_CFNTOOLS, the user_data is bundled as part of the heat-cfntools cloud-init boot configuration data. For RAW the user_data is passed to Nova unmodified. For SOFTWARE_CONFIG user_data is bundled as part of the software config data, and metadata is derived from any associated SoftwareDeployment resources.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;HEAT_CFNTOOLS&#8221;.</p>
+<p class="last">Allowed values: HEAT_CFNTOOLS, RAW, SOFTWARE_CONFIG</p>
+</dd>
+<dt>admin_user <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">DEPRECATED since 2014.1 (Icehouse)</p>
+</div>
+<p>Name of the administrative user to use on the server. The default cloud-init user set up for each image (e.g. &#8220;ubuntu&#8221; for Ubuntu 12.04+, &#8220;fedora&#8221; for Fedora 19+ and &#8220;cloud-user&#8221; for CentOS/RHEL 6.5).</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::Cloud::Server-attrs">
+<h3>Attributes<a class="headerlink" href="#Rackspace::Cloud::Server-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>accessIPv4</dt>
+<dd>The manually assigned alternative public IPv4 address of the server.</dd>
+<dt>accessIPv6</dt>
+<dd>The manually assigned alternative public IPv6 address of the server.</dd>
+<dt>addresses</dt>
+<dd>A dict of all network addresses with corresponding port_id. The port ID may be obtained through the following expression: &#8220;{get_attr: [&lt;server&gt;, addresses, &lt;network name&gt;, 0, port]}&#8221;.</dd>
+<dt>admin_pass</dt>
+<dd>The administrator password for the server.</dd>
+<dt>console_urls</dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p class="last">URLs of server&#8217;s consoles. To get a specific console type, the requested type can be specified as parameter to the get_attr function, e.g. get_attr: [ &lt;server&gt;, console_urls, novnc ]. Currently supported types are novnc, xvpvnc, spice-html5, rdp-html5, serial.</p>
+</dd>
+<dt>distro</dt>
+<dd>The Linux distribution on the server.</dd>
+<dt>first_address</dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">DEPRECATED since 2014.2 (Juno) - Use the networks attribute instead of first_address. For example: &#8220;{get_attr: [&lt;server name&gt;, networks, &lt;network name&gt;, 0]}&#8221;</p>
+</div>
+<p class="last">Convenience attribute to fetch the first assigned network address, or an empty string if nothing has been assigned at this time. Result may not be predictable if the server has addresses from more than one network.</p>
+</dd>
+<dt>instance_name</dt>
+<dd>AWS compatible instance name.</dd>
+<dt>name</dt>
+<dd>Name of the server.</dd>
+<dt>networks</dt>
+<dd>A dict of assigned network addresses of the form: {&#8220;public&#8221;: [ip1, ip2...], &#8220;private&#8221;: [ip3, ip4]}.</dd>
+<dt>privateIPv4</dt>
+<dd>The private IPv4 address of the server.</dd>
+<dt>show</dt>
+<dd>A dict of all server details as returned by the API.</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::Cloud::Server-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::Cloud::Server-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::Cloud::Server
+    properties:
+      admin_pass: String
+      availability_zone: String
+      block_device_mapping: [{&quot;device_name&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;delete_on_termination&quot;: Boolean, &quot;volume_id&quot;: String}, {&quot;device_name&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;delete_on_termination&quot;: Boolean, &quot;volume_id&quot;: String}, ...]
+      block_device_mapping_v2: [{&quot;boot_index&quot;: Integer, &quot;device_type&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;device_name&quot;: String, &quot;disk_bus&quot;: String, &quot;image_id&quot;: String, &quot;swap_size&quot;: Integer, &quot;volume_id&quot;: String, &quot;delete_on_termination&quot;: Boolean}, {&quot;boot_index&quot;: Integer, &quot;device_type&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;device_name&quot;: String, &quot;disk_bus&quot;: String, &quot;image_id&quot;: String, &quot;swap_size&quot;: Integer, &quot;volume_id&quot;: String, &quot;delete_on_termination&quot;: Boolean}, ...]
+      config_drive: Boolean
+      diskConfig: String
+      flavor: String
+      flavor_update_policy: String
+      image: String
+      image_update_policy: String
+      key_name: String
+      metadata: {...}
+      name: String
+      networks: [{&quot;network&quot;: String, &quot;fixed_ip&quot;: String, &quot;port&quot;: String, &quot;uuid&quot;: String}, {&quot;network&quot;: String, &quot;fixed_ip&quot;: String, &quot;port&quot;: String, &quot;uuid&quot;: String}, ...]
+      personality: {...}
+      reservation_id: String
+      save_admin_pass: Boolean
+      scheduler_hints: {...}
+      security_groups: [Value, Value, ...]
+      software_config_transport: String
+      user_data: String
+      user_data_format: String
+</pre>
+</div>
+<div class="section" id="Rackspace::Cloud::Server-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::Cloud::Server-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::Cloud::Server
+    Properties:
+      admin_pass: String
+      availability_zone: String
+      block_device_mapping: [{&quot;device_name&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;delete_on_termination&quot;: Boolean, &quot;volume_id&quot;: String}, {&quot;device_name&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;delete_on_termination&quot;: Boolean, &quot;volume_id&quot;: String}, ...]
+      block_device_mapping_v2: [{&quot;boot_index&quot;: Integer, &quot;device_type&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;device_name&quot;: String, &quot;disk_bus&quot;: String, &quot;image_id&quot;: String, &quot;swap_size&quot;: Integer, &quot;volume_id&quot;: String, &quot;delete_on_termination&quot;: Boolean}, {&quot;boot_index&quot;: Integer, &quot;device_type&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;device_name&quot;: String, &quot;disk_bus&quot;: String, &quot;image_id&quot;: String, &quot;swap_size&quot;: Integer, &quot;volume_id&quot;: String, &quot;delete_on_termination&quot;: Boolean}, ...]
+      config_drive: Boolean
+      diskConfig: String
+      flavor: String
+      flavor_update_policy: String
+      image: String
+      image_update_policy: String
+      key_name: String
+      metadata: {...}
+      name: String
+      networks: [{&quot;network&quot;: String, &quot;fixed_ip&quot;: String, &quot;port&quot;: String, &quot;uuid&quot;: String}, {&quot;network&quot;: String, &quot;fixed_ip&quot;: String, &quot;port&quot;: String, &quot;uuid&quot;: String}, ...]
+      personality: {...}
+      reservation_id: String
+      save_admin_pass: Boolean
+      scheduler_hints: {...}
+      security_groups: [Value, Value, ...]
+      software_config_transport: String
+      user_data: String
+      user_data_format: String
+</pre>
+</div>
+<div class="section" id="Rackspace::Cloud::Server-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::Cloud::Server-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::Cloud::Server&quot;,
+      &quot;Properties&quot;: {
+        &quot;admin_pass&quot;: String,
+        &quot;availability_zone&quot;: String,
+        &quot;block_device_mapping&quot;: [{&quot;device_name&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;delete_on_termination&quot;: Boolean, &quot;volume_id&quot;: String}, {&quot;device_name&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;delete_on_termination&quot;: Boolean, &quot;volume_id&quot;: String}, ...],
+        &quot;block_device_mapping_v2&quot;: [{&quot;boot_index&quot;: Integer, &quot;device_type&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;device_name&quot;: String, &quot;disk_bus&quot;: String, &quot;image_id&quot;: String, &quot;swap_size&quot;: Integer, &quot;volume_id&quot;: String, &quot;delete_on_termination&quot;: Boolean}, {&quot;boot_index&quot;: Integer, &quot;device_type&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;device_name&quot;: String, &quot;disk_bus&quot;: String, &quot;image_id&quot;: String, &quot;swap_size&quot;: Integer, &quot;volume_id&quot;: String, &quot;delete_on_termination&quot;: Boolean}, ...],
+        &quot;config_drive&quot;: Boolean,
+        &quot;diskConfig&quot;: String,
+        &quot;flavor&quot;: String,
+        &quot;flavor_update_policy&quot;: String,
+        &quot;image&quot;: String,
+        &quot;image_update_policy&quot;: String,
+        &quot;key_name&quot;: String,
+        &quot;metadata&quot;: {...},
+        &quot;name&quot;: String,
+        &quot;networks&quot;: [{&quot;network&quot;: String, &quot;fixed_ip&quot;: String, &quot;port&quot;: String, &quot;uuid&quot;: String}, {&quot;network&quot;: String, &quot;fixed_ip&quot;: String, &quot;port&quot;: String, &quot;uuid&quot;: String}, ...],
+        &quot;personality&quot;: {...},
+        &quot;reservation_id&quot;: String,
+        &quot;save_admin_pass&quot;: Boolean,
+        &quot;scheduler_hints&quot;: {...},
+        &quot;security_groups&quot;: [Value, Value, ...],
+        &quot;software_config_transport&quot;: String,
+        &quot;user_data&quot;: String,
+        &quot;user_data_format&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::Cloud::WinServer">
+<h2>Rackspace::Cloud::WinServer<a class="headerlink" href="#Rackspace::Cloud::WinServer" title="Permalink to this headline">¶</a></h2>
+<p>Rackspace cloud Windows server resource.</p>
+<div class="section" id="Rackspace::Cloud::WinServer-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::Cloud::WinServer-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>admin_pass <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The administrator password for the server.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>availability_zone <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of the availability zone for server placement.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>block_device_mapping <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Block device mappings for this server.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>delete_on_termination <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Indicate whether the volume should be deleted when the server is terminated.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>device_name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A device name where the volume will be attached in the system at /dev/device_name. This value is typically vda.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>snapshot_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the snapshot to create a volume from.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type cinder.snapshot</p>
+</dd>
+<dt>volume_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the volume to boot from. Only one of volume_id or snapshot_id should be provided.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type cinder.volume</p>
+</dd>
+<dt>volume_size <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">The size of the volume, in GB. It is safe to leave this blank and have the Compute service infer the size.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>block_device_mapping_v2 <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p>Block device mappings v2 for this server.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>boot_index <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Integer used for ordering the boot disks.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>delete_on_termination <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Indicate whether the volume should be deleted when the server is terminated.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>device_name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A device name where the volume will be attached in the system at /dev/device_name. This value is typically vda.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>device_type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Device type: at the moment we can make distinction only between disk and cdrom.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: cdrom, disk</p>
+</dd>
+<dt>disk_bus <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Bus of the device: hypervisor driver chooses a suitable default if omitted.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: ide, lame_bus, scsi, usb, virtio</p>
+</dd>
+<dt>image_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the image to create a volume from.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type glance.image</p>
+</dd>
+<dt>snapshot_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID of the snapshot to create a volume from.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type cinder.snapshot</p>
+</dd>
+<dt>swap_size <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">The size of the swap, in MB.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>volume_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The volume_id can be boot or non-boot device to the server.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type cinder.volume</p>
+</dd>
+<dt>volume_size <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Size of the block device in GB. If it is omitted, hypervisor driver calculates size.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>config_drive <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">If True, enable config drive on the server.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>diskConfig <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Control how the disk is partitioned when the server is created.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: AUTO, MANUAL</p>
+</dd>
+<dt>flavor <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID or name of the flavor to boot onto.</p>
+<p>Can be updated without replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type nova.flavor</p>
+</dd>
+<dt>flavor_update_policy <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Policy on how to apply a flavor update; either by requesting a server resize or by replacing the entire server.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;RESIZE&#8221;.</p>
+<p class="last">Allowed values: RESIZE, REPLACE</p>
+</dd>
+<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The ID or name of the image to boot with.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type glance.image</p>
+</dd>
+<dt>image_update_policy <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Policy on how to apply an image-id update; either by requesting a server rebuild or by replacing the entire server</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;REBUILD&#8221;.</p>
+<p class="last">Allowed values: REBUILD, REPLACE, REBUILD_PRESERVE_EPHEMERAL</p>
+</dd>
+<dt>key_name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of keypair to inject into the server.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type nova.keypair</p>
+</dd>
+<dt>metadata <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Arbitrary key/value metadata to store for this server. Both keys and values must be 255 characters or less.  Non-string values will be serialized to JSON (and the serialized string must be 255 characters or less).</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Server name.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>networks <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">An ordered list of nics to be added to this server, with information about connected networks, fixed ips, port etc.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>fixed_ip <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Fixed IP address to specify for the port created on the requested network.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type ip_addr</p>
+</dd>
+<dt>network <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name or ID of network to create a port on.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type neutron.network</p>
+</dd>
+<dt>port <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">ID of an existing port to associate with this server.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type neutron.port</p>
+</dd>
+<dt>uuid <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">DEPRECATED since 2014.1 (Icehouse) - Use property network.</p>
+</div>
+<p>ID of network to create a port on.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type neutron.network</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>personality <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">A map of files to create/overwrite on the server upon boot. Keys are file names and values are the file contents.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;{}&#8221;.</p>
+</dd>
+<dt>reservation_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A UUID for the set of servers being requested.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>save_admin_pass <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">True if the system should remember the admin password; False otherwise.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+<dt>scheduler_hints <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Arbitrary key-value pairs specified by the client to help boot a server.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>security_groups <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">List of security group names or IDs. Cannot be used if neutron ports are associated with this server; assign security groups to the ports instead.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;[]&#8221;.</p>
+</dd>
+<dt>software_config_transport <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">How the server should receive the metadata required for software configuration. POLL_SERVER_CFN will allow calls to the cfn API action DescribeStackResource authenticated with the provided keypair. POLL_SERVER_HEAT will allow calls to the Heat API resource-show using the provided keystone credentials. POLL_TEMP_URL will create and populate a Swift TempURL with metadata for polling.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;POLL_SERVER_CFN&#8221;.</p>
+<p class="last">Allowed values: POLL_SERVER_CFN, POLL_SERVER_HEAT, POLL_TEMP_URL</p>
+</dd>
+<dt>user_data <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">User data script to be executed by cloud-init.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;&#8221;.</p>
+</dd>
+<dt>user_data_format <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">How the user_data should be formatted for the server. For HEAT_CFNTOOLS, the user_data is bundled as part of the heat-cfntools cloud-init boot configuration data. For RAW the user_data is passed to Nova unmodified. For SOFTWARE_CONFIG user_data is bundled as part of the software config data, and metadata is derived from any associated SoftwareDeployment resources.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;HEAT_CFNTOOLS&#8221;.</p>
+<p class="last">Allowed values: HEAT_CFNTOOLS, RAW, SOFTWARE_CONFIG</p>
+</dd>
+<dt>admin_user <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">DEPRECATED since 2014.1 (Icehouse)</p>
+</div>
+<p>Name of the administrative user to use on the server. The default cloud-init user set up for each image (e.g. &#8220;ubuntu&#8221; for Ubuntu 12.04+, &#8220;fedora&#8221; for Fedora 19+ and &#8220;cloud-user&#8221; for CentOS/RHEL 6.5).</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::Cloud::WinServer-attrs">
+<h3>Attributes<a class="headerlink" href="#Rackspace::Cloud::WinServer-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>accessIPv4</dt>
+<dd>The manually assigned alternative public IPv4 address of the server.</dd>
+<dt>accessIPv6</dt>
+<dd>The manually assigned alternative public IPv6 address of the server.</dd>
+<dt>addresses</dt>
+<dd>A dict of all network addresses with corresponding port_id. The port ID may be obtained through the following expression: &#8220;{get_attr: [&lt;server&gt;, addresses, &lt;network name&gt;, 0, port]}&#8221;.</dd>
+<dt>admin_pass</dt>
+<dd>The administrator password for the server.</dd>
+<dt>console_urls</dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p class="last">URLs of server&#8217;s consoles. To get a specific console type, the requested type can be specified as parameter to the get_attr function, e.g. get_attr: [ &lt;server&gt;, console_urls, novnc ]. Currently supported types are novnc, xvpvnc, spice-html5, rdp-html5, serial.</p>
+</dd>
+<dt>first_address</dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">DEPRECATED since 2014.2 (Juno) - Use the networks attribute instead of first_address. For example: &#8220;{get_attr: [&lt;server name&gt;, networks, &lt;network name&gt;, 0]}&#8221;</p>
+</div>
+<p class="last">Convenience attribute to fetch the first assigned network address, or an empty string if nothing has been assigned at this time. Result may not be predictable if the server has addresses from more than one network.</p>
+</dd>
+<dt>instance_name</dt>
+<dd>AWS compatible instance name.</dd>
+<dt>name</dt>
+<dd>Name of the server.</dd>
+<dt>networks</dt>
+<dd>A dict of assigned network addresses of the form: {&#8220;public&#8221;: [ip1, ip2...], &#8220;private&#8221;: [ip3, ip4]}.</dd>
+<dt>privateIPv4</dt>
+<dd>The private IPv4 address of the server.</dd>
+<dt>show</dt>
+<dd>A dict of all server details as returned by the API.</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::Cloud::WinServer-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::Cloud::WinServer-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::Cloud::WinServer
+    properties:
+      admin_pass: String
+      availability_zone: String
+      block_device_mapping: [{&quot;device_name&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;delete_on_termination&quot;: Boolean, &quot;volume_id&quot;: String}, {&quot;device_name&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;delete_on_termination&quot;: Boolean, &quot;volume_id&quot;: String}, ...]
+      block_device_mapping_v2: [{&quot;boot_index&quot;: Integer, &quot;device_type&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;device_name&quot;: String, &quot;disk_bus&quot;: String, &quot;image_id&quot;: String, &quot;swap_size&quot;: Integer, &quot;volume_id&quot;: String, &quot;delete_on_termination&quot;: Boolean}, {&quot;boot_index&quot;: Integer, &quot;device_type&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;device_name&quot;: String, &quot;disk_bus&quot;: String, &quot;image_id&quot;: String, &quot;swap_size&quot;: Integer, &quot;volume_id&quot;: String, &quot;delete_on_termination&quot;: Boolean}, ...]
+      config_drive: Boolean
+      diskConfig: String
+      flavor: String
+      flavor_update_policy: String
+      image: String
+      image_update_policy: String
+      key_name: String
+      metadata: {...}
+      name: String
+      networks: [{&quot;network&quot;: String, &quot;fixed_ip&quot;: String, &quot;port&quot;: String, &quot;uuid&quot;: String}, {&quot;network&quot;: String, &quot;fixed_ip&quot;: String, &quot;port&quot;: String, &quot;uuid&quot;: String}, ...]
+      personality: {...}
+      reservation_id: String
+      save_admin_pass: Boolean
+      scheduler_hints: {...}
+      security_groups: [Value, Value, ...]
+      software_config_transport: String
+      user_data: String
+      user_data_format: String
+</pre>
+</div>
+<div class="section" id="Rackspace::Cloud::WinServer-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::Cloud::WinServer-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::Cloud::WinServer
+    Properties:
+      admin_pass: String
+      availability_zone: String
+      block_device_mapping: [{&quot;device_name&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;delete_on_termination&quot;: Boolean, &quot;volume_id&quot;: String}, {&quot;device_name&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;delete_on_termination&quot;: Boolean, &quot;volume_id&quot;: String}, ...]
+      block_device_mapping_v2: [{&quot;boot_index&quot;: Integer, &quot;device_type&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;device_name&quot;: String, &quot;disk_bus&quot;: String, &quot;image_id&quot;: String, &quot;swap_size&quot;: Integer, &quot;volume_id&quot;: String, &quot;delete_on_termination&quot;: Boolean}, {&quot;boot_index&quot;: Integer, &quot;device_type&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;device_name&quot;: String, &quot;disk_bus&quot;: String, &quot;image_id&quot;: String, &quot;swap_size&quot;: Integer, &quot;volume_id&quot;: String, &quot;delete_on_termination&quot;: Boolean}, ...]
+      config_drive: Boolean
+      diskConfig: String
+      flavor: String
+      flavor_update_policy: String
+      image: String
+      image_update_policy: String
+      key_name: String
+      metadata: {...}
+      name: String
+      networks: [{&quot;network&quot;: String, &quot;fixed_ip&quot;: String, &quot;port&quot;: String, &quot;uuid&quot;: String}, {&quot;network&quot;: String, &quot;fixed_ip&quot;: String, &quot;port&quot;: String, &quot;uuid&quot;: String}, ...]
+      personality: {...}
+      reservation_id: String
+      save_admin_pass: Boolean
+      scheduler_hints: {...}
+      security_groups: [Value, Value, ...]
+      software_config_transport: String
+      user_data: String
+      user_data_format: String
+</pre>
+</div>
+<div class="section" id="Rackspace::Cloud::WinServer-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::Cloud::WinServer-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::Cloud::WinServer&quot;,
+      &quot;Properties&quot;: {
+        &quot;admin_pass&quot;: String,
+        &quot;availability_zone&quot;: String,
+        &quot;block_device_mapping&quot;: [{&quot;device_name&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;delete_on_termination&quot;: Boolean, &quot;volume_id&quot;: String}, {&quot;device_name&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;delete_on_termination&quot;: Boolean, &quot;volume_id&quot;: String}, ...],
+        &quot;block_device_mapping_v2&quot;: [{&quot;boot_index&quot;: Integer, &quot;device_type&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;device_name&quot;: String, &quot;disk_bus&quot;: String, &quot;image_id&quot;: String, &quot;swap_size&quot;: Integer, &quot;volume_id&quot;: String, &quot;delete_on_termination&quot;: Boolean}, {&quot;boot_index&quot;: Integer, &quot;device_type&quot;: String, &quot;volume_size&quot;: Integer, &quot;snapshot_id&quot;: String, &quot;device_name&quot;: String, &quot;disk_bus&quot;: String, &quot;image_id&quot;: String, &quot;swap_size&quot;: Integer, &quot;volume_id&quot;: String, &quot;delete_on_termination&quot;: Boolean}, ...],
+        &quot;config_drive&quot;: Boolean,
+        &quot;diskConfig&quot;: String,
+        &quot;flavor&quot;: String,
+        &quot;flavor_update_policy&quot;: String,
+        &quot;image&quot;: String,
+        &quot;image_update_policy&quot;: String,
+        &quot;key_name&quot;: String,
+        &quot;metadata&quot;: {...},
+        &quot;name&quot;: String,
+        &quot;networks&quot;: [{&quot;network&quot;: String, &quot;fixed_ip&quot;: String, &quot;port&quot;: String, &quot;uuid&quot;: String}, {&quot;network&quot;: String, &quot;fixed_ip&quot;: String, &quot;port&quot;: String, &quot;uuid&quot;: String}, ...],
+        &quot;personality&quot;: {...},
+        &quot;reservation_id&quot;: String,
+        &quot;save_admin_pass&quot;: Boolean,
+        &quot;scheduler_hints&quot;: {...},
+        &quot;security_groups&quot;: [Value, Value, ...],
+        &quot;software_config_transport&quot;: String,
+        &quot;user_data&quot;: String,
+        &quot;user_data_format&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::AgentToken">
+<h2>Rackspace::CloudMonitoring::AgentToken<a class="headerlink" href="#Rackspace::CloudMonitoring::AgentToken" title="Permalink to this headline">¶</a></h2>
+<p>Agent tokens are used to authenticate Monitoring agents to the Monitoring
+Service. Multiple agents can share a single token.</p>
+<div class="section" id="Rackspace::CloudMonitoring::AgentToken-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::CloudMonitoring::AgentToken-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>label <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A friendly label for this resource</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">The length must be in the range 1 to 255.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::AgentToken-attrs">
+<h3>Attributes<a class="headerlink" href="#Rackspace::CloudMonitoring::AgentToken-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>show</dt>
+<dd>A dict of all entity details as returned by the API.</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::AgentToken-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::AgentToken-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::CloudMonitoring::AgentToken
+    properties:
+      label: String
+</pre>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::AgentToken-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::AgentToken-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::CloudMonitoring::AgentToken
+    Properties:
+      label: String
+</pre>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::AgentToken-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::AgentToken-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::CloudMonitoring::AgentToken&quot;,
+      &quot;Properties&quot;: {
+        &quot;label&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Alarm">
+<h2>Rackspace::CloudMonitoring::Alarm<a class="headerlink" href="#Rackspace::CloudMonitoring::Alarm" title="Permalink to this headline">¶</a></h2>
+<p>Alarms bind alerting rules, entities, and notification plans into a
+logical unit. Alarms are responsible for determining a state (<cite>OK</cite>,
+<cite>WARNING</cite> or <cite>CRITICAL</cite>) based on the result of a Check, and executing a
+notification plan whenever that state changes. You create alerting rules
+by using the alarm DSL. For information about using the alarm language,
+refer to the <a class="reference external" href="http://docs.rackspace.com/cm/api/v1.0/cm-devguide/content/alerts-language.html">reference documentation</a>.</p>
+<p><strong>Note</strong> Criteria is optional. If you don&#8217;t provide a criteria, the state
+of your alarm depends entirely on the success or failure of the check.
+This is a convenient shortcut for setting a simple alarm with a
+notification plan. For example, if you set a ping check on a server, it
+won&#8217;t alert unless no pings are returned at all, whereas adding criteria
+would enable the alert to trigger if the ping round trip time went past a
+certain threshold.</p>
+<div class="section" id="Rackspace::CloudMonitoring::Alarm-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::CloudMonitoring::Alarm-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>check <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The check to alert on</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>criteria <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The alarm DSL for describing alerting conditions and their output states</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>disabled <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Disable processing and alerts on this alarm</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+<dt>label <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A friendly label for this resource</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">The length must be in the range 1 to 255.</p>
+</dd>
+<dt>metadata <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Arbitrary key/value pairs that are passed during the alerting phase. Both keys and values must be 255 characters or less. Non-string values will be serialized to JSON (and the serialized string must be 255 characters or less).</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>plan <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The notification plan to execute when the state changes</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Alarm-attrs">
+<h3>Attributes<a class="headerlink" href="#Rackspace::CloudMonitoring::Alarm-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>show</dt>
+<dd>A dict of all entity details as returned by the API.</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Alarm-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::Alarm-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::CloudMonitoring::Alarm
+    properties:
+      check: String
+      criteria: String
+      disabled: Boolean
+      label: String
+      metadata: {...}
+      plan: String
+</pre>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Alarm-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::Alarm-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::CloudMonitoring::Alarm
+    Properties:
+      check: String
+      criteria: String
+      disabled: Boolean
+      label: String
+      metadata: {...}
+      plan: String
+</pre>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Alarm-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::Alarm-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::CloudMonitoring::Alarm&quot;,
+      &quot;Properties&quot;: {
+        &quot;check&quot;: String,
+        &quot;criteria&quot;: String,
+        &quot;disabled&quot;: Boolean,
+        &quot;label&quot;: String,
+        &quot;metadata&quot;: {...},
+        &quot;plan&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Check">
+<h2>Rackspace::CloudMonitoring::Check<a class="headerlink" href="#Rackspace::CloudMonitoring::Check" title="Permalink to this headline">¶</a></h2>
+<p>A check is one of the foundational building blocks of the monitoring
+system. The check determines the parts or pieces of the entity that you
+want to monitor, the monitoring frequency, how many monitoring zones are
+originating the check, and so on.</p>
+<div class="section" id="Rackspace::CloudMonitoring::Check-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::CloudMonitoring::Check-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>details <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">A hash of type-specific details</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;{}&#8221;.</p>
+</dd>
+<dt>disabled <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Disables the check</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+<dt>entity <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The id of the entity for which to create the check. This can either be the id of a configured monitoring entity, a cloud server or a cloud database instance.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>label <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A friendly label for this resource</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">The length must be in the range 1 to 255.</p>
+</dd>
+<dt>metadata <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Arbitrary key/value pairs that are passed during the alerting phase. Both keys and values must be 255 characters or less. Non-string values will be serialized to JSON (and the serialized string must be 255 characters or less).</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>monitoring_zones_poll <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">List of monitoring zones to poll from. Note: This argument is only required for remote (non-agent) checks</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Value must be of type monitoring.zone</p>
+</dd>
+</dl>
+</dd>
+<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">The period in seconds for a check. The value must be greater than the minimum period set on your account.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;60&#8221;.</p>
+<p class="last">The value must be in the range 30 to 1800.</p>
+</dd>
+<dt>target_alias <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A key in the entity&#8217;s &#8216;ip_addresses&#8217; hash used to resolve this check to an IP address. This parameter is mutually exclusive with target_hostname.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">The length must be in the range 1 to 64.</p>
+</dd>
+<dt>target_hostname <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The hostname this check should target. This parameter is mutually exclusive with target_alias. Value must be a Valid FQDN, IPv4 or IPv6 address</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>target_receiver <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Determines how to resolve the check target.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;IPv4&#8221;.</p>
+<p class="last">Allowed values: IPv4, IPv6</p>
+</dd>
+<dt>timeout <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">The timeout in seconds for a check. This has to be less than the period.</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property, defaults to &#8220;30&#8221;.</p>
+<p class="last">The value must be in the range 2 to 1800.</p>
+</dd>
+<dt>type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The specific type of resource</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">The length must be in the range 1 to 64.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Check-attrs">
+<h3>Attributes<a class="headerlink" href="#Rackspace::CloudMonitoring::Check-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>show</dt>
+<dd>A dict of all entity details as returned by the API.</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Check-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::Check-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::CloudMonitoring::Check
+    properties:
+      details: {...}
+      disabled: Boolean
+      entity: String
+      label: String
+      metadata: {...}
+      monitoring_zones_poll: [String, String, ...]
+      period: Integer
+      target_alias: String
+      target_hostname: String
+      target_receiver: String
+      timeout: Integer
+      type: String
+</pre>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Check-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::Check-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::CloudMonitoring::Check
+    Properties:
+      details: {...}
+      disabled: Boolean
+      entity: String
+      label: String
+      metadata: {...}
+      monitoring_zones_poll: [String, String, ...]
+      period: Integer
+      target_alias: String
+      target_hostname: String
+      target_receiver: String
+      timeout: Integer
+      type: String
+</pre>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Check-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::Check-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::CloudMonitoring::Check&quot;,
+      &quot;Properties&quot;: {
+        &quot;details&quot;: {...},
+        &quot;disabled&quot;: Boolean,
+        &quot;entity&quot;: String,
+        &quot;label&quot;: String,
+        &quot;metadata&quot;: {...},
+        &quot;monitoring_zones_poll&quot;: [String, String, ...],
+        &quot;period&quot;: Integer,
+        &quot;target_alias&quot;: String,
+        &quot;target_hostname&quot;: String,
+        &quot;target_receiver&quot;: String,
+        &quot;timeout&quot;: Integer,
+        &quot;type&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Entity">
+<h2>Rackspace::CloudMonitoring::Entity<a class="headerlink" href="#Rackspace::CloudMonitoring::Entity" title="Permalink to this headline">¶</a></h2>
+<p>An entity is the target of what you are monitoring. For example, you can
+create an entity to monitor your website, a particular web service, or
+your Rackspace server or server instance. Note that an entity represents
+only one item in the monitoring system. For example, if you wanted to
+monitor each server in a cluster, you would create an entity for each of
+the servers. You would not create a single entity to represent the entire
+cluster.</p>
+<p>An entity can have multiple checks associated with it. This allows you to
+check multiple services on the same host by creating multiple checks on the
+same entity, instead of multiple entities each with a single check.</p>
+<div class="section" id="Rackspace::CloudMonitoring::Entity-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::CloudMonitoring::Entity-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>agent_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Agent to which this entity is bound</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p>Value must match pattern: [-\.\w]+</p>
+<p class="last">The length must be in the range 1 to 255.</p>
+</dd>
+<dt>ip_addresses <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">IP addresses that can be referenced by checks on this entity. Keys must be between 1 and 64 characters long. Values must be valid IPv4 or IPv6 addresses.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>label <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A friendly label for this resource</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">The length must be in the range 1 to 255.</p>
+</dd>
+<dt>metadata <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Arbitrary key/value pairs that are passed during the alerting phase. Both keys and values must be 255 characters or less. Non-string values will be serialized to JSON (and the serialized string must be 255 characters or less).</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Entity-attrs">
+<h3>Attributes<a class="headerlink" href="#Rackspace::CloudMonitoring::Entity-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>show</dt>
+<dd>A dict of all entity details as returned by the API.</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Entity-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::Entity-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::CloudMonitoring::Entity
+    properties:
+      agent_id: String
+      ip_addresses: {...}
+      label: String
+      metadata: {...}
+</pre>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Entity-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::Entity-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::CloudMonitoring::Entity
+    Properties:
+      agent_id: String
+      ip_addresses: {...}
+      label: String
+      metadata: {...}
+</pre>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Entity-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::Entity-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::CloudMonitoring::Entity&quot;,
+      &quot;Properties&quot;: {
+        &quot;agent_id&quot;: String,
+        &quot;ip_addresses&quot;: {...},
+        &quot;label&quot;: String,
+        &quot;metadata&quot;: {...}
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Notification">
+<h2>Rackspace::CloudMonitoring::Notification<a class="headerlink" href="#Rackspace::CloudMonitoring::Notification" title="Permalink to this headline">¶</a></h2>
+<p>A notification is a destination to send an alarm, it can be a variety
+of different types, and will evolve over time.</p>
+<p>For instance, with a webhook type notification Rackspace Cloud Monitoring
+posts JSON formatted data to a user-specified URL on an alert condition
+(Check goes from <cite>OK</cite> -&gt; <cite>CRITICAL</cite> and so on).</p>
+<div class="section" id="Rackspace::CloudMonitoring::Notification-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::CloudMonitoring::Notification-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>details <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">A hash of type-specific details</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;{}&#8221;.</p>
+</dd>
+<dt>label <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A friendly label for this resource</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">The length must be in the range 1 to 255.</p>
+</dd>
+<dt>type <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The specific type of resource</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">The length must be in the range 1 to 64.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Notification-attrs">
+<h3>Attributes<a class="headerlink" href="#Rackspace::CloudMonitoring::Notification-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>show</dt>
+<dd>A dict of all entity details as returned by the API.</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Notification-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::Notification-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::CloudMonitoring::Notification
+    properties:
+      details: {...}
+      label: String
+      type: String
+</pre>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Notification-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::Notification-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::CloudMonitoring::Notification
+    Properties:
+      details: {...}
+      label: String
+      type: String
+</pre>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::Notification-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::Notification-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::CloudMonitoring::Notification&quot;,
+      &quot;Properties&quot;: {
+        &quot;details&quot;: {...},
+        &quot;label&quot;: String,
+        &quot;type&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::NotificationPlan">
+<h2>Rackspace::CloudMonitoring::NotificationPlan<a class="headerlink" href="#Rackspace::CloudMonitoring::NotificationPlan" title="Permalink to this headline">¶</a></h2>
+<p>A notification plan contains a set of notification actions that Rackspace
+Cloud Monitoring executes when triggered by an alarm. Rackspace Cloud
+Monitoring currently supports webhook and email notifications.</p>
+<p>Each notification state can contain multiple notification actions. For
+example, you can create a notification plan that hits a webhook/email to
+notify your operations team if a warning occurs. However, if the warning
+escalates to an Error, the notification plan could be configured to hit a
+different webhook/email that triggers both email and SMS messages to the
+operations team.</p>
+<div class="section" id="Rackspace::CloudMonitoring::NotificationPlan-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::CloudMonitoring::NotificationPlan-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>critical_state <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">The notification list to send to when the state is CRITICAL.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>label <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">A friendly label for this resource</p>
+<p>Can be updated without replacement.</p>
+<p>Optional property.</p>
+<p class="last">The length must be in the range 1 to 255.</p>
+</dd>
+<dt>ok_state <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">The notification list to send to when the state is OK.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>warning_state <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">The notification list to send to when the state is WARNING.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::NotificationPlan-attrs">
+<h3>Attributes<a class="headerlink" href="#Rackspace::CloudMonitoring::NotificationPlan-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>show</dt>
+<dd>A dict of all entity details as returned by the API.</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::NotificationPlan-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::NotificationPlan-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::CloudMonitoring::NotificationPlan
+    properties:
+      critical_state: [Value, Value, ...]
+      label: String
+      ok_state: [Value, Value, ...]
+      warning_state: [Value, Value, ...]
+</pre>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::NotificationPlan-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::NotificationPlan-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::CloudMonitoring::NotificationPlan
+    Properties:
+      critical_state: [Value, Value, ...]
+      label: String
+      ok_state: [Value, Value, ...]
+      warning_state: [Value, Value, ...]
+</pre>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::NotificationPlan-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::NotificationPlan-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::CloudMonitoring::NotificationPlan&quot;,
+      &quot;Properties&quot;: {
+        &quot;critical_state&quot;: [Value, Value, ...],
+        &quot;label&quot;: String,
+        &quot;ok_state&quot;: [Value, Value, ...],
+        &quot;warning_state&quot;: [Value, Value, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::PlanNotifications">
+<h2>Rackspace::CloudMonitoring::PlanNotifications<a class="headerlink" href="#Rackspace::CloudMonitoring::PlanNotifications" title="Permalink to this headline">¶</a></h2>
+<p>Binds notifications to existing notification plans. This is useful
+for cases (such as using monitoring with autoscale), when you need
+a plan but must create the notifications dynamically later. Note that
+these notifications will overwrite any of the same level created
+as part of the NotificationPlan resource.</p>
+<div class="section" id="Rackspace::CloudMonitoring::PlanNotifications-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::CloudMonitoring::PlanNotifications-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>critical_state <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">The notification list to send to when the state is CRITICAL.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>ok_state <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">The notification list to send to when the state is OK.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>plan <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The notification plan to add notifications to</p>
+<p>Updates cause replacement.</p>
+<p class="last">Required property.</p>
+</dd>
+<dt>warning_state <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">The notification list to send to when the state is WARNING.</p>
+<p>Can be updated without replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::PlanNotifications-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::PlanNotifications-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::CloudMonitoring::PlanNotifications
+    properties:
+      critical_state: [Value, Value, ...]
+      ok_state: [Value, Value, ...]
+      plan: String
+      warning_state: [Value, Value, ...]
+</pre>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::PlanNotifications-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::PlanNotifications-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::CloudMonitoring::PlanNotifications
+    Properties:
+      critical_state: [Value, Value, ...]
+      ok_state: [Value, Value, ...]
+      plan: String
+      warning_state: [Value, Value, ...]
+</pre>
+</div>
+<div class="section" id="Rackspace::CloudMonitoring::PlanNotifications-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::CloudMonitoring::PlanNotifications-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::CloudMonitoring::PlanNotifications&quot;,
+      &quot;Properties&quot;: {
+        &quot;critical_state&quot;: [Value, Value, ...],
+        &quot;ok_state&quot;: [Value, Value, ...],
+        &quot;plan&quot;: String,
+        &quot;warning_state&quot;: [Value, Value, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::RackConnect::PoolNode">
+<h2>Rackspace::RackConnect::PoolNode<a class="headerlink" href="#Rackspace::RackConnect::PoolNode" title="Permalink to this headline">¶</a></h2>
+<p>A resource for RackConnect LoadBalancerPool node.</p>
+<div class="section" id="Rackspace::RackConnect::PoolNode-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::RackConnect::PoolNode-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>pool <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The id of the pool.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type rackconnect.pool</p>
+</dd>
+<dt>server_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The id of the server to be added.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type nova.server</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::RackConnect::PoolNode-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::RackConnect::PoolNode-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::RackConnect::PoolNode
+    properties:
+      pool: String
+      server_id: String
+</pre>
+</div>
+<div class="section" id="Rackspace::RackConnect::PoolNode-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::RackConnect::PoolNode-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::RackConnect::PoolNode
+    Properties:
+      pool: String
+      server_id: String
+</pre>
+</div>
+<div class="section" id="Rackspace::RackConnect::PoolNode-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::RackConnect::PoolNode-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::RackConnect::PoolNode&quot;,
+      &quot;Properties&quot;: {
+        &quot;pool&quot;: String,
+        &quot;server_id&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="Rackspace::RackConnect::PublicIP">
+<h2>Rackspace::RackConnect::PublicIP<a class="headerlink" href="#Rackspace::RackConnect::PublicIP" title="Permalink to this headline">¶</a></h2>
+<p>A resource for RackConnect public ips.</p>
+<div class="section" id="Rackspace::RackConnect::PublicIP-props">
+<h3>Properties<a class="headerlink" href="#Rackspace::RackConnect::PublicIP-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>server_id <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The id of the server to be added.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p class="last">Value must be of type nova.server</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::RackConnect::PublicIP-attrs">
+<h3>Attributes<a class="headerlink" href="#Rackspace::RackConnect::PublicIP-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>public_ip_v4</dt>
+<dd>Rackconnected server public IP.</dd>
+</dl>
+</div>
+<div class="section" id="Rackspace::RackConnect::PublicIP-hot">
+<h3>HOT Syntax<a class="headerlink" href="#Rackspace::RackConnect::PublicIP-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: Rackspace::RackConnect::PublicIP
+    properties:
+      server_id: String
+</pre>
+</div>
+<div class="section" id="Rackspace::RackConnect::PublicIP-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#Rackspace::RackConnect::PublicIP-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: Rackspace::RackConnect::PublicIP
+    Properties:
+      server_id: String
+</pre>
+</div>
+<div class="section" id="Rackspace::RackConnect::PublicIP-json">
+<h3>JSON Syntax<a class="headerlink" href="#Rackspace::RackConnect::PublicIP-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;Rackspace::RackConnect::PublicIP&quot;,
+      &quot;Properties&quot;: {
+        &quot;server_id&quot;: String
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Rackspace Resource Types</a><ul>
+<li><a class="reference internal" href="#Rackspace::AutoScale::Group">Rackspace::AutoScale::Group</a><ul>
+<li><a class="reference internal" href="#Rackspace::AutoScale::Group-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::AutoScale::Group-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::AutoScale::Group-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::AutoScale::Group-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::AutoScale::ScalingPolicy">Rackspace::AutoScale::ScalingPolicy</a><ul>
+<li><a class="reference internal" href="#Rackspace::AutoScale::ScalingPolicy-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::AutoScale::ScalingPolicy-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::AutoScale::ScalingPolicy-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::AutoScale::ScalingPolicy-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::AutoScale::WebHook">Rackspace::AutoScale::WebHook</a><ul>
+<li><a class="reference internal" href="#Rackspace::AutoScale::WebHook-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::AutoScale::WebHook-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#Rackspace::AutoScale::WebHook-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::AutoScale::WebHook-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::AutoScale::WebHook-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::Cloud::BackupConfig">Rackspace::Cloud::BackupConfig</a><ul>
+<li><a class="reference internal" href="#Rackspace::Cloud::BackupConfig-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::BackupConfig-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::BackupConfig-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::BackupConfig-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::BackupConfig-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::Cloud::ChefSolo">Rackspace::Cloud::ChefSolo</a><ul>
+<li><a class="reference internal" href="#Rackspace::Cloud::ChefSolo-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::ChefSolo-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::ChefSolo-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::ChefSolo-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::Cloud::DNS">Rackspace::Cloud::DNS</a><ul>
+<li><a class="reference internal" href="#Rackspace::Cloud::DNS-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::DNS-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::DNS-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::DNS-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::Cloud::LoadBalancer">Rackspace::Cloud::LoadBalancer</a><ul>
+<li><a class="reference internal" href="#Rackspace::Cloud::LoadBalancer-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::LoadBalancer-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::LoadBalancer-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::LoadBalancer-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::LoadBalancer-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::Cloud::Network">Rackspace::Cloud::Network</a><ul>
+<li><a class="reference internal" href="#Rackspace::Cloud::Network-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::Network-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::Network-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::Network-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::Network-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::Cloud::Server">Rackspace::Cloud::Server</a><ul>
+<li><a class="reference internal" href="#Rackspace::Cloud::Server-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::Server-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::Server-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::Server-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::Server-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::Cloud::WinServer">Rackspace::Cloud::WinServer</a><ul>
+<li><a class="reference internal" href="#Rackspace::Cloud::WinServer-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::WinServer-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::WinServer-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::WinServer-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::Cloud::WinServer-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::AgentToken">Rackspace::CloudMonitoring::AgentToken</a><ul>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::AgentToken-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::AgentToken-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::AgentToken-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::AgentToken-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::AgentToken-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Alarm">Rackspace::CloudMonitoring::Alarm</a><ul>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Alarm-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Alarm-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Alarm-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Alarm-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Alarm-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Check">Rackspace::CloudMonitoring::Check</a><ul>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Check-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Check-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Check-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Check-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Check-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Entity">Rackspace::CloudMonitoring::Entity</a><ul>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Entity-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Entity-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Entity-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Entity-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Entity-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Notification">Rackspace::CloudMonitoring::Notification</a><ul>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Notification-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Notification-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Notification-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Notification-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::Notification-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::NotificationPlan">Rackspace::CloudMonitoring::NotificationPlan</a><ul>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::NotificationPlan-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::NotificationPlan-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::NotificationPlan-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::NotificationPlan-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::NotificationPlan-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::PlanNotifications">Rackspace::CloudMonitoring::PlanNotifications</a><ul>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::PlanNotifications-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::PlanNotifications-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::PlanNotifications-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::CloudMonitoring::PlanNotifications-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::RackConnect::PoolNode">Rackspace::RackConnect::PoolNode</a><ul>
+<li><a class="reference internal" href="#Rackspace::RackConnect::PoolNode-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::RackConnect::PoolNode-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::RackConnect::PoolNode-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::RackConnect::PoolNode-json">JSON Syntax</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Rackspace::RackConnect::PublicIP">Rackspace::RackConnect::PublicIP</a><ul>
+<li><a class="reference internal" href="#Rackspace::RackConnect::PublicIP-props">Properties</a></li>
+<li><a class="reference internal" href="#Rackspace::RackConnect::PublicIP-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#Rackspace::RackConnect::PublicIP-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::RackConnect::PublicIP-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#Rackspace::RackConnect::PublicIP-json">JSON Syntax</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="openstack.html"
+                        title="previous chapter">OpenStack Resource Types</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="docker.html"
+                        title="next chapter">Docker Resource Types</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/raxdox/rackspace.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="docker.html" title="Docker Resource Types"
+             >next</a></li>
+        <li class="right" >
+          <a href="openstack.html" title="OpenStack Resource Types"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

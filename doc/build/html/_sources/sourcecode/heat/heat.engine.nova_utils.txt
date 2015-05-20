@@ -1,0 +1,8 @@
+========================================
+The :mod:`heat.engine.nova_utils` Module
+========================================
+.. automodule:: heat.engine.nova_utils
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

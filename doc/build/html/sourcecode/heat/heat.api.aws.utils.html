@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.api.aws.utils Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-api-aws-utils-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.api.aws.utils</span></code> Module<a class="headerlink" href="#the-heat-api-aws-utils-module" title="Permalink to this headline">¶</a></h1>
+<p>Helper utilities related to the AWS API implementations.</p>
+<dl class="function">
+<dt>
+<code class="descclassname">heat.api.aws.utils.</code><code class="descname">extract_param_list</code><span class="sig-paren">(</span><em>params</em>, <em>prefix=''</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/aws/utils.html#extract_param_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Extract a list-of-dicts based on parameters containing AWS style list.</p>
+<p>MetricData.member.1.MetricName=buffers
+MetricData.member.1.Unit=Bytes
+MetricData.member.1.Value=231434333
+MetricData.member.2.MetricName=buffers2
+MetricData.member.2.Unit=Bytes
+MetricData.member.2.Value=12345</p>
+<p>This can be extracted by passing prefix=MetricData, resulting in a
+list containing two dicts.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.api.aws.utils.</code><code class="descname">extract_param_pairs</code><span class="sig-paren">(</span><em>params</em>, <em>prefix=''</em>, <em>keyname=''</em>, <em>valuename=''</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/aws/utils.html#extract_param_pairs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Extract user input params from AWS style parameter-pair encoded list.</p>
+<p>In the AWS API list items appear as two key-value
+pairs (passed as query parameters)  with keys of the form below:</p>
+<p>Prefix.member.1.keyname=somekey
+Prefix.member.1.keyvalue=somevalue
+Prefix.member.2.keyname=anotherkey
+Prefix.member.2.keyvalue=somevalue</p>
+<p>We reformat this into a dict here to match the heat
+engine API expected format.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.api.aws.utils.</code><code class="descname">format_response</code><span class="sig-paren">(</span><em>action</em>, <em>response</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/aws/utils.html#format_response"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Format response from engine into API format.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.api.aws.utils.</code><code class="descname">get_param_value</code><span class="sig-paren">(</span><em>params</em>, <em>key</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/aws/utils.html#get_param_value"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Looks up an expected parameter in a parsed params dict.</p>
+<p>Helper function, looks up an expected parameter in a parsed
+params dict and returns the result.  If params does not contain
+the requested key we raise an exception of the appropriate type.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.api.aws.utils.</code><code class="descname">reformat_dict_keys</code><span class="sig-paren">(</span><em>keymap=None</em>, <em>inputdict=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/aws/utils.html#reformat_dict_keys"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Utility function for mapping one dict format to another.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.api.aws.utils.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

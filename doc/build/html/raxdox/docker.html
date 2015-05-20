@@ -1,0 +1,482 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Docker Resource Types &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="index.html" />
+    <link rel="next" title="Intrinsic Functions" href="functions.html" />
+    <link rel="prev" title="Rackspace Resource Types" href="rackspace.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="functions.html" title="Intrinsic Functions"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="rackspace.html" title="Rackspace Resource Types"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="docker-resource-types">
+<h1>Docker Resource Types<a class="headerlink" href="#docker-resource-types" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="DockerInc::Docker::Container">
+<h2>DockerInc::Docker::Container<a class="headerlink" href="#DockerInc::Docker::Container" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="DockerInc::Docker::Container-props">
+<h3>Properties<a class="headerlink" href="#DockerInc::Docker::Container-props" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>cap_add <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p>Be used to add kernel capabilities (only supported for API version &gt;= 1.2.0).</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;[]&#8221;.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The security features provided by Linux kernels.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: SETPCAP, SYS_MODULE, SYS_RAWIO, SYS_PACCT, SYS_ADMIN, SYS_NICE, SYS_RESOURCE, SYS_TIME, SYS_TTY_CONFIG, MKNOD, AUDIT_WRITE, AUDIT_CONTROL, MAC_OVERRIDE, MAC_ADMIN, NET_ADMIN, SYSLOG, CHOWN, NET_RAW, DAC_OVERRIDE, FOWNER, DAC_READ_SEARCH, FSETID, KILL, SETGID, SETUID, LINUX_IMMUTABLE, NET_BIND_SERVICE, NET_BROADCAST, IPC_LOCK, IPC_OWNER, SYS_CHROOT, SYS_PTRACE, SYS_BOOT, LEASE, SETFCAP, WAKE_ALARM, BLOCK_SUSPEND, ALL</p>
+</dd>
+</dl>
+</dd>
+<dt>cap_drop <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p>Be used to drop kernel capabilities (only supported for API version &gt;= 1.2.0).</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;[]&#8221;.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The security features provided by Linux kernels.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p class="last">Allowed values: SETPCAP, SYS_MODULE, SYS_RAWIO, SYS_PACCT, SYS_ADMIN, SYS_NICE, SYS_RESOURCE, SYS_TIME, SYS_TTY_CONFIG, MKNOD, AUDIT_WRITE, AUDIT_CONTROL, MAC_OVERRIDE, MAC_ADMIN, NET_ADMIN, SYSLOG, CHOWN, NET_RAW, DAC_OVERRIDE, FOWNER, DAC_READ_SEARCH, FSETID, KILL, SETGID, SETUID, LINUX_IMMUTABLE, NET_BIND_SERVICE, NET_BROADCAST, IPC_LOCK, IPC_OWNER, SYS_CHROOT, SYS_PTRACE, SYS_BOOT, LEASE, SETFCAP, WAKE_ALARM, BLOCK_SUSPEND, ALL</p>
+</dd>
+</dl>
+</dd>
+<dt>cmd <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Command to run after spawning the container.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;[]&#8221;.</p>
+</dd>
+<dt>cpu_set <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.2 (Liberty)</p>
+</div>
+<p>The CPUs in which to allow execution (only supported for API version &gt;= 1.12).</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>cpu_shares <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.2 (Liberty)</p>
+</div>
+<p>Relative weight which determines the allocation of the CPU processing power(only supported for API version &gt;= 1.8).</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;0&#8221;.</p>
+</dd>
+<dt>devices <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.2 (Liberty)</p>
+</div>
+<p>Device mappings (only supported for API version &gt;= 1.14).</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;[]&#8221;.</p>
+<p><em>List contents:</em></p>
+<dl class="last docutils">
+<dt>* <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Updates cause replacement.</p>
+<p>Optional property.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>path_in_container <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The device path of the container mappings to the host.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property.</p>
+<p>The length must be no greater than 255.</p>
+<p class="last">Value must match pattern: ^/dev/[/_\-a-zA-Z0-9]+$</p>
+</dd>
+<dt>path_on_host <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The device path on the host.</p>
+<p>Updates cause replacement.</p>
+<p>Required property.</p>
+<p>The length must be no greater than 255.</p>
+<p class="last">Value must match pattern: ^/dev/[/_\-a-zA-Z0-9]+$</p>
+</dd>
+<dt>permissions <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The permissions of the container to read/write/create the devices.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;rwm&#8221;.</p>
+<p class="last">Allowed values: r, w, m, rw, rm, wm, rwm</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>dns <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Set custom dns servers.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>docker_endpoint <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Docker daemon endpoint (by default the local docker daemon will be used).</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>env <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Set environment variables.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>hostname <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Hostname of the container.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;&#8221;.</p>
+</dd>
+<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Image name.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>links <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Links to other containers.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>memory <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">Memory limit (Bytes).</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;0&#8221;.</p>
+</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Name of the container.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>open_stdin <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Open stdin.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+<dt>port_bindings <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">TCP/UDP ports bindings.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>port_specs <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">TCP/UDP ports mapping.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property.</p>
+</dd>
+<dt>privileged <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Enable extended privileges.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+<dt>read_only <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p>If true, mount the container&#8217;s root filesystem as read only (only supported for API version &gt;= 1.17).</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+<dt>restart_policy <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Available since 2015.1 (Kilo)</p>
+</div>
+<p>Restart policies (only supported for API version &gt;= 1.2.0).</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;{}&#8221;.</p>
+<p><em>Map properties:</em></p>
+<dl class="last docutils">
+<dt>MaximumRetryCount <span class="classifier-delimiter">:</span> <span class="classifier">Integer</span></dt>
+<dd><p class="first">A maximum restart count for the on-failure policy.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;0&#8221;.</p>
+</dd>
+<dt>Name <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">The behavior to apply when the container exits.</p>
+<p>Updates cause replacement.</p>
+<p>Optional property, defaults to &#8220;no&#8221;.</p>
+<p class="last">Allowed values: no, on-failure, always</p>
+</dd>
+</dl>
+</dd>
+<dt>stdin_once <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">If true, close stdin after the 1 attached client disconnects.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+<dt>tty <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span></dt>
+<dd><p class="first">Allocate a pseudo-tty.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;False&#8221;.</p>
+</dd>
+<dt>user <span class="classifier-delimiter">:</span> <span class="classifier">String</span></dt>
+<dd><p class="first">Username or UID.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;&#8221;.</p>
+</dd>
+<dt>volumes <span class="classifier-delimiter">:</span> <span class="classifier">Map</span></dt>
+<dd><p class="first">Create a bind mount.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;{}&#8221;.</p>
+</dd>
+<dt>volumes_from <span class="classifier-delimiter">:</span> <span class="classifier">List</span></dt>
+<dd><p class="first">Mount all specified volumes.</p>
+<p>Updates cause replacement.</p>
+<p class="last">Optional property, defaults to &#8220;&#8221;.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="DockerInc::Docker::Container-attrs">
+<h3>Attributes<a class="headerlink" href="#DockerInc::Docker::Container-attrs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>info</dt>
+<dd>Container info.</dd>
+<dt>logs</dt>
+<dd>Container logs.</dd>
+<dt>logs_head</dt>
+<dd>Container first logs line.</dd>
+<dt>logs_tail</dt>
+<dd>Container last logs line.</dd>
+<dt>network_gateway</dt>
+<dd>Container ip gateway.</dd>
+<dt>network_info</dt>
+<dd>Container network info.</dd>
+<dt>network_ip</dt>
+<dd>Container ip address.</dd>
+<dt>network_tcp_ports</dt>
+<dd>Container TCP ports.</dd>
+<dt>network_udp_ports</dt>
+<dd>Container UDP ports.</dd>
+</dl>
+</div>
+<div class="section" id="DockerInc::Docker::Container-hot">
+<h3>HOT Syntax<a class="headerlink" href="#DockerInc::Docker::Container-hot" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+heat_template_version: 2013-05-23
+...
+resources:
+  ...
+  the_resource:
+    type: DockerInc::Docker::Container
+    properties:
+      cap_add: [String, String, ...]
+      cap_drop: [String, String, ...]
+      cmd: [Value, Value, ...]
+      cpu_set: String
+      cpu_shares: Integer
+      devices: [{&quot;path_on_host&quot;: String, &quot;path_in_container&quot;: String, &quot;permissions&quot;: String}, {&quot;path_on_host&quot;: String, &quot;path_in_container&quot;: String, &quot;permissions&quot;: String}, ...]
+      dns: [Value, Value, ...]
+      docker_endpoint: String
+      env: [Value, Value, ...]
+      hostname: String
+      image: String
+      links: {...}
+      memory: Integer
+      name: String
+      open_stdin: Boolean
+      port_bindings: {...}
+      port_specs: [Value, Value, ...]
+      privileged: Boolean
+      read_only: Boolean
+      restart_policy: {&quot;MaximumRetryCount&quot;: Integer, &quot;Name&quot;: String}
+      stdin_once: Boolean
+      tty: Boolean
+      user: String
+      volumes: {...}
+      volumes_from: [Value, Value, ...]
+</pre>
+</div>
+<div class="section" id="DockerInc::Docker::Container-yaml">
+<h3>YAML Syntax<a class="headerlink" href="#DockerInc::Docker::Container-yaml" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+HeatTemplateFormatVersion: '2012-12-12'
+...
+Resources:
+  ...
+  TheResource:
+    Type: DockerInc::Docker::Container
+    Properties:
+      cap_add: [String, String, ...]
+      cap_drop: [String, String, ...]
+      cmd: [Value, Value, ...]
+      cpu_set: String
+      cpu_shares: Integer
+      devices: [{&quot;path_on_host&quot;: String, &quot;path_in_container&quot;: String, &quot;permissions&quot;: String}, {&quot;path_on_host&quot;: String, &quot;path_in_container&quot;: String, &quot;permissions&quot;: String}, ...]
+      dns: [Value, Value, ...]
+      docker_endpoint: String
+      env: [Value, Value, ...]
+      hostname: String
+      image: String
+      links: {...}
+      memory: Integer
+      name: String
+      open_stdin: Boolean
+      port_bindings: {...}
+      port_specs: [Value, Value, ...]
+      privileged: Boolean
+      read_only: Boolean
+      restart_policy: {&quot;MaximumRetryCount&quot;: Integer, &quot;Name&quot;: String}
+      stdin_once: Boolean
+      tty: Boolean
+      user: String
+      volumes: {...}
+      volumes_from: [Value, Value, ...]
+</pre>
+</div>
+<div class="section" id="DockerInc::Docker::Container-json">
+<h3>JSON Syntax<a class="headerlink" href="#DockerInc::Docker::Container-json" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+{
+  &quot;AWSTemplateFormatVersion&quot; : &quot;2010-09-09&quot;,
+  ...
+  &quot;Resources&quot; : {
+    &quot;TheResource&quot;: {
+      &quot;Type&quot;: &quot;DockerInc::Docker::Container&quot;,
+      &quot;Properties&quot;: {
+        &quot;cap_add&quot;: [String, String, ...],
+        &quot;cap_drop&quot;: [String, String, ...],
+        &quot;cmd&quot;: [Value, Value, ...],
+        &quot;cpu_set&quot;: String,
+        &quot;cpu_shares&quot;: Integer,
+        &quot;devices&quot;: [{&quot;path_on_host&quot;: String, &quot;path_in_container&quot;: String, &quot;permissions&quot;: String}, {&quot;path_on_host&quot;: String, &quot;path_in_container&quot;: String, &quot;permissions&quot;: String}, ...],
+        &quot;dns&quot;: [Value, Value, ...],
+        &quot;docker_endpoint&quot;: String,
+        &quot;env&quot;: [Value, Value, ...],
+        &quot;hostname&quot;: String,
+        &quot;image&quot;: String,
+        &quot;links&quot;: {...},
+        &quot;memory&quot;: Integer,
+        &quot;name&quot;: String,
+        &quot;open_stdin&quot;: Boolean,
+        &quot;port_bindings&quot;: {...},
+        &quot;port_specs&quot;: [Value, Value, ...],
+        &quot;privileged&quot;: Boolean,
+        &quot;read_only&quot;: Boolean,
+        &quot;restart_policy&quot;: {&quot;MaximumRetryCount&quot;: Integer, &quot;Name&quot;: String},
+        &quot;stdin_once&quot;: Boolean,
+        &quot;tty&quot;: Boolean,
+        &quot;user&quot;: String,
+        &quot;volumes&quot;: {...},
+        &quot;volumes_from&quot;: [Value, Value, ...]
+      }
+    }
+  }
+}
+</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Docker Resource Types</a><ul>
+<li><a class="reference internal" href="#DockerInc::Docker::Container">DockerInc::Docker::Container</a><ul>
+<li><a class="reference internal" href="#DockerInc::Docker::Container-props">Properties</a></li>
+<li><a class="reference internal" href="#DockerInc::Docker::Container-attrs">Attributes</a></li>
+<li><a class="reference internal" href="#DockerInc::Docker::Container-hot">HOT Syntax</a></li>
+<li><a class="reference internal" href="#DockerInc::Docker::Container-yaml">YAML Syntax</a></li>
+<li><a class="reference internal" href="#DockerInc::Docker::Container-json">JSON Syntax</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="rackspace.html"
+                        title="previous chapter">Rackspace Resource Types</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="functions.html"
+                        title="next chapter">Intrinsic Functions</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/raxdox/docker.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="functions.html" title="Intrinsic Functions"
+             >next</a></li>
+        <li class="right" >
+          <a href="rackspace.html" title="Rackspace Resource Types"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

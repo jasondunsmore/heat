@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.stack_lock Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-engine-stack-lock-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.engine.stack_lock</span></code> Module<a class="headerlink" href="#the-heat-engine-stack-lock-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.stack_lock.</code><code class="descname">StackLock</code><span class="sig-paren">(</span><em>context</em>, <em>stack_id</em>, <em>engine_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt>
+<code class="descname">acquire</code><span class="sig-paren">(</span><em>retry=True</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.acquire"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Acquire a lock on the stack.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>retry</strong> (<em>boolean</em>) &#8211; When True, retry if lock was released while stealing.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><code class="descname">engine_alive</code><span class="sig-paren">(</span><em>context</em>, <em>engine_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.engine_alive"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><code class="descname">generate_engine_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.generate_engine_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_engine_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.get_engine_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">release</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.release"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Release a stack lock.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">thread_lock</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.thread_lock"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Acquire a lock and release it only if there is an exception.  The
+release method still needs to be scheduled to be run at the
+end of the thread using the Thread.link method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">try_acquire</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.try_acquire"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Try to acquire a stack lock, but don&#8217;t raise an ActionInProgress
+exception or try to steal lock.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">try_thread_lock</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack_lock.html#StackLock.try_thread_lock"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Similar to thread_lock, but acquire the lock using try_acquire
+and only release it upon any exception after a successful
+acquisition.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.engine.stack_lock.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

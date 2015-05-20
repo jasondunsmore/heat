@@ -1,0 +1,8 @@
+==========================================
+The :mod:`heat.engine.volume_tasks` Module
+==========================================
+.. automodule:: heat.engine.volume_tasks
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

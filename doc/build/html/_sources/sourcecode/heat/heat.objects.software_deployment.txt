@@ -1,0 +1,8 @@
+==================================================
+The :mod:`heat.objects.software_deployment` Module
+==================================================
+.. automodule:: heat.objects.software_deployment
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

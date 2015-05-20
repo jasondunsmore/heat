@@ -1,0 +1,730 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.resource Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-engine-resource-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.engine.resource</span></code> Module<a class="headerlink" href="#the-heat-engine-resource-module" title="Permalink to this headline">¶</a></h1>
+<dl class="exception">
+<dt>
+<em class="property">exception </em><code class="descclassname">heat.engine.resource.</code><code class="descname">NoActionRequired</code><a class="reference internal" href="../../_modules/heat/engine/resource.html#NoActionRequired"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.resource.</code><code class="descname">Resource</code><span class="sig-paren">(</span><em>name</em>, <em>definition</em>, <em>stack</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt>
+<code class="descname">ACTIONS</code><em class="property"> = ('INIT', 'CREATE', 'DELETE', 'UPDATE', 'ROLLBACK', 'SUSPEND', 'RESUME', 'ADOPT', 'SNAPSHOT', 'CHECK')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">ADOPT</code><em class="property"> = 'ADOPT'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">CHECK</code><em class="property"> = 'CHECK'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">COMPLETE</code><em class="property"> = 'COMPLETE'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">CREATE</code><em class="property"> = 'CREATE'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">DELETE</code><em class="property"> = 'DELETE'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">FAILED</code><em class="property"> = 'FAILED'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">FnBase64</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.FnBase64"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>For the instrinsic function Fn::Base64.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> &#8211; the input data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the Base64 representation of the input data.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">FnGetAtt</code><span class="sig-paren">(</span><em>key</em>, <em>*path</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.FnGetAtt"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>For the intrinsic function Fn::GetAtt.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>key</strong> &#8211; the attribute key.</li>
+<li><strong>path</strong> &#8211; a list of path components to select from the attribute.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the attribute value.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">FnGetRefId</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.FnGetRefId"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>For the intrinsic function Ref.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Results:</th><td class="field-body">the id or name of the resource.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">INIT</code><em class="property"> = 'INIT'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">IN_PROGRESS</code><em class="property"> = 'IN_PROGRESS'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">RESUME</code><em class="property"> = 'RESUME'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">ROLLBACK</code><em class="property"> = 'ROLLBACK'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">SNAPSHOT</code><em class="property"> = 'SNAPSHOT'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">STATUSES</code><em class="property"> = ('IN_PROGRESS', 'FAILED', 'COMPLETE')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">SUSPEND</code><em class="property"> = 'SUSPEND'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">UPDATE</code><em class="property"> = 'UPDATE'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">action_handler_task</code><span class="sig-paren">(</span><em>action</em>, <em>args=[]</em>, <em>action_prefix=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.action_handler_task"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>A task to call the Resource subclass&#8217;s handler methods for an action.</p>
+<p>Calls the handle_&lt;ACTION&gt;() method for the given action and then calls
+the check_&lt;ACTION&gt;_complete() method with the result in a loop until it
+returns True. If the methods are not provided, the call is omitted.</p>
+<p>Any args provided are passed to the handler.</p>
+<p>If a prefix is supplied, the handler method handle_&lt;PREFIX&gt;_&lt;ACTION&gt;()
+is called instead.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">add_dependencies</code><span class="sig-paren">(</span><em>deps</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.add_dependencies"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">adopt</code><span class="sig-paren">(</span><em>resource_data</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.adopt"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Adopt the existing resource. Resource subclasses can provide
+a handle_adopt() method to customise adopt.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">attributes_schema</code><em class="property"> = {}</em></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><code class="descname">build_template_dict</code><span class="sig-paren">(</span><em>res_name</em>, <em>res_type</em>, <em>tmpl_type</em>, <em>params</em>, <em>props</em>, <em>outputs</em>, <em>description</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.build_template_dict"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">ceilometer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.ceilometer"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">check</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.check"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Checks that the physical resource is in its expected state</p>
+<p>Gets the current status of the physical resource and updates the
+database accordingly.  If check is not supported by the resource,
+default action is to fail and revert the resource&#8217;s status to its
+original state with the added message that check was not performed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">cinder</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.cinder"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">clear_hook</code><span class="sig-paren">(</span><em>hook</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.clear_hook"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">client</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.client"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">client_plugin</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.client_plugin"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">create</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.create"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create the resource. Subclasses should provide a handle_create() method
+to customise creation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.data"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Resource data for this resource</p>
+<p>Use methods data_set and data_delete to modify the resource data
+for this resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a dict representing the resource data for this resource.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">data_delete</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.data_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Remove a resource_data element associated to a resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if the key existed to delete</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">data_set</code><span class="sig-paren">(</span><em>key</em>, <em>value</em>, <em>redact=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.data_set"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Save resource&#8217;s key/value pair to database.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">default_client_name</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">delete</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Delete the resource. Subclasses should provide a handle_delete() method
+to customise deletion.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">delete_snapshot</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.delete_snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">dep_attrs</code><span class="sig-paren">(</span><em>resource_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.dep_attrs"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">destroy</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.destroy"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Delete the resource and remove it from the database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">frozen_definition</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.frozen_definition"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">glance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.glance"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">handle_adopt</code><span class="sig-paren">(</span><em>resource_data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.handle_adopt"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">handle_update</code><span class="sig-paren">(</span><em>json_snippet=None</em>, <em>tmpl_diff=None</em>, <em>prop_diff=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.handle_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">has_hook</code><span class="sig-paren">(</span><em>hook</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.has_hook"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">has_interface</code><span class="sig-paren">(</span><em>resource_type</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.has_interface"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Check to see if this resource is either mapped to resource_type
+or is a &#8220;resource_type&#8221;.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">heat</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.heat"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">identifier</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.identifier"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return an identifier for this resource.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">implementation_signature</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.implementation_signature"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a tuple defining the implementation.</p>
+<p>This should be broken down into a definition and an
+implementation version.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">is_using_neutron</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.is_using_neutron"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">keystone</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.keystone"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">metadata</code></dt>
+<dd><p>DEPRECATED. use method metadata_get instead.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">metadata_get</code><span class="sig-paren">(</span><em>refresh=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.metadata_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">metadata_set</code><span class="sig-paren">(</span><em>metadata</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.metadata_set"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">metadata_update</code><span class="sig-paren">(</span><em>new_metadata=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.metadata_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>No-op for resources which don&#8217;t explicitly override this method</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">neutron</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.neutron"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">nova</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.nova"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">parsed_template</code><span class="sig-paren">(</span><em>section=None</em>, <em>default=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.parsed_template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the parsed template data for the resource. May be limited to
+only one section of the data, in which case a default value may also
+be supplied.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">physical_resource_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.physical_resource_name"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">physical_resource_name_limit</code><em class="property"> = 255</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">physical_resource_name_or_FnGetRefId</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.physical_resource_name_or_FnGetRefId"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">prepare_abandon</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.prepare_abandon"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">preview</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.preview"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Default implementation of Resource.preview.</p>
+<p>This method should be overridden by child classes for specific
+behavior.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><code class="descname">reduce_physical_resource_name</code><span class="sig-paren">(</span><em>name</em>, <em>limit</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.reduce_physical_resource_name"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Reduce length of physical resource name to a limit.</p>
+<p>The reduced name will consist of the following:</p>
+<ul class="simple">
+<li>the first 2 characters of the name</li>
+<li>a hyphen</li>
+<li>the end of the name, truncated on the left to bring
+the name length within the limit</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> &#8211; The name to reduce the length of</li>
+<li><strong>limit</strong> &#8211; The max length limit</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A name whose length is less than or equal to the limit</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">reparse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.reparse"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">required_by</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.required_by"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns a list of names of resources which directly require this
+resource as a dependency.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">requires_deferred_auth</code><em class="property"> = False</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resource_id_set</code><span class="sig-paren">(</span><em>inst</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.resource_id_set"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">resource_to_template</code><span class="sig-paren">(</span><em>resource_type</em>, <em>template_type='cfn'</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.resource_to_template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource_type</strong> &#8211; The resource type to be displayed in the template</li>
+<li><strong>template_type</strong> &#8211; the template type to generate, cfn or hot.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A template where the resource&#8217;s properties_schema is mapped
+as parameters, and the resource&#8217;s attributes_schema is mapped as
+outputs</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.resume"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Resume the resource.  Subclasses should provide a handle_resume()
+method to implement resume</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">rpc_client</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.rpc_client"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a client for making engine RPC calls.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">set_needed_by</code><span class="sig-paren">(</span><em>db_rsrc</em>, <em>needed_by</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.set_needed_by"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">set_requires</code><span class="sig-paren">(</span><em>db_rsrc</em>, <em>requires</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.set_requires"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">signal</code><span class="sig-paren">(</span><em>details=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.signal"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>signal the resource. Subclasses should provide a handle_signal() method
+to implement the signal, the base-class raise an exception if no
+handler is implemented.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">snapshot</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Snapshot the resource and return the created data, if any.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">stack</code></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">state</code></dt>
+<dd><p>Returns state, tuple of action, status.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">state_reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.state_reset"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Reset state to (INIT, COMPLETE)</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">state_set</code><span class="sig-paren">(</span><em>action</em>, <em>status</em>, <em>reason='state changed'</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.state_set"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">strict_dependency</code><em class="property"> = True</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">support_status</code><em class="property"> = &lt;heat.engine.support.SupportStatus object at 0x47efe50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">suspend</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.suspend"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Suspend the resource.  Subclasses should provide a handle_suspend()
+method to implement suspend</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">swift</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.swift"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">trigger_hook</code><span class="sig-paren">(</span><em>hook</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.trigger_hook"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">trove</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.trove"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.type"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">update</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.update"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>update the resource. Subclasses should provide a handle_update() method
+to customise update, the base-class handle_update will fail by default.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">update_allowed_properties</code><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">update_template_diff</code><span class="sig-paren">(</span><em>after</em>, <em>before</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.update_template_diff"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns the difference between the before and after json snippets. If
+something has been removed in after which exists in before we set it to
+None.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">update_template_diff_properties</code><span class="sig-paren">(</span><em>after_props</em>, <em>before_props</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.update_template_diff_properties"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns the changed Properties between the before and after properties.
+If any property having immutable as True is updated,
+raises NotSupported error.
+If any properties have changed which are not in
+update_allowed_properties, raises UpdateReplace.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">validate_deletion_policy</code><span class="sig-paren">(</span><em>policy</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#Resource.validate_deletion_policy"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><code class="descclassname">heat.engine.resource.</code><code class="descname">ResourceInError</code><span class="sig-paren">(</span><em>status_reason=u'Unknown'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#ResourceInError"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.common.exception.HeatException</span></code></p>
+<dl class="attribute">
+<dt>
+<code class="descname">msg_fmt</code><em class="property"> = u'Went to status %(resource_status)s due to &quot;%(status_reason)s&quot;'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><code class="descclassname">heat.engine.resource.</code><code class="descname">ResourceUnknownStatus</code><span class="sig-paren">(</span><em>result=u'Resource failed'</em>, <em>status_reason=u'Unknown'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#ResourceUnknownStatus"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.common.exception.HeatException</span></code></p>
+<dl class="attribute">
+<dt>
+<code class="descname">msg_fmt</code><em class="property"> = u'%(result)s - Unknown status %(resource_status)s due to &quot;%(status_reason)s&quot;'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><code class="descclassname">heat.engine.resource.</code><code class="descname">UpdateReplace</code><span class="sig-paren">(</span><em>resource_name='Unknown'</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/resource.html#UpdateReplace"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
+<p>Raised when resource update requires replacement.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.engine.resource.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

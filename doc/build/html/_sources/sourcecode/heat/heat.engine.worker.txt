@@ -1,0 +1,8 @@
+====================================
+The :mod:`heat.engine.worker` Module
+====================================
+.. automodule:: heat.engine.worker
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

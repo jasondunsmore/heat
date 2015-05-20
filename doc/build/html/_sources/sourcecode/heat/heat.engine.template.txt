@@ -1,0 +1,8 @@
+======================================
+The :mod:`heat.engine.template` Module
+======================================
+.. automodule:: heat.engine.template
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

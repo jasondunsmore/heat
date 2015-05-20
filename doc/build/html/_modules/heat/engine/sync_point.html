@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.sync_point &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../raxdox/index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for heat.engine.sync_point</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c"># you may not use this file except in compliance with the License.</span>
+<span class="c"># You may obtain a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or</span>
+<span class="c"># implied.</span>
+<span class="c"># See the License for the specific language governing permissions and</span>
+<span class="c"># limitations under the License.</span>
+
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">sync_point</span> <span class="k">as</span> <span class="n">sync_point_object</span>
+
+
+<div class="viewcode-block" id="create"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.sync_point.html#heat.engine.sync_point.create">[docs]</a><span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">,</span> <span class="n">traversal_id</span><span class="p">,</span> <span class="n">is_update</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates an sync point entry in DB.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;entity_id&#39;</span><span class="p">:</span> <span class="n">entity_id</span><span class="p">,</span> <span class="s">&#39;traversal_id&#39;</span><span class="p">:</span> <span class="n">traversal_id</span><span class="p">,</span>
+              <span class="s">&#39;is_update&#39;</span><span class="p">:</span> <span class="n">is_update</span><span class="p">,</span> <span class="s">&#39;atomic_key&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+              <span class="s">&#39;stack_id&#39;</span><span class="p">:</span> <span class="n">stack_id</span><span class="p">,</span> <span class="s">&#39;input_data&#39;</span><span class="p">:</span> <span class="p">{}}</span>
+    <span class="k">return</span> <span class="n">sync_point_object</span><span class="o">.</span><span class="n">SyncPoint</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.sync_point.html#heat.engine.sync_point.get">[docs]</a><span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">,</span> <span class="n">traversal_id</span><span class="p">,</span> <span class="n">is_update</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieves a sync point entry from DB.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">sync_point_object</span><span class="o">.</span><span class="n">SyncPoint</span><span class="o">.</span><span class="n">get_by_key</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">,</span>
+                                                  <span class="n">traversal_id</span><span class="p">,</span> <span class="n">is_update</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="delete_all"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.sync_point.html#heat.engine.sync_point.delete_all">[docs]</a><span class="k">def</span> <span class="nf">delete_all</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">,</span> <span class="n">traversal_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deletes all sync points of a stack associated with a particular traversal.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">sync_point_object</span><span class="o">.</span><span class="n">SyncPoint</span><span class="o">.</span><span class="n">delete_all_by_stack_and_traversal</span><span class="p">(</span>
+        <span class="n">context</span><span class="p">,</span> <span class="n">stack_id</span><span class="p">,</span> <span class="n">traversal_id</span>
+    <span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

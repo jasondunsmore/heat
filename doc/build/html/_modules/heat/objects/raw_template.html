@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.objects.raw_template &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../raxdox/index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for heat.objects.raw_template</h1><div class="highlight"><pre>
+<span class="c"># Copyright 2014 Intel Corp.</span>
+<span class="c">#</span>
+<span class="c"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c"># a copy of the License at</span>
+<span class="c">#</span>
+<span class="c"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c"># License for the specific language governing permissions and limitations</span>
+<span class="c"># under the License.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">RawTemplate object</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">oslo_config</span> <span class="kn">import</span> <span class="n">cfg</span>
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">encodeutils</span>
+<span class="kn">from</span> <span class="nn">oslo_versionedobjects</span> <span class="kn">import</span> <span class="n">base</span>
+<span class="kn">from</span> <span class="nn">oslo_versionedobjects</span> <span class="kn">import</span> <span class="n">fields</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">crypt</span>
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">environment_format</span> <span class="k">as</span> <span class="n">env_fmt</span>
+<span class="kn">from</span> <span class="nn">heat.db</span> <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">db_api</span>
+<span class="kn">from</span> <span class="nn">heat.objects</span> <span class="kn">import</span> <span class="n">fields</span> <span class="k">as</span> <span class="n">heat_fields</span>
+
+
+<div class="viewcode-block" id="RawTemplate"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.raw_template.html#heat.objects.raw_template.RawTemplate">[docs]</a><span class="k">class</span> <span class="nc">RawTemplate</span><span class="p">(</span>
+    <span class="n">base</span><span class="o">.</span><span class="n">VersionedObject</span><span class="p">,</span>
+    <span class="n">base</span><span class="o">.</span><span class="n">VersionedObjectDictCompat</span><span class="p">,</span>
+    <span class="n">base</span><span class="o">.</span><span class="n">ComparableVersionedObject</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">StringField</span><span class="p">(),</span>
+        <span class="s">&#39;files&#39;</span><span class="p">:</span> <span class="n">heat_fields</span><span class="o">.</span><span class="n">JsonField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="s">&#39;template&#39;</span><span class="p">:</span> <span class="n">heat_fields</span><span class="o">.</span><span class="n">JsonField</span><span class="p">(),</span>
+        <span class="s">&#39;environment&#39;</span><span class="p">:</span> <span class="n">heat_fields</span><span class="o">.</span><span class="n">JsonField</span><span class="p">(),</span>
+        <span class="s">&#39;predecessor&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_from_db_object</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">tpl</span><span class="p">,</span> <span class="n">db_tpl</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">tpl</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="n">tpl</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">db_tpl</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+
+        <span class="c"># If any of the parameters were encrypted, then decrypt them</span>
+        <span class="k">if</span> <span class="n">env_fmt</span><span class="o">.</span><span class="n">ENCRYPTED_PARAM_NAMES</span> <span class="ow">in</span> <span class="n">tpl</span><span class="o">.</span><span class="n">environment</span><span class="p">:</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="n">tpl</span><span class="o">.</span><span class="n">environment</span><span class="p">[</span><span class="n">env_fmt</span><span class="o">.</span><span class="n">PARAMETERS</span><span class="p">]</span>
+            <span class="n">encrypted_param_names</span> <span class="o">=</span> <span class="n">tpl</span><span class="o">.</span><span class="n">environment</span><span class="p">[</span>
+                <span class="n">env_fmt</span><span class="o">.</span><span class="n">ENCRYPTED_PARAM_NAMES</span><span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="n">encrypted_param_names</span><span class="p">:</span>
+                <span class="n">decrypt_function_name</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="n">param_name</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">decrypt_function</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">crypt</span><span class="p">,</span> <span class="n">decrypt_function_name</span><span class="p">)</span>
+                <span class="n">decrypted_val</span> <span class="o">=</span> <span class="n">decrypt_function</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="n">param_name</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">parameters</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">encodeutils</span><span class="o">.</span><span class="n">safe_decode</span><span class="p">(</span><span class="n">decrypted_val</span><span class="p">)</span>
+            <span class="n">tpl</span><span class="o">.</span><span class="n">environment</span><span class="p">[</span><span class="n">env_fmt</span><span class="o">.</span><span class="n">PARAMETERS</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameters</span>
+
+        <span class="n">tpl</span><span class="o">.</span><span class="n">_context</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="n">tpl</span><span class="o">.</span><span class="n">obj_reset_changes</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">tpl</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="RawTemplate.get_by_id"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.raw_template.html#heat.objects.raw_template.RawTemplate.get_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_by_id</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">template_id</span><span class="p">):</span>
+        <span class="n">raw_template_db</span> <span class="o">=</span> <span class="n">db_api</span><span class="o">.</span><span class="n">raw_template_get</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">template_id</span><span class="p">)</span>
+        <span class="n">raw_template</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_from_db_object</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">cls</span><span class="p">(),</span> <span class="n">raw_template_db</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">raw_template</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="RawTemplate.encrypt_hidden_parameters"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.raw_template.html#heat.objects.raw_template.RawTemplate.encrypt_hidden_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">encrypt_hidden_parameters</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">tmpl</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">encrypt_parameters_and_properties</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">tmpl</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">tmpl</span><span class="o">.</span><span class="n">param_schemata</span><span class="p">()[</span><span class="n">param_name</span><span class="p">]</span><span class="o">.</span><span class="n">hidden</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">clear_text_val</span> <span class="o">=</span> <span class="n">tmpl</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span>
+                <span class="n">encoded_val</span> <span class="o">=</span> <span class="n">encodeutils</span><span class="o">.</span><span class="n">safe_encode</span><span class="p">(</span><span class="n">clear_text_val</span><span class="p">)</span>
+                <span class="n">tmpl</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">crypt</span><span class="o">.</span><span class="n">encrypt</span><span class="p">(</span><span class="n">encoded_val</span><span class="p">)</span>
+                <span class="n">tmpl</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">encrypted_param_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="RawTemplate.create"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.raw_template.html#heat.objects.raw_template.RawTemplate.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">db_api</span><span class="o">.</span><span class="n">raw_template_create</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="RawTemplate.update_by_id"><a class="viewcode-back" href="../../../sourcecode/heat/heat.objects.raw_template.html#heat.objects.raw_template.RawTemplate.update_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">update_by_id</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">template_id</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">db_api</span><span class="o">.</span><span class="n">raw_template_update</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">template_id</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

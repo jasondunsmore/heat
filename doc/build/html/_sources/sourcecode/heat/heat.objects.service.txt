@@ -1,0 +1,8 @@
+======================================
+The :mod:`heat.objects.service` Module
+======================================
+.. automodule:: heat.objects.service
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

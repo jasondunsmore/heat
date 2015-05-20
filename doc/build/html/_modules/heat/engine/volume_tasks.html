@@ -1,0 +1,309 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.volume_tasks &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../raxdox/index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for heat.engine.volume_tasks</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">oslo_log</span> <span class="kn">import</span> <span class="n">log</span> <span class="k">as</span> <span class="n">logging</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">exception</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_LI</span>
+<span class="kn">from</span> <span class="nn">heat.engine</span> <span class="kn">import</span> <span class="n">resource</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="VolumeExtendTask"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.volume_tasks.html#heat.engine.volume_tasks.VolumeExtendTask">[docs]</a><span class="k">class</span> <span class="nc">VolumeExtendTask</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A task to resize volume using Cinder API.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clients</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">clients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">volume_id</span> <span class="o">=</span> <span class="n">volume_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Resizing volume </span><span class="si">%(vol)s</span><span class="s"> to size </span><span class="si">%(size)i</span><span class="s">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span>
+            <span class="s">&#39;vol&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume_id</span><span class="p">,</span> <span class="s">&#39;size&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">(</span><span class="si">%s</span><span class="s"> +-&gt; </span><span class="si">%i</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume_id</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+        <span class="n">cinder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s">&#39;cinder&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span>
+        <span class="n">vol</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume_id</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cinder</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="o">.</span><span class="n">client_plugin</span><span class="p">(</span><span class="s">&#39;cinder&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">is_client_exception</span><span class="p">(</span><span class="n">ex</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">exception</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="n">_</span><span class="p">(</span>
+                    <span class="s">&quot;Failed to extend volume </span><span class="si">%(vol)s</span><span class="s"> - </span><span class="si">%(err)s</span><span class="s">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span>
+                        <span class="s">&#39;vol&#39;</span><span class="p">:</span> <span class="n">vol</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s">&#39;err&#39;</span><span class="p">:</span> <span class="n">ex</span><span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span>
+
+        <span class="k">yield</span>
+
+        <span class="n">vol</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume_id</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">vol</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s">&#39;extending&#39;</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Volume </span><span class="si">%s</span><span class="s"> is being extended&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume_id</span><span class="p">)</span>
+            <span class="k">yield</span>
+            <span class="n">vol</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">vol</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="s">&#39;available&#39;</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&quot;Resize failed: Volume </span><span class="si">%(vol)s</span><span class="s"> is in </span><span class="si">%(status)s</span><span class="s"> &quot;</span>
+                         <span class="s">&quot;state.&quot;</span><span class="p">),</span> <span class="p">{</span><span class="s">&#39;vol&#39;</span><span class="p">:</span> <span class="n">vol</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="n">vol</span><span class="o">.</span><span class="n">status</span><span class="p">})</span>
+            <span class="k">raise</span> <span class="n">resource</span><span class="o">.</span><span class="n">ResourceUnknownStatus</span><span class="p">(</span>
+                <span class="n">resource_status</span><span class="o">=</span><span class="n">vol</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+                <span class="n">result</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Volume resize failed&#39;</span><span class="p">))</span>
+
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> - complete&#39;</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="VolumeAttachTask"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.volume_tasks.html#heat.engine.volume_tasks.VolumeAttachTask">[docs]</a><span class="k">class</span> <span class="nc">VolumeAttachTask</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A task for attaching a volume to a Nova server.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">server_id</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise with the stack (for obtaining the clients), ID of the</span>
+<span class="sd">        server and volume, and the device name on the server.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clients</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">clients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server_id</span> <span class="o">=</span> <span class="n">server_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">volume_id</span> <span class="o">=</span> <span class="n">volume_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attachment_id</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a human-readable string description of the task.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s">&#39;Attaching Volume </span><span class="si">%s</span><span class="s"> to Instance </span><span class="si">%s</span><span class="s"> as </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume_id</span><span class="p">,</span>
+                                                             <span class="bp">self</span><span class="o">.</span><span class="n">server_id</span><span class="p">,</span>
+                                                             <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a brief string description of the task.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">(</span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%s</span><span class="s"> [</span><span class="si">%s</span><span class="s">])&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">volume_id</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">server_id</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a co-routine which runs the task.&quot;&quot;&quot;</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+        <span class="n">va</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s">&#39;nova&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">create_server_volume</span><span class="p">(</span>
+            <span class="n">server_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">server_id</span><span class="p">,</span>
+            <span class="n">volume_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">volume_id</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attachment_id</span> <span class="o">=</span> <span class="n">va</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">yield</span>
+
+        <span class="n">cinder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s">&#39;cinder&#39;</span><span class="p">)</span>
+
+        <span class="n">vol</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume_id</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">vol</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s">&#39;available&#39;</span> <span class="ow">or</span> <span class="n">vol</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s">&#39;attaching&#39;</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%(name)s</span><span class="s"> - volume status: </span><span class="si">%(status)s</span><span class="s">&#39;</span>
+                      <span class="o">%</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="n">vol</span><span class="o">.</span><span class="n">status</span><span class="p">})</span>
+            <span class="k">yield</span>
+            <span class="n">vol</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">vol</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="s">&#39;in-use&#39;</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&quot;Attachment failed - volume </span><span class="si">%(vol)s</span><span class="s"> &quot;</span>
+                         <span class="s">&quot;is in </span><span class="si">%(status)s</span><span class="s"> status&quot;</span><span class="p">),</span>
+                     <span class="p">{</span><span class="s">&quot;vol&quot;</span><span class="p">:</span> <span class="n">vol</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                      <span class="s">&quot;status&quot;</span><span class="p">:</span> <span class="n">vol</span><span class="o">.</span><span class="n">status</span><span class="p">})</span>
+            <span class="k">raise</span> <span class="n">resource</span><span class="o">.</span><span class="n">ResourceUnknownStatus</span><span class="p">(</span>
+                <span class="n">resource_status</span><span class="o">=</span><span class="n">vol</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+                <span class="n">result</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Volume attachment failed&#39;</span><span class="p">))</span>
+
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> - complete&#39;</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="VolumeDetachTask"><a class="viewcode-back" href="../../../sourcecode/heat/heat.engine.volume_tasks.html#heat.engine.volume_tasks.VolumeDetachTask">[docs]</a><span class="k">class</span> <span class="nc">VolumeDetachTask</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A task for detaching a volume from a Nova server.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">server_id</span><span class="p">,</span> <span class="n">attachment_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise with the stack (for obtaining the clients), and the IDs of</span>
+<span class="sd">        the server and volume.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clients</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">clients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server_id</span> <span class="o">=</span> <span class="n">server_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attachment_id</span> <span class="o">=</span> <span class="n">attachment_id</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a human-readable string description of the task.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Removing attachment </span><span class="si">%(att)s</span><span class="s"> from Instance </span><span class="si">%(srv)s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span>
+            <span class="s">&#39;att&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">attachment_id</span><span class="p">,</span> <span class="s">&#39;srv&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_id</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a brief string description of the task.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">(</span><span class="si">%s</span><span class="s"> -/&gt; </span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">attachment_id</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">server_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a co-routine which runs the task.&quot;&quot;&quot;</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+        <span class="n">nova_plugin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="o">.</span><span class="n">client_plugin</span><span class="p">(</span><span class="s">&#39;nova&#39;</span><span class="p">)</span>
+        <span class="n">cinder_plugin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="o">.</span><span class="n">client_plugin</span><span class="p">(</span><span class="s">&#39;cinder&#39;</span><span class="p">)</span>
+        <span class="n">server_api</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s">&#39;nova&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span>
+        <span class="n">cinder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s">&#39;cinder&#39;</span><span class="p">)</span>
+        <span class="c"># get reference to the volume while it is attached</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">nova_vol</span> <span class="o">=</span> <span class="n">server_api</span><span class="o">.</span><span class="n">get_server_volume</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_id</span><span class="p">,</span>
+                                                    <span class="bp">self</span><span class="o">.</span><span class="n">attachment_id</span><span class="p">)</span>
+            <span class="n">vol</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">nova_vol</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">cinder_plugin</span><span class="o">.</span><span class="n">is_not_found</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span> <span class="ow">or</span>
+                    <span class="n">nova_plugin</span><span class="o">.</span><span class="n">is_not_found</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span> <span class="ow">or</span>
+                    <span class="n">nova_plugin</span><span class="o">.</span><span class="n">is_bad_request</span><span class="p">(</span><span class="n">ex</span><span class="p">)):</span>
+                <span class="k">return</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span>
+
+        <span class="k">if</span> <span class="n">vol</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s">&#39;deleting&#39;</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c"># detach the volume using volume_attachment</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">server_api</span><span class="o">.</span><span class="n">delete_server_volume</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attachment_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">nova_plugin</span><span class="o">.</span><span class="n">is_not_found</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span> <span class="ow">or</span> <span class="n">nova_plugin</span><span class="o">.</span><span class="n">is_bad_request</span><span class="p">(</span><span class="n">ex</span><span class="p">):</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span>
+
+        <span class="k">yield</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">vol</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;in-use&#39;</span><span class="p">,</span> <span class="s">&#39;detaching&#39;</span><span class="p">):</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> - volume still in use&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+                <span class="k">yield</span>
+                <span class="n">vol</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">nova_vol</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%(name)s</span><span class="s"> - status: </span><span class="si">%(status)s</span><span class="s">&#39;</span><span class="p">),</span>
+                     <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="n">vol</span><span class="o">.</span><span class="n">status</span><span class="p">})</span>
+            <span class="k">if</span> <span class="n">vol</span><span class="o">.</span><span class="n">status</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;available&#39;</span><span class="p">,</span> <span class="s">&#39;deleting&#39;</span><span class="p">]:</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&quot;Detachment failed - volume </span><span class="si">%(vol)s</span><span class="s"> &quot;</span>
+                             <span class="s">&quot;is in </span><span class="si">%(status)s</span><span class="s"> status&quot;</span><span class="p">),</span>
+                         <span class="p">{</span><span class="s">&quot;vol&quot;</span><span class="p">:</span> <span class="n">vol</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                          <span class="s">&quot;status&quot;</span><span class="p">:</span> <span class="n">vol</span><span class="o">.</span><span class="n">status</span><span class="p">})</span>
+                <span class="k">raise</span> <span class="n">resource</span><span class="o">.</span><span class="n">ResourceUnknownStatus</span><span class="p">(</span>
+                    <span class="n">resource_status</span><span class="o">=</span><span class="n">vol</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+                    <span class="n">result</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Volume detachment failed&#39;</span><span class="p">))</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="n">cinder_plugin</span><span class="o">.</span><span class="n">ignore_not_found</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="c"># The next check is needed for immediate reattachment when updating:</span>
+        <span class="c"># there might be some time between cinder marking volume as &#39;available&#39;</span>
+        <span class="c"># and nova removing attachment from its own objects, so we</span>
+        <span class="c"># check that nova already knows that the volume is detached</span>
+        <span class="k">def</span> <span class="nf">server_has_attachment</span><span class="p">(</span><span class="n">server_id</span><span class="p">,</span> <span class="n">attachment_id</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">server_api</span><span class="o">.</span><span class="n">get_server_volume</span><span class="p">(</span><span class="n">server_id</span><span class="p">,</span> <span class="n">attachment_id</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                <span class="n">nova_plugin</span><span class="o">.</span><span class="n">ignore_not_found</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="bp">True</span>
+
+        <span class="k">while</span> <span class="n">server_has_attachment</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attachment_id</span><span class="p">):</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&quot;Server </span><span class="si">%(srv)s</span><span class="s"> still has attachment </span><span class="si">%(att)s</span><span class="s">.&quot;</span><span class="p">),</span>
+                     <span class="p">{</span><span class="s">&#39;att&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">attachment_id</span><span class="p">,</span> <span class="s">&#39;srv&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_id</span><span class="p">})</span>
+            <span class="k">yield</span>
+
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s">&quot;Volume </span><span class="si">%(vol)s</span><span class="s"> is detached from server </span><span class="si">%(srv)s</span><span class="s">&quot;</span><span class="p">),</span>
+                 <span class="p">{</span><span class="s">&#39;vol&#39;</span><span class="p">:</span> <span class="n">vol</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s">&#39;srv&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_id</span><span class="p">})</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

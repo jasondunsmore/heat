@@ -1,0 +1,8 @@
+==============================================
+The :mod:`heat.engine.clients.os.trove` Module
+==============================================
+.. automodule:: heat.engine.clients.os.trove
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

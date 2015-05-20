@@ -1,0 +1,376 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.parameters Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-engine-parameters-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.engine.parameters</span></code> Module<a class="headerlink" href="#the-heat-engine-parameters-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.parameters.</code><code class="descname">BooleanParam</code><span class="sig-paren">(</span><em>name</em>, <em>schema</em>, <em>value=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#BooleanParam"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.parameters.Parameter</span></code></p>
+<p>A template parameter of type &#8220;Boolean&#8221;.</p>
+<dl class="method">
+<dt>
+<code class="descname">value</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#BooleanParam.value"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.parameters.</code><code class="descname">CommaDelimitedListParam</code><span class="sig-paren">(</span><em>name</em>, <em>schema</em>, <em>value=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#CommaDelimitedListParam"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.parameters.Parameter</span></code>, <code class="xref py py-class docutils literal"><span class="pre">_abcoll.Sequence</span></code></p>
+<p>A template parameter of type &#8220;CommaDelimitedList&#8221;.</p>
+<dl class="method">
+<dt>
+<code class="descname">parse</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#CommaDelimitedListParam.parse"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">value</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#CommaDelimitedListParam.value"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.parameters.</code><code class="descname">JsonParam</code><span class="sig-paren">(</span><em>name</em>, <em>schema</em>, <em>value=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#JsonParam"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.parameters.Parameter</span></code></p>
+<p>A template parameter who&#8217;s value is map or list.</p>
+<dl class="method">
+<dt>
+<code class="descname">parse</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#JsonParam.parse"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">value</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#JsonParam.value"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.parameters.</code><code class="descname">NumberParam</code><span class="sig-paren">(</span><em>name</em>, <em>schema</em>, <em>value=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#NumberParam"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.parameters.Parameter</span></code></p>
+<p>A template parameter of type &#8220;Number&#8221;.</p>
+<dl class="method">
+<dt>
+<code class="descname">value</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#NumberParam.value"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.parameters.</code><code class="descname">Parameter</code><span class="sig-paren">(</span><em>name</em>, <em>schema</em>, <em>value=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Parameter"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>A template parameter.</p>
+<dl class="method">
+<dt>
+<code class="descname">default</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Parameter.default"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the default value of the parameter.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">description</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Parameter.description"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the description of the parameter.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">has_default</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Parameter.has_default"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return whether the parameter has a default value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">has_value</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Parameter.has_value"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Parameter has a user or default value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">hidden</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Parameter.hidden"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return whether the parameter should be sanitised in any output to
+the user.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">label</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Parameter.label"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the label or param name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">set_default</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Parameter.set_default"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate</code><span class="sig-paren">(</span><em>validate_value=True</em>, <em>context=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Parameter.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Validates the parameter.</p>
+<p>This method validates if the parameter&#8217;s schema is valid,
+and if the default value - if present - or the user-provided
+value for the parameter comply with the schema.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">value</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Parameter.value"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get the parameter value, optionally sanitising it for output.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.parameters.</code><code class="descname">Parameters</code><span class="sig-paren">(</span><em>stack_identifier</em>, <em>tmpl</em>, <em>user_params=None</em>, <em>param_defaults=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Parameters"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">_abcoll.Mapping</span></code></p>
+<p>The parameters of a stack, with type checking, defaults &amp;c. specified by
+the stack&#8217;s template.</p>
+<dl class="attribute">
+<dt>
+<code class="descname">PARAM_REGION</code><em class="property"> = 'AWS::Region'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">PARAM_STACK_ID</code><em class="property"> = 'AWS::StackId'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">PARAM_STACK_NAME</code><em class="property"> = 'AWS::StackName'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">PSEUDO_PARAMETERS</code><em class="property"> = ('AWS::StackId', 'AWS::StackName', 'AWS::Region')</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">map</code><span class="sig-paren">(</span><em>func</em>, <em>filter_func=&lt;function &lt;lambda&gt; at 0x37f02a8&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Parameters.map"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Map the supplied filter function onto each Parameter (with an
+optional filter function) and return the resulting dictionary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">set_stack_id</code><span class="sig-paren">(</span><em>stack_identifier</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Parameters.set_stack_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Set the StackId pseudo parameter value</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate</code><span class="sig-paren">(</span><em>validate_value=True</em>, <em>context=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Parameters.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Validates all parameters.</p>
+<p>This method validates if all user-provided parameters are actually
+defined in the template, and if all parameters are valid.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.parameters.</code><code class="descname">Schema</code><span class="sig-paren">(</span><em>data_type</em>, <em>description=None</em>, <em>default=None</em>, <em>schema=None</em>, <em>constraints=None</em>, <em>hidden=False</em>, <em>label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Schema"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.constraints.Schema</span></code></p>
+<p>Parameter schema.</p>
+<dl class="attribute">
+<dt>
+<code class="descname">BOOLEAN</code><em class="property"> = 'Boolean'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">CONSTRAINTS</code><em class="property"> = 'Constraints'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">DEFAULT</code><em class="property"> = 'Default'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">DESCRIPTION</code><em class="property"> = 'Description'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">HIDDEN</code><em class="property"> = 'NoEcho'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">KEYS</code><em class="property"> = ('Type', 'Description', 'Default', 'Schema', 'Constraints', 'NoEcho', 'Label')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">LABEL</code><em class="property"> = 'Label'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">LIST</code><em class="property"> = 'CommaDelimitedList'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">MAP</code><em class="property"> = 'Json'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">NUMBER</code><em class="property"> = 'Number'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">PARAMETER_KEYS</code><em class="property"> = ('Type', 'Default', 'NoEcho', 'AllowedValues', 'AllowedPattern', 'MaxLength', 'MinLength', 'MaxValue', 'MinValue', 'Description', 'ConstraintDescription', 'Label')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">SCHEMA</code><em class="property"> = 'Schema'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">STRING</code><em class="property"> = 'String'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">TYPE</code><em class="property"> = 'Type'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">TYPES</code><em class="property"> = ('String', 'Number', 'CommaDelimitedList', 'Json', 'Boolean')</em></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">from_dict</code><span class="sig-paren">(</span><em>param_name</em>, <em>schema_dict</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Schema.from_dict"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a Parameter Schema object from a legacy schema dictionary.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>param_name</strong> (<em>str</em>) &#8211; name of the parameter owning the schema; used
+for more verbose logging</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><code class="descname">get_num</code><span class="sig-paren">(</span><em>key</em>, <em>context</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Schema.get_num"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">set_default</code><span class="sig-paren">(</span><em>default=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Schema.set_default"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate_value</code><span class="sig-paren">(</span><em>value</em>, <em>context=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#Schema.validate_value"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.parameters.</code><code class="descname">StringParam</code><span class="sig-paren">(</span><em>name</em>, <em>schema</em>, <em>value=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/parameters.html#StringParam"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.engine.parameters.Parameter</span></code></p>
+<p>A template parameter of type &#8220;String&#8221;.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.engine.parameters.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

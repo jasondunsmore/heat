@@ -1,0 +1,261 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>heat.engine.clients.client_plugin &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../../../raxdox/index.html" />
+    <link rel="up" title="heat.engine.clients" href="../clients.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../clients.html" accesskey="U">heat.engine.clients</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for heat.engine.clients.client_plugin</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c">#    a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c">#    License for the specific language governing permissions and limitations</span>
+<span class="c">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+
+<span class="kn">from</span> <span class="nn">keystoneclient</span> <span class="kn">import</span> <span class="n">auth</span>
+<span class="kn">from</span> <span class="nn">keystoneclient.auth.identity</span> <span class="kn">import</span> <span class="n">v2</span>
+<span class="kn">from</span> <span class="nn">keystoneclient.auth.identity</span> <span class="kn">import</span> <span class="n">v3</span>
+<span class="kn">from</span> <span class="nn">keystoneclient</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">keystoneclient</span> <span class="kn">import</span> <span class="n">session</span>
+<span class="kn">from</span> <span class="nn">oslo_config</span> <span class="kn">import</span> <span class="n">cfg</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">heat.common</span> <span class="kn">import</span> <span class="n">context</span>
+<span class="kn">from</span> <span class="nn">heat.common.i18n</span> <span class="kn">import</span> <span class="n">_</span>
+
+
+<span class="nd">@six.add_metaclass</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">)</span>
+<div class="viewcode-block" id="ClientPlugin"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.engine.clients.client_plugin.html#heat.engine.clients.client_plugin.ClientPlugin">[docs]</a><span class="k">class</span> <span class="nc">ClientPlugin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="c"># Module which contains all exceptions classes which the client</span>
+    <span class="c"># may emit</span>
+    <span class="n">exceptions_module</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clients</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">clients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_keystone_session_obj</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_keystone_session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># FIXME(jamielennox): This session object is essentially static as the</span>
+        <span class="c"># options won&#39;t change. Further it is allowed to be shared by multiple</span>
+        <span class="c"># authentication requests so there is no reason to construct it fresh</span>
+        <span class="c"># for every client plugin. It should be global and shared amongst them.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keystone_session_obj</span><span class="p">:</span>
+            <span class="n">o</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;cacert&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;keystone&#39;</span><span class="p">,</span> <span class="s">&#39;ca_file&#39;</span><span class="p">),</span>
+                 <span class="s">&#39;insecure&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;keystone&#39;</span><span class="p">,</span> <span class="s">&#39;insecure&#39;</span><span class="p">),</span>
+                 <span class="s">&#39;cert&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;keystone&#39;</span><span class="p">,</span> <span class="s">&#39;cert_file&#39;</span><span class="p">),</span>
+                 <span class="s">&#39;key&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client_option</span><span class="p">(</span><span class="s">&#39;keystone&#39;</span><span class="p">,</span> <span class="s">&#39;key_file&#39;</span><span class="p">)}</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_keystone_session_obj</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">Session</span><span class="o">.</span><span class="n">construct</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keystone_session_obj</span>
+
+<div class="viewcode-block" id="ClientPlugin.client"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.engine.clients.client_plugin.html#heat.engine.clients.client_plugin.ClientPlugin.client">[docs]</a>    <span class="k">def</span> <span class="nf">client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span>
+</div>
+    <span class="nd">@abc.abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return a newly created client.&#39;&#39;&#39;</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">auth_token</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># NOTE(jamielennox): use the session defined by the keystoneclient</span>
+        <span class="c"># options as traditionally the token was always retrieved from</span>
+        <span class="c"># keystoneclient.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">auth_plugin</span><span class="o">.</span><span class="n">get_token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keystone_session</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ClientPlugin.url_for"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.engine.clients.client_plugin.html#heat.engine.clients.client_plugin.ClientPlugin.url_for">[docs]</a>    <span class="k">def</span> <span class="nf">url_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">get_endpoint</span><span class="p">():</span>
+            <span class="n">auth_plugin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">auth_plugin</span>
+            <span class="k">return</span> <span class="n">auth_plugin</span><span class="o">.</span><span class="n">get_endpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keystone_session</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c"># NOTE(jamielennox): use the session defined by the keystoneclient</span>
+        <span class="c"># options as traditionally the token was always retrieved from</span>
+        <span class="c"># keystoneclient.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;interface&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;endpoint_type&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="n">reg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">region_name</span> <span class="ow">or</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">region_name_for_services</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;region_name&#39;</span><span class="p">,</span> <span class="n">reg</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">get_endpoint</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">EmptyCatalog</span><span class="p">:</span>
+            <span class="n">kc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s">&#39;keystone&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">client</span>
+
+            <span class="n">auth_plugin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">auth_plugin</span>
+            <span class="n">endpoint</span> <span class="o">=</span> <span class="n">auth_plugin</span><span class="o">.</span><span class="n">get_endpoint</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span>
+                                                <span class="n">interface</span><span class="o">=</span><span class="n">auth</span><span class="o">.</span><span class="n">AUTH_INTERFACE</span><span class="p">)</span>
+            <span class="n">token</span> <span class="o">=</span> <span class="n">auth_plugin</span><span class="o">.</span><span class="n">get_token</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+            <span class="n">project_id</span> <span class="o">=</span> <span class="n">auth_plugin</span><span class="o">.</span><span class="n">get_project_id</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">kc</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="s">&#39;v3&#39;</span><span class="p">:</span>
+                <span class="n">token_obj</span> <span class="o">=</span> <span class="n">v3</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="n">project_id</span><span class="p">)</span>
+                <span class="n">catalog_key</span> <span class="o">=</span> <span class="s">&#39;catalog&#39;</span>
+                <span class="n">access_key</span> <span class="o">=</span> <span class="s">&#39;token&#39;</span>
+            <span class="k">elif</span> <span class="n">kc</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="s">&#39;v2.0&#39;</span><span class="p">:</span>
+                <span class="n">endpoint</span> <span class="o">=</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;v3&#39;</span><span class="p">,</span> <span class="s">&#39;v2.0&#39;</span><span class="p">)</span>
+                <span class="n">token_obj</span> <span class="o">=</span> <span class="n">v2</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">tenant_id</span><span class="o">=</span><span class="n">project_id</span><span class="p">)</span>
+                <span class="n">catalog_key</span> <span class="o">=</span> <span class="s">&#39;serviceCatalog&#39;</span>
+                <span class="n">access_key</span> <span class="o">=</span> <span class="s">&#39;access&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Unknown Keystone version&quot;</span><span class="p">))</span>
+
+            <span class="n">auth_ref</span> <span class="o">=</span> <span class="n">token_obj</span><span class="o">.</span><span class="n">get_auth_ref</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keystone_session</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">catalog_key</span> <span class="ow">in</span> <span class="n">auth_ref</span><span class="p">:</span>
+                <span class="n">cxt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+                <span class="n">access_info</span> <span class="o">=</span> <span class="n">cxt</span><span class="p">[</span><span class="s">&#39;auth_token_info&#39;</span><span class="p">][</span><span class="n">access_key</span><span class="p">]</span>
+                <span class="n">access_info</span><span class="p">[</span><span class="n">catalog_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">auth_ref</span><span class="p">[</span><span class="n">catalog_key</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">RequestContext</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">cxt</span><span class="p">)</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="n">get_endpoint</span><span class="p">()</span>
+
+        <span class="c"># NOTE(jamielennox): raising exception maintains compatibility with</span>
+        <span class="c"># older keystoneclient service catalog searching.</span>
+        <span class="k">if</span> <span class="n">url</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">EndpointNotFound</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">url</span>
+</div>
+    <span class="k">def</span> <span class="nf">_get_client_option</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">option</span><span class="p">):</span>
+        <span class="c"># look for the option in the [clients_${client}] section</span>
+        <span class="c"># unknown options raise cfg.NoSuchOptError</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">group_name</span> <span class="o">=</span> <span class="s">&#39;clients_&#39;</span> <span class="o">+</span> <span class="n">client</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">import_opt</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="s">&#39;heat.common.config&#39;</span><span class="p">,</span>
+                                <span class="n">group</span><span class="o">=</span><span class="n">group_name</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="p">,</span> <span class="n">group_name</span><span class="p">),</span> <span class="n">option</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">v</span>
+        <span class="k">except</span> <span class="n">cfg</span><span class="o">.</span><span class="n">NoSuchGroupError</span><span class="p">:</span>
+            <span class="k">pass</span>  <span class="c"># do not error if the client is unknown</span>
+        <span class="c"># look for the option in the generic [clients] section</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">import_opt</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="s">&#39;heat.common.config&#39;</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="s">&#39;clients&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span><span class="o">.</span><span class="n">clients</span><span class="p">,</span> <span class="n">option</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ClientPlugin.is_client_exception"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.engine.clients.client_plugin.html#heat.engine.clients.client_plugin.ClientPlugin.is_client_exception">[docs]</a>    <span class="k">def</span> <span class="nf">is_client_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns True if the current exception comes from the client.&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exceptions_module</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exceptions_module</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exceptions_module</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">itervalues</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">__dict__</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">itervalues</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">exceptions_module</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="ClientPlugin.is_not_found"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.engine.clients.client_plugin.html#heat.engine.clients.client_plugin.ClientPlugin.is_not_found">[docs]</a>    <span class="k">def</span> <span class="nf">is_not_found</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns True if the exception is a not-found.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="ClientPlugin.is_over_limit"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.engine.clients.client_plugin.html#heat.engine.clients.client_plugin.ClientPlugin.is_over_limit">[docs]</a>    <span class="k">def</span> <span class="nf">is_over_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns True if the exception is an over-limit.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="ClientPlugin.is_conflict"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.engine.clients.client_plugin.html#heat.engine.clients.client_plugin.ClientPlugin.is_conflict">[docs]</a>    <span class="k">def</span> <span class="nf">is_conflict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns True if the exception is a conflict.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="ClientPlugin.ignore_not_found"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.engine.clients.client_plugin.html#heat.engine.clients.client_plugin.ClientPlugin.ignore_not_found">[docs]</a>    <span class="k">def</span> <span class="nf">ignore_not_found</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Raises the exception unless it is a not-found.&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_not_found</span><span class="p">(</span><span class="n">ex</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ex</span>
+</div>
+<div class="viewcode-block" id="ClientPlugin.ignore_conflict_and_not_found"><a class="viewcode-back" href="../../../../sourcecode/heat/heat.engine.clients.client_plugin.html#heat.engine.clients.client_plugin.ClientPlugin.ignore_conflict_and_not_found">[docs]</a>    <span class="k">def</span> <span class="nf">ignore_conflict_and_not_found</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Raises the exception unless it is a conflict or not-found.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_conflict</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_not_found</span><span class="p">(</span><span class="n">ex</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ex</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../../../raxdox/index.html">Supported Resources</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../clients.html" >heat.engine.clients</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+========================================
+The :mod:`heat.objects.stack_tag` Module
+========================================
+.. automodule:: heat.objects.stack_tag
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

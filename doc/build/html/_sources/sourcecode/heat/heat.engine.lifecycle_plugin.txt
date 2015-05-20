@@ -1,0 +1,8 @@
+==============================================
+The :mod:`heat.engine.lifecycle_plugin` Module
+==============================================
+.. automodule:: heat.engine.lifecycle_plugin
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

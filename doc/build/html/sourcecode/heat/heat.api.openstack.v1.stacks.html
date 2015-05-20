@@ -1,0 +1,327 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.api.openstack.v1.stacks Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-api-openstack-v1-stacks-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.api.openstack.v1.stacks</span></code> Module<a class="headerlink" href="#the-heat-api-openstack-v1-stacks-module" title="Permalink to this headline">¶</a></h1>
+<p>Stack endpoint for Heat v1 ReST API.</p>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.api.openstack.v1.stacks.</code><code class="descname">InstantiationData</code><span class="sig-paren">(</span><em>data</em>, <em>patch=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#InstantiationData"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>The data accompanying a PUT or POST request to create or update a stack.</p>
+<dl class="attribute">
+<dt>
+<code class="descname">PARAMS</code><em class="property"> = ('stack_name', 'template', 'template_url', 'parameters', 'environment', 'files')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">PARAM_ENVIRONMENT</code><em class="property"> = 'environment'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">PARAM_FILES</code><em class="property"> = 'files'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">PARAM_STACK_NAME</code><em class="property"> = 'stack_name'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">PARAM_TEMPLATE</code><em class="property"> = 'template'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">PARAM_TEMPLATE_URL</code><em class="property"> = 'template_url'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">PARAM_USER_PARAMS</code><em class="property"> = 'parameters'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#InstantiationData.args"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get any additional arguments supplied by the user.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">environment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#InstantiationData.environment"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get the user-supplied environment for the stack in YAML format.
+If the user supplied Parameters then merge these into the
+environment global options.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">files</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#InstantiationData.files"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><code class="descname">format_parse</code><span class="sig-paren">(</span><em>data</em>, <em>data_type</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#InstantiationData.format_parse"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Parse the supplied data as JSON or YAML, raising the appropriate
+exception if it is in the wrong format.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">stack_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#InstantiationData.stack_name"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the stack name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">template</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#InstantiationData.template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get template file contents, either inline, from stack adopt data or
+from a URL, in JSON or YAML format.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.api.openstack.v1.stacks.</code><code class="descname">StackController</code><span class="sig-paren">(</span><em>options</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>WSGI controller for stacks resource in Heat v1 API
+Implements the API actions</p>
+<dl class="attribute">
+<dt>
+<code class="descname">REQUEST_SCOPE</code><em class="property"> = 'stacks'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">abandon</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.abandon"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Abandons specified stack by deleting the stack and it&#8217;s resources
+from the database, but underlying resources will not be deleted.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">create</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.create"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create a new stack</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">default</code><span class="sig-paren">(</span><em>req</em>, <em>**args</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.default"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">delete</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Delete the specified stack</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">delete_snapshot</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.delete_snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">detail</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.detail"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Lists detailed information for all stacks</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">generate_template</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.generate_template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Generates a template based on the specified type.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">global_index</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.global_index"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">index</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.index"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Lists summary information for all stacks</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">list_resource_types</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.list_resource_types"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns a list of valid resource types that may be used in a template.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">list_snapshots</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.list_snapshots"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">lookup</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.lookup"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Redirect to the canonical URL for a stack</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">preview</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.preview"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Preview the outcome of a template and its params</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resource_schema</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.resource_schema"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns the schema of the given resource type.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">restore_snapshot</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.restore_snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">show</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.show"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Gets detailed information for a stack</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">show_snapshot</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.show_snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">snapshot</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">template</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get the template body for an existing stack</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">update</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.update"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Update an existing stack with a new template and/or parameters</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">update_patch</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.update_patch"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Update an existing stack with a new template by patching the parameters
+Add the flag patch to the args so the engine code can distinguish</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate_template</code><span class="sig-paren">(</span><em>controller</em>, <em>req</em>, <em>tenant_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackController.validate_template"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Implements the ValidateTemplate API action
+Validates the specified template</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.api.openstack.v1.stacks.</code><code class="descname">StackSerializer</code><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackSerializer"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">heat.common.serializers.JSONResponseSerializer</span></code></p>
+<p>Handles serialization of specific controller method responses.</p>
+<dl class="method">
+<dt>
+<code class="descname">create</code><span class="sig-paren">(</span><em>response</em>, <em>result</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#StackSerializer.create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.api.openstack.v1.stacks.</code><code class="descname">create_resource</code><span class="sig-paren">(</span><em>options</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/api/openstack/v1/stacks.html#create_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Stacks resource factory method.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.api.openstack.v1.stacks.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

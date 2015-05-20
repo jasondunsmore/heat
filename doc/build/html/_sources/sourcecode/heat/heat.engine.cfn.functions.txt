@@ -1,0 +1,8 @@
+===========================================
+The :mod:`heat.engine.cfn.functions` Module
+===========================================
+.. automodule:: heat.engine.cfn.functions
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

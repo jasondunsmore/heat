@@ -1,0 +1,558 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.stack Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-engine-stack-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.engine.stack</span></code> Module<a class="headerlink" href="#the-heat-engine-stack-module" title="Permalink to this headline">¶</a></h1>
+<dl class="exception">
+<dt>
+<em class="property">exception </em><code class="descclassname">heat.engine.stack.</code><code class="descname">ForcedCancel</code><a class="reference internal" href="../../_modules/heat/engine/stack.html#ForcedCancel"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.BaseException</span></code></p>
+<p>Exception raised to cancel task execution.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.stack.</code><code class="descname">Stack</code><span class="sig-paren">(</span><em>context</em>, <em>stack_name</em>, <em>tmpl</em>, <em>stack_id=None</em>, <em>action=None</em>, <em>status=None</em>, <em>status_reason=''</em>, <em>timeout_mins=None</em>, <em>resolve_data=True</em>, <em>disable_rollback=True</em>, <em>parent_resource=None</em>, <em>owner_id=None</em>, <em>adopt_stack_data=None</em>, <em>stack_user_project_id=None</em>, <em>created_time=None</em>, <em>updated_time=None</em>, <em>user_creds_id=None</em>, <em>tenant_id=None</em>, <em>use_stored_context=False</em>, <em>username=None</em>, <em>nested_depth=0</em>, <em>strict_validate=True</em>, <em>convergence=False</em>, <em>current_traversal=None</em>, <em>tags=None</em>, <em>prev_raw_template_id=None</em>, <em>current_deps=None</em>, <em>cache_data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">_abcoll.Mapping</span></code></p>
+<dl class="attribute">
+<dt>
+<code class="descname">ACTIONS</code><em class="property"> = ('CREATE', 'DELETE', 'UPDATE', 'ROLLBACK', 'SUSPEND', 'RESUME', 'ADOPT', 'SNAPSHOT', 'CHECK', 'RESTORE')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">ADOPT</code><em class="property"> = 'ADOPT'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">CHECK</code><em class="property"> = 'CHECK'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">COMPLETE</code><em class="property"> = 'COMPLETE'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">CREATE</code><em class="property"> = 'CREATE'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">DELETE</code><em class="property"> = 'DELETE'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">FAILED</code><em class="property"> = 'FAILED'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">IN_PROGRESS</code><em class="property"> = 'IN_PROGRESS'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">RESTORE</code><em class="property"> = 'RESTORE'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">RESUME</code><em class="property"> = 'RESUME'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">ROLLBACK</code><em class="property"> = 'ROLLBACK'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">SNAPSHOT</code><em class="property"> = 'SNAPSHOT'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">STATUSES</code><em class="property"> = ('IN_PROGRESS', 'FAILED', 'COMPLETE')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">SUSPEND</code><em class="property"> = 'SUSPEND'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">UPDATE</code><em class="property"> = 'UPDATE'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">access_allowed</code><span class="sig-paren">(</span><em>credential_id</em>, <em>resource_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.access_allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns True if the credential_id is authorised to access the
+resource with the specified resource_name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">add_resource</code><span class="sig-paren">(</span><em>resource</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.add_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Insert the given resource into the stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">adopt</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.adopt"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Adopt a stack (create stack with all the existing resources).</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">cache_data_resource_attribute</code><span class="sig-paren">(</span><em>resource_name</em>, <em>attribute_key</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.cache_data_resource_attribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">cache_data_resource_id</code><span class="sig-paren">(</span><em>resource_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.cache_data_resource_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">check</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.check"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">converge_stack</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.converge_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Updates the stack and triggers convergence for resources</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">create</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.create"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create the stack and all of the resources.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">create_stack_user_project_id</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.create_stack_user_project_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">db_resource_get</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.db_resource_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">delete</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Delete all of the resources, and then the stack itself.
+The action parameter is used to differentiate between a user
+initiated delete and an automatic stack rollback after a failed
+create, which amount to the same thing, but the states are recorded
+differently.</p>
+<p>Note abandon is a delete where all resources have been set to a
+RETAIN deletion policy, but we also don&#8217;t want to delete anything
+required for those resources, e.g the stack_user_project.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">delete_snapshot</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.delete_snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Remove a snapshot from the backends.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">dependencies</code></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">env</code></dt>
+<dd><p>This is a helper to allow resources to access stack.env.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_availability_zones</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.get_availability_zones"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><code class="descname">get_dep_attrs</code><span class="sig-paren">(</span><em>resources</em>, <em>outputs</em>, <em>resource_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.get_dep_attrs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the set of dependent attributes for specified resource name by
+inspecting all resources and outputs in template.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_kwargs_for_cloning</code><span class="sig-paren">(</span><em>keep_status=False</em>, <em>only_db=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.get_kwargs_for_cloning"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get common kwargs for calling Stack() for cloning.</p>
+<p>The point of this method is to reduce the number of places that we
+need to update when a kwarg to Stack.__init__() is modified. It
+is otherwise easy to forget an option and cause some unexpected
+error if this option is lost.</p>
+<p>Note:
+- This doesn&#8217;t return the args(name, template) but only the kwargs.
+- We often want to start &#8216;fresh&#8217; so don&#8217;t want to maintain the old</p>
+<blockquote>
+<div>status, action and status_reason.</div></blockquote>
+<ul class="simple">
+<li>We sometimes only want the DB attributes.</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">has_cache_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.has_cache_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">identifier</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.identifier"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return an identifier for this stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">iter_resources</code><span class="sig-paren">(</span><em>nested_depth=0</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.iter_resources"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Iterates over all the resources in a stack, including nested stacks up
+to <cite>nested_depth</cite> levels below.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">load</code><span class="sig-paren">(</span><em>context</em>, <em>stack_id=None</em>, <em>stack=None</em>, <em>show_deleted=True</em>, <em>use_stored_context=False</em>, <em>force_reload=False</em>, <em>cache_data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.load"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Retrieve a Stack from the database.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">load_all</code><span class="sig-paren">(</span><em>context</em>, <em>limit=None</em>, <em>marker=None</em>, <em>sort_keys=None</em>, <em>sort_dir=None</em>, <em>filters=None</em>, <em>tenant_safe=True</em>, <em>show_deleted=False</em>, <em>resolve_data=True</em>, <em>show_nested=False</em>, <em>show_hidden=False</em>, <em>tags=None</em>, <em>tags_any=None</em>, <em>not_tags=None</em>, <em>not_tags_any=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.load_all"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">object_path_in_stack</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.object_path_in_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>If this is not nested return (None, self), else return stack resources
+and stacks in path from the root stack and including this stack</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a list of (stack_resource, stack) tuples</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">output</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.output"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get the value of the specified stack output.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">parent_resource</code></dt>
+<dd><p>Dynamically load up the parent_resource.</p>
+<p>Note: this should only be used by &#8220;Fn::ResourceFacade&#8221;</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">path_in_stack</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.path_in_stack"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>If this is not nested return (None, self.name), else return tuples of
+names (stack_resource.name, stack.name) in path from the root stack and
+including this stack.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a list of (string, string) tuples.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">prepare_abandon</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.prepare_abandon"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">preview_resources</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.preview_resources"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Preview the stack with all of the resources.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">register_access_allowed_handler</code><span class="sig-paren">(</span><em>credential_id</em>, <em>handler</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.register_access_allowed_handler"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Register a function which determines whether the credentials with
+a give ID can have access to a named resource.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">remove_resource</code><span class="sig-paren">(</span><em>resource_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.remove_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Remove the resource with the specified name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">requires_deferred_auth</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.requires_deferred_auth"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns whether this stack may need to perform API requests
+during its lifecycle using the configured deferred authentication
+method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">reset_dependencies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.reset_dependencies"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">reset_resource_attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.reset_resource_attributes"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resolve_runtime_data</code><span class="sig-paren">(</span><em>snippet</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.resolve_runtime_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>DEPRECATED. Use heat.engine.function.resolve() instead.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resolve_static_data</code><span class="sig-paren">(</span><em>snippet</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.resolve_static_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resource_by_refid</code><span class="sig-paren">(</span><em>refid</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.resource_by_refid"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the resource in this stack with the specified
+refid, or None if not found</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">resources</code></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">restart_resource</code><span class="sig-paren">(</span><em>resource_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.restart_resource"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>stop resource_name and all that depend on it
+start resource_name and all that depend on it</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">restore</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.restore"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Restore the given snapshot, invoking handle_restore on all resources.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">resume</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.resume"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Resume the stack, which invokes handle_resume for all stack resources
+waits for all resources to become RESUME_COMPLETE then declares the
+stack RESUME_COMPLETE.
+Note the default implementation for all resources is to do nothing
+other than move to RESUME_COMPLETE, so the resources must implement
+handle_resume for this to have any effect.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">root_stack</code></dt>
+<dd><p>Return the root stack if this is nested (otherwise return self).</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">set_stack_user_project_id</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.set_stack_user_project_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">snapshot</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.snapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Snapshot the stack, invoking handle_snapshot on all resources.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">stack_task</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.stack_task"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>A task to perform an action on the stack and all of the resources
+in forward or reverse dependency order as specified by reverse</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">state</code></dt>
+<dd><p>Returns state, tuple of action, status.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">state_set</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.state_set"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Update the stack state in the database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">store</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.store"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Store the stack in the database and return its ID
+If self.id is set, we update the existing stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">stored_context</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.stored_context"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">supports_check_action</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.supports_check_action"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">suspend</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.suspend"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Suspend the stack, which invokes handle_suspend for all stack resources
+waits for all resources to become SUSPEND_COMPLETE then declares the
+stack SUSPEND_COMPLETE.
+Note the default implementation for all resources is to do nothing
+other than move to SUSPEND_COMPLETE, so the resources must implement
+handle_suspend for this to have any effect.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">temp_update_requires</code><span class="sig-paren">(</span><em>conv_deps</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.temp_update_requires"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>updates requires column of resources</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">timeout_secs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.timeout_secs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the stack action timeout in seconds.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">total_resources</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.total_resources"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the total number of resources in a stack, including nested
+stacks below.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">update</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.update"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Compare the current stack with newstack,
+and where necessary create/update/delete the resources until
+this stack aligns with newstack.</p>
+<p>Note update of existing stack resources depends on update
+being implemented in the underlying resource types</p>
+<p>Update will fail if it exceeds the specified timeout. The default is
+60 minutes, set in the constructor</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">update_task</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.update_task"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/stack.html#Stack.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Validates the template.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.engine.stack.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

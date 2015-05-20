@@ -1,0 +1,8 @@
+======================================
+The :mod:`heat.scaling.lbutils` Module
+======================================
+.. automodule:: heat.scaling.lbutils
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

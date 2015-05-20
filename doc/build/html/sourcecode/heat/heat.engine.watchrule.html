@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.watchrule Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-engine-watchrule-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.engine.watchrule</span></code> Module<a class="headerlink" href="#the-heat-engine-watchrule-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.watchrule.</code><code class="descname">WatchRule</code><span class="sig-paren">(</span><em>context</em>, <em>watch_name</em>, <em>rule</em>, <em>stack_id=None</em>, <em>state='NODATA'</em>, <em>wid=None</em>, <em>watch_data=None</em>, <em>last_evaluated=datetime.datetime(2015</em>, <em>5</em>, <em>20</em>, <em>17</em>, <em>6</em>, <em>22</em>, <em>350651)</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt>
+<code class="descname">ACTION_MAP</code><em class="property"> = {'ALARM': 'AlarmActions', 'NODATA': 'InsufficientDataActions', 'NORMAL': 'OKActions'}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">ALARM</code><em class="property"> = 'ALARM'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">CEILOMETER_CONTROLLED</code><em class="property"> = 'CEILOMETER_CONTROLLED'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">NODATA</code><em class="property"> = 'NODATA'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">NORMAL</code><em class="property"> = 'NORMAL'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">SUSPENDED</code><em class="property"> = 'SUSPENDED'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">WATCH_STATES</code><em class="property"> = ('ALARM', 'NORMAL', 'NODATA', 'SUSPENDED', 'CEILOMETER_CONTROLLED')</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">create_watch_data</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.create_watch_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">created_at</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">destroy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.destroy"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Delete the watchrule from the database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">do_Average</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.do_Average"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">do_Maximum</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.do_Maximum"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">do_Minimum</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.do_Minimum"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">do_SampleCount</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.do_SampleCount"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>count all samples within the specified period</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">do_Sum</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.do_Sum"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">do_data_cmp</code><span class="sig-paren">(</span><em>data</em>, <em>threshold</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.do_data_cmp"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.evaluate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_alarm_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.get_alarm_state"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">get_details</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.get_details"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt>
+<em class="property">classmethod </em><code class="descname">load</code><span class="sig-paren">(</span><em>context</em>, <em>watch_name=None</em>, <em>watch=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.load"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Load the watchrule object, either by name or via an existing DB object</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">rule_actions</code><span class="sig-paren">(</span><em>new_state</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.rule_actions"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">run_rule</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.run_rule"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">set_watch_state</code><span class="sig-paren">(</span><em>state</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.set_watch_state"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Temporarily set the watch state, returns list of functions to be
+scheduled in the stack ThreadGroup for the specified state</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">state_set</code><span class="sig-paren">(</span><em>state</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.state_set"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Persistently store the watch state</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">store</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#WatchRule.store"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Store the watchrule in the database and return its ID
+If self.id is set, we update the existing rule</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">updated_at</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.watchrule.</code><code class="descname">rule_can_use_sample</code><span class="sig-paren">(</span><em>wr</em>, <em>stats_data</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/watchrule.html#rule_can_use_sample"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.engine.watchrule.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>

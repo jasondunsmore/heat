@@ -1,0 +1,8 @@
+===========================================
+The :mod:`heat.api.cloudwatch.watch` Module
+===========================================
+.. automodule:: heat.api.cloudwatch.watch
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

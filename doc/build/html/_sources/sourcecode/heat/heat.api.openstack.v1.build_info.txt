@@ -1,0 +1,8 @@
+==================================================
+The :mod:`heat.api.openstack.v1.build_info` Module
+==================================================
+.. automodule:: heat.api.openstack.v1.build_info
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

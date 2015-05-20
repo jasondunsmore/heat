@@ -1,0 +1,8 @@
+===========================================
+The :mod:`heat.api.middleware.fault` Module
+===========================================
+.. automodule:: heat.api.middleware.fault
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :noindex:

@@ -1,0 +1,151 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The heat.engine.function Module &mdash; Supported Resources</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2015.2.0.dev378',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Supported Resources" href="../../raxdox/index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-heat-engine-function-module">
+<h1>The <code class="xref py py-mod docutils literal"><span class="pre">heat.engine.function</span></code> Module<a class="headerlink" href="#the-heat-engine-function-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">heat.engine.function.</code><code class="descname">Function</code><span class="sig-paren">(</span><em>stack</em>, <em>fn_name</em>, <em>args</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/function.html#Function"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Abstract base class for template functions.</p>
+<dl class="method">
+<dt>
+<code class="descname">dep_attrs</code><span class="sig-paren">(</span><em>resource_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/function.html#Function.dep_attrs"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">dependencies</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/function.html#Function.dependencies"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">result</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/function.html#Function.result"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the result of resolving the function.</p>
+<p>Function subclasses must override this method to calculate their
+results.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">stack</code></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">validate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/function.html#Function.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Validate arguments without resolving the function.</p>
+<p>Function subclasses must override this method to validate their
+args.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.function.</code><code class="descname">dep_attrs</code><span class="sig-paren">(</span><em>snippet</em>, <em>resource_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/function.html#dep_attrs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return an iterator over dependent attributes for specified resource_name
+in a template snippet.</p>
+<p>The snippet should be already parsed to insert Function objects where
+appropriate.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.function.</code><code class="descname">dependencies</code><span class="sig-paren">(</span><em>snippet</em>, <em>path=''</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/function.html#dependencies"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return an iterator over Resource dependencies in a template snippet.</p>
+<p>The snippet should be already parsed to insert Function objects where
+appropriate.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.function.</code><code class="descname">resolve</code><span class="sig-paren">(</span><em>snippet</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/function.html#resolve"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">heat.engine.function.</code><code class="descname">validate</code><span class="sig-paren">(</span><em>snippet</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/heat/engine/function.html#validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sourcecode/heat/heat.engine.function.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../raxdox/index.html">Supported Resources</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012,2015 Heat Developers.
+      Last updated on Wed May 20 12:03:06 2015, commit 58910c6.
+    </div>
+  </body>
+</html>
