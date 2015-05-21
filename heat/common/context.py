@@ -13,6 +13,8 @@
 
 from keystoneclient import access
 from keystoneclient.auth.identity import access as access_plugin
+from keystoneclient.auth.identity import generic
+from keystoneclient.auth.identity import v2
 from keystoneclient.auth.identity import v3
 from keystoneclient.auth import token_endpoint
 from oslo_config import cfg
@@ -146,7 +148,7 @@ class RequestContext(context.RequestContext):
             auth_ref = access.AccessInfo.factory(body=self.auth_token_info,
                                                  auth_token=self.auth_token)
             return access_plugin.AccessInfoPlugin(
-                auth_url=self._keystone_v3_endpoint,
+                auth_url=self.auth_url,
                 auth_ref=auth_ref)
 
         if self.auth_token:
@@ -154,15 +156,13 @@ class RequestContext(context.RequestContext):
             # only have a token but don't load a service catalog then
             # url_for wont work. Stub with the keystone endpoint so at
             # least it might be right.
-            return token_endpoint.Token(endpoint=self._keystone_v3_endpoint,
+            return token_endpoint.Token(endpoint=self.auth_url,
                                         token=self.auth_token)
 
         if self.password:
-            return v3.Password(username=self.username,
+            return v2.Password(username=self.username,
                                password=self.password,
-                               project_id=self.tenant_id,
-                               user_domain_id='default',
-                               auth_url=self._keystone_v3_endpoint)
+                               auth_url=self.auth_url)
 
         LOG.error(_LE("Keystone v3 API connection failed, no password "
                       "trust or auth_token!"))
