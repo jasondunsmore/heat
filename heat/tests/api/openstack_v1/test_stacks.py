@@ -1101,6 +1101,19 @@ class StackControllerTest(tools.ControllerTest, common.HeatTestCase):
 
         self.assertEqual({'stack': 'formatted_stack'}, result)
 
+    @mock.patch.object(rpc_client.EngineClient, 'call')
+    @mock.patch.object(stacks.stacks_view, 'format_stack')
+    def test_preview_update_stack(self, mock_format, mock_call, mock_enforce):
+        self._mock_enforce_setup(mock_enforce, 'preview', True)
+        body = {'stack_name': 'foo', 'template': {}}
+        req = self._get('/stacks/preview', params={})
+        mock_call.return_value = {}
+        mock_format.return_value = 'formatted_stack'
+
+        result = self.controller.preview(req, tenant_id=self.tenant, body=body)
+
+        self.assertEqual({'stack': 'formatted_stack'}, result)
+
     def test_lookup(self, mock_enforce):
         self._mock_enforce_setup(mock_enforce, 'lookup', True)
         identity = identifier.HeatIdentifier(self.tenant, 'wordpress', '1')

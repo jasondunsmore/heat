@@ -367,6 +367,50 @@ class HeatIntegrationTest(testscenarios.WithScenarios,
 
         self._wait_for_stack_status(**kwargs)
 
+    def preview_update_stack(self, stack_identifier, template, environment=None,
+                     files=None, parameters=None, tags=None,
+                     expected_status='UPDATE_COMPLETE',
+                     disable_rollback=True):
+        env = environment or {}
+        env_files = files or {}
+        parameters = parameters or {}
+        stack_name = stack_identifier.split('/')[0]
+
+        build_timeout = self.conf.build_timeout
+        build_interval = self.conf.build_interval
+        start = timeutils.utcnow()
+        while timeutils.delta_seconds(start,
+                                      timeutils.utcnow()) < build_timeout:
+            try:
+                self.client.stacks.update(
+                    stack_id=stack_identifier,
+                    stack_name=stack_name,
+                    template=template,
+                    files=env_files,
+                    disable_rollback=disable_rollback,
+                    parameters=parameters,
+                    environment=env,
+                    tags=tags
+                )
+            except heat_exceptions.HTTPConflict as ex:
+                # FIXME(sirushtim): Wait a little for the stack lock to be
+                # released and hopefully, the stack should be updatable again.
+                if ex.error['error']['type'] != 'ActionInProgress':
+                    raise ex
+
+                time.sleep(build_interval)
+            else:
+                break
+
+        kwargs = {'stack_identifier': stack_identifier,
+                  'status': expected_status}
+        if expected_status in ['ROLLBACK_COMPLETE']:
+            # To trigger rollback you would intentionally fail the stack
+            # Hence check for rollback failures
+            kwargs['failure_pattern'] = '^ROLLBACK_FAILED$'
+
+        self._wait_for_stack_status(**kwargs)
+
     def assert_resource_is_a_stack(self, stack_identifier, res_name,
                                    wait=False):
         build_timeout = self.conf.build_timeout
