@@ -1235,6 +1235,62 @@ class StackServiceAdoptUpdateTest(common.HeatTestCase):
 
         self.m.VerifyAll()
 
+    def test_stack_update_preview(self):
+        stack_name = 'service_update_test_stack'
+        params = {'foo': 'bar'}
+        template = '{ "Template": "data" }'
+        old_stack = tools.get_stack(stack_name, self.ctx)
+        sid = old_stack.store()
+        old_stack.set_stack_user_project_id('1234')
+        s = stack_object.Stack.get_by_id(self.ctx, sid)
+
+        stack = tools.get_stack(stack_name, self.ctx)
+
+        self._stub_update_mocks(s, old_stack)
+
+        templatem.Template(template, files=None,
+                           env=stack.env).AndReturn(stack.t)
+        environment.Environment(params).AndReturn(stack.env)
+        parser.Stack(self.ctx, stack.name,
+                     stack.t,
+                     convergence=False,
+                     current_traversal=None,
+                     prev_raw_template_id=None,
+                     current_deps=None,
+                     disable_rollback=True,
+                     nested_depth=0,
+                     owner_id=None,
+                     parent_resource=None,
+                     stack_user_project_id='1234',
+                     strict_validate=True,
+                     tenant_id='test_tenant_id',
+                     timeout_mins=60,
+                     user_creds_id=u'1',
+                     username='test_username').AndReturn(stack)
+
+        self.m.StubOutWithMock(stack, 'validate')
+        stack.validate().AndReturn(None)
+
+        evt_mock = self.m.CreateMockAnything()
+        self.m.StubOutWithMock(grevent, 'Event')
+        grevent.Event().AndReturn(evt_mock)
+        self.m.StubOutWithMock(threadgroup, 'ThreadGroup')
+        threadgroup.ThreadGroup().AndReturn(tools.DummyThreadGroup())
+
+        self.m.ReplayAll()
+
+        api_args = {'timeout_mins': 60}
+        result = self.man.preview_update_stack(self.ctx,
+                                               old_stack.identifier(),
+                                               template, params, None,
+                                               api_args)
+        import ipdb; ipdb.set_trace()
+        self.assertEqual(old_stack.identifier(), result)
+        self.assertIsInstance(result, dict)
+        self.assertTrue(result['stack_id'])
+        self.assertEqual([evt_mock], self.man.thread_group_mgr.events[sid])
+        self.m.VerifyAll()
+
 
 class StackConvergenceServiceCreateUpdateTest(common.HeatTestCase):
 
@@ -1445,6 +1501,16 @@ class StackServiceTest(common.HeatTestCase):
         self.eng.create_periodic_tasks()
         self.eng.engine_id = 'engine-fake-uuid'
         cfg.CONF.set_default('heat_stack_user_role', 'stack_user_role')
+        res._register_class('ResourceWithPropsType',
+                            generic_rsrc.ResourceWithProps)
+
+    def test_make_sure_rpc_version(self):
+        self.assertEqual(
+            '1.10',
+            service.EngineService.RPC_API_VERSION,
+            ('RPC version is changed, please update this test to new version '
+             'and make sure additional test cases are added for RPC APIs '
+             'added in new version'))
 
     @mock.patch.object(service_stack_watch.StackWatch, 'start_watch_task')
     @mock.patch.object(stack_object.Stack, 'get_all')
