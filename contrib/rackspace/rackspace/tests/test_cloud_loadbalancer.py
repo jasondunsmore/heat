@@ -221,6 +221,7 @@ class FakeLoadBalancer(object):
         self.Node = FakeNode
         self.VirtualIP = FakeVirtualIP
         self.nodes = []
+        self.status = 'ACTIVE'
 
     def get(self, *args, **kwargs):
         pass
@@ -349,9 +350,16 @@ class LoadBalancerTest(common.HeatTestCase):
         rsrc = LoadBalancerWithFakeClient(resource_name,
                                           resource_defns[resource_name],
                                           stack)
-        self.m.StubOutWithMock(rsrc.clb, 'create')
+
         fake_loadbalancer = FakeLoadBalancer(name=lb_name)
+        fake_loadbalancer.status = 'ACTIVE'
+
+        self.m.StubOutWithMock(rsrc.clb, 'create')
         rsrc.clb.create(lb_name, **lb_body).AndReturn(fake_loadbalancer)
+
+        self.m.StubOutWithMock(rsrc.clb, 'get')
+        rsrc.clb.get(mox.IgnoreArg()).MultipleTimes().AndReturn(fake_loadbalancer)
+
         return (rsrc, fake_loadbalancer)
 
     def _get_first_resource_name(self, templ):
@@ -367,10 +375,6 @@ class LoadBalancerTest(common.HeatTestCase):
                                                         lb_template),
                                                     expected_name,
                                                     expected_body)
-        self.m.StubOutWithMock(fake_loadbalancer, 'get')
-        fake_loadbalancer.get().MultipleTimes().AndReturn(None)
-
-        fake_loadbalancer.status = 'ACTIVE'
 
         return (rsrc, fake_loadbalancer)
 
@@ -1113,11 +1117,6 @@ class LoadBalancerTest(common.HeatTestCase):
 
         update_template = copy.deepcopy(rsrc.t)
         update_template['Properties']['sessionPersistence'] = 'SOURCE_IP'
-
-        self.m.StubOutWithMock(rsrc.clb, 'get')
-        rsrc.clb.get(rsrc.resource_id).AndReturn(fake_loadbalancer)
-
-        self.m.ReplayAll()
 
         scheduler.TaskRunner(rsrc.update, update_template)()
         self.assertEqual((rsrc.UPDATE, rsrc.COMPLETE), rsrc.state)
