@@ -25,7 +25,6 @@ from heat.engine import constraints
 from heat.engine import function
 from heat.engine import properties
 from heat.engine import resource
-from heat.engine import scheduler
 from heat.engine import support
 
 try:
@@ -47,6 +46,18 @@ def lb_immutable(exc):
     return False
 
 
+def retry(fun, tracker, *args):
+    try:
+        fun(*args)
+    except Exception as exc:
+        if lb_immutable(exc):
+            tracker = True
+            return False
+    else:
+        tracker = False
+        return True
+
+
 def retry_if_immutable(task):
     @six.wraps(task)
     def wrapper(*args, **kwargs):
@@ -59,12 +70,12 @@ def retry_if_immutable(task):
                 # same immutable load balancer error, so check the
                 # exception message instead of the exception type
                 if lb_immutable(exc):
+                    tracker
                     continue
                 raise
             else:
                 break
     return wrapper
-
 
 class LoadbalancerBuildError(exception.HeatException):
     msg_fmt = _("There was an error building the loadbalancer:%(lb_name)s.")
@@ -461,9 +472,14 @@ class CloudLoadBalancer(resource.Resource):
         )
     }
 
+    ACTIVE_STATUS = 'ACTIVE'
+    DELETED_STATUS = 'DELETED'
+
     def __init__(self, name, json_snippet, stack):
         super(CloudLoadBalancer, self).__init__(name, json_snippet, stack)
         self.clb = self.cloud_lb()
+        self._delete_issued = False
+        self._update_nodes_immutable = None
 
     def cloud_lb(self):
         return self.client('cloud_lb')
@@ -498,10 +514,10 @@ class CloudLoadBalancer(resource.Resource):
 
         return (session_persistence, connection_logging, metadata)
 
-    def _check_status(self, loadbalancer, status_list):
+    def _check_active(self, status_list):
         """Update the loadbalancer state, check the status."""
-        loadbalancer.get()
-        if loadbalancer.status in status_list:
+        loadbalancer = self.clb.get(self.resource_id)
+        if loadbalancer.status == self.ACTIVE_STATUS:
             return True
         else:
             return False
@@ -516,46 +532,6 @@ class CloudLoadBalancer(resource.Resource):
         if (redir and (proto == "HTTP") and seconly and (secport == 443)):
             return True
         return False
-
-    def _configure_post_creation(self, loadbalancer):
-        """Configure all load balancer properties post creation.
-
-        These properties can only be set after the load balancer is created.
-        """
-        if self.properties[self.ACCESS_LIST]:
-            while not self._check_status(loadbalancer, ['ACTIVE']):
-                yield
-            loadbalancer.add_access_list(self.properties[self.ACCESS_LIST])
-
-        if self.properties[self.ERROR_PAGE]:
-            while not self._check_status(loadbalancer, ['ACTIVE']):
-                yield
-            loadbalancer.set_error_page(self.properties[self.ERROR_PAGE])
-
-        if self.properties[self.SSL_TERMINATION]:
-            while not self._check_status(loadbalancer, ['ACTIVE']):
-                yield
-            ssl_term = self.properties[self.SSL_TERMINATION]
-            loadbalancer.add_ssl_termination(
-                ssl_term[self.SSL_TERMINATION_SECURE_PORT],
-                ssl_term[self.SSL_TERMINATION_PRIVATEKEY],
-                ssl_term[self.SSL_TERMINATION_CERTIFICATE],
-                intermediateCertificate=ssl_term[
-                    self.SSL_TERMINATION_INTERMEDIATE_CERTIFICATE],
-                enabled=True,
-                secureTrafficOnly=ssl_term[
-                    self.SSL_TERMINATION_SECURE_TRAFFIC_ONLY])
-
-        if self._valid_HTTPS_redirect_with_HTTP_prot():
-            while not self._check_status(loadbalancer, ['ACTIVE']):
-                yield
-            loadbalancer.update(httpsRedirect=True)
-
-        if self.CONTENT_CACHING in self.properties:
-            enabled = self.properties[self.CONTENT_CACHING] == 'ENABLED'
-            while not self._check_status(loadbalancer, ['ACTIVE']):
-                yield
-            loadbalancer.content_caching = enabled
 
     def _process_node(self, node):
         if not node.get(self.NODE_ADDRESSES):
@@ -619,17 +595,40 @@ class CloudLoadBalancer(resource.Resource):
         loadbalancer = self.clb.create(lb_name, **lb_body)
         self.resource_id_set(str(loadbalancer.id))
 
-        post_create = scheduler.TaskRunner(self._configure_post_creation,
-                                           loadbalancer)
-        post_create(timeout=600)
-        return loadbalancer
+        # The following properties can only be set after the load
+        # balancer is created
 
-    def check_create_complete(self, loadbalancer):
-        return self._check_status(loadbalancer, ['ACTIVE'])
+        if self.properties[self.ACCESS_LIST]:
+            loadbalancer.add_access_list(self.properties[self.ACCESS_LIST])
+
+        if self.properties[self.ERROR_PAGE]:
+            loadbalancer.set_error_page(self.properties[self.ERROR_PAGE])
+
+        if self.properties[self.SSL_TERMINATION]:
+            ssl_term = self.properties[self.SSL_TERMINATION]
+            loadbalancer.add_ssl_termination(
+                ssl_term[self.SSL_TERMINATION_SECURE_PORT],
+                ssl_term[self.SSL_TERMINATION_PRIVATEKEY],
+                ssl_term[self.SSL_TERMINATION_CERTIFICATE],
+                intermediateCertificate=ssl_term[
+                    self.SSL_TERMINATION_INTERMEDIATE_CERTIFICATE],
+                enabled=True,
+                secureTrafficOnly=ssl_term[
+                    self.SSL_TERMINATION_SECURE_TRAFFIC_ONLY])
+
+        if self._valid_HTTPS_redirect_with_HTTP_prot():
+            loadbalancer.update(httpsRedirect=True)
+
+        if self.CONTENT_CACHING in self.properties:
+            enabled = self.properties[self.CONTENT_CACHING] == 'ENABLED'
+            loadbalancer.content_caching = enabled
+
+    def check_create_complete(self):
+        return self._check_active()
 
     def handle_check(self):
         loadbalancer = self.clb.get(self.resource_id)
-        if not self._check_status(loadbalancer, ['ACTIVE']):
+        if not self._check_active():
             raise exception.Error(_("Cloud LoadBalancer is not ACTIVE "
                                     "(was: %s)") % loadbalancer.status)
 
@@ -684,7 +683,6 @@ class CloudLoadBalancer(resource.Resource):
         return checkers
 
     def _update_nodes(self, lb, updated_nodes):
-        @retry_if_immutable
         def add_nodes(lb, new_nodes):
             lb.add_nodes(new_nodes)
 
@@ -727,12 +725,15 @@ class CloudLoadBalancer(resource.Resource):
         """
         new_nodes = [self.clb.Node(**new[lb_node]) for lb_node in added]
         if new_nodes:
-            checkers.append(scheduler.TaskRunner(add_nodes, lb, new_nodes))
+            if self._update_nodes_immutable in (None, True):
+                if not retry(add_nodes, lb, self._update_nodes_immutable,
+                             new_nodes):
+                    return False
 
         # Delete loadbalancers in the old dict that are not in the
         # new dict.
         for node in deleted:
-            checkers.append(scheduler.TaskRunner(remove_node, old, node))
+            remove_node(old, node)
 
         # Update nodes that have been changed
         for node in updated:
@@ -743,7 +744,7 @@ class CloudLoadBalancer(resource.Resource):
                     node_changed = True
                     setattr(old[node], attribute, new_value)
             if node_changed:
-                checkers.append(scheduler.TaskRunner(update_node, old, node))
+                update_node(old, node)
 
         return checkers
 
@@ -752,7 +753,7 @@ class CloudLoadBalancer(resource.Resource):
         def update_lb():
             lb.update(**updated_props)
 
-        return scheduler.TaskRunner(update_lb)
+        return update_lb()
 
     def _update_health_monitor(self, lb, updated_hm):
         @retry_if_immutable
@@ -764,11 +765,11 @@ class CloudLoadBalancer(resource.Resource):
             lb.delete_health_monitor()
 
         if updated_hm is None:
-            return scheduler.TaskRunner(delete_health_monitor)
+            return delete_health_monitor()
         else:
             # Adding a health monitor is a destructive, so there's
             # no need to delete, then add
-            return scheduler.TaskRunner(add_health_monitor)
+            return add_health_monitor()
 
     def _update_session_persistence(self, lb, updated_sp):
         @retry_if_immutable
@@ -780,10 +781,10 @@ class CloudLoadBalancer(resource.Resource):
             lb.session_persistence = ''
 
         if updated_sp is None:
-            return scheduler.TaskRunner(delete_session_persistence)
+            return delete_session_persistence()
         else:
             # Adding session persistence is destructive
-            return scheduler.TaskRunner(add_session_persistence)
+            return add_session_persistence()
 
     def _update_ssl_termination(self, lb, updated_ssl_term):
         @retry_if_immutable
@@ -795,10 +796,10 @@ class CloudLoadBalancer(resource.Resource):
             lb.delete_ssl_termination()
 
         if updated_ssl_term is None:
-            return scheduler.TaskRunner(delete_ssl_termination)
+            return delete_ssl_termination()
         else:
             # Adding SSL termination is destructive
-            return scheduler.TaskRunner(add_ssl_termination)
+            return add_ssl_termination()
 
     def _update_metadata(self, lb, updated_metadata):
         @retry_if_immutable
@@ -810,9 +811,9 @@ class CloudLoadBalancer(resource.Resource):
             lb.delete_metadata()
 
         if updated_metadata is None:
-            return scheduler.TaskRunner(delete_metadata)
+            return delete_metadata()
         else:
-            return scheduler.TaskRunner(add_metadata)
+            return add_metadata()
 
     def _update_errorpage(self, lb, updated_errorpage):
         @retry_if_immutable
@@ -824,9 +825,9 @@ class CloudLoadBalancer(resource.Resource):
             lb.clear_error_page()
 
         if updated_errorpage is None:
-            return scheduler.TaskRunner(delete_errorpage)
+            return delete_errorpage()
         else:
-            return scheduler.TaskRunner(add_errorpage)
+            return add_errorpage()
 
     def _update_connection_logging(self, lb, updated_cl):
         @retry_if_immutable
@@ -838,9 +839,9 @@ class CloudLoadBalancer(resource.Resource):
             lb.connection_logging = False
 
         if updated_cl:
-            return scheduler.TaskRunner(enable_connection_logging)
+            return enable_connection_logging()
         else:
-            return scheduler.TaskRunner(disable_connection_logging)
+            return disable_connection_logging()
 
     def _update_connection_throttle(self, lb, updated_ct):
         @retry_if_immutable
@@ -852,9 +853,9 @@ class CloudLoadBalancer(resource.Resource):
             lb.delete_connection_throttle()
 
         if updated_ct is None:
-            return scheduler.TaskRunner(delete_connection_throttle)
+            return delete_connection_throttle()
         else:
-            return scheduler.TaskRunner(add_connection_throttle)
+            return add_connection_throttle()
 
     def _update_content_caching(self, lb, updated_cc):
         @retry_if_immutable
@@ -866,41 +867,28 @@ class CloudLoadBalancer(resource.Resource):
             lb.content_caching = False
 
         if updated_cc == 'ENABLED':
-            return scheduler.TaskRunner(enable_content_caching)
+            return enable_content_caching()
         else:
-            return scheduler.TaskRunner(disable_content_caching)
+            return disable_content_caching()
 
-    def check_update_complete(self, checkers):
-        '''Push all checkers to completion in list order.'''
-        for checker in checkers:
-            if not checker.started():
-                checker.start()
-            if not checker.step():
-                return False
-        return True
-
-    def handle_delete(self):
-        @retry_if_immutable
-        def delete_lb(lb):
-            lb.delete()
-
+    def check_delete_complete(self):
         if self.resource_id is None:
-            return
+            return True
+
         try:
             loadbalancer = self.clb.get(self.resource_id)
         except NotFound:
-            pass
-        else:
-            if loadbalancer.status != 'DELETED':
-                task = scheduler.TaskRunner(delete_lb, loadbalancer)
-                task.start()
-                return task
+            return True
 
-    def check_delete_complete(self, task):
-        if task and not task.step():
+        if loadbalancer.status == self.DELETED_STATUS:
+            return True
+
+        if not self._delete_issued:
+            loadbalancer.delete()
+            self._delete_issued = True
             return False
 
-        return True
+        return False
 
     def _remove_none(self, property_dict):
         """Remove None values that would cause schema validation problems.
