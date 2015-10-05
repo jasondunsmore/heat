@@ -25,7 +25,6 @@ from heat.engine import constraints
 from heat.engine import function
 from heat.engine import properties
 from heat.engine import resource
-from heat.engine import scheduler
 from heat.engine import support
 
 try:
@@ -484,10 +483,11 @@ class CloudLoadBalancer(resource.Resource):
 
         return (session_persistence, connection_logging, metadata)
 
-    def _check_active(self):
+    def _check_active(self, lb=None):
         """Update the loadbalancer state, check the status."""
-        loadbalancer = self.clb.get(self.resource_id)
-        if loadbalancer.status == self.ACTIVE_STATUS:
+        if not lb:
+            lb = self.clb.get(self.resource_id)
+        if lb.status == self.ACTIVE_STATUS:
             return True
         else:
             return False
@@ -502,46 +502,6 @@ class CloudLoadBalancer(resource.Resource):
         if (redir and (proto == "HTTP") and seconly and (secport == 443)):
             return True
         return False
-
-    def _configure_post_creation(self, loadbalancer):
-        """Configure all load balancer properties post creation.
-
-        These properties can only be set after the load balancer is created.
-        """
-        if self.properties[self.ACCESS_LIST]:
-            while not self._check_active():
-                yield
-            loadbalancer.add_access_list(self.properties[self.ACCESS_LIST])
-
-        if self.properties[self.ERROR_PAGE]:
-            while not self._check_active():
-                yield
-            loadbalancer.set_error_page(self.properties[self.ERROR_PAGE])
-
-        if self.properties[self.SSL_TERMINATION]:
-            while not self._check_active():
-                yield
-            ssl_term = self.properties[self.SSL_TERMINATION]
-            loadbalancer.add_ssl_termination(
-                ssl_term[self.SSL_TERMINATION_SECURE_PORT],
-                ssl_term[self.SSL_TERMINATION_PRIVATEKEY],
-                ssl_term[self.SSL_TERMINATION_CERTIFICATE],
-                intermediateCertificate=ssl_term[
-                    self.SSL_TERMINATION_INTERMEDIATE_CERTIFICATE],
-                enabled=True,
-                secureTrafficOnly=ssl_term[
-                    self.SSL_TERMINATION_SECURE_TRAFFIC_ONLY])
-
-        if self._valid_HTTPS_redirect_with_HTTP_prot():
-            while not self._check_active():
-                yield
-            loadbalancer.update(httpsRedirect=True)
-
-        if self.CONTENT_CACHING in self.properties:
-            enabled = self.properties[self.CONTENT_CACHING] == 'ENABLED'
-            while not self._check_active():
-                yield
-            loadbalancer.content_caching = enabled
 
     def _process_node(self, node):
         if not node.get(self.NODE_ADDRESSES):
@@ -602,27 +562,101 @@ class CloudLoadBalancer(resource.Resource):
         lb_name = (self.properties.get(self.NAME) or
                    self.physical_resource_name())
         LOG.debug("Creating loadbalancer: %s" % {lb_name: lb_body})
-        loadbalancer = self.clb.create(lb_name, **lb_body)
-        self.resource_id_set(str(loadbalancer.id))
+        lb = self.clb.create(lb_name, **lb_body)
+        self.resource_id_set(str(lb.id))
 
-        post_create = scheduler.TaskRunner(self._configure_post_creation,
-                                           loadbalancer)
-        post_create(timeout=600)
-        return loadbalancer
+    def check_create_complete(self, *args):
+        lb = self.clb.get(self.resource_id)
+        import ipdb; ipdb.set_trace()
+        if not self._check_active(lb):
+            return False
 
-    def check_create_complete(self, loadbalancer):
-        return self._check_active()
+        if self.properties[self.ACCESS_LIST]:
+            old_access_list = lb.get_access_list()
+            new_access_list = self.properties[self.ACCESS_LIST]
+            if self._access_list_needs_update(old_access_list,
+                                              new_access_list):
+                try:
+                    lb.add_access_list(new_access_list)
+                except Exception as exc:
+                    if lb_immutable(exc):
+                        return False
+                    raise
+                return False
+
+        if self.properties[self.ERROR_PAGE]:
+            old_errorpage = lb.get_error_page()
+            new_errorpage_content = self.properties[self.ERROR_PAGE]
+            new_errorpage = {'errorpage': {'content': new_errorpage_content}}
+            if self._errorpage_needs_update(old_errorpage, new_errorpage):
+                try:
+                    lb.set_error_page(new_errorpage_content)
+                except Exception as exc:
+                    if lb_immutable(exc):
+                        return False
+                    raise
+                return False
+
+        if self.properties[self.SSL_TERMINATION]:
+            old_ssl_term = lb.get_ssl_termination()
+            new_ssl_term = self.properties[self.SSL_TERMINATION]
+            new_ssl_term['enabled'] = True
+            if self._ssl_term_needs_update(old_ssl_term, new_ssl_term):
+                try:
+                    # sec_port = new_ssl_term[self.SSL_TERMINATION_SECURE_PORT]
+                    # private_key = new_ssl_term[self.SSL_TERMINATION_PRIVATEKEY]
+                    # ssl_cert = new_ssl_term[self.SSL_TERMINATION_CERTIFICATE]
+                    # intermediate_cert = new_ssl_term[
+                    #     self.SSL_TERMINATION_INTERMEDIATE_CERTIFICATE]
+                    # sec_only = new_ssl_term[
+                    #     self.SSL_TERMINATION_SECURE_TRAFFIC_ONLY]
+                    # lb.add_ssl_termination(
+                    #     securePort=sec_port, privatekey=private_key,
+                    #     certificate=ssl_cert,
+                    #     intermediateCertificate=intermediate_cert,
+                    #     enabled=True, secureTrafficOnly=sec_only)
+                    lb.add_ssl_termination(**new_ssl_term)
+                except Exception as exc:
+                    if lb_immutable(exc):
+                        return False
+                    raise
+                return False
+
+        if self._valid_HTTPS_redirect_with_HTTP_prot():
+            old_redirect = lb.httpsRedirect
+            new_redirect = self.properties[self.HTTPS_REDIRECT]
+            if self._redirect_needs_update(old_redirect, new_redirect):
+                try:
+                    lb.update(httpsRedirect=True)
+                except Exception as exc:
+                    if lb_immutable(exc):
+                        return False
+                    raise
+                return False
+
+        # if self.CONTENT_CACHING in self.properties:
+        #     enabled = self.properties[self.CONTENT_CACHING] == 'ENABLED'
+        #     try:
+        #         lb.content_caching = enabled
+        #     except Exception as exc:
+        #         if lb_immutable(exc):
+        #             return False
+        #         raise
+        #     return False
+
+        return True
 
     def handle_check(self):
-        loadbalancer = self.clb.get(self.resource_id)
+        lb = self.clb.get(self.resource_id)
         if not self._check_active():
-            raise exception.Error(_("Cloud LoadBalancer is not ACTIVE "
-                                    "(was: %s)") % loadbalancer.status)
+            raise exception.Error(_("Cloud Loadbalancer is not ACTIVE "
+                                    "(was: %s)") % lb.status)
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
         return prop_diff
 
     def check_update_complete(self, prop_diff):
+        import ipdb; ipdb.set_trace()
         lb = self.clb.get(self.resource_id)
 
         if (lb.status == self.PENDING_UPDATE_STATUS or  # lb is immutable
@@ -708,6 +742,14 @@ class CloudLoadBalancer(resource.Resource):
 
     def _ssl_term_needs_update(self, old, new):
         return self._needs_update_comparison_nullable(old, new)  # dict
+
+    def _access_list_needs_update(self, old, new):
+        old = set([frozenset(s.items()) for s in old])
+        new = set([frozenset(s.items()) for s in new])
+        return old != new
+
+    def _redirect_needs_update(self, old, new):
+        return self._needs_update_comparison_bool(old, new)  # bool
 
     def _update_props(self, lb, prop_diff):
         old_props = {}
