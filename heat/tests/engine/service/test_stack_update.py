@@ -750,6 +750,7 @@ resources:
         self.assertEqual(added['resource_name'], 'password')
         unchanged = [x for x in result['unchanged']][0]
         self.assertEqual(unchanged['resource_name'], 'web_server')
+        self.assertNotEqual('None', unchanged['resource_identity']['stack_id'])
 
         empty_sections = ('deleted', 'replaced', 'updated')
         for section in empty_sections:
