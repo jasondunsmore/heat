@@ -20,6 +20,7 @@ from novaclient import client as nc
 from novaclient import exceptions as nova_exceptions
 from oslo_config import cfg
 from oslo_serialization import jsonutils as json
+import requests
 import six
 
 from heat.common import exception
@@ -203,6 +204,43 @@ class NovaClientPluginTests(NovaClientPluginTestCase):
         server.status = 'ACTIVE(STATUS)'
         observed = self.nova_plugin.get_status(server)
         self.assertEqual('ACTIVE', observed)
+
+    def _absolute_limits(self):
+        max_personality = self.m.CreateMockAnything()
+        max_personality.name = 'maxPersonality'
+        max_personality.value = 5
+        max_personality_size = self.m.CreateMockAnything()
+        max_personality_size.name = 'maxPersonalitySize'
+        max_personality_size.value = 10240
+        max_server_meta = self.m.CreateMockAnything()
+        max_server_meta.name = 'maxServerMeta'
+        max_server_meta.value = 3
+        yield max_personality
+        yield max_personality_size
+        yield max_server_meta
+
+    def test_absolute_limits_success(self):
+        limits = mock.Mock()
+        limits.absolute = self._absolute_limits()
+        self.nova_client.limits.get.return_value = limits
+        self.nova_plugin.absolute_limits()
+
+    def test_absolute_limits_retry(self):
+        limits = mock.Mock()
+        limits.absolute = self._absolute_limits()
+        self.nova_client.limits.get.side_effect = [
+            requests.ConnectionError, requests.ConnectionError,
+            limits]
+        self.nova_client.limits.get.call_count = 3
+        self.nova_plugin.absolute_limits()
+
+    def test_absolute_limits_failure(self):
+        limits = mock.Mock()
+        limits.absolute = self._absolute_limits()
+        self.nova_client.limits.get.side_effect = [
+            requests.ConnectionError, requests.ConnectionError]
+        self.assertRaises(requests.ConnectionError,
+                          self.nova_plugin.absolute_limits)
 
 
 class NovaClientPluginRefreshServerTests(NovaClientPluginTestCase):

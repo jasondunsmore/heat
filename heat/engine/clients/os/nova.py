@@ -25,6 +25,8 @@ from novaclient import exceptions
 from oslo_config import cfg
 from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
+import requests
+from retrying import retry
 import six
 from six.moves.urllib import parse as urlparse
 
@@ -104,6 +106,8 @@ class NovaClientPlugin(client_plugin.ClientPlugin):
         return (isinstance(ex, exceptions.ClientException) and
                 http_status == 422)
 
+    @retry(stop_max_attempt_number=max(cfg.CONF.client_retry_limit, 0),
+           retry_on_exception=client_plugin.retry_if_connection_err)
     def get_server(self, server):
         """Return fresh server object.
 
@@ -540,8 +544,11 @@ echo -e '%s\tALL=(ALL)\tNOPASSWD: ALL' >> /etc/sudoers
                 if len(server.networks[n]) > 0:
                     return server.networks[n][0]
 
-    def absolute_limits(self):
+    @retry(stop_max_attempt_number=max(cfg.CONF.client_retry_limit, 0),
+           retry_on_exception=client_plugin.retry_if_connection_err)
+    def absolute_limits(self, retries=1):
         """Return the absolute limits as a dictionary."""
+        import ipdb; ipdb.set_trace()
         limits = self.client().limits.get()
         return dict([(limit.name, limit.value)
                     for limit in list(limits.absolute)])

@@ -22,9 +22,12 @@ from keystoneclient.auth.identity import v3
 from keystoneclient import exceptions
 from keystoneclient import session
 from oslo_config import cfg
+import requests
 import six
 
 from heat.common.i18n import _
+
+cfg.CONF.import_opt('client_retry_limit', 'heat.common.config')
 
 
 class ExceptionFilter(object):
@@ -295,3 +298,8 @@ class ClientPlugin(object):
             return True
         except exceptions.EndpointNotFound:
             return False
+
+
+def retry_if_connection_err(exception):
+    import ipdb; ipdb.set_trace()
+    return isinstance(exception, requests.ConnectionError)
