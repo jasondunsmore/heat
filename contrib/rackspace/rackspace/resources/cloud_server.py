@@ -41,7 +41,7 @@ class CloudServer(server.Server):
     """
 
     support_status = support.SupportStatus(
-        status=support.UNSUPPORTED,
+        status=support.HIDDEN,
         message=_('This resource is not supported, use at your own risk.'))
 
     # Managed Cloud automation statuses
