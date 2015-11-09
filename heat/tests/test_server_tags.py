@@ -97,6 +97,7 @@ class ServerTagsTest(common.HeatTestCase):
             image=1, flavor=1, key_name='test',
             name=utils.PhysName(stack_name, instance.name),
             security_groups=None,
+            config_drive=True,
             userdata=server_userdata, scheduler_hints=None,
             meta=nova_tags, nics=None, availability_zone=None,
             block_device_mapping=None).AndReturn(
