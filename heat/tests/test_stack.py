@@ -34,6 +34,7 @@ from heat.engine import function
 from heat.engine import resource
 from heat.engine import scheduler
 from heat.engine import stack
+from heat.engine import support
 from heat.engine import template
 from heat.objects import raw_template as raw_template_object
 from heat.objects import stack as stack_object
@@ -2472,6 +2473,54 @@ class StackTest(common.HeatTestCase):
         self.stack.state_set(self.stack.UPDATE, self.stack.IN_PROGRESS, '')
         mock_sau.assert_called_once_with(mock.ANY, 1, mock.ANY,
                                          exp_trvsl='curr-traversal')
+
+    def test_update_add_hidden_resource_disallowed(self):
+        class HiddenResourceA(generic_rsrc.GenericResource):
+            support_status = copy.deepcopy(
+                generic_rsrc.GenericResource.support_status)
+        resource._register_class('HiddenResourceA', HiddenResourceA)
+
+        tmpl = {'HeatTemplateFormatVersion': '2012-12-12',
+                'Resources': {'AResource': {'Type': 'HiddenResourceA'}}}
+
+        self.stack = stack.Stack(self.ctx, 'update_test_stack',
+                                 template.Template(tmpl))
+        self.stack.store()
+        self.stack.create()
+        self.assertEqual((stack.Stack.CREATE, stack.Stack.COMPLETE),
+                         self.stack.state)
+
+        HiddenResourceA.support_status.status = support.HIDDEN
+        tmpl2 = {'HeatTemplateFormatVersion': '2012-12-12',
+                 'Resources': {
+                     'AResource': {'Type': 'HiddenResourceA'},
+                     'BResource': {'Type': 'HiddenResourceA'}}}
+        updated_stack = stack.Stack(self.ctx, 'updated_stack',
+                                    template.Template(tmpl2))
+        self.stack.update(updated_stack)
+        self.assertEqual((stack.Stack.UPDATE, stack.Stack.FAILED),
+                         self.stack.state)
+        self.assertIn('Support status "HIDDEN" invalid for create',
+                      self.stack.status_reason)
+
+    def test_create_hidden_resource_disallowed(self):
+        class HiddenResourceA(generic_rsrc.GenericResource):
+            support_status = copy.deepcopy(
+                generic_rsrc.GenericResource.support_status)
+            support_status.status = support.HIDDEN
+        resource._register_class('HiddenResourceA', HiddenResourceA)
+
+        tmpl = {'HeatTemplateFormatVersion': '2012-12-12',
+                'Resources': {'AResource': {'Type': 'HiddenResourceA'}}}
+
+        self.stack = stack.Stack(self.ctx, 'update_test_stack',
+                                 template.Template(tmpl))
+        self.stack.store()
+        self.stack.create()
+        self.assertEqual((stack.Stack.CREATE, stack.Stack.FAILED),
+                         self.stack.state)
+        self.assertIn('Support status "HIDDEN" invalid for create',
+                      self.stack.status_reason)
 
 
 class StackKwargsForCloningTest(common.HeatTestCase):

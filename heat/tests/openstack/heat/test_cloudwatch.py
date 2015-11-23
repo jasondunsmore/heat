@@ -19,6 +19,7 @@ from heat.engine import resource
 from heat.engine import resources
 from heat.engine.resources.openstack.heat import cloud_watch
 from heat.engine import scheduler
+from heat.engine import support
 from heat.engine import watchrule
 from heat.tests import common
 from heat.tests import utils
@@ -45,6 +46,7 @@ class CloudWatchAlarmTest(common.HeatTestCase):
 
     def setUp(self):
         super(CloudWatchAlarmTest, self).setUp()
+        cloud_watch.CloudWatchAlarm.support_status.status = support.SUPPORTED
 
         def clear_register_class():
             env = resources.global_env()

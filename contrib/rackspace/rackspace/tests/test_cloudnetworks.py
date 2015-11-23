@@ -20,6 +20,7 @@ from heat.common import exception
 from heat.common import template_format
 from heat.engine import resource
 from heat.engine import scheduler
+from heat.engine import support
 from heat.tests import common
 from heat.tests import utils
 
@@ -101,6 +102,7 @@ class CloudNetworkTest(common.HeatTestCase):
         super(CloudNetworkTest, self).setUp()
         resource._register_class("Rackspace::Cloud::Network",
                                  cloudnetworks.CloudNetwork)
+        cloudnetworks.CloudNetwork.support_status.status = support.SUPPORTED
 
     def _parse_stack(self):
         self.stack = utils.parse_stack(self._template,

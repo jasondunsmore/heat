@@ -278,6 +278,7 @@ class ResourceGroup(stack_resource.StackResource):
                 test_tmpl,
                 self.child_params())
             nested_stack.strict_validate = False
+            import ipdb; ipdb.set_trace()
             nested_stack.validate()
         except Exception as ex:
             msg = _("Failed to validate: %s") % six.text_type(ex)
@@ -383,6 +384,7 @@ class ResourceGroup(stack_resource.StackResource):
         return True
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
+        import ipdb; ipdb.set_trace()
         if tmpl_diff:
             # parse update policy
             if rsrc_defn.UPDATE_POLICY in tmpl_diff:
@@ -468,7 +470,6 @@ class ResourceGroup(stack_resource.StackResource):
     def _assemble_nested(self, names, include_all=False,
                          template_version=('heat_template_version',
                                            '2015-04-30')):
-
         def_dict = self.get_resource_def(include_all)
         definitions = [(k, self.build_resource_definition(k, def_dict))
                        for k in names]
@@ -518,6 +519,7 @@ class ResourceGroup(stack_resource.StackResource):
                                           version=template_version)
 
     def _try_rolling_update(self):
+        import ipdb; ipdb.set_trace()
         if self.update_policy[self.ROLLING_UPDATE]:
             policy = self.update_policy[self.ROLLING_UPDATE]
             return self._replace(policy[self.MIN_IN_SERVICE],
@@ -549,7 +551,7 @@ class ResourceGroup(stack_resource.StackResource):
             curr_cap = new_cap
 
     def _replace(self, min_in_service, batch_size, pause_sec):
-
+        import ipdb; ipdb.set_trace()
         def pause_between_batch(pause_sec):
             duration = timeutils.Duration(pause_sec)
             while not duration.expired():

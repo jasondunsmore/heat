@@ -723,13 +723,24 @@ class Resource(object):
             runner(timeout=timeout)
 
     @scheduler.wrappertask
-    def create(self):
+    def create(self, new=True):
         """Create the resource.
 
         Subclasses should provide a handle_create() method to customise
         creation.
         """
         action = self.CREATE
+        sstatus = self.support_status.status
+
+        import ipdb; ipdb.set_trace()
+        if new and sstatus == support.HIDDEN:
+            import ipdb; ipdb.set_trace()
+            msg = _('Support status "%s" invalid for create')
+            exc = exception.Error(msg % six.text_type(support.HIDDEN))
+            failure = exception.ResourceFailure(exc, self, sstatus)
+            self.state_set(action, self.FAILED, six.text_type(failure))
+            raise failure
+
         if (self.action, self.status) != (self.INIT, self.COMPLETE):
             exc = exception.Error(_('State %s invalid for create')
                                   % six.text_type(self.state))

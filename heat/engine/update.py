@@ -91,6 +91,7 @@ class StackUpdate(object):
     @scheduler.wrappertask
     def _create_resource(self, new_res):
         res_name = new_res.name
+        new = False
 
         # Clean up previous resource
         if res_name in self.previous_stack:
@@ -124,13 +125,15 @@ class StackUpdate(object):
         # can have if it was copied to backup stack
         if (res_name not in
                 self.previous_stack.t[self.previous_stack.t.RESOURCES]):
+            new = True
             LOG.debug("Backing up new Resource %s" % res_name)
             definition = new_res.t.reparse(self.previous_stack,
                                            new_res.stack.t)
             self.previous_stack.t.add_resource(definition)
             self.previous_stack.t.store(self.previous_stack.context)
 
-        yield new_res.create()
+        import ipdb; ipdb.set_trace()
+        yield new_res.create(new=new)
 
     @scheduler.wrappertask
     def _process_new_resource_update(self, new_res):
