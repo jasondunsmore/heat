@@ -314,6 +314,11 @@ class Stack(collections.Mapping):
             return self.id
         return stack_object.Stack.get_root_id(self.context, self.owner_id)
 
+    def root_stack(self):
+        root_id = self.root_stack_id()
+        if root_id:
+            return stack_object.Stack.get_by_id(self.context, root_id)
+
     def object_path_in_stack(self):
         """Return stack resources and stacks in path from the root stack.
 

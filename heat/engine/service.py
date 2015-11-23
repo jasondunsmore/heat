@@ -826,6 +826,7 @@ class EngineService(service.Service):
         current_kwargs.update(common_params)
         updated_stack = parser.Stack(cnxt, stack_name, tmpl,
                                      **current_kwargs)
+        updated_stack.action = updated_stack.UPDATE
         self.resource_enforcer.enforce_stack(updated_stack)
         updated_stack.parameters.set_stack_id(current_stack.identifier())
 

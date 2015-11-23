@@ -25,6 +25,7 @@ from heat.engine.clients.os import neutron
 from heat.engine.resources.openstack.neutron import router
 from heat.engine import rsrc_defn
 from heat.engine import scheduler
+from heat.engine import support
 from heat.tests import common
 from heat.tests import utils
 
@@ -106,6 +107,7 @@ class NeutronRouterTest(common.HeatTestCase):
 
     def setUp(self):
         super(NeutronRouterTest, self).setUp()
+        router.RouterGateway.support_status.status = support.SUPPORTED
         self.m.StubOutWithMock(neutronclient.Client, 'create_router')
         self.m.StubOutWithMock(neutronclient.Client, 'delete_router')
         self.m.StubOutWithMock(neutronclient.Client, 'show_router')

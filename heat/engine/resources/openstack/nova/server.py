@@ -43,6 +43,8 @@ LOG = logging.getLogger(__name__)
 class Server(stack_user.StackUser, sh.SchedulerHintsMixin,
              server_network_mixin.ServerNetworkMixin):
 
+    support_status = support.SupportStatus(status=support.HIDDEN)
+
     PROPERTIES = (
         NAME, IMAGE, BLOCK_DEVICE_MAPPING, BLOCK_DEVICE_MAPPING_V2,
         FLAVOR, FLAVOR_UPDATE_POLICY, IMAGE_UPDATE_POLICY, KEY_NAME,

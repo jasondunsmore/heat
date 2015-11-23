@@ -19,6 +19,7 @@ from heat.common import template_format
 from heat.engine.resources.openstack.heat import cloud_watch
 from heat.engine import rsrc_defn
 from heat.engine import scheduler
+from heat.engine import support
 from heat.engine import watchrule
 from heat.tests import common
 from heat.tests import utils
@@ -53,6 +54,7 @@ alarm_template = '''
 class CloudWatchAlarmTest(common.HeatTestCase):
     def setUp(self):
         super(CloudWatchAlarmTest, self).setUp()
+        cloud_watch.CloudWatchAlarm.support_status.status = support.SUPPORTED
 
     def create_alarm(self, t, stack, resource_name):
         resource_defns = stack.t.resource_definitions(stack)

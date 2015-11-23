@@ -130,7 +130,13 @@ class StackUpdate(object):
             self.previous_stack.t.add_resource(definition)
             self.previous_stack.t.store(self.previous_stack.context)
 
-        yield new_res.create()
+        # If resource is in a nested stack, mark as "new" (user cannot
+        # create new HIDDEN resources)
+        nested = new_res.stack.root_stack_id() != new_res.stack.id
+        if nested:
+            
+        import ipdb; ipdb.set_trace()
+        yield new_res.create(new=new)
 
     @scheduler.wrappertask
     def _process_new_resource_update(self, new_res):
