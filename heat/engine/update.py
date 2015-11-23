@@ -130,7 +130,7 @@ class StackUpdate(object):
             self.previous_stack.t.add_resource(definition)
             self.previous_stack.t.store(self.previous_stack.context)
 
-        yield new_res.create()
+        yield new_res.create(existing=True)
 
     @scheduler.wrappertask
     def _process_new_resource_update(self, new_res):

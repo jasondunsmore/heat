@@ -732,6 +732,42 @@ class ResourceTest(common.HeatTestCase):
         scheduler.TaskRunner(res.create)()
         self.assertEqual((res.CREATE, res.COMPLETE), res.state)
 
+    def test_create_resource_hidden_support_status_disallowed(self):
+        rname = 'test_res_id_none'
+        tmpl = rsrc_defn.ResourceDefinition(rname, 'GenericResourceType')
+        res = generic_rsrc.ResourceWithProps(rname, tmpl, self.stack)
+        res.support_status.status = 'HIDDEN'
+        res.id = 'test_res_id'
+        import ipdb; ipdb.set_trace()
+        (res.action, res.status) = (res.INIT, res.DELETE)
+        create = scheduler.TaskRunner(res.create)
+        self.assertRaises(exception.ResourceFailure, create)
+        scheduler.TaskRunner(res.destroy)()
+        res.state_reset()
+        scheduler.TaskRunner(res.create)()
+        self.assertEqual((res.CREATE, res.COMPLETE), res.state)
+
+    def test_update_replace_hidden_support_status_allowed(self):
+        rname = 'test_res_id_none'
+        tmpl = rsrc_defn.ResourceDefinition(rname, 'GenericResourceType')
+        res = generic_rsrc.ResourceWithProps(rname, tmpl, self.stack)
+        res.support_status.status = 'SUPPORTED'
+        res.id = 'test_res_id'
+        scheduler.TaskRunner(res.create)()
+
+        # Try to update an existing HIDDEN resource
+        res.support_status.status = 'HIDDEN'
+        res.prepare_for_replace = mock.Mock()
+        utmpl = rsrc_defn.ResourceDefinition('test_resource',
+                                             'TestResource',
+                                             {'update_replace': 'True'})
+
+        import ipdb; ipdb.set_trace()
+
+        self.assertRaises(
+            exception.UpdateReplace, scheduler.TaskRunner(res.update, utmpl))
+        self.assertTrue(res.prepare_for_replace.called)
+
     def test_create_fail_retry(self):
         tmpl = rsrc_defn.ResourceDefinition('test_resource', 'Foo',
                                             {'Foo': 'abc'})
