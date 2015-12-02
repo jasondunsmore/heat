@@ -291,6 +291,9 @@ class Parameter(object):
         else:
             return six.text_type(value)
 
+    def updatable(self):
+        return True
+
 
 class NumberParam(Parameter):
     """A template parameter of type "Number"."""

@@ -2262,6 +2262,70 @@ class StackTest(common.HeatTestCase):
         self.assertEqual('foo', params.get('param1'))
         self.assertEqual('bar', params.get('param2'))
 
+    def test_update_immutable_parameter(self):
+        """Test stack loading with disabled parameter value validation."""
+        tmpl = template_format.parse('''
+        heat_template_version: 2013-05-23
+        parameters:
+            param1:
+                type: string
+                default: foo
+        ''')
+        self.stack = stack.Stack(self.ctx, 'stack_details_test',
+                                 template.Template(tmpl))
+        self.stack.store()
+        self.stack.create()
+        self.assertEqual(True,
+                         self.stack.parameters.params['param1'].updatable())
+
+        tmpl = template_format.parse('''
+        heat_template_version: 2013-05-23
+        parameters:
+            param1:
+                type: string
+                updatable: false
+                default: foo
+        ''')
+        updated_stack = stack.Stack(self.ctx, 'updated_stack',
+                                    template.Template(tmpl))
+        self.stack.update(updated_stack)
+        self.assertEqual((stack.Stack.UPDATE, stack.Stack.COMPLETE),
+                         self.stack.state)
+        self.assertEqual(False,
+                         self.stack.parameters.params['param1'].updatable())
+
+        tmpl = template_format.parse('''
+        heat_template_version: 2013-05-23
+        parameters:
+            param1:
+                type: string
+                updatable: false
+                default: bar
+        ''')
+        updated_stack = stack.Stack(self.ctx, 'updated_stack',
+                                    template.Template(tmpl))
+        self.stack.update(updated_stack)
+        self.assertEqual((stack.Stack.UPDATE, stack.Stack.FAILED),
+                         self.stack.state)
+        self.assertEqual('Parameter "param1" is not updatable',
+                         self.stack.status_reason)
+
+        tmpl = template_format.parse('''
+        heat_template_version: 2013-05-23
+        parameters:
+            param1:
+                type: string
+                updatable: true
+                default: bar
+        ''')
+        updated_stack = stack.Stack(self.ctx, 'updated_stack',
+                                    template.Template(tmpl))
+        self.stack.update(updated_stack)
+        self.assertEqual((stack.Stack.UPDATE, stack.Stack.COMPLETE),
+                         self.stack.state)
+        self.assertEqual('bar',
+                         self.stack.parameters.params['param1'].value())
+
     @mock.patch.object(stack_object.Stack, 'delete')
     @mock.patch.object(raw_template_object.RawTemplate, 'delete')
     def test_mark_complete_create(self, mock_tmpl_delete, mock_stack_delete):

@@ -132,6 +132,15 @@ resources:
 ''')
 
 
+def new_parameter(name, schema, value=None, validate_value=True):
+    tmpl = template.Template({'heat_template_version': '2015-10-15',
+                              'parameters': {name: schema}})
+    schema = tmpl.param_schemata()[name]
+    param = hot_param.HOTParameter(name, schema, value)
+    param.validate(validate_value)
+    return param
+
+
 class DummyClass(object):
     metadata = None
 
@@ -2188,3 +2197,18 @@ outputs:
         stack = parser.Stack(utils.dummy_context(), 'test_outputs_get_all',
                              template.Template(hot_liberty_tpl))
         stack.validate()
+
+
+class HOTParameterTest(common.HeatTestCase):
+
+    def test_hot_parameters_updatable(self):
+        for param_type in hot_param.HOTParamSchema.TYPES:
+            param = new_parameter('param_true', {'type': param_type,
+                                                 'updatable': True},
+                                  validate_value=False)
+            self.assertTrue(param.updatable())
+
+            param = new_parameter('param_false', {'type': param_type,
+                                                  'updatable': False},
+                                  validate_value=False)
+            self.assertFalse(param.updatable())

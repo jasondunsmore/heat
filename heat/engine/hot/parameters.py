@@ -11,6 +11,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import itertools
+
+import six
+
 from heat.common import exception
 from heat.common.i18n import _
 from heat.engine import constraints as constr
@@ -33,10 +37,10 @@ class HOTParamSchema(parameters.Schema):
 
     KEYS = (
         TYPE, DESCRIPTION, DEFAULT, SCHEMA, CONSTRAINTS,
-        HIDDEN, LABEL
+        HIDDEN, LABEL, UPDATABLE
     ) = (
         'type', 'description', 'default', 'schema', 'constraints',
-        'hidden', 'label'
+        'hidden', 'label', 'updatable'
     )
 
     # For Parameters the type name for Schema.LIST is comma_delimited_list
@@ -48,6 +52,16 @@ class HOTParamSchema(parameters.Schema):
     )
 
     PARAMETER_KEYS = KEYS
+
+    def __init__(self, data_type, description=None, default=None, schema=None,
+                 constraints=None, hidden=False, label=None, updatable=True):
+        super(HOTParamSchema, self).__init__(data_type=data_type,
+                                             description=description,
+                                             default=default,
+                                             schema=schema,
+                                             constraints=constraints,
+                                             label=label)
+        self.updatable = updatable
 
     @classmethod
     def from_dict(cls, param_name, schema_dict):
@@ -105,7 +119,60 @@ class HOTParamSchema(parameters.Schema):
                    default=schema_dict.get(HOTParamSchema.DEFAULT),
                    constraints=list(constraints()),
                    hidden=schema_dict.get(HOTParamSchema.HIDDEN, False),
-                   label=schema_dict.get(HOTParamSchema.LABEL))
+                   label=schema_dict.get(HOTParamSchema.LABEL),
+                   updatable=schema_dict.get(HOTParamSchema.UPDATABLE, True))
+
+
+class HOTParameter(parameters.Parameter):
+
+    def __new__(cls, name, schema, value=None):
+        if cls is not HOTParameter:
+            return super(HOTParameter, cls).__new__(cls, name, schema,
+                                                    value=value)
+
+        # Check for fully-fledged Schema objects
+        if not isinstance(schema, HOTParamSchema):
+            schema = HOTParamSchema.from_dict(name, schema)
+
+        if schema.type == schema.STRING:
+            ParamClass = HOTStringParam
+        elif schema.type == schema.NUMBER:
+            ParamClass = HOTNumberParam
+        elif schema.type == schema.LIST:
+            ParamClass = HOTCommaDelimitedListParam
+        elif schema.type == schema.MAP:
+            ParamClass = HOTJsonParam
+        elif schema.type == schema.BOOLEAN:
+            ParamClass = HOTBooleanParam
+        else:
+            raise ValueError(_('Invalid Parameter type "%s"') % schema.type)
+
+        return ParamClass(name, schema, value)
+
+    def updatable(self):
+        """Return whether the parameter is updatable."""
+        return self.schema.updatable
+
+
+class HOTStringParam(HOTParameter, parameters.StringParam):
+    pass
+
+
+class HOTNumberParam(HOTParameter, parameters.NumberParam):
+    pass
+
+
+class HOTCommaDelimitedListParam(HOTParameter,
+                                 parameters.CommaDelimitedListParam):
+    pass
+
+
+class HOTJsonParam(HOTParameter, parameters.JsonParam):
+    pass
+
+
+class HOTBooleanParam(HOTParameter, parameters.BooleanParam):
+    pass
 
 
 class HOTParameters(parameters.Parameters):
@@ -114,6 +181,33 @@ class HOTParameters(parameters.Parameters):
     ) = (
         'OS::stack_id', 'OS::stack_name', 'OS::region', 'OS::project_id'
     )
+
+    def __init__(self, stack_identifier, tmpl, user_params=None,
+                 param_defaults=None):
+
+        user_params = user_params or {}
+        param_defaults = param_defaults or {}
+
+        def user_parameter(schema_item):
+            name, schema = schema_item
+            return HOTParameter(name, schema,
+                                user_params.get(name))
+
+        self.tmpl = tmpl
+        self.user_params = user_params
+
+        schemata = self.tmpl.param_schemata()
+        user_parameters = (user_parameter(si) for si in
+                           six.iteritems(schemata))
+        pseudo_parameters = self._pseudo_parameters(stack_identifier)
+
+        self.params = dict((p.name,
+                            p) for p in itertools.chain(pseudo_parameters,
+                                                        user_parameters))
+
+        for pd in six.iterkeys(param_defaults):
+            if pd in self.params:
+                self.params[pd].set_default(param_defaults[pd])
 
     def set_stack_id(self, stack_identifier):
         """Set the StackId pseudo parameter value."""
@@ -128,16 +222,16 @@ class HOTParameters(parameters.Parameters):
         stack_name = getattr(stack_identifier, 'stack_name', '')
         tenant = getattr(stack_identifier, 'tenant', '')
 
-        yield parameters.Parameter(
+        yield HOTParameter(
             self.PARAM_STACK_ID,
-            parameters.Schema(parameters.Schema.STRING, _('Stack ID'),
-                              default=str(stack_id)))
-        yield parameters.Parameter(
+            HOTParamSchema(HOTParamSchema.STRING, _('Stack ID'),
+                           default=str(stack_id)))
+        yield HOTParameter(
             self.PARAM_PROJECT_ID,
-            parameters.Schema(parameters.Schema.STRING, _('Project ID'),
-                              default=str(tenant)))
+            HOTParamSchema(HOTParamSchema.STRING, _('Project ID'),
+                           default=str(tenant)))
         if stack_name:
-            yield parameters.Parameter(
+            yield HOTParameter(
                 self.PARAM_STACK_NAME,
-                parameters.Schema(parameters.Schema.STRING, _('Stack Name'),
-                                  default=stack_name))
+                HOTParamSchema(HOTParamSchema.STRING, _('Stack Name'),
+                               default=stack_name))

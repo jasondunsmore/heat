@@ -201,6 +201,8 @@ class Stack(collections.Mapping):
             self.identifier(),
             user_params=self.env.params,
             param_defaults=self.env.param_defaults)
+        self.non_pseudo_param_keys = [p for p in self.parameters if p not in
+                                      self.parameters.PSEUDO_PARAMETERS]
         self._set_param_stackid()
 
         if resolve_data:
@@ -1277,6 +1279,16 @@ class Stack(collections.Mapping):
             kwargs = self.get_kwargs_for_cloning()
             oldstack = Stack(self.context, self.name, copy.deepcopy(self.t),
                              **kwargs)
+            for param in newstack.non_pseudo_param_keys:
+                if param not in oldstack.parameters:
+                    continue
+                old_value = oldstack.parameters[param]
+                new_value = newstack.parameters[param]
+                updatable = newstack.parameters.params[param].updatable()
+                if not updatable and old_value != new_value:
+                    self.state_set(self.UPDATE, self.FAILED,
+                                   'Parameter "%s" is not updatable' % param)
+                    return
 
         backup_stack = self._backup_stack()
         existing_params = environment.Environment({env_fmt.PARAMETERS:
