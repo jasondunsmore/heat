@@ -464,6 +464,7 @@ class Port(neutron.NeutronResource):
 
     def needs_replace(self, after_props):
         """Mandatory replace based on props """
+        import ipdb; ipdb.set_trace()
         return after_props.get(self.REPLACEMENT_POLICY) == 'REPLACE_ALWAYS'
 
     def needs_replace_with_prop_diff(self, changed_properties_set,
@@ -471,6 +472,7 @@ class Port(neutron.NeutronResource):
         """Needs replace based on prop_diff """
         # Switching between name and ID is OK, provided the value resolves
         # to the same network.  If the network changes, port is replaced.
+        import ipdb; ipdb.set_trace()
         if self.NETWORK in changed_properties_set:
             before_id = self.client_plugin().find_resourceid_by_name_or_id(
                 'network',
@@ -498,8 +500,6 @@ class Port(neutron.NeutronResource):
 
     def prepare_for_replace(self):
         # if the port has not been created yet, return directly
-        if self.resource_id is None:
-            return
         # store port fixed_ips for restoring after failed update
         fixed_ips = self._show_resource().get('fixed_ips', [])
         self.data_set('port_fip', jsonutils.dumps(fixed_ips))
