@@ -115,6 +115,24 @@ class Group(resource.Resource):
         'uuid',
     )
 
+    _LAUNCH_CONFIG_ARGS_STACK_KEYS = (
+        LAUNCH_CONFIG_ARGS_STACK_TEMPLATE,
+        LAUNCH_CONFIG_ARGS_STACK_TEMPLATE_URL,
+        LAUNCH_CONFIG_ARGS_STACK_DISABLE_ROLLBACK,
+        LAUNCH_CONFIG_ARGS_STACK_ENVIRONMENT,
+        LAUNCH_CONFIG_ARGS_STACK_FILES,
+        LAUNCH_CONFIG_ARGS_STACK_PARAMETERS,
+        LAUNCH_CONFIG_ARGS_STACK_TIMEOUT_MINS
+    ) = (
+        'template',
+        'template_url',
+        'disable_rollback',
+        'environment',
+        'files',
+        'parameters',
+        'timeout_mins'
+    )
+
     _launch_configuration_args_schema = {
         LAUNCH_CONFIG_ARGS_LOAD_BALANCERS: properties.Schema(
             properties.Schema.LIST,
@@ -213,6 +231,15 @@ class Group(resource.Resource):
             },
             required=True
         ),
+        LAUNCH_CONFIG_ARGS_STACK: properties.Schema(
+            properties.Schema.MAP,
+            _('The attributes that Auto Scale uses to create a new stack. The '
+              'attributes that you specify for the stack entity apply to all '
+              'new stacks in the scaling group. Note the stack arguments are '
+              'directly passed to Heat when creating a stack.'),
+            schema={
+                LAUNCH_CONFIG_ARGS_STACK_TEMPLATE: properties.Schema(
+                    properties.Schema.
     }
 
     properties_schema = {
