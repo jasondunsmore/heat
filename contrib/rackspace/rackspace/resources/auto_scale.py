@@ -19,6 +19,7 @@ from heat.common import exception
 from heat.common.i18n import _
 from heat.engine import attributes
 from heat.engine import constraints
+from heat.engine import environment
 from heat.engine import properties
 from heat.engine import resource
 from heat.engine import support
@@ -74,9 +75,11 @@ class Group(resource.Resource):
     _LAUNCH_CONFIG_ARGS_KEYS = (
         LAUNCH_CONFIG_ARGS_LOAD_BALANCERS,
         LAUNCH_CONFIG_ARGS_SERVER,
+        LAUNCH_CONFIG_ARGS_STACK,
     ) = (
         'loadBalancers',
         'server',
+        'stack',
     )
 
     _LAUNCH_CONFIG_ARGS_LOAD_BALANCER_KEYS = (
@@ -113,6 +116,24 @@ class Group(resource.Resource):
         LAUNCH_CONFIG_ARGS_SERVER_NETWORK_UUID,
     ) = (
         'uuid',
+    )
+
+    _LAUNCH_CONFIG_ARGS_STACK_KEYS = (
+        LAUNCH_CONFIG_ARGS_STACK_TEMPLATE,
+        LAUNCH_CONFIG_ARGS_STACK_TEMPLATE_URL,
+        LAUNCH_CONFIG_ARGS_STACK_DISABLE_ROLLBACK,
+        LAUNCH_CONFIG_ARGS_STACK_ENVIRONMENT,
+        LAUNCH_CONFIG_ARGS_STACK_FILES,
+        LAUNCH_CONFIG_ARGS_STACK_PARAMETERS,
+        LAUNCH_CONFIG_ARGS_STACK_TIMEOUT_MINS
+    ) = (
+        'template',
+        'template_url',
+        'disable_rollback',
+        'environment',
+        'files',
+        'parameters',
+        'timeout_mins'
     )
 
     _launch_configuration_args_schema = {
@@ -213,6 +234,44 @@ class Group(resource.Resource):
             },
             required=True
         ),
+        LAUNCH_CONFIG_ARGS_STACK: properties.Schema(
+            properties.Schema.MAP,
+            _('The attributes that Auto Scale uses to create a new stack. The '
+              'attributes that you specify for the stack entity apply to all '
+              'new stacks in the scaling group. Note the stack arguments are '
+              'directly passed to Heat when creating a stack.'),
+            schema={
+                LAUNCH_CONFIG_ARGS_STACK_TEMPLATE: properties.Schema(
+                    properties.Schema.MAP,
+                    _('The template that describes the stack. Either the '
+                      'template or template_url property must be specified.'),
+                ),
+                LAUNCH_CONFIG_ARGS_STACK_TEMPLATE_URL: properties.Schema(
+                    properties.Schema.STRING,
+                    _('A URI to a template. Either the template or '
+                      'template_url property must be specified.')
+                ),
+                LAUNCH_CONFIG_ARGS_STACK_DISABLE_ROLLBACK: properties.Schema(
+                    properties.Schema.BOOLEAN,
+                    _('Keep the resources that have been created if the stack '
+                      'fails to create. Defaults to True.'),
+                    default=True
+                ),
+                LAUNCH_CONFIG_ARGS_STACK_ENVIRONMENT: properties.Schema(
+                    properties.schema.MAP,
+                    _('The environment for the stack.'),
+                ),
+                LAUNCH_CONFIG_ARGS_STACK_FILES: properties.Schema(
+                    properties.schema.MAP,
+                    _('The contents of files that the template references.')
+                ),
+                LAUNCH_CONFIG_ARGS_STACK_PARAMETERS: properties.Schema(
+                    properties.schema.MAP,
+                    _('Key/value pairs of the parameters and their values to '
+                      'pass to the parameters in the template.')
+                )
+            }
+        )
     }
 
     properties_schema = {
@@ -417,6 +476,18 @@ class Group(resource.Resource):
                     msg = _('Could not find RackConnectV3 pool '
                             'with id %s') % (lb_id)
                     raise exception.StackValidationFailed(msg)
+
+        import ipdb; ipdb.set_trace()
+        st_args = lcargs.get(self.LAUNCH_CONFIG_ARGS_STACK)
+        st_tmpl = st_args.get(self.LAUNCH_CONFIG_ARGS_STACK_TEMPLATE)
+        st_tmpl_url = st_args.get(self.LAUNCH_CONFIG_ARGS_STACK_TEMPLATE_URL)
+        st_env = st_args.get(self.LAUNCH_CONFIG_ARGS_STACK_ENVIRONMENT)
+        # template and template_url are required and mutually exclusive.
+        if ((not st_tmpl and not st_tmpl_url) or
+                (st_tmpl and st_tmpl_url)):
+            msg = _('Must provide one of template or template_url.')
+            raise exception.StackValidationFailed(msg)
+        environment.Environment(st_env)
 
     def auto_scale(self):
         return self.client('auto_scale')

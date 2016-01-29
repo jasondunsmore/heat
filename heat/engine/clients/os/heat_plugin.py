@@ -17,6 +17,7 @@ from heatclient import client as hc
 from heatclient import exc
 
 from heat.engine.clients import client_plugin
+from heat.engine import constraints
 
 CLIENT_NAME = 'heat'
 
