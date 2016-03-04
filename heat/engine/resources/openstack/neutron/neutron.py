@@ -101,6 +101,7 @@ class NeutronResource(resource.Resource):
         return attributes[name]
 
     def get_reference_id(self):
+        #import ipdb; ipdb.set_trace()
         return self.resource_id
 
     def _not_found_in_call(self, func, *args, **kwargs):

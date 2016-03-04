@@ -894,8 +894,12 @@ class EngineService(service.Service):
                                  current_stack.disable_rollback)
 
         current_kwargs.update(common_params)
+        #import ipdb; ipdb.set_trace()
         updated_stack = parser.Stack(cnxt, stack_name, tmpl,
                                      **current_kwargs)
+        #updated_stack = parser.Stack(
+        #    cnxt, stack_name, tmpl,
+        #    stack_id=current_stack.identifier()['stack_id'], **current_kwargs)
 
         invalid_params = current_stack.parameters.immutable_params_modified(
             updated_stack.parameters, params)

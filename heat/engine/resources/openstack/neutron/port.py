@@ -478,6 +478,7 @@ class Port(neutron.NeutronResource):
         """Needs replace based on prop_diff."""
         # Switching between name and ID is OK, provided the value resolves
         # to the same network.  If the network changes, port is replaced.
+        #import ipdb; ipdb.set_trace()
         if self.NETWORK in changed_properties_set:
             before_id = self.client_plugin().find_resourceid_by_name_or_id(
                 'network',

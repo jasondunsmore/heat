@@ -329,6 +329,7 @@ class Stack(collections.Mapping):
             return None
 
     def db_resource_get(self, name):
+        #import ipdb; ipdb.set_trace()
         if not self.id:
             return None
         if self._db_resources is None:

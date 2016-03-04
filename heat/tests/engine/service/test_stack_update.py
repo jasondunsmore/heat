@@ -511,6 +511,7 @@ class ServiceStackUpdateTest(common.HeatTestCase):
         self.assertEqual(create_stack.identifier().arn(),
                          old_stack['A'].properties['Foo'])
 
+        import ipdb; ipdb.set_trace()
         self.assertEqual(create_stack['A'].id, old_stack['A'].id)
         mock_load.assert_called_once_with(self.ctx, stack=s)
 

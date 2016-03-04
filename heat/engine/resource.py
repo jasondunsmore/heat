@@ -226,6 +226,7 @@ class Resource(object):
 
         if not stack.has_cache_data(name):
             resource = stack.db_resource_get(name)
+            #import ipdb; ipdb.set_trace()
             if resource:
                 self._load_data(resource)
             else:
@@ -244,6 +245,7 @@ class Resource(object):
 
     def _load_data(self, resource):
         """Load the resource state from its DB representation."""
+        #import ipdb; ipdb.set_trace()
         self.resource_id = resource.nova_instance
         self.action = resource.action
         self.status = resource.status
