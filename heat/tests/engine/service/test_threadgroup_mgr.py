@@ -129,3 +129,30 @@ class ThreadGroupManagerStopTest(common.HeatTestCase):
         self.assertIn(thread, done)
         self.assertNotIn(stack_id, thm.groups)
         self.assertNotIn(stack_id, thm.events)
+
+
+class ThreadGroupManagerCancelTest(common.HeatTestCase):
+
+    def test_tgm_cancel(self):
+        stack_id = 'test'
+        done = []
+
+        def function():
+            while True:
+                eventlet.sleep()
+
+        def linked(gt, thread):
+            for i in range(10):
+                eventlet.sleep()
+            done.append(thread)
+
+        thm = service.ThreadGroupManager()
+        thm.add_event(stack_id, mock.Mock())
+        thread = thm.start(stack_id, function)
+        thread.link(linked, thread)
+
+        thm.cancel(stack_id)
+
+        self.assertIn(thread, done)
+        self.assertNotIn(stack_id, thm.groups)
+        self.assertNotIn(stack_id, thm.events)

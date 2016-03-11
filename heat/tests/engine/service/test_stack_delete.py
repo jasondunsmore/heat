@@ -112,7 +112,7 @@ class StackDeleteTest(common.HeatTestCase):
 
         mock_load.return_value = stack
         mock_try.return_value = self.man.engine_id
-        mock_stop = self.patchobject(self.man.thread_group_mgr, 'stop')
+        mock_cancel = self.patchobject(self.man.thread_group_mgr, 'cancel')
 
         self.assertIsNone(self.man.delete_stack(self.ctx, stack.identifier()))
 
@@ -120,7 +120,7 @@ class StackDeleteTest(common.HeatTestCase):
         self.assertEqual(2, len(mock_load.mock_calls))
         mock_try.assert_called_once_with()
         mock_acquire.assert_called_once_with(True)
-        mock_stop.assert_called_once_with(stack.id)
+        mock_cancel.assert_called_once_with(stack.id)
 
     @mock.patch.object(parser.Stack, 'load')
     @mock.patch.object(stack_lock.StackLock, 'try_acquire')
@@ -152,8 +152,8 @@ class StackDeleteTest(common.HeatTestCase):
         mock_load.assert_called_once_with(self.ctx, stack=st)
         mock_try.assert_called_once_with()
         mock_alive.assert_called_once_with(self.ctx, OTHER_ENGINE)
-        mock_call.assert_called_once_with(self.ctx, OTHER_ENGINE, "stop_stack",
-                                          stack_identity=mock.ANY)
+        mock_call.assert_called_once_with(
+            self.ctx, OTHER_ENGINE, "cancel_stack", stack_identity=mock.ANY)
 
     @mock.patch.object(parser.Stack, 'load')
     @mock.patch.object(stack_lock.StackLock, 'try_acquire')
@@ -185,8 +185,8 @@ class StackDeleteTest(common.HeatTestCase):
         mock_load.assert_called_with(self.ctx, stack=st)
         mock_try.assert_called_once_with()
         mock_alive.assert_called_once_with(self.ctx, OTHER_ENGINE)
-        mock_call.assert_called_once_with(self.ctx, OTHER_ENGINE, "stop_stack",
-                                          stack_identity=mock.ANY)
+        mock_call.assert_called_once_with(
+            self.ctx, OTHER_ENGINE, "cancel_stack", stack_identity=mock.ANY)
         mock_acquire.assert_called_once_with(True)
 
     @mock.patch.object(parser.Stack, 'load')

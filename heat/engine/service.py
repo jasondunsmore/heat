@@ -73,6 +73,7 @@ from heatclient.common import environment_format
 from heatclient.common import template_utils
 
 cfg.CONF.import_opt('engine_life_check_timeout', 'heat.common.config')
+cfg.CONF.import_opt('engine_thread_cancel_timeout', 'heat.common.config')
 cfg.CONF.import_opt('max_resources_per_stack', 'heat.common.config')
 cfg.CONF.import_opt('max_stacks_per_tenant', 'heat.common.config')
 cfg.CONF.import_opt('enable_stack_abandon', 'heat.common.config')
@@ -214,26 +215,43 @@ class ThreadGroupManager(object):
         if stack_id in self.groups:
             self.groups[stack_id].stop_timers()
 
-    def stop(self, stack_id, graceful=False):
-        """Stop any active threads on a stack."""
+    @staticmethod
+    def _wait(threadgroup):
+        threadgroup.wait()
+        threads = threadgroup.threads[:]
+
+        # Wait for link()ed functions (i.e. lock release)
+        links_done = dict((th, False) for th in threads)
+
+        def mark_done(gt, th):
+            links_done[th] = True
+
+        for th in threads:
+            th.link(mark_done, th)
+        while not all(six.itervalues(links_done)):
+            eventlet.sleep()
+
+    def _get_threadgroup(self, stack_id):
         if stack_id in self.groups:
             self.events.pop(stack_id, None)
-            threadgroup = self.groups.pop(stack_id)
-            threads = threadgroup.threads[:]
+            return self.groups.pop(stack_id)
 
-            threadgroup.stop(graceful)
-            threadgroup.wait()
+    def stop(self, stack_id, graceful=False):
+        """Stop any active threads on a stack."""
+        threadgroup = self._get_threadgroup(stack_id)
+        threadgroup.stop(graceful)
+        self._wait(threadgroup)
 
-            # Wait for link()ed functions (i.e. lock release)
-            links_done = dict((th, False) for th in threads)
+    def cancel(self, stack_id):
+        """Cancel any threads on a stack that haven't started yet.
 
-            def mark_done(gt, th):
-                links_done[th] = True
-
-            for th in threads:
-                th.link(mark_done, th)
-            while not all(six.itervalues(links_done)):
-                eventlet.sleep()
+        Give threads that have already started a chance to finish,
+        stopping them after the timeout has been reached.
+        """
+        threadgroup = self._get_threadgroup(stack_id)
+        threadgroup.cancel(parser.ForcedCancel,
+                           timeout=cfg.CONF.engine_thread_cancel_timeout)
+        self._wait(threadgroup)
 
     def send(self, stack_id, message):
         for event in self.events.pop(stack_id, []):
@@ -248,7 +266,11 @@ class EngineListener(service.Service):
     support.
     """
 
-    ACTIONS = (STOP_STACK, SEND) = ('stop_stack', 'send')
+    ACTIONS = (
+        STOP_STACK, CANCEL_STACK, SEND
+    ) = (
+        'stop_stack', 'cancel_stack', 'send'
+    )
 
     def __init__(self, host, engine_id, thread_group_mgr):
         super(EngineListener, self).__init__()
@@ -276,6 +298,11 @@ class EngineListener(service.Service):
         """Stop any active threads on a stack."""
         stack_id = stack_identity['stack_id']
         self.thread_group_mgr.stop(stack_id)
+
+    def cancel_stack(self, ctxt, stack_identity):
+        """Cancel any threads on a stack that haven't started yet."""
+        stack_id = stack_identity['stack_id']
+        self.thread_group_mgr.cancel(stack_id)
 
     def send(self, ctxt, stack_identity, message):
         stack_id = stack_identity['stack_id']
@@ -1322,18 +1349,15 @@ class EngineService(service.Service):
 
         # Current engine has the lock
         if acquire_result == self.engine_id:
-            # give threads which are almost complete an opportunity to
-            # finish naturally before force stopping them
-            eventlet.sleep(0.2)
-            self.thread_group_mgr.stop(stack.id)
+            self.thread_group_mgr.cancel(stack.id)
 
         # Another active engine has the lock
         elif stack_lock.StackLock.engine_alive(cnxt, acquire_result):
-            stop_result = self._remote_call(
-                cnxt, acquire_result, self.listener.STOP_STACK,
+            cancel_result = self._remote_call(
+                cnxt, acquire_result, self.listener.CANCEL_STACK,
                 stack_identity=stack_identity)
-            if stop_result is None:
-                LOG.debug("Successfully stopped remote task on engine %s"
+            if cancel_result is None:
+                LOG.debug("Successfully canceled remote task on engine %s"
                           % acquire_result)
             else:
                 raise exception.StopActionFailed(stack_name=stack.name,

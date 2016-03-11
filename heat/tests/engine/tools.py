@@ -317,6 +317,9 @@ class DummyThreadGroup(object):
     def stop(self, graceful=False):
         pass
 
+    def cancel(self, stack_id):
+        pass
+
     def wait(self):
         pass
 

@@ -2310,7 +2310,6 @@ class StackTest(common.HeatTestCase):
         stk = stack.Stack(self.ctx, 'test',
                           template.Template(empty_template, env=env))
         stk.thread_group_mgr = service.ThreadGroupManager()
-        self.addCleanup(stk.thread_group_mgr.stop, stk.id)
         stk.store()
         stk._add_event('CREATE', 'IN_PROGRESS', '')
         evt.wait()
