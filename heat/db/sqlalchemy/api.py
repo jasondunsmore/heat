@@ -1240,15 +1240,22 @@ def db_encrypt_parameters_and_properties(ctxt, encryption_key, batch_size=50):
                 param_schemata = tmpl.param_schemata()
                 env = raw_template.environment
 
+                if (not env or
+                        'parameters' not in env or
+                        not tmpl.param_schemata()):
+                    continue
                 if 'encrypted_param_names' in env:
                     encrypted_params = env['encrypted_param_names']
                 else:
                     encrypted_params = []
+
                 for param_name, param_val in env['parameters'].items():
                     if ((param_name in encrypted_params) or
                        (not param_schemata[param_name].hidden)):
                             continue
-                    encrypted_val = crypt.encrypt(param_val, encryption_key)
+
+                    encrypted_val = crypt.encrypt(six.text_type(param_val),
+                                                  encryption_key)
                     env['parameters'][param_name] = encrypted_val
                     encrypted_params.append(param_name)
 
@@ -1270,6 +1277,8 @@ def db_encrypt_parameters_and_properties(ctxt, encryption_key, batch_size=50):
                 batch_size=batch_size):
             try:
                 result = {}
+                if not resource.properties_data:
+                    continue
                 for prop_name, prop_value in resource.properties_data.items():
                     prop_string = jsonutils.dumps(prop_value)
                     encrypted_value = crypt.encrypt(prop_string,
