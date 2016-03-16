@@ -1231,6 +1231,8 @@ def db_encrypt_parameters_and_properties(ctxt, encryption_key, batch_size=50):
             tmpl = template.Template.load(ctxt, raw_template.id, raw_template)
             env = raw_template.environment
 
+            if not env or 'parameters' not in env or not tmpl.param_schemata():
+                continue
             if 'encrypted_param_names' in env:
                 encrypted_params = env['encrypted_param_names']
             else:
@@ -1243,6 +1245,11 @@ def db_encrypt_parameters_and_properties(ctxt, encryption_key, batch_size=50):
                     param_val = env['parameters'][param_name]
                 except KeyError:
                     param_val = param.default
+
+                # String param types can be stored as integers.
+                # Convert to a string so it can be encrypted
+                if param.type == param.STRING and type(param_val) is not str:
+                    param_val = six.text_type(param_val)
 
                 encrypted_val = crypt.encrypt(param_val, encryption_key)
                 env['parameters'][param_name] = encrypted_val
@@ -1261,6 +1268,8 @@ def db_encrypt_parameters_and_properties(ctxt, encryption_key, batch_size=50):
                 session=session, ctxt=ctxt, query=query, model=models.Resource,
                 batch_size=batch_size):
             result = {}
+            if not resource.properties_data:
+                continue
             for prop_name, prop_value in resource.properties_data.items():
                 prop_string = jsonutils.dumps(prop_value)
                 encrypted_value = crypt.encrypt(prop_string,
