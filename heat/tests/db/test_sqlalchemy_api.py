@@ -2901,10 +2901,7 @@ class DBAPICryptParamsPropsTest(common.HeatTestCase):
     def setUp(self):
         super(DBAPICryptParamsPropsTest, self).setUp()
         self.ctx = utils.dummy_context()
-
-    def _create_template(self):
-        """Initialize sample template."""
-        t = template_format.parse('''
+        self.t = template_format.parse('''
         heat_template_version: 2013-05-23
         parameters:
             param1:
@@ -2948,8 +2945,11 @@ class DBAPICryptParamsPropsTest(common.HeatTestCase):
             a_resource:
                 type: GenericResourceType
         ''')
+
+    def _create_template(self):
+        """Initialize sample template."""
         template = {
-            'template': t,
+            'template': self.t,
             'files': {'foo': 'bar'},
             'environment': {
                 'parameters': {
@@ -3148,3 +3148,52 @@ class DBAPICryptParamsPropsTest(common.HeatTestCase):
         tmpl1 = self._create_malformed_template()
         self._test_db_encrypt_decrypt_malformed()
         self._delete_templates([tmpl1])
+
+    def test_db_encrypt_no_env(self):
+        template = {
+            'template': self.t,
+            'files': {'foo': 'bar'},
+            'environment': None}
+        db_api.raw_template_create(self.ctx, template)
+        self.assertIsNone(db_api.db_encrypt_parameters_and_properties(
+            self.ctx, cfg.CONF.auth_encryption_key))
+
+    def test_db_encrypt_no_env_parameters(self):
+        template = {
+            'template': self.t,
+            'files': {'foo': 'bar'},
+            'environment': {'encrypted_param_names': ['a']}}
+        db_api.raw_template_create(self.ctx, template)
+        self.assertIsNone(db_api.db_encrypt_parameters_and_properties(
+            self.ctx, cfg.CONF.auth_encryption_key))
+
+    def test_db_encrypt_no_properties_data(self):
+        ctx = utils.dummy_context()
+        template = self._create_template()
+        user_creds = create_user_creds(ctx)
+        stack = create_stack(ctx, template, user_creds)
+        resources = [create_resource(ctx, stack, name='res1')]
+        resources[0].properties_data = None
+        self.assertIsNone(db_api.db_encrypt_parameters_and_properties(
+            ctx, cfg.CONF.auth_encryption_key))
+
+    def test_db_encrypt_incorrect_string_param_type(self):
+        t = template_format.parse('''
+        heat_template_version: 2013-05-23
+        parameters:
+            param1:
+                type: string
+                description: value1.
+                default: 1234
+                hidden: true
+        resources:
+            a_resource:
+                type: GenericResourceType
+        ''')
+        template = {
+            'template': t,
+            'files': {},
+            'environment': {'parameters': {}}}
+        db_api.raw_template_create(self.ctx, template)
+        self.assertIsNone(db_api.db_encrypt_parameters_and_properties(
+            self.ctx, cfg.CONF.auth_encryption_key))
