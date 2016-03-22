@@ -15,6 +15,7 @@
 
 """CLI interface for heat management."""
 
+import os
 import sys
 
 from oslo_config import cfg
@@ -168,6 +169,14 @@ command_opt = cfg.SubCommandOpt('command',
 def main():
     log.register_options(CONF)
     log.setup(CONF, "heat-manage")
+
+    # Create root logger so all log output will be captured
+    LOG = log.logging.getLogger('heat')
+    fh = log.logging.FileHandler("/var/log/heat/heat-manage.log")
+    fh.setLevel(log.INFO)
+    os.chmod(fh.baseFilename, int("600", 8))
+    LOG.addHandler(fh)
+
     CONF.register_cli_opt(command_opt)
     try:
         default_config_files = cfg.find_config_files('heat', 'heat-engine')
