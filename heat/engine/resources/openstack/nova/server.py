@@ -733,6 +733,8 @@ class Server(stack_user.StackUser, sh.SchedulerHintsMixin,
             collectors.append('request')
             occ.update({'request': {
                 'metadata_url': url}})
+            self.client('swift').put_object(
+                container, object_name, jsonutils.dumps(meta))
 
         collectors.append('local')
         self.metadata_set(meta)
