@@ -749,8 +749,18 @@ class Server(stack_user.StackUser, sh.SchedulerHintsMixin,
         object_name = self.data().get('metadata_object_name')
         if object_name:
             container = self.physical_resource_name()
+            col = meta['os-collect-config']['collectors']
+            col_json = jsonutils.dumps(collectors)
+            col_redundant = ', '.join(['"collectors": "%s"' % c for c in col])
+            meta_json = jsonutils.dumps(meta)
+            # The the "collectors" option in os-collect-config.conf is
+            # an oslo.config MultiStrOpt, which has to be specified
+            # multiple times in the config file when there is more
+            # than one collector
+            meta_redundant = meta_json.replace('"collectors": ' + col_json,
+                                               col_redundant)
             self.client('swift').put_object(
-                container, object_name, jsonutils.dumps(meta))
+                container, object_name, meta_redundant)
 
     def _register_access_key(self):
         """Access is limited to this resource, which created the keypair."""
