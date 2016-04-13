@@ -601,3 +601,36 @@ class CloudServersValidationTests(common.HeatTestCase):
         mock_plugin().get_image.return_value = mock_image
 
         self.assertIsNone(server.validate())
+
+    def test_validate_image_flavor_empty_metadata(self, mock_client,
+                                                  mock_plugin):
+        server = cloud_server.CloudServer("test", self.rsrcdef, self.mockstack)
+
+        mock_image = mock.Mock(size=1, status='ACTIVE', min_ram=2, min_disk=2)
+        mock_image.get.return_value = "standard1"
+
+        mock_flavor = mock.Mock(ram=4, disk=4)
+        mock_flavor.to_dict.return_value = {
+            'OS-FLV-WITH-EXT-SPECS:extra_specs': {
+                'flavor_classes': '',
+                },
+        }
+
+        mock_plugin().get_flavor.return_value = mock_flavor
+        mock_plugin().get_image.return_value = mock_image
+
+        self.assertIsNone(server.validate())
+
+    def test_validate_image_flavor_no_metadata(self, mock_client, mock_plugin):
+        server = cloud_server.CloudServer("test", self.rsrcdef, self.mockstack)
+
+        mock_image = mock.Mock(size=1, status='ACTIVE', min_ram=2, min_disk=2)
+        mock_image.get.return_value = "standard1"
+
+        mock_flavor = mock.Mock(ram=4, disk=4)
+        mock_flavor.to_dict.return_value = {}
+
+        mock_plugin().get_flavor.return_value = mock_flavor
+        mock_plugin().get_image.return_value = mock_image
+
+        self.assertIsNone(server.validate())

@@ -68,6 +68,7 @@ class CloudServer(server.Server):
         'general1', 'memory1', 'performance2', 'performance1',
         'standard1', 'io1', 'onmetal', 'compute1',
     )
+    BASE_IMAGE_REF = 'base_image_ref'
 
     # flavor classes that can be booted ONLY from volume
     BFV_VOLUME_REQUIRED = {MEMORY1, COMPUTE1}
@@ -239,8 +240,16 @@ class CloudServer(server.Server):
 
         return self._extend_networks(nets)
 
+    def _base_image_obj(image_obj):
+        if image_obj
+
     def _image_flavor_class_match(self, flavor_type, image_obj):
-        flavor_class_string = image_obj.get(self.FLAVOR_CLASSES_KEY, '')
+        flavor_class_string = image_obj.get(self.FLAVOR_CLASSES_KEY)
+
+        # Old images don't have this metadata, so do not validate them
+        if flavor_class_string:
+            return True
+
         flavor_class_excluded = "!{0}".format(flavor_type)
         flavor_classes_accepted = flavor_class_string.split(',')
 
