@@ -417,6 +417,7 @@ class JsonParam(ParsedParameter):
 
     def parse(self, value):
         try:
+            import ipdb; ipdb.set_trace()
             val = value
             if not isinstance(val, six.string_types):
                 # turn off oslo_serialization's clever to_primitive()

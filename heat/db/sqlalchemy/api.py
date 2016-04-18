@@ -1273,6 +1273,7 @@ def db_encrypt_parameters_and_properties(ctxt, encryption_key, batch_size=50):
                     raw_template_update(ctxt, raw_template.id,
                                         {'environment': environment})
             except Exception as exc:
+                import ipdb; ipdb.set_trace()
                 LOG.exception(_LE('Failed to encrypt parameters of raw '
                                   'template %(id)d'), {'id': raw_template.id})
                 excs.append(exc)
