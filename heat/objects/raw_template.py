@@ -48,13 +48,19 @@ class RawTemplate(
         tpl.environment = copy.deepcopy(tpl.environment)
         # If any of the parameters were encrypted, then decrypt them
         if (tpl.environment is not None and
-                env_fmt.ENCRYPTED_PARAM_NAMES in tpl.environment):
+                env_fmt.ENCRYPTED_PARAM_NAMES in tpl.environment and
+                tpl.environment[env_fmt.ENCRYPTED_PARAM_NAMES]):
             parameters = tpl.environment[env_fmt.PARAMETERS]
             encrypted_param_names = tpl.environment[
                 env_fmt.ENCRYPTED_PARAM_NAMES]
 
             for param_name in encrypted_param_names:
-                method, value = parameters[param_name]
+                try:
+                    method, value = parameters[param_name]
+                except Exception as exc:
+                    if "too many values to unpack" in exc:
+                        import ipdb; ipdb.set_trace()
+                    raise exc
                 decrypted_val = crypt.decrypt(method, value)
                 parameters[param_name] = decrypted_val
             tpl.environment[env_fmt.PARAMETERS] = parameters

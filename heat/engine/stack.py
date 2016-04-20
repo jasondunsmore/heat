@@ -1365,7 +1365,7 @@ class Stack(collections.Mapping):
             # Oldstack is useless when the action is not UPDATE , so we don't
             # need to build it, this can avoid some unexpected errors.
             kwargs = self.get_kwargs_for_cloning()
-            self._check_encrypted_param_names()
+            #self._check_encrypted_param_names()
             oldstack = Stack(self.context, self.name, copy.deepcopy(self.t),
                              **kwargs)
 
