@@ -1259,9 +1259,10 @@ def db_encrypt_parameters_and_properties(ctxt, encryption_key, batch_size=50):
                     encrypted_params = []
 
                 for param_name, param_val in env['parameters'].items():
-                    if ((param_name in encrypted_params) or
-                       (not param_schemata[param_name].hidden)):
-                            continue
+                    if (param_name in encrypted_params or
+                            param_name not in param_schemata or
+                            not param_schemata[param_name].hidden):
+                        continue
                     encrypted_val = crypt.encrypt(six.text_type(param_val),
                                                   encryption_key)
                     env['parameters'][param_name] = encrypted_val
