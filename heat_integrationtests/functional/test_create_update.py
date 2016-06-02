@@ -285,6 +285,51 @@ resources:
         self.assertEqual(updated_resources,
                          self.list_resources(stack_identifier))
 
+    def test_stack_update_from_failed_resolve_invalid_type(self):
+        """Test for bug 1588431.
+
+        Whenever a stack has a resource with a property that
+        resolves to an incorrect type, we should be able to update
+        the stack with a valid template.
+        """
+        invalid_template = '''
+heat_template_version: 2014-10-16
+resources:
+  random-string-grp:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: 4
+      resource_def:
+        type: OS::Heat::RandomString
+  single-random-string:
+      type: OS::Heat::RandomString
+      properties:
+        length:
+          str_replace:
+            params:
+              foo: {get_attr: [random-string-grp, value]}
+            template: |
+              foo1
+'''
+        valid_template = '''
+heat_template_version: 2014-10-16
+resources:
+  random-string-grp:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: 4
+      resource_def:
+        type: OS::Heat::RandomString
+  single-random-string:
+      type: OS::Heat::RandomString
+      properties:
+        length: 8
+'''
+        stack_identifier = self.stack_create(template=invalid_template,
+                                             expected_status='CREATE_FAILED')
+        self.update_stack(stack_identifier, template=valid_template,
+                          expected_status='UPDATE_COMPLETE')
+
     def test_stack_update_provider(self):
         template = _change_rsrc_properties(
             test_template_one_resource, ['test1'],

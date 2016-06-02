@@ -796,7 +796,13 @@ class Resource(object):
             yield self.action_handler_task(action, args=handler_args)
 
     def _update_stored_properties(self):
-        self._stored_properties_data = function.resolve(self.properties.data)
+        try:
+            self._stored_properties_data = function.resolve(
+                self.properties.data)
+        except TypeError as exc:
+            # This is to avoid bug 1588431
+            if self.stack.action == self.stack.CREATE:
+                raise exception.ResourceFailure(exc, self)
 
     def preview(self):
         """Default implementation of Resource.preview.
@@ -882,7 +888,10 @@ class Resource(object):
                 else:
                     action = self.CREATE
             except exception.ResourceFailure as failure:
-                if not isinstance(failure.exc, exception.ResourceInError):
+                invalid_failure = self._invalid_validation_failure(failure)
+
+                if (not isinstance(failure.exc, exception.ResourceInError) and
+                        not invalid_failure):
                     raise failure
 
                 count[action] += 1
@@ -890,7 +899,7 @@ class Resource(object):
                     action = self.DELETE
                     count[action] = 0
 
-                if first_failure is None:
+                if first_failure is None and not invalid_failure:
                     # Save the first exception
                     first_failure = failure
 
@@ -900,6 +909,18 @@ class Resource(object):
         if self.stack.action == self.stack.CREATE:
             yield self._break_if_required(
                 self.CREATE, environment.HOOK_POST_CREATE)
+
+    def _invalid_validation_failure(self, failure):
+        """Check for invalid validation failures on update (bug 1588431)."""
+        if (isinstance(failure.exc, exception.StackValidationFailed)
+                and self.stack.action == self.stack.UPDATE):
+            if isinstance(self.stack.t, hot_tmpl.HOTemplate20130523):
+                res_props = hot_tmpl.RES_PROPERTIES
+            else:
+                res_props = cfn_tmpl.RES_PROPERTIES
+            tmpl_res = self.stack.t.t[self.stack.t.RESOURCES]
+            tmpl_props = tmpl_res[self.name][res_props]
+            return tmpl_props != self.properties.data
 
     def prepare_abandon(self):
         self.abandon_in_progress = True
@@ -989,7 +1010,13 @@ class Resource(object):
         if self.needs_replace(after_props):
             raise exception.UpdateReplace(self)
 
-        if before != after.freeze():
+        try:
+            after_frozen = after.freeze()
+        except TypeError:
+            # This is to avoid bug 1588431
+            return True
+
+        if before != after_frozen:
             return True
 
         try:
