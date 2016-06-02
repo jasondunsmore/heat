@@ -11,10 +11,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_log import log as logging
+import six
+
 from oslo_serialization import jsonutils
 from sqlalchemy.dialects import mysql
 from sqlalchemy import types
 
+LOG = logging.getLogger(__name__)
 
 dumps = jsonutils.dumps
 loads = jsonutils.loads
@@ -33,7 +37,20 @@ class LongText(types.TypeDecorator):
 class Json(LongText):
 
     def process_bind_param(self, value, dialect):
-        return dumps(value)
+        try:
+            return dumps(value)
+        except ValueError:
+            val = {key: six.text_type(value[key]) for key in value.keys()}
+
+            # Debugging a gate failure (unable to reproduce failure locally)
+            if "Circular reference detected" in val.values():
+                import pprint
+                print "Debugging process_bind_param()"
+                pprint.pprint(value)
+                pprint.pprint(val)
+                pprint.pprint(dumps(val))
+
+            return dumps(val)
 
     def process_result_value(self, value, dialect):
         if value is None:

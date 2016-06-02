@@ -52,6 +52,12 @@ class JsonTest(common.HeatTestCase):
         result = self.sqltype.process_bind_param(value, dialect)
         self.assertEqual('null', result)
 
+    def test_process_bind_param_value_error(self):
+        dialect = None
+        value = {'foo': ValueError("baz")}
+        result = self.sqltype.process_bind_param(value, dialect)
+        self.assertEqual('{"foo": "baz"}', result)
+
     def test_process_result_value(self):
         dialect = None
         value = '{"foo": "bar"}'

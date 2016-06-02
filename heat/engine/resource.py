@@ -549,7 +549,11 @@ class Resource(object):
             args = {'properties': self._stored_properties_data}
         else:
             args = {}
-        return self.t.freeze(**args)
+        try:
+            return self.t.freeze(**args)
+        except TypeError as exc:
+            # This is to avoid bug 1588431
+            return exc
 
     def update_template_diff(self, after, before):
         """Returns the difference between the before and after json snippets.
@@ -866,7 +870,19 @@ class Resource(object):
 
     def _update_stored_properties(self):
         old_props = self._stored_properties_data
+
+        # stored_properties_data = {}
+        # for prop in self.properties.data:
+        #     try:
+        #         stored_properties_data[prop] = function.resolve(
+        #             self.properties.data[prop])
+        #     except TypeError as exc:
+        #         # This is to avoid bug 1588431
+        #         stored_properties_data[prop] = exc
+        # self._stored_properties_data = stored_properties_data
+
         self._stored_properties_data = function.resolve(self.properties.data)
+
         if self._stored_properties_data != old_props:
             self._rsrc_prop_data = None
 
@@ -1114,6 +1130,11 @@ class Resource(object):
 
         if self.needs_replace(after_props):
             raise UpdateReplace(self)
+
+        try:
+            after.freeze()
+        except TypeError:
+            raise exception.UpdateReplace(self)
 
         if before != after.freeze():
             return True
