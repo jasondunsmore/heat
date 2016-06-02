@@ -123,6 +123,16 @@ class CheckResource(object):
                                                 rpc_data, is_update,
                                                 adopt_stack_data)
         except exception.ResourceFailure as ex:
+            if is_update and 'StackValidationFailed' in ex.message:
+                new_resource = stack.resources[rsrc.name]
+                try:
+                    new_resource.properties.validate()
+                except exception.StackValidationFailed as exc:
+                    ex = exception.ResourceFailure(exc, new_resource,
+                                                   stack.action)
+                else:
+                    return True
+
             reason = 'Resource %s failed: %s' % (rsrc.action,
                                                  six.text_type(ex))
             self._handle_resource_failure(cnxt, is_update, rsrc.id,

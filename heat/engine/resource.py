@@ -796,7 +796,13 @@ class Resource(object):
             yield self.action_handler_task(action, args=handler_args)
 
     def _update_stored_properties(self):
-        self._stored_properties_data = function.resolve(self.properties.data)
+        try:
+            self._stored_properties_data = function.resolve(
+                self.properties.data)
+        except TypeError as exc:
+            # This is to avoid bug 1588431
+            if self.stack.action == self.stack.CREATE:
+                raise exception.ResourceFailure(exc, self)
 
     def preview(self):
         """Default implementation of Resource.preview.
@@ -882,6 +888,7 @@ class Resource(object):
                 else:
                     action = self.CREATE
             except exception.ResourceFailure as failure:
+
                 if not isinstance(failure.exc, exception.ResourceInError):
                     raise failure
 
@@ -989,7 +996,13 @@ class Resource(object):
         if self.needs_replace(after_props):
             raise exception.UpdateReplace(self)
 
-        if before != after.freeze():
+        try:
+            after_frozen = after.freeze()
+        except TypeError:
+            # This is to avoid bug 1588431
+            return True
+
+        if before != after_frozen:
             return True
 
         try:

@@ -38,8 +38,13 @@ class StackUpdate(object):
         self.rollback = rollback
         self.error_wait_time = error_wait_time
 
-        self.existing_snippets = dict((n, r.frozen_definition())
-                                      for n, r in self.existing_stack.items())
+        self.existing_snippets = {}
+        for name, resource in self.existing_stack.items():
+            try:
+                self.existing_snippets[name] = resource.frozen_definition()
+            except TypeError as exc:
+                # This is to avoid bug 1588431
+                self.existing_snippets[name] = exc
 
     def __repr__(self):
         if self.rollback:
@@ -151,7 +156,10 @@ class StackUpdate(object):
         res_name = new_res.name
 
         if res_name in self.existing_stack:
-            if type(self.existing_stack[res_name]) is type(new_res):
+            if isinstance(self.existing_snippets[res_name], TypeError):
+                # This is to avoid bug 1588431
+                pass
+            elif type(self.existing_stack[res_name]) is type(new_res):
                 existing_res = self.existing_stack[res_name]
                 try:
                     yield self._update_in_place(existing_res,
