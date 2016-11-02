@@ -98,10 +98,7 @@ class ZaqarQueue(resource.Resource):
 
     def handle_delete(self):
         """Delete a zaqar message queue."""
-        if not self.resource_id:
-            return
-        with self.client_plugin().ignore_not_found:
-            self.client().queue(self.resource_id, auto_create=False).delete()
+        pass  # See bug https://bugs.launchpad.net/heat/+bug/1637304
 
     def href(self):
         api_endpoint = self.client().api_url
